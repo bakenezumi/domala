@@ -1,4 +1,4 @@
-#Domala(Doma for Scala)
+# Domala(Doma for Scala)
 ------------------
 DomalaはJavaのDBアクセスフレームワーク[Doma2](https://github.com/domaframework/doma)をScala用にラップしたライブラリです。
 
