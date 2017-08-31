@@ -79,9 +79,9 @@ object EmbeddableTypeGenerator {
           val tpe = Type.Name(decltpe.toString)
           val (basicTpe, newWrapperExpr, domainTpe) = MacroUtil.convertType(tpe)
           q"""
-          { if(__args.get(embeddedPropertyName + "." + $nameStr) != null )
-              __args.get(embeddedPropertyName + "." + $nameStr).get().asInstanceOf[$tpe]
-            else null }
+          { (if(__args.get(embeddedPropertyName + "." + $nameStr) != null )
+              __args.get(embeddedPropertyName + "." + $nameStr)
+            else null).get().asInstanceOf[$tpe] }
           """
         }
 

@@ -7,13 +7,12 @@ object MacroUtil {
   private val basicTypes = Set(
     "Int",
     "Integer",
-    "OptionalInt",
-    "Optional[Integer]",
     "Option[Int]",
+    "Optional[Integer]",
+    "OptionalInt",
     "String",
-    "Optional[String]",
-    "Option[String]"
-
+    "Option[String]",
+    "Optional[String]"
   )
 
   def isDomain(tpe: Type.Arg) = {
@@ -21,7 +20,7 @@ object MacroUtil {
   }
 
   // TODO: 他の型対応
-  def convertType(tpe: Type.Arg) = {
+  def convertType(tpe: Type.Arg): (Term, Term, Term) = {
     if (isDomain(tpe)) {
       val domainTpe = tpe match {
         case t"$containerTpe[$internalTpe]" => Term.Name(internalTpe.toString)

@@ -70,10 +70,7 @@ object EntityTypeGenerator {
   protected def makePropertyTypeFields(clsName: Type.Name, ctor: Ctor.Primary) = {
     ctor.paramss.flatten.map { p =>
       val Term.Param(mods, name, Some(decltpe), default) = p
-      val tpe = decltpe match {
-        case t"Option[Name]" => Type.Name("Option[_]")
-        case _ => Type.Name(decltpe.toString)
-      }
+      val tpe = Type.Name(decltpe.toString)
       val tpeTerm = Term.Name(decltpe.toString)
       val nameStr = name.value
       val propertyName = Pat.Var.Term(Term.Name("$" + name.value))
@@ -334,6 +331,7 @@ object EntityTypeGenerator {
           q"""$tpe.getSingletonInternal.newEmbeddable[$clsName]($nameStr, __args)"""
         } else {
           val tpe = Type.Name(decltpe.toString)
+
           q"""(if (__args.get($nameStr) != null) __args.get($nameStr).get else null).asInstanceOf[$tpe]"""
         }
       }

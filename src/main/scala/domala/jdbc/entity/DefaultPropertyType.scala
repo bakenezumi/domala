@@ -20,8 +20,7 @@ import org.seasar.doma.jdbc.entity.EntityPropertyType
 import org.seasar.doma.jdbc.entity.NamingType
 import org.seasar.doma.jdbc.entity.Property
 import org.seasar.doma.wrapper.Wrapper
-
-import domala.internal.jdbc.scalar.OptionBasicScalar
+import domala.internal.jdbc.scalar.{OptionDomainBridgeScalar, OptionBasicScalar}
 
 class DefaultPropertyType[PARENT, ENTITY <: PARENT, BASIC, DOMAIN](
   entityClass: Class[ENTITY],
@@ -66,6 +65,9 @@ object DefaultPropertyType {
       if (entityPropertyClass == classOf[Optional[_]]) {
         () => new DefaultProperty[Optional[DOMAIN], ENTITY, BASIC](field,
           domainType.createOptionalScalar())
+      } else if (entityPropertyClass == classOf[Option[_]]) {
+        () => new DefaultProperty[Option[DOMAIN], ENTITY, BASIC](field,
+            new OptionDomainBridgeScalar(domainType.createOptionalScalar()))
       } else {
         () => new DefaultProperty[DOMAIN, ENTITY, BASIC](field,
           domainType.createScalar())
@@ -89,7 +91,7 @@ object DefaultPropertyType {
       () => new DefaultProperty[BASIC, ENTITY, BASIC](field,
         new BasicScalar(wrapperSupplier, field.isPrimitive()))
     }
-  }  
+  }
 }
 
 class DefaultProperty[CONTAINER, ENTITY, BASIC] (

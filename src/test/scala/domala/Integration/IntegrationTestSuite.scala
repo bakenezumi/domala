@@ -66,11 +66,11 @@ class IntegrationTestSuite extends FunSuite with BeforeAndAfter {
       assert(
         dao.selectById2(1) ===
           Person(Some(1),
-            Name("SMITH"),
-            Some(10),
-            Address("Tokyo", "Yaesu"),
-            Some(1),
-            Some(0)))
+                 Name("SMITH"),
+                 Some(10),
+                 Address("Tokyo", "Yaesu"),
+                 Some(1),
+                 Some(0)))
     }
   }
 
@@ -78,7 +78,19 @@ class IntegrationTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       assert(
         dao.selectWithDepartmentById(1) ===
-          Some(PersonDepartment(1,Name("SMITH"),Some(1),Some("ACCOUNTING"))))
+          Some(
+            PersonDepartment(ID(1),
+                             Name("SMITH"),
+                             Some(ID(1)),
+                             Some(Name("ACCOUNTING")))))
+    }
+  }
+
+  test("join select to enbedded entity") {
+    Required {
+      assert(
+        dao.selectWithDepartmentById2(1) ===
+          Some(PersonDepartment2(1, "SMITH", Department(1, "ACCOUNTING"))))
     }
   }
 

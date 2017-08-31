@@ -31,5 +31,4 @@ class OptionBasicScalar[BASIC](supplier: Supplier[Wrapper[BASIC]])
   }
 
   override def getWrapper: Wrapper[BASIC] = wrapper
-
 }

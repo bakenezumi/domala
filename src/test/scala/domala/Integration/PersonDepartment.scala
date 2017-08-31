@@ -4,8 +4,8 @@ import domala.Entity
 
 @Entity
 case class PersonDepartment(
-  id: Int,
+  id: ID,
   name: Name,
-  departmentId: Option[Int],
-  departmentName:Option[String]
+  departmentId: Option[ID],
+  departmentName:Option[Name]
 )

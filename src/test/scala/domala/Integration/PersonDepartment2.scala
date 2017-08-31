@@ -5,13 +5,13 @@ import domala._
 @Entity
 case class PersonDepartment2(
   id: Int,
-  name: Name,
+  name: String,
   @Embedded
   department: Department
 )
 
 @Embeddable
 case class Department(
-  departmentId: Option[Int],
+  departmentId: Int,
   departmentName: String
 )
