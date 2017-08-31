@@ -6,6 +6,7 @@ import org.seasar.doma.jdbc.Naming
 import org.seasar.doma.jdbc.dialect.Dialect
 import org.seasar.doma.jdbc.tx.LocalTransactionDataSource
 import org.seasar.doma.jdbc.tx.LocalTransactionManager
+import org.seasar.doma.jdbc.tx.TransactionManager
 
 class Config(dataSource: DataSource, dialect: Dialect, naming: Naming = Naming.NONE) extends org.seasar.doma.jdbc.Config {
 
@@ -17,9 +18,9 @@ class Config(dataSource: DataSource, dialect: Dialect, naming: Naming = Naming.N
   }
   val transactionManager = new LocalTransactionManager(ds.getLocalTransaction(getJdbcLogger))
 
-  override def getDataSource = ds
-  override def getDialect = dialect
-  override def getTransactionManager = transactionManager
-  override def getNaming = naming
+  override def getDataSource: DataSource = ds
+  override def getDialect: Dialect = dialect
+  override def getTransactionManager: TransactionManager = transactionManager
+  override def getNaming: Naming = naming
 
 }

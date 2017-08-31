@@ -1,14 +1,13 @@
-package sample
+package domala.Integration
 
+import domala.Config
 import org.seasar.doma.jdbc.Naming
 import org.seasar.doma.jdbc.dialect.H2Dialect
 import org.seasar.doma.jdbc.tx.LocalTransactionDataSource
 
-import domala.Config
-
-object SampleConfig extends Config(
+object TestConfig extends Config(
   dataSource =  new LocalTransactionDataSource(
-    "jdbc:h2:mem:sample;DB_CLOSE_DELAY=-1", "sa", null),
+    "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "sa", null),
   dialect = new H2Dialect,
   naming = Naming.SNAKE_LOWER_CASE
 ) {

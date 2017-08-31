@@ -35,22 +35,22 @@ object DaoGenerator {
   private def from(n: Int): Stream[Int] = n #:: from(n+1)
 
   protected def generateDef(trtName: Type.Name, _def: Decl.Def, idx: Int) = {
-    val internalMethodName = Term.Name( s"__method${idx}" )
+    val internalMethodName = Term.Name( s"__method$idx" )
     List(
       {
         val paramClasses = _def.paramss.flatten.map(p => q"classOf[${Type.Name(p.decltpe.get.toString)}]")
         q"""private val ${Pat.Var.Term(internalMethodName)} =
-              org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[${trtName}], ${_def.name.value}..$paramClasses)"""
+              org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[$trtName], ${_def.name.value}..$paramClasses)"""
       },
       // TDOD: Anotationが無い場合
       _def.mods.collectFirst {
-        case mod"@Script(sql = ${sql})" => generateScript(trtName, _def, internalMethodName, sql)
-        case mod"@Select(sql = ${sql})" => generateSelect(trtName, _def, internalMethodName, sql)
+        case mod"@Script(sql = $sql)" => generateScript(trtName, _def, internalMethodName, sql)
+        case mod"@Select(sql = $sql)" => generateSelect(trtName, _def, internalMethodName, sql)
         case mod"@Insert" => generateInsert(trtName, _def, internalMethodName)
         case mod"@Insert(..$modParams)" => generateInsert(trtName, _def, internalMethodName)
       }.get.copy(tparams = _def.tparams, paramss = _def.paramss)
     )
-    
+
   }
 
   protected def generateScript(trtName: Type.Name, _def: Decl.Def, internalMethodName: Term.Name, sql: Term.Arg) = {
@@ -59,14 +59,14 @@ object DaoGenerator {
     val nameStr = name.value
 
     q"""
-      override def ${name} = {
-        entering(${trtNameStr}, ${nameStr})
+      override def $name = {
+        entering($trtNameStr, $nameStr)
         try {
-          val __query = new domala.jdbc.query.SqlScriptQuery(${sql})
-          __query.setMethod(${internalMethodName})
+          val __query = new domala.jdbc.query.SqlScriptQuery($sql)
+          __query.setMethod($internalMethodName)
           __query.setConfig(__config)
-          __query.setCallerClassName(${trtNameStr})
-          __query.setCallerMethodName(${nameStr})
+          __query.setCallerClassName($trtNameStr)
+          __query.setCallerMethodName($nameStr)
           __query.setBlockDelimiter("")
           __query.setHaltOnError(true)
           __query.setSqlLogType(org.seasar.doma.jdbc.SqlLogType.FORMATTED)
@@ -74,10 +74,10 @@ object DaoGenerator {
           val __command = new domala.jdbc.command.ScriptCommand(__query)
           __command.execute()
           __query.complete()
-          exiting(${trtNameStr}, ${nameStr}, null)
+          exiting($trtNameStr, $nameStr, null)
         } catch {
           case __e: java.lang.RuntimeException => {
-            throwing(${trtNameStr}, ${nameStr}, __e)
+            throwing($trtNameStr, $nameStr, __e)
             throw __e
           }
         }
@@ -90,25 +90,45 @@ object DaoGenerator {
     val trtNameStr = trtName.value
     val nameStr = name.value
 
-    // Todo: 戻りの型で判定分岐
-    val t"$containerTpe[$internalTpe]" = tpe
-    val internalTpeTerm = Term.Name(internalTpe.toString)
-    val (javaTpe, handler, result) = containerTpe match {
-      case t"Option" => (
-        t"java.util.Optional[$internalTpe]",
-        q"new org.seasar.doma.internal.jdbc.command.OptionalEntitySingleResultHandler($internalTpeTerm.getSingletonInternal())",
-        q"__command.execute().asScala"
+    // Todo: 戻りの型の対応を増やす
+    val  (javaTpe, handler, result, setEntity) = tpe match {
+      case t"$containerTpe[$internalTpe]" => {
+        val internalTpeTerm = Term.Name(internalTpe.toString)
+        containerTpe match {
+          case t"Option" => (
+            t"java.util.Optional[$internalTpe]",
+            q"new org.seasar.doma.internal.jdbc.command.OptionalEntitySingleResultHandler($internalTpeTerm.getSingletonInternal())",
+            q"__command.execute().asScala",
+            Seq(q"__query.setEntityType($internalTpeTerm.getSingletonInternal())")
+          )
+          case t"Seq" => (
+            t"java.util.List[$internalTpe]",
+            q"new org.seasar.doma.internal.jdbc.command.EntityResultListHandler($internalTpeTerm.getSingletonInternal())",
+            q"__command.execute().asScala",
+            Seq(q"__query.setEntityType($internalTpeTerm.getSingletonInternal())")
+          )
+        }
+      }
+      case t"Int" => (
+        t"Integer",
+        q"new org.seasar.doma.internal.jdbc.command.BasicSingleResultHandler[Integer](() => new org.seasar.doma.wrapper.IntegerWrapper, false)",
+        q"__command.execute()",
+        Nil
       )
-      case t"Seq" => (
-        t"java.util.List[$internalTpe]",
-        q"new org.seasar.doma.internal.jdbc.command.EntityResultListHandler($internalTpeTerm.getSingletonInternal())",
-        q"__command.execute().asScala"
-      )
+      case _ => { // Entity
+        val tpeTerm = Term.Name(tpe.toString)
+        (
+          tpe,
+          q"new org.seasar.doma.internal.jdbc.command.EntitySingleResultHandler($tpeTerm.getSingletonInternal())",
+          q"__command.execute()",
+          Seq(q"__query.setEntityType($tpeTerm.getSingletonInternal())")
+        )
+      }
     }
     val command =
       q"""
       getCommandImplementors().createSelectCommand(
-        ${internalMethodName},
+        $internalMethodName,
         __query,
         $handler
       )
@@ -123,16 +143,16 @@ object DaoGenerator {
     }
 
     q"""
-      override def ${name} = {
-        entering(${trtNameStr}, ${nameStr} ..$enteringParam)
+      override def $name = {
+        entering($trtNameStr, $nameStr ..$enteringParam)
         try {
-          val __query = new domala.jdbc.query.SqlSelectQuery(${sql})
-          __query.setMethod(${internalMethodName})
+          val __query = new domala.jdbc.query.SqlSelectQuery($sql)
+          __query.setMethod($internalMethodName)
           __query.setConfig(__config)
-          __query.setEntityType($internalTpeTerm.getSingletonInternal())
+          ..$setEntity
           ..$addParameterStats
-          __query.setCallerClassName(${trtNameStr})
-          __query.setCallerMethodName(${nameStr})
+          __query.setCallerClassName($trtNameStr)
+          __query.setCallerMethodName($nameStr)
           __query.setResultEnsured(false)
           __query.setResultMappingEnsured(false)
           __query.setFetchType(org.seasar.doma.FetchType.LAZY)
@@ -141,17 +161,17 @@ object DaoGenerator {
           __query.setFetchSize(-1)
           __query.setSqlLogType(org.seasar.doma.jdbc.SqlLogType.FORMATTED)
           __query.prepare()
-          val __command: org.seasar.doma.jdbc.command.SelectCommand[${javaTpe}] = $command
-          val __result: ${tpe} = $result
+          val __command: org.seasar.doma.jdbc.command.SelectCommand[$javaTpe] = $command
+          val __result: $tpe = $result
           __query.complete()
-          exiting(${trtNameStr}, ${nameStr}, __result)
+          exiting($trtNameStr, $nameStr, __result)
           __result
         } catch {
           case  __e: java.lang.RuntimeException => {
-            throwing(${trtNameStr}, ${nameStr}, __e)
+            throwing($trtNameStr, $nameStr, __e)
             throw __e
           }
-        }      
+        }
       }
     """
   }
@@ -167,21 +187,21 @@ object DaoGenerator {
         )
     }
     q"""
-    override def ${name} = {
-      entering(${trtNameStr}, ${nameStr}, $paramName)
+    override def $name = {
+      entering($trtNameStr, $nameStr, $paramName)
       try {
         if ($paramName == null) {
           throw new org.seasar.doma.DomaNullPointerException(${paramName.value})
         }
         val __query: org.seasar.doma.jdbc.query.AutoInsertQuery[$paramTpe] =
           getQueryImplementors.createAutoInsertQuery(
-            ${internalMethodName},
+            $internalMethodName,
             ${Term.Name(paramTpe.value)}.getSingletonInternal)
-        __query.setMethod(${internalMethodName})
+        __query.setMethod($internalMethodName)
         __query.setConfig(__config)
         __query.setEntity($paramName)
-        __query.setCallerClassName(${trtNameStr})
-        __query.setCallerMethodName(${nameStr})
+        __query.setCallerClassName($trtNameStr)
+        __query.setCallerMethodName($nameStr)
         __query.setQueryTimeout(-1)
         __query.setSqlLogType(org.seasar.doma.jdbc.SqlLogType.FORMATTED)
         __query.setNullExcluded(false)
@@ -189,17 +209,17 @@ object DaoGenerator {
         __query.setExcludedPropertyNames()
         __query.prepare()
         val __command: org.seasar.doma.jdbc.command.InsertCommand =
-          getCommandImplementors.createInsertCommand(${internalMethodName}, __query)
+          getCommandImplementors.createInsertCommand($internalMethodName, __query)
         val __count: Int = __command.execute()
         __query.complete()
         val __result =
           new org.seasar.doma.jdbc.Result[$paramTpe](__count,
                                                         __query.getEntity)
-        exiting(${trtNameStr}, ${nameStr}, __result)
+        exiting($trtNameStr, $nameStr, __result)
         __result
       } catch {
         case __e: java.lang.RuntimeException => {
-          throwing(${trtNameStr}, ${nameStr}, __e)
+          throwing($trtNameStr, $nameStr, __e)
           throw __e
         }
       }

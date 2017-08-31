@@ -1,6 +1,8 @@
 package domala.jdbc.command
 
 import java.io.IOException
+
+import domala.jdbc.query.SqlScriptQuery
 import org.seasar.doma.internal.util.AssertionUtil._
 import org.seasar.doma.internal.jdbc.command.ScriptTokenizer
 import org.seasar.doma.internal.jdbc.command.ScriptTokenType
@@ -8,8 +10,6 @@ import org.seasar.doma.internal.jdbc.command.ScriptTokenType._
 import org.seasar.doma.jdbc.ScriptBlockContext
 import org.seasar.doma.jdbc.JdbcException
 import org.seasar.doma.message.Message
-
-import domala.jdbc.query.SqlScriptQuery
 
 class ScriptReader(query: SqlScriptQuery) {
 

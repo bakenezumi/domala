@@ -35,7 +35,7 @@ object EmbeddableTypeGenerator {
     q"""
     class Internal private[$clsName] ()
     extends org.seasar.doma.jdbc.entity.EmbeddableType[$clsName] {
-      ..${methods}
+      ..$methods
     }
     """
   }
@@ -47,7 +47,7 @@ object EmbeddableTypeGenerator {
           val Term.Param(mods, name, Some(decltpe), default) = p
           val nameStr = name.value
           val tpe = Type.Name(decltpe.toString)
-          val (basicTpe, newWrapperExpr, domainTpe) = MacroUtil.convertType(tpe)
+          val (basicTpe, newWrapperExpr, domainTpe) = MacroUtil.convertType(decltpe)
 
           q"""
           new domala.jdbc.entity.DefaultPropertyType(
@@ -57,7 +57,7 @@ object EmbeddableTypeGenerator {
               $newWrapperExpr,
               null,
               null,
-              embeddedPropertyName + "." + ${nameStr},
+              embeddedPropertyName + "." + $nameStr,
               "",
               namingType,
               true,
@@ -79,8 +79,8 @@ object EmbeddableTypeGenerator {
           val tpe = Type.Name(decltpe.toString)
           val (basicTpe, newWrapperExpr, domainTpe) = MacroUtil.convertType(tpe)
           q"""
-          { if(__args.get(embeddedPropertyName + "." + ${nameStr}) != null )
-              __args.get(embeddedPropertyName + "." + ${nameStr}).get().asInstanceOf[$tpe]
+          { if(__args.get(embeddedPropertyName + "." + $nameStr) != null )
+              __args.get(embeddedPropertyName + "." + $nameStr).get().asInstanceOf[$tpe]
             else null }
           """
         }

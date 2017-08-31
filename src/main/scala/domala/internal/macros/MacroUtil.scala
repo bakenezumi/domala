@@ -10,23 +10,30 @@ object MacroUtil {
     "OptionalInt",
     "Optional[Integer]",
     "Option[Int]",
-    "String"
+    "String",
+    "Optional[String]",
+    "Option[String]"
+
   )
 
-  def isDomain(tpe: Type.Name) = {
-    !basicTypes.contains(tpe.value)
+  def isDomain(tpe: Type.Arg) = {
+    !basicTypes.contains(tpe.toString)
   }
 
   // TODO: 他の型対応
-  def convertType(tpe: Type.Name) = {
+  def convertType(tpe: Type.Arg) = {
     if (isDomain(tpe)) {
+      val domainTpe = tpe match {
+        case t"$containerTpe[$internalTpe]" => Term.Name(internalTpe.toString)
+        case _  => Term.Name(tpe.toString)
+      }
       (
-        q"${Term.Name(tpe.value)}.getSingletonInternal.getBasicClass()",
-        q"${Term.Name(tpe.value)}.wrapperSupplier",
-        q"${Term.Name(tpe.value)}.getSingletonInternal"
+        q"$domainTpe.getSingletonInternal.getBasicClass()",
+        q"$domainTpe.wrapperSupplier",
+        q"$domainTpe.getSingletonInternal"
       )
     } else {
-      tpe.value match {
+      tpe.toString match {
         case "Int" | "Integer" | "OptionalInt" | "Optional[Integer]" | "Option[Int]" => (
           q"classOf[Integer]",
           q"""
@@ -36,7 +43,7 @@ object MacroUtil {
           """,
           q"null"
         )
-        case "String" => (
+        case "String" | "Optional[String]"  | "Option[String]"=> (
           q"classOf[String]",
           q"""
           new java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[String]]() {

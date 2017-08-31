@@ -1,8 +1,8 @@
 package domala
 
-import scala.meta._
-
 import domala.internal.macros.EmbeddableTypeGenerator
+
+import scala.meta._
 
 class Embeddable extends scala.annotation.StaticAnnotation {
   inline def apply(defn: Any): Any = meta {

@@ -70,12 +70,15 @@ object EntityTypeGenerator {
   protected def makePropertyTypeFields(clsName: Type.Name, ctor: Ctor.Primary) = {
     ctor.paramss.flatten.map { p =>
       val Term.Param(mods, name, Some(decltpe), default) = p
-      val tpe = Type.Name(decltpe.toString)
+      val tpe = decltpe match {
+        case t"Option[Name]" => Type.Name("Option[_]")
+        case _ => Type.Name(decltpe.toString)
+      }
       val tpeTerm = Term.Name(decltpe.toString)
       val nameStr = name.value
       val propertyName = Pat.Var.Term(Term.Name("$" + name.value))
 
-      if (p contains(mod"@Embedded")) {
+      if (p contains mod"@Embedded") {
         q"""
         val $propertyName = new org.seasar.doma.jdbc.entity.EmbeddedPropertyType[
           $clsName,
@@ -89,9 +92,9 @@ object EntityTypeGenerator {
             __namingType))
         """        
       } else {
-        val (basicTpe, newWrapperExpr, domainTpe) = MacroUtil.convertType(tpe)
+        val (basicTpe, newWrapperExpr, domainTpe) = MacroUtil.convertType(decltpe)
 
-        if (p contains(mod"@Id")) {
+        if (p contains mod"@Id") {
           p.mods.collect{
             case mod"@GeneratedValue(strategy = GenerationType.$strategy)" => strategy
           }.headOption match {
@@ -170,18 +173,18 @@ object EntityTypeGenerator {
     val __list = new java.util.ArrayList[org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]]($propertySize)
     val __map = new java.util.HashMap[String, org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]]($propertySize)
     """.stats ++
-    ctor.paramss.flatten.map { p =>
+    ctor.paramss.flatten.flatMap { p =>
       val Term.Param(mods, name, Some(decltpe), default) = p
       val nameStr = name.value
       val propertyName = Term.Name("$" + name.value)
 
-      if (p contains(mod"@Embedded")) {
+      if (p contains mod"@Embedded") {
         Seq(
           q"__list.addAll($propertyName.getEmbeddablePropertyTypes)",
           q"__map.putAll($propertyName.getEmbeddablePropertyTypeMap)"
         )
       } else {
-        (if (p contains(mod"@Id")) {
+        (if (p contains mod"@Id") {
           Seq(q"__idList.add($propertyName)")
         } else Nil) ++
         Seq(
@@ -189,7 +192,7 @@ object EntityTypeGenerator {
           q"__map.put($nameStr, $propertyName)"
         )
       }
-    }.flatten ++
+    } ++
     q"""
     val __idPropertyTypes = java.util.Collections.unmodifiableList(__idList)
     val __entityPropertyTypes = java.util.Collections.unmodifiableList(__list)
@@ -326,7 +329,7 @@ object EntityTypeGenerator {
       val params = ctor.paramss.flatten.map { p =>
         val Term.Param(mods, name, Some(decltpe), default) = p
         val nameStr = name.value
-        if (p contains(mod"@Embedded")) {
+        if (p contains mod"@Embedded") {
           val tpe = Term.Name(decltpe.toString)
           q"""$tpe.getSingletonInternal.newEmbeddable[$clsName]($nameStr, __args)"""
         } else {

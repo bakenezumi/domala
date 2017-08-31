@@ -49,7 +49,7 @@ object DomainTypeGenerator {
       new java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$basicTpe]]() {
       def get = $wrapper
     }) {
-      ..${methods}
+      ..$methods
     }
     """
   }

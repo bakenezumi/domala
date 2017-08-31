@@ -20,11 +20,12 @@ lazy val root = (project in file(".")).settings(
     "org.scala-lang.modules" %% "scala-java8-compat" % "0.8.0",
     "org.scalameta" %% "scalameta" % "1.8.0",
     "org.scalameta" %% "contrib" % "1.8.0",
+    "com.h2database" % "h2" % "1.4.193" % Test,
     scalaTest % Test
   )
 )
 
-lazy val sample = (project in file("sample")).settings(
+lazy val sample = (project in file("domala")).settings(
   inThisBuild(List(
     scalaVersion := "2.12.2",
     version      := "0.1.0-SNAPSHOT"

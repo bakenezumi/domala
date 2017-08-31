@@ -1,4 +1,4 @@
-package sample
+package domala.Integration
 
 import domala._
 
