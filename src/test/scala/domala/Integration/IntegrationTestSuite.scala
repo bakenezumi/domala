@@ -116,7 +116,7 @@ class IntegrationTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("update from entity") {
+  test("update by entity") {
     Required {
       dao.update(
         Person(
@@ -134,6 +134,12 @@ class IntegrationTestSuite extends FunSuite with BeforeAndAfter {
             Address("bbb", "ccc"),
             Some(2),
             Some(1))))
+    }
+  }
+  test("delete by entity") {
+    Required {
+      dao.selectById(1).foreach(dao.delete)
+      assert(dao.selectCount() === 1)
     }
   }
 }

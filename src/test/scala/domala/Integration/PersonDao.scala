@@ -100,4 +100,6 @@ where
   @Update
   def update(person: Person): org.seasar.doma.jdbc.Result[Person]
 
+  @Delete
+  def delete(person: Person): org.seasar.doma.jdbc.Result[Person]
 }
