@@ -124,7 +124,7 @@ class IntegrationTestSuite extends FunSuite with BeforeAndAfter {
           name = Name("aaa"),
           age = Some(5),
           address = Address("bbb", "ccc"),
-          departmentId = Some(1),
+          departmentId = Some(2),
           version = Some(0)))
       assert(
         dao.selectById(1) === Some(
@@ -132,7 +132,7 @@ class IntegrationTestSuite extends FunSuite with BeforeAndAfter {
             Name("aaa"),
             Some(5),
             Address("bbb", "ccc"),
-            Some(1),
+            Some(2),
             Some(1))))
     }
   }

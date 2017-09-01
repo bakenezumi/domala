@@ -143,7 +143,7 @@ object EntityTypeGenerator {
             "",
             __namingType,
             true,
-            false,
+            true,
             false
           )
           """

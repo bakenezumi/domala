@@ -22,5 +22,4 @@ class Config(dataSource: DataSource, dialect: Dialect, naming: Naming = Naming.N
   override def getDialect: Dialect = dialect
   override def getTransactionManager: TransactionManager = transactionManager
   override def getNaming: Naming = naming
-
 }
