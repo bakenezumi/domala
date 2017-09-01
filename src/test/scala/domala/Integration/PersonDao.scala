@@ -96,4 +96,8 @@ where
 
   @Insert
   def insert(person: Person): org.seasar.doma.jdbc.Result[Person]
+
+  @Update
+  def update(person: Person): org.seasar.doma.jdbc.Result[Person]
+
 }

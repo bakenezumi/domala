@@ -115,7 +115,7 @@ object EntityTypeGenerator {
             // TODO:
             case _ => abort("not implementation now")
           }
-        } else if (p contains(mod"@Version")) {
+        } else if (p contains mod"@Version" ) {
           q"""
           val $propertyName = new domala.jdbc.entity.VersionPropertyType(
             classOf[$clsName],

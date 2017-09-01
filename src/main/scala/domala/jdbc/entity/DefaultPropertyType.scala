@@ -23,81 +23,97 @@ import org.seasar.doma.wrapper.Wrapper
 import domala.internal.jdbc.scalar.{OptionDomainBridgeScalar, OptionBasicScalar}
 
 class DefaultPropertyType[PARENT, ENTITY <: PARENT, BASIC, DOMAIN](
-  entityClass: Class[ENTITY],
-  entityPropertyClass: Class[_],
-  basicClassClass: Class[BASIC],
-  wrapperSupplier: Supplier[Wrapper[BASIC]],
-  parentEntityPropertyType: EntityPropertyType[PARENT, BASIC],
-  domainType: DomainType[BASIC, DOMAIN],
-  name: String,
-  columnName: String,
-  namingType: NamingType,
-  insertable: Boolean,
-  updatable: Boolean,
-  quoteRequired: Boolean
-) extends org.seasar.doma.jdbc.entity.DefaultPropertyType[PARENT, ENTITY, BASIC, DOMAIN](
-  entityClass,
-  entityPropertyClass,
-  basicClassClass,
-  wrapperSupplier,
-  parentEntityPropertyType,
-  domainType,
-  name,
-  columnName,
-  namingType,
-  insertable,
-  updatable,
-  quoteRequired
-) {
+    entityClass: Class[ENTITY],
+    entityPropertyClass: Class[_],
+    basicClassClass: Class[BASIC],
+    wrapperSupplier: Supplier[Wrapper[BASIC]],
+    parentEntityPropertyType: EntityPropertyType[PARENT, BASIC],
+    domainType: DomainType[BASIC, DOMAIN],
+    name: String,
+    columnName: String,
+    namingType: NamingType,
+    insertable: Boolean,
+    updatable: Boolean,
+    quoteRequired: Boolean
+) extends org.seasar.doma.jdbc.entity.DefaultPropertyType[PARENT,
+                                                            ENTITY,
+                                                            BASIC,
+                                                            DOMAIN](
+      entityClass,
+      entityPropertyClass,
+      basicClassClass,
+      wrapperSupplier,
+      parentEntityPropertyType,
+      domainType,
+      name,
+      columnName,
+      namingType,
+      insertable,
+      updatable,
+      quoteRequired
+    ) {
 
-  override def createProperty = DefaultPropertyType.createPropertySupplier[ENTITY, BASIC, DOMAIN](field, entityPropertyClass, wrapperSupplier, domainType)()
+  override def createProperty =
+    DefaultPropertyType.createPropertySupplier[ENTITY, BASIC, DOMAIN](
+      field,
+      entityPropertyClass,
+      wrapperSupplier,
+      domainType)()
 
 }
 
 object DefaultPropertyType {
   def createPropertySupplier[ENTITY, BASIC, DOMAIN](
-    field: PropertyField[ENTITY],
-    entityPropertyClass: Class[_],
-    wrapperSupplier: Supplier[Wrapper[BASIC]],
-    domainType: DomainType[BASIC, DOMAIN]
-  ) = {
+      field: PropertyField[ENTITY],
+      entityPropertyClass: Class[_],
+      wrapperSupplier: Supplier[Wrapper[BASIC]],
+      domainType: DomainType[BASIC, DOMAIN]
+  ) =
     if (domainType != null) {
-      if (entityPropertyClass == classOf[Optional[_]]) {
-        () => new DefaultProperty[Optional[DOMAIN], ENTITY, BASIC](field,
+      if (entityPropertyClass == classOf[Optional[_]]) { () =>
+        new DefaultProperty[Optional[DOMAIN], ENTITY, BASIC](
+          field,
           domainType.createOptionalScalar())
-      } else if (entityPropertyClass == classOf[Option[_]]) {
-        () => new DefaultProperty[Option[DOMAIN], ENTITY, BASIC](field,
-            new OptionDomainBridgeScalar(domainType.createOptionalScalar()))
-      } else {
-        () => new DefaultProperty[DOMAIN, ENTITY, BASIC](field,
-          domainType.createScalar())
+      } else if (entityPropertyClass == classOf[Option[_]]) { () =>
+        new DefaultProperty[Option[DOMAIN], ENTITY, BASIC](
+          field,
+          new OptionDomainBridgeScalar(domainType.createOptionalScalar()))
+      } else { () =>
+        new DefaultProperty[DOMAIN, ENTITY, BASIC](field,
+                                                   domainType.createScalar())
       }
-    } else if (entityPropertyClass == classOf[Optional[_]]) {
-      () => new DefaultProperty[Optional[BASIC], ENTITY, BASIC](field,
+    } else if (entityPropertyClass == classOf[Optional[_]]) { () =>
+      new DefaultProperty[Optional[BASIC], ENTITY, BASIC](
+        field,
         new OptionalBasicScalar(wrapperSupplier))
-    } else if (entityPropertyClass == classOf[OptionalInt]) {
-      () => new DefaultProperty[OptionalInt, ENTITY, BASIC](field,
+    } else if (entityPropertyClass == classOf[OptionalInt]) { () =>
+      new DefaultProperty[OptionalInt, ENTITY, BASIC](
+        field,
         new OptionalIntScalar().asInstanceOf[Scalar[BASIC, OptionalInt]])
-    } else if (entityPropertyClass == classOf[OptionalLong]) {
-      () => new DefaultProperty[OptionalLong, ENTITY, BASIC](field,
+    } else if (entityPropertyClass == classOf[OptionalLong]) { () =>
+      new DefaultProperty[OptionalLong, ENTITY, BASIC](
+        field,
         new OptionalLongScalar().asInstanceOf[Scalar[BASIC, OptionalLong]])
-    } else if (entityPropertyClass == classOf[OptionalDouble]) {
-      () => new DefaultProperty[OptionalDouble, ENTITY, BASIC](field,
+    } else if (entityPropertyClass == classOf[OptionalDouble]) { () =>
+      new DefaultProperty[OptionalDouble, ENTITY, BASIC](
+        field,
         new OptionalDoubleScalar().asInstanceOf[Scalar[BASIC, OptionalDouble]])
     } else if (entityPropertyClass == classOf[Option[_]]) { // for Scala
-      () => new DefaultProperty[Option[BASIC], ENTITY, BASIC](field,
-        new OptionBasicScalar(wrapperSupplier))
-    } else {
-      () => new DefaultProperty[BASIC, ENTITY, BASIC](field,
+      () =>
+        new DefaultProperty[Option[BASIC], ENTITY, BASIC](
+          field,
+          new OptionBasicScalar(wrapperSupplier))
+    } else { () =>
+      new DefaultProperty[BASIC, ENTITY, BASIC](
+        field,
         new BasicScalar(wrapperSupplier, field.isPrimitive()))
     }
-  }
 }
 
-class DefaultProperty[CONTAINER, ENTITY, BASIC] (
-  field: PropertyField[ENTITY],
-  scalar: Scalar[BASIC, CONTAINER])
-  extends Property[ENTITY, BASIC] {
+class DefaultProperty[CONTAINER, ENTITY, BASIC](
+    field: PropertyField[ENTITY],
+    scalar: Scalar[BASIC, CONTAINER])
+    extends Property[ENTITY, BASIC] {
 
   override def get(): Object = scalar.get.asInstanceOf[Object]
 
@@ -119,4 +135,4 @@ class DefaultProperty[CONTAINER, ENTITY, BASIC] (
 
   override def getDomainClass(): Optional[Class[_]] = scalar.getDomainClass
 
-  }  
+}

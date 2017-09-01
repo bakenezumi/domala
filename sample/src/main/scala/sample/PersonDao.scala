@@ -59,22 +59,6 @@ where
   """)
   def selectWithDepartmentById(id: Int): Option[PersonDepartment]
 
-  @Select(sql = """
-select
-    p.id,
-    p.name,
-    d.id as department_id,
-    d.name as department_name
-from
-    person p
-    inner join
-    department d
-    on (p.department_id = d.id)
-where
-    p.id = /*id*/0  
-  """)
-  def selectWithDepartmentById2(id: Int): Option[PersonDepartment2]
-
   @Insert
   def insert(person: Person): org.seasar.doma.jdbc.Result[Person]
 }

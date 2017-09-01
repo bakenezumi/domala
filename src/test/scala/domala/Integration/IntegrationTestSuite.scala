@@ -1,12 +1,13 @@
 package domala.Integration
 
 import org.scalatest._
+import domala.Config
 import domala.Required
 
 import scala.collection.mutable
 
 class IntegrationTestSuite extends FunSuite with BeforeAndAfter {
-  implicit val config = TestConfig
+  implicit val config: Config = TestConfig
 
   val dao: PersonDao = PersonDao
 
@@ -97,20 +98,42 @@ class IntegrationTestSuite extends FunSuite with BeforeAndAfter {
   test("insert from entity") {
     Required {
       dao.insert(
-        Person(name = Name("aaa"),
-               age = Some(5),
-               address = Address("bbb", "ccc"),
-               departmentId = Some(1)))
+        Person(
+          name = Name("aaa"),
+          age = Some(5),
+          address = Address("bbb", "ccc"),
+          departmentId = Some(1)))
       assert(dao.selectCount === 3)
       assert(
         dao.selectById(3) === Some(
-          Person(Some(3),
-                 Name("aaa"),
-                 Some(5),
-                 Address("bbb", "ccc"),
-                 Some(1),
-                 Some(1))))
+          Person(
+            Some(3),
+            Name("aaa"),
+            Some(5),
+            Address("bbb", "ccc"),
+            Some(1),
+            Some(1))))
     }
   }
 
+  test("update from entity") {
+    Required {
+      dao.update(
+        Person(
+          id = Some(1),
+          name = Name("aaa"),
+          age = Some(5),
+          address = Address("bbb", "ccc"),
+          departmentId = Some(1),
+          version = Some(0)))
+      assert(
+        dao.selectById(1) === Some(
+          Person(Some(1),
+            Name("aaa"),
+            Some(5),
+            Address("bbb", "ccc"),
+            Some(1),
+            Some(1))))
+    }
+  }
 }

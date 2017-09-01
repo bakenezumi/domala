@@ -1,9 +1,10 @@
 package sample
 
+import domala.Config
 import domala.Required
 
 object Sample extends App {
-  implicit val config = SampleConfig
+  implicit val config: Config = SampleConfig
 
   val dao: PersonDao = PersonDao
 
@@ -18,7 +19,6 @@ object Sample extends App {
     ))
     println(dao.selectAll())
     println(dao.selectWithDepartmentById(2))
-    println(dao.selectWithDepartmentById2(2))
   }
 
 }

@@ -5,14 +5,8 @@ import scala.meta._
 object MacroUtil {
   // TODO: 他の型対応
   private val basicTypes = Set(
-    "Int",
-    "Integer",
-    "Option[Int]",
-    "Optional[Integer]",
-    "OptionalInt",
-    "String",
-    "Option[String]",
-    "Optional[String]"
+    "Int", "Integer", "Option[Int]", "Optional[Integer]", "OptionalInt",
+    "String", "Option[String]", "Optional[String]"
   )
 
   def isDomain(tpe: Type.Arg) = {
@@ -33,22 +27,14 @@ object MacroUtil {
       )
     } else {
       tpe.toString match {
-        case "Int" | "Integer" | "OptionalInt" | "Optional[Integer]" | "Option[Int]" => (
+        case "Int" | "Integer"  | "Option[Int]" | "Optional[Integer]" | "OptionalInt" => (
           q"classOf[Integer]",
-          q"""
-          new java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[Integer]]() {
-            def get = new org.seasar.doma.wrapper.IntegerWrapper()
-          }
-          """,
+          q"() => new org.seasar.doma.wrapper.IntegerWrapper(): org.seasar.doma.wrapper.Wrapper[Integer]",
           q"null"
         )
-        case "String" | "Optional[String]"  | "Option[String]"=> (
+        case "String" | "Option[String]" | "Optional[String]" => (
           q"classOf[String]",
-          q"""
-          new java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[String]]() {
-            def get = new org.seasar.doma.wrapper.StringWrapper()
-          }
-          """,
+          q"() => new org.seasar.doma.wrapper.StringWrapper(): org.seasar.doma.wrapper.Wrapper[String]",
           q"null"
         )
       }

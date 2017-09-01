@@ -25,7 +25,7 @@ lazy val root = (project in file(".")).settings(
   )
 )
 
-lazy val sample = (project in file("domala")).settings(
+lazy val sample = (project in file("sample")).settings(
   inThisBuild(List(
     scalaVersion := "2.12.2",
     version      := "0.1.0-SNAPSHOT"
