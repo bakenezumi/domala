@@ -8,7 +8,7 @@ import org.seasar.doma.jdbc.Result
 class ValueTypeTestSuite  extends FunSuite with BeforeAndAfter {
   implicit val config: Config = TestConfig
 
-  val dao: ValueTypeTypeTestDao = ValueTypeTypeTestDao
+  val dao: ValueTypeTestDao = ValueTypeTestDao
 
   before {
     Required {
@@ -84,7 +84,7 @@ case class ValueTypeOption(
 
 
 @Dao(config = TestConfig)
-trait ValueTypeTypeTestDao {
+trait ValueTypeTestDao {
 
   @Script(sql =
     """

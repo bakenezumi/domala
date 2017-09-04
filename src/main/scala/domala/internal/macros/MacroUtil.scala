@@ -12,6 +12,7 @@ object MacroUtil {
     "Long", "Option[Long]", "Optional[Long]", "OptionalLong",
     "Float", "Option[Float]", "Optional[Float]",
     "Double", "Option[Double]", "Optional[Double]", "OptionalDouble",
+    "Array[Byte]", "Option[Array[Byte]]", "Optional[Array[Byte]]",
     "String", "Option[String]", "Optional[String]"
   )
 
@@ -66,6 +67,11 @@ object MacroUtil {
         case t"Double"  | t"Option[Double]" | t"Optional[Double]" | t"OptionalDouble" => (
           q"classOf[java.lang.Double]",
           q"() => new org.seasar.doma.wrapper.DoubleWrapper(): org.seasar.doma.wrapper.Wrapper[java.lang.Double]",
+          q"null"
+        )
+        case t"Array[Byte]" | t"Option[Array[Byte]]" | t"Optional[Array[Byte]]" => (
+          q"classOf[Array[Byte]]",
+          q"() => (new org.seasar.doma.wrapper.BytesWrapper()):(org.seasar.doma.wrapper.Wrapper[Array[Byte]])",
           q"null"
         )
         case t"String" | t"Option[String]" | t"Optional[String]" => (
