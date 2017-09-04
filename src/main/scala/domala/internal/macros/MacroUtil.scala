@@ -6,6 +6,7 @@ object MacroUtil {
   // TODO: 他の型対応
   private val basicTypes = Set[String](
     "Boolean", "Option[Boolean]", "Optional[Boolean]",
+    "Byte", "Option[Byte]", "Optional[Byte]",
     "Short", "Option[Short]", "Optional[Short]",
     "Int", "Integer", "Option[Int]", "Optional[Integer]", "OptionalInt",
     "Long", "Option[Long]", "Optional[Long]", "OptionalLong",
@@ -35,6 +36,11 @@ object MacroUtil {
         case t"Boolean" | t"Option[Boolean]" | t"Optional[Boolean]" => (
           q"classOf[java.lang.Boolean]",
           q"() => new org.seasar.doma.wrapper.BooleanWrapper(): org.seasar.doma.wrapper.Wrapper[java.lang.Boolean]",
+          q"null"
+        )
+        case t"Byte" | t"Option[Byte]" | t"Optional[Byte]" => (
+          q"classOf[java.lang.Byte]",
+          q"() => new org.seasar.doma.wrapper.ByteWrapper(): org.seasar.doma.wrapper.Wrapper[java.lang.Byte]",
           q"null"
         )
         case t"Short" | t"Option[Short]" | t"Optional[Short]" => (
