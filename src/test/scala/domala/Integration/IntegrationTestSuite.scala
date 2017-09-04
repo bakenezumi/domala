@@ -136,6 +136,7 @@ class IntegrationTestSuite extends FunSuite with BeforeAndAfter {
             Some(1))))
     }
   }
+
   test("delete by entity") {
     Required {
       dao.selectById(1).foreach(dao.delete)
