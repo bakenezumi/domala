@@ -3,7 +3,6 @@ package domala.internal.macros
 import scala.meta._
 
 object MacroUtil {
-  // TODO: 他の型対応
   private val basicTypes = Set[String](
     "Boolean", "Option[Boolean]", "Optional[Boolean]",
     "Byte", "Option[Byte]", "Optional[Byte]",
@@ -26,14 +25,14 @@ object MacroUtil {
     "Time", "java.sql.Time",  "Option[Time]",  "Option[java.sql.Time]",  "Optional[java.sql.Time]",
     "Timestamp", "java.sql.Timestamp",  "Option[Timestamp]",  "Option[java.sql.Timestamp]",  "Optional[java.sql.Timestamp]",
     "Blob", "java.sql.Blob",  "Option[Blob]",  "Option[java.sql.Blob]",  "Optional[java.sql.Blob]",
-    "Clob", "java.sql.Clob",  "Option[Clob]",  "Option[java.sql.Clob]",  "Optional[java.sql.Clob]"
+    "Clob", "java.sql.Clob",  "Option[Clob]",  "Option[java.sql.Clob]",  "Optional[java.sql.Clob]",
+    "SQLXML", "java.sql.SQLXML",  "Option[SQLXML]",  "Option[java.sql.SQLXML]",  "Optional[java.sql.SQLXML]"
   )
 
   def isDomain(tpe: Type.Arg) = {
     !basicTypes.contains(tpe.toString)
   }
 
-  // TODO: 他の型対応
   def convertType(tpe: Type.Arg): (Term, Term, Term) = {
     if (isDomain(tpe)) {
       val domainTpe = tpe match {
@@ -155,6 +154,11 @@ object MacroUtil {
         case t"Clob" | t"java.sql.Clob" | t"Option[Clob]" | t"Option[java.sql.Clob]" | t"Optional[java.sql.Clob]" => (
           q"classOf[java.sql.Clob]",
           q"() => new org.seasar.doma.wrapper.ClobWrapper(): org.seasar.doma.wrapper.Wrapper[java.sql.Clob]",
+          q"null"
+        )
+        case t"SQLXML" | t"java.sql.SQLXML" | t"Option[SQLXML]" | t"Option[java.sql.SQLXML]" | t"Optional[java.sql.SQLXML]" => (
+          q"classOf[java.sql.SQLXML]",
+          q"() => new org.seasar.doma.wrapper.SQLXMLWrapper(): org.seasar.doma.wrapper.Wrapper[java.sql.SQLXML]",
           q"null"
         )
       }
