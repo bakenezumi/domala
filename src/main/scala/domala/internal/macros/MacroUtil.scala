@@ -24,7 +24,9 @@ object MacroUtil {
     "LocalDateTime", "java.time.LocalDateTime",  "Option[LocalDateTime]",  "Option[java.time.LocalDateTime]",  "Optional[java.time.LocalDateTime]",
     "Date", "java.sql.Date",  "Option[Date]",  "Option[java.sql.Date]",  "Optional[java.sql.Date]",
     "Time", "java.sql.Time",  "Option[Time]",  "Option[java.sql.Time]",  "Optional[java.sql.Time]",
-    "Timestamp", "java.sql.Timestamp",  "Option[Timestamp]",  "Option[java.sql.Timestamp]",  "Optional[java.sql.Timestamp]"
+    "Timestamp", "java.sql.Timestamp",  "Option[Timestamp]",  "Option[java.sql.Timestamp]",  "Optional[java.sql.Timestamp]",
+    "Blob", "java.sql.Blob",  "Option[Blob]",  "Option[java.sql.Blob]",  "Optional[java.sql.Blob]",
+    "Clob", "java.sql.Clob",  "Option[Clob]",  "Option[java.sql.Clob]",  "Optional[java.sql.Clob]"
   )
 
   def isDomain(tpe: Type.Arg) = {
@@ -139,7 +141,18 @@ object MacroUtil {
           q"classOf[java.sql.Timestamp]",
           q"() => new org.seasar.doma.wrapper.TimestampWrapper(): org.seasar.doma.wrapper.Wrapper[java.sql.Timestamp]",
           q"null"
-        )      }
+        )
+        case t"Blob" | t"java.sql.Blob" | t"Option[Blob]" | t"Option[java.sql.Blob]" | t"Optional[java.sql.Blob]" => (
+          q"classOf[java.sql.Blob]",
+          q"() => new org.seasar.doma.wrapper.BlobWrapper(): org.seasar.doma.wrapper.Wrapper[java.sql.Blob]",
+          q"null"
+        )
+        case t"Clob" | t"java.sql.Clob" | t"Option[Clob]" | t"Option[java.sql.Clob]" | t"Optional[java.sql.Clob]" => (
+          q"classOf[java.sql.Clob]",
+          q"() => new org.seasar.doma.wrapper.ClobWrapper(): org.seasar.doma.wrapper.Wrapper[java.sql.Clob]",
+          q"null"
+        )
+      }
     }
   }
 }
