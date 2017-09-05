@@ -18,7 +18,10 @@ object MacroUtil {
     "BigDecimal", "Option[BigDecimal]", "Optional[BigDecimal]",
     "java.math.BigDecimal", "Option[java.math.BigDecimal]", "Optional[java.math.BigDecimal]",
     "BigInt", "Option[BigInt]", "Optional[BigInt]",
-    "java.math.BigInteger", "Option[java.math.BigInteger]", "Optional[java.math.BigInteger]", "BigInteger", "Option[BigInteger]", "Optional[[BigInteger]"
+    "java.math.BigInteger", "Option[java.math.BigInteger]", "Optional[java.math.BigInteger]", "BigInteger", "Option[BigInteger]", "Optional[[BigInteger]",
+    "LocalDate", "java.time.LocalDate",  "Option[LocalDate]",  "Option[java.time.LocalDate]",  "Optional[java.time.LocalDate]",
+    "LocalTime", "java.time.LocalTime",  "Option[LocalTime]",  "Option[java.time.LocalTime]",  "Optional[java.time.LocalTime]",
+    "LocalDateTime", "java.time.LocalDateTime",  "Option[LocalDateTime]",  "Option[java.time.LocalDateTime]",  "Optional[java.time.LocalDateTime]"
   )
 
   def isDomain(tpe: Type.Arg) = {
@@ -102,6 +105,21 @@ object MacroUtil {
         case t"BigInteger"  | t"Option[BigInteger]" | t"Optional[BigInteger]" | t"java.math.BigInteger"  | t"Option[java.math.BigInteger]" | t"Optional[java.math.BigInteger]" => (
           q"classOf[java.math.BigInteger]",
           q"() => new org.seasar.doma.wrapper.BigIntegerWrapper(): org.seasar.doma.wrapper.Wrapper[java.math.BigInteger]",
+          q"null"
+        )
+        case t"LocalDate" | t"java.time.LocalDate" | t"Option[LocalDate]" | t"Option[java.time.LocalDate]" | t"Optional[java.time.LocalDate]" => (
+          q"classOf[java.time.LocalDate]",
+          q"() => new org.seasar.doma.wrapper.LocalDateWrapper(): org.seasar.doma.wrapper.Wrapper[java.time.LocalDate]",
+          q"null"
+        )
+        case t"LocalTime" | t"java.time.LocalTime" | t"Option[LocalTime]" | t"Option[java.time.LocalTime]" | t"Optional[java.time.LocalTime]" => (
+          q"classOf[java.time.LocalTime]",
+          q"() => new org.seasar.doma.wrapper.LocalTimeWrapper(): org.seasar.doma.wrapper.Wrapper[java.time.LocalTime]",
+          q"null"
+        )
+        case t"LocalDateTime" | t"java.time.LocalDateTime" | t"Option[LocalDateTime]" | t"Option[java.time.LocalDateTime]" | t"Optional[java.time.LocalDateTime]" => (
+          q"classOf[java.time.LocalDateTime]",
+          q"() => new org.seasar.doma.wrapper.LocalDateTimeWrapper(): org.seasar.doma.wrapper.Wrapper[java.time.LocalDateTime]",
           q"null"
         )
       }
