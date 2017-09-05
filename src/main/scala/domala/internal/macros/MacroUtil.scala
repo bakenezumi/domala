@@ -14,7 +14,7 @@ object MacroUtil {
     "Double", "Option[Double]", "Optional[Double]", "OptionalDouble",
     "Array[Byte]", "Option[Array[Byte]]", "Optional[Array[Byte]]",
     "String", "Option[String]", "Optional[String]",
-    // "Object",
+    "Object", "AnyRef", "Option[Object]", "Option[AnyRef]", "Optional[Object]", "Optional[AnyRef]",
     "BigDecimal", "Option[BigDecimal]", "Optional[BigDecimal]",
     "java.math.BigDecimal", "Option[java.math.BigDecimal]", "Optional[java.math.BigDecimal]",
     "BigInt", "Option[BigInt]", "Optional[BigInt]",
@@ -90,6 +90,11 @@ object MacroUtil {
         case t"String" | t"Option[String]" | t"Optional[String]" => (
           q"classOf[String]",
           q"() => new org.seasar.doma.wrapper.StringWrapper(): org.seasar.doma.wrapper.Wrapper[String]",
+          q"null"
+        )
+        case t"Object" | t"Option[Object]" | t"Optional[Object]" | t"AnyRef" | t"Option[AnyRef]" | t"Optional[AnyRef]" => (
+          q"classOf[Object]",
+          q"() => new org.seasar.doma.wrapper.ObjectWrapper(): org.seasar.doma.wrapper.Wrapper[Object]",
           q"null"
         )
         case t"BigDecimal" | t"Option[BigDecimal]" | t"Optional[BigDecimal]" => (
