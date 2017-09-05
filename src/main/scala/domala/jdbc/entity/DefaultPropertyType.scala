@@ -112,7 +112,7 @@ object DefaultPropertyType {
 
 class DefaultProperty[CONTAINER, ENTITY, BASIC](
     field: PropertyField[ENTITY],
-    scalar: Scalar[BASIC, CONTAINER])
+    private val scalar: Scalar[BASIC, CONTAINER])
     extends Property[ENTITY, BASIC] {
 
   override def get(): Object = scalar.get.asInstanceOf[Object]
