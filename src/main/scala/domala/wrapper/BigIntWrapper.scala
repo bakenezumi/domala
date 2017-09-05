@@ -14,7 +14,7 @@ class BigIntWrapper(var value: BigInt = null) extends Wrapper[BigInt] with Numbe
       case jbd: java.math.BigDecimal => this.value = BigInt(jbd.toBigInteger)
       case bi: BigInt => this.value = bi
       case jbi: BigInteger => this.value = BigInt(jbi)
-      case _ => this.value = BigInt(v.intValue())
+      case _ => this.value = BigInt(v.longValue())
     }
   }
 

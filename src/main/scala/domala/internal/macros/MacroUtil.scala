@@ -21,7 +21,10 @@ object MacroUtil {
     "java.math.BigInteger", "Option[java.math.BigInteger]", "Optional[java.math.BigInteger]", "BigInteger", "Option[BigInteger]", "Optional[[BigInteger]",
     "LocalDate", "java.time.LocalDate",  "Option[LocalDate]",  "Option[java.time.LocalDate]",  "Optional[java.time.LocalDate]",
     "LocalTime", "java.time.LocalTime",  "Option[LocalTime]",  "Option[java.time.LocalTime]",  "Optional[java.time.LocalTime]",
-    "LocalDateTime", "java.time.LocalDateTime",  "Option[LocalDateTime]",  "Option[java.time.LocalDateTime]",  "Optional[java.time.LocalDateTime]"
+    "LocalDateTime", "java.time.LocalDateTime",  "Option[LocalDateTime]",  "Option[java.time.LocalDateTime]",  "Optional[java.time.LocalDateTime]",
+    "Date", "java.sql.Date",  "Option[Date]",  "Option[java.sql.Date]",  "Optional[java.sql.Date]",
+    "Time", "java.sql.Time",  "Option[Time]",  "Option[java.sql.Time]",  "Optional[java.sql.Time]",
+    "Timestamp", "java.sql.Timestamp",  "Option[Timestamp]",  "Option[java.sql.Timestamp]",  "Optional[java.sql.Timestamp]"
   )
 
   def isDomain(tpe: Type.Arg) = {
@@ -122,7 +125,21 @@ object MacroUtil {
           q"() => new org.seasar.doma.wrapper.LocalDateTimeWrapper(): org.seasar.doma.wrapper.Wrapper[java.time.LocalDateTime]",
           q"null"
         )
-      }
+        case t"Date" | t"java.sql.Date" | t"Option[Date]" | t"Option[java.sql.Date]" | t"Optional[java.sql.Date]" => (
+          q"classOf[java.sql.Date]",
+          q"() => new org.seasar.doma.wrapper.DateWrapper(): org.seasar.doma.wrapper.Wrapper[java.sql.Date]",
+          q"null"
+        )
+        case t"Time" | t"java.sql.Time" | t"Option[Time]" | t"Option[java.sql.Time]" | t"Optional[java.sql.Time]" => (
+          q"classOf[java.sql.Time]",
+          q"() => new org.seasar.doma.wrapper.TimeWrapper(): org.seasar.doma.wrapper.Wrapper[java.sql.Time]",
+          q"null"
+        )
+        case t"Timestamp" | t"java.sql.Timestamp" | t"Option[Timestamp]" | t"Option[java.sql.Timestamp]" | t"Optional[java.sql.Timestamp]" => (
+          q"classOf[java.sql.Timestamp]",
+          q"() => new org.seasar.doma.wrapper.TimestampWrapper(): org.seasar.doma.wrapper.Wrapper[java.sql.Timestamp]",
+          q"null"
+        )      }
     }
   }
 }

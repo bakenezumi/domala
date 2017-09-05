@@ -24,13 +24,13 @@ class JavaDateTestSuite  extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("select BigDecimal") {
+  test("select Java Date") {
     Required {
       assert(dao.select(0) === JavaDateEntity(0, null, None, null, None, null, None))
     }
   }
 
-  test("insert BigDecimal") {
+  test("insert Java Date") {
     Required {
       val entity = JavaDateEntity(
         1,

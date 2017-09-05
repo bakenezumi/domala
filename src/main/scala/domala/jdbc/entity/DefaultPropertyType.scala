@@ -35,23 +35,24 @@ class DefaultPropertyType[PARENT, ENTITY <: PARENT, BASIC, DOMAIN](
     insertable: Boolean,
     updatable: Boolean,
     quoteRequired: Boolean
-) extends org.seasar.doma.jdbc.entity.DefaultPropertyType[PARENT,
-                                                            ENTITY,
-                                                            BASIC,
-                                                            DOMAIN](
-      entityClass,
-      entityPropertyClass,
-      basicClassClass,
-      wrapperSupplier,
-      parentEntityPropertyType,
-      domainType,
-      name,
-      columnName,
-      namingType,
-      insertable,
-      updatable,
-      quoteRequired
-    ) {
+) extends org.seasar.doma.jdbc.entity.DefaultPropertyType[
+  PARENT,
+  ENTITY,
+  BASIC,
+  DOMAIN](
+  entityClass,
+  entityPropertyClass,
+  basicClassClass,
+  wrapperSupplier,
+  parentEntityPropertyType,
+  domainType,
+  name,
+  columnName,
+  namingType,
+  insertable,
+  updatable,
+  quoteRequired
+) {
 
   override def createProperty =
     DefaultPropertyType.createPropertySupplier[ENTITY, BASIC, DOMAIN](
@@ -69,45 +70,45 @@ object DefaultPropertyType {
       wrapperSupplier: Supplier[Wrapper[BASIC]],
       domainType: DomainType[BASIC, DOMAIN]
   ) =
-    if (domainType != null) {
-      if (entityPropertyClass == classOf[Optional[_]]) { () =>
-        new DefaultProperty[Optional[DOMAIN], ENTITY, BASIC](
-          field,
-          domainType.createOptionalScalar())
-      } else if (entityPropertyClass == classOf[Option[_]]) { () =>
-        new DefaultProperty[Option[DOMAIN], ENTITY, BASIC](
-          field,
-          new OptionDomainBridgeScalar(domainType.createOptionalScalar()))
-      } else { () =>
-        new DefaultProperty[DOMAIN, ENTITY, BASIC](field,
-                                                   domainType.createScalar())
-      }
-    } else if (entityPropertyClass == classOf[Optional[_]]) { () =>
-      new DefaultProperty[Optional[BASIC], ENTITY, BASIC](
+  if (domainType != null) {
+    if (entityPropertyClass == classOf[Optional[_]]) { () =>
+      new DefaultProperty[Optional[DOMAIN], ENTITY, BASIC](
         field,
-        new OptionalBasicScalar(wrapperSupplier))
-    } else if (entityPropertyClass == classOf[OptionalInt]) { () =>
-      new DefaultProperty[OptionalInt, ENTITY, BASIC](
+        domainType.createOptionalScalar())
+    } else if (entityPropertyClass == classOf[Option[_]]) { () =>
+      new DefaultProperty[Option[DOMAIN], ENTITY, BASIC](
         field,
-        new OptionalIntScalar().asInstanceOf[Scalar[BASIC, OptionalInt]])
-    } else if (entityPropertyClass == classOf[OptionalLong]) { () =>
-      new DefaultProperty[OptionalLong, ENTITY, BASIC](
-        field,
-        new OptionalLongScalar().asInstanceOf[Scalar[BASIC, OptionalLong]])
-    } else if (entityPropertyClass == classOf[OptionalDouble]) { () =>
-      new DefaultProperty[OptionalDouble, ENTITY, BASIC](
-        field,
-        new OptionalDoubleScalar().asInstanceOf[Scalar[BASIC, OptionalDouble]])
-    } else if (entityPropertyClass == classOf[Option[_]]) { // for Scala
-      () =>
-        new DefaultProperty[Option[BASIC], ENTITY, BASIC](
-          field,
-          new OptionBasicScalar(wrapperSupplier))
+        new OptionDomainBridgeScalar(domainType.createOptionalScalar()))
     } else { () =>
-      new DefaultProperty[BASIC, ENTITY, BASIC](
-        field,
-        new BasicScalar(wrapperSupplier, field.isPrimitive()))
+      new DefaultProperty[DOMAIN, ENTITY, BASIC](field,
+        domainType.createScalar())
     }
+  } else if (entityPropertyClass == classOf[Optional[_]]) { () =>
+    new DefaultProperty[Optional[BASIC], ENTITY, BASIC](
+      field,
+      new OptionalBasicScalar(wrapperSupplier))
+  } else if (entityPropertyClass == classOf[OptionalInt]) { () =>
+    new DefaultProperty[OptionalInt, ENTITY, BASIC](
+      field,
+      new OptionalIntScalar().asInstanceOf[Scalar[BASIC, OptionalInt]])
+  } else if (entityPropertyClass == classOf[OptionalLong]) { () =>
+    new DefaultProperty[OptionalLong, ENTITY, BASIC](
+      field,
+      new OptionalLongScalar().asInstanceOf[Scalar[BASIC, OptionalLong]])
+  } else if (entityPropertyClass == classOf[OptionalDouble]) { () =>
+    new DefaultProperty[OptionalDouble, ENTITY, BASIC](
+      field,
+      new OptionalDoubleScalar().asInstanceOf[Scalar[BASIC, OptionalDouble]])
+  } else if (entityPropertyClass == classOf[Option[_]]) { // for Scala
+    () =>
+      new DefaultProperty[Option[BASIC], ENTITY, BASIC](
+        field,
+        new OptionBasicScalar(wrapperSupplier))
+  } else { () =>
+    new DefaultProperty[BASIC, ENTITY, BASIC](
+      field,
+      new BasicScalar(wrapperSupplier, field.isPrimitive()))
+  }
 }
 
 class DefaultProperty[CONTAINER, ENTITY, BASIC](
