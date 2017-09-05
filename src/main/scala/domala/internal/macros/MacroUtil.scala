@@ -16,7 +16,9 @@ object MacroUtil {
     "String", "Option[String]", "Optional[String]",
     // "Object",
     "BigDecimal", "Option[BigDecimal]", "Optional[BigDecimal]",
-    "java.math.BigDecimal", "Option[java.math.BigDecimal]", "Optional[java.math.BigDecimal]"
+    "java.math.BigDecimal", "Option[java.math.BigDecimal]", "Optional[java.math.BigDecimal]",
+    "BigInt", "Option[BigInt]", "Optional[BigInt]",
+    "java.math.BigInteger", "Option[java.math.BigInteger]", "Optional[java.math.BigInteger]", "BigInteger", "Option[BigInteger]", "Optional[[BigInteger]"
   )
 
   def isDomain(tpe: Type.Arg) = {
@@ -87,9 +89,19 @@ object MacroUtil {
           q"() => new domala.wrapper.BigDecimalWrapper(): org.seasar.doma.wrapper.Wrapper[BigDecimal]",
           q"null"
         )
-        case t"java.math.BigDecimal"  | t"Option[java.math.BigDecimal]" | t"Optional[java.math.BigDecimal]"=> (
+        case t"java.math.BigDecimal"  | t"Option[java.math.BigDecimal]" | t"Optional[java.math.BigDecimal]" => (
           q"classOf[java.math.BigDecimal]",
           q"() => new org.seasar.doma.wrapper.BigDecimalWrapper(): org.seasar.doma.wrapper.Wrapper[java.math.BigDecimal]",
+          q"null"
+        )
+        case t"BigInt" | t"Option[BigInt]" | t"Optional[BigInt]" => (
+          q"classOf[BigInt]",
+          q"() => new domala.wrapper.BigIntWrapper(): org.seasar.doma.wrapper.Wrapper[BigInt]",
+          q"null"
+        )
+        case t"BigInteger"  | t"Option[BigInteger]" | t"Optional[BigInteger]" | t"java.math.BigInteger"  | t"Option[java.math.BigInteger]" | t"Optional[java.math.BigInteger]" => (
+          q"classOf[java.math.BigInteger]",
+          q"() => new org.seasar.doma.wrapper.BigIntegerWrapper(): org.seasar.doma.wrapper.Wrapper[java.math.BigInteger]",
           q"null"
         )
       }

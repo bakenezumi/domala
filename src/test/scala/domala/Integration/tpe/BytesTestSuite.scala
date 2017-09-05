@@ -46,8 +46,6 @@ case class Bytes(
   option : Option[Array[Byte]],
 )
 
-
-
 @Dao(config = TestConfig)
 trait BytesDao {
 
@@ -70,14 +68,13 @@ drop table bytes;
   def drop()
 
   @Select(sql=
-"""
+    """
 select * from bytes where id = /* id */0
-"""
+    """
   )
   def select(id: Int): Bytes
 
   @Insert
   def insert(entity: Bytes): Result[Bytes]
-
 }
 

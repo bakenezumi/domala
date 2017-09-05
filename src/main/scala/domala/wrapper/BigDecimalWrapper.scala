@@ -8,11 +8,11 @@ class BigDecimalWrapper(var value: BigDecimal = null) extends Wrapper[BigDecimal
 
   override def set(v: Number) = {
     v match {
-      case bd: BigDecimal => value = bd.bigDecimal
-      case jbd: java.math.BigDecimal => this.value = jbd
-      case bi:BigInt => this.value = new java.math.BigDecimal(bi.bigInteger)
-      case jbi:java.math.BigInteger => this.value = new java.math.BigDecimal(jbi)
-      case _ => this.value = new java.math.BigDecimal(v.doubleValue())
+      case bd: BigDecimal => value = bd
+      case jbd: java.math.BigDecimal => this.value = BigDecimal(jbd)
+      case bi: BigInt => this.value = BigDecimal(bi)
+      case jbi: java.math.BigInteger => this.value = BigDecimal(jbi)
+      case _ => this.value = BigDecimal(v.doubleValue())
     }
   }
 
@@ -39,8 +39,7 @@ class BigDecimalWrapper(var value: BigDecimal = null) extends Wrapper[BigDecimal
   override def accept[R, P, Q, TH <: Throwable](visitor: WrapperVisitor[R, P, Q, TH], p: P, q: Q) = {
     if (visitor == null) throw new DomaNullPointerException("visitor")
     else  visitor.visitBigDecimalWrapper(
-      new JavaBigDecimalWrapper(this, if(value == null) null else value.bigDecimal)
-      , p, q)
+      new JavaBigDecimalWrapper(this, if(value == null) null else value.bigDecimal), p, q)
   }
 }
 
@@ -68,5 +67,4 @@ private class JavaBigDecimalWrapper(originalWrapper: BigDecimalWrapper, value: j
     super.set(basic)
     originalWrapper.set(basic)
   }
-
 }
