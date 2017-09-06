@@ -94,6 +94,20 @@ where
   """)
   def selectWithDepartmentById2(id: Int): Option[PersonDepartment2]
 
+  @Select(sql = """
+select *
+from person
+  """, strategy = SelectType.STREAM)
+  def selectAllStream(f: Stream[Person] => Int): Int
+
+  @Select(sql = """
+select *
+from person
+where
+    id = /*id*/0
+  """, strategy = SelectType.STREAM)
+  def selectByIdStream(id: Int)(f: Stream[Person] => Address): Address
+
   @Insert
   def insert(person: Person): org.seasar.doma.jdbc.Result[Person]
 

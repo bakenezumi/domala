@@ -95,6 +95,22 @@ class IntegrationTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  test("stream select no param") {
+    Required {
+      assert(dao.selectAllStream { stream =>
+        stream.length
+      } == 2)
+    }
+  }
+
+  test("stream select with one param") {
+    Required {
+      assert(dao.selectByIdStream(1) { stream =>
+        stream.head.address
+      } == Address("Tokyo", "Yaesu"))
+    }
+  }
+
   test("insert from entity") {
     Required {
       dao.insert(
