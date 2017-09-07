@@ -1,4 +1,4 @@
-package domala.Integration.tpe
+package domala.Integration.entity
 
 import java.time.{LocalDate, LocalDateTime, LocalTime}
 

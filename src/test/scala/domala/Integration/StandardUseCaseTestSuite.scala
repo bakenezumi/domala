@@ -131,6 +131,14 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  test("stream map select") {
+    Required {
+      assert(dao.selectAllStreamMap { stream =>
+        stream.length
+      } == 2)
+    }
+  }
+
   test("insert from entity") {
     Required {
       dao.insert(

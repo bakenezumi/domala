@@ -9,7 +9,7 @@ import org.scalameta.logger
  * @see [[https://github.com/domaframework/doma/blob/master/src/main/java/org/seasar/doma/internal/apt/EmbeddableTypeGenerator.java]]
  */
 object EmbeddableTypeGenerator {
-  def generate(cls: Defn.Class) = {
+  def generate(cls: Defn.Class): Term.Block = {
     val internalClass = makeInternalClass(cls.name, cls.ctor)
 
     val obj = q"""
@@ -29,7 +29,7 @@ object EmbeddableTypeGenerator {
     ))
   }
 
-  protected def makeInternalClass(clsName: Type.Name, ctor: Ctor.Primary) = {
+  protected def makeInternalClass(clsName: Type.Name, ctor: Ctor.Primary): Defn.Class = {
     val methods = makeMethods(clsName, ctor)
     
     q"""
@@ -40,14 +40,14 @@ object EmbeddableTypeGenerator {
     """
   }
 
-  protected def makeMethods(clsName: Type.Name, ctor: Ctor.Primary) = {
+  protected def makeMethods(clsName: Type.Name, ctor: Ctor.Primary): Seq[Defn.Def] = {
     Seq(
       {
         val params = ctor.paramss.flatten.map { p =>
           val Term.Param(mods, name, Some(decltpe), default) = p
           val nameStr = name.value
           val tpe = Type.Name(decltpe.toString)
-          val (basicTpe, newWrapperExpr, domainTpe) = MacroUtil.convertType(decltpe)
+          val (basicTpe, newWrapperExpr, domainTpe) = MacroUtil.convertPropertyType(decltpe)
 
           q"""
           new domala.jdbc.entity.DefaultPropertyType(
@@ -77,7 +77,7 @@ object EmbeddableTypeGenerator {
           val Term.Param(mods, name, Some(decltpe), default) = p
           val nameStr = name.value
           val tpe = Type.Name(decltpe.toString)
-          val (basicTpe, newWrapperExpr, domainTpe) = MacroUtil.convertType(tpe)
+          val (basicTpe, newWrapperExpr, domainTpe) = MacroUtil.convertPropertyType(tpe)
           q"""
           { (if(__args.get(embeddedPropertyName + "." + $nameStr) != null )
               __args.get(embeddedPropertyName + "." + $nameStr)

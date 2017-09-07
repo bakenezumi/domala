@@ -122,6 +122,12 @@ where
   """)
   def selectByIdMap(id: Int): Map[String, Any]
 
+  @Select(sql = """
+select *
+from person
+  """, strategy = SelectType.STREAM)
+  def selectAllStreamMap(f: Stream[Map[String, Any]] => Int): Int
+
   @Insert
   def insert(person: Person): org.seasar.doma.jdbc.Result[Person]
 

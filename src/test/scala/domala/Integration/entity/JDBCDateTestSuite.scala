@@ -1,4 +1,4 @@
-package domala.Integration.tpe
+package domala.Integration.entity
 
 import java.sql.{Date, Time, Timestamp}
 

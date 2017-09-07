@@ -10,7 +10,7 @@ import org.scalameta.logger
  */
 object EntityTypeGenerator {
 
-  def generate(cls: Defn.Class, name: Term.Arg) = {
+  def generate(cls: Defn.Class, name: Term.Arg): Term.Block = {
     val internalClass = makeInternalClass(cls.name, cls.ctor, name)
 
     val obj = q"""
@@ -37,7 +37,7 @@ object EntityTypeGenerator {
     ))
   }
 
-  protected def makeInternalClass(clsName: Type.Name, ctor: Ctor.Primary, tableName: Term.Arg) = {
+  protected def makeInternalClass(clsName: Type.Name, ctor: Ctor.Primary, tableName: Term.Arg): Defn.Class = {
     val fields = makeFields(clsName, ctor)
 
     val constructor = makeConstructor(clsName, ctor, tableName)
@@ -52,7 +52,7 @@ object EntityTypeGenerator {
     """
   }
 
-  protected def makeFields(clsName: Type.Name, ctor: Ctor.Primary) = {
+  protected def makeFields(clsName: Type.Name, ctor: Ctor.Primary): Seq[Stat] = {
     val fields1 = q"""
               private val __namingType: org.seasar.doma.jdbc.entity.NamingType = null
 
@@ -67,7 +67,7 @@ object EntityTypeGenerator {
 
   private case class PropertyTypeSet()
 
-  protected def makePropertyTypeFields(clsName: Type.Name, ctor: Ctor.Primary) = {
+  protected def makePropertyTypeFields(clsName: Type.Name, ctor: Ctor.Primary): Seq[Defn.Val] = {
     ctor.paramss.flatten.map { p =>
       val Term.Param(mods, name, Some(decltpe), default) = p
       val tpe = Type.Name(decltpe.toString)
@@ -89,7 +89,7 @@ object EntityTypeGenerator {
             __namingType))
         """        
       } else {
-        val (basicTpe, newWrapperExpr, domainTpe) = MacroUtil.convertType(decltpe)
+        val (basicTpe, newWrapperExpr, domainTpe) = MacroUtil.convertPropertyType(decltpe)
 
         if (p contains mod"@Id") {
           p.mods.collect{
@@ -152,7 +152,7 @@ object EntityTypeGenerator {
     }
   }
 
-  protected def makeConstructor(clsName: Type.Name, ctor: Ctor.Primary, tableName: Term.Arg) = {
+  protected def makeConstructor(clsName: Type.Name, ctor: Ctor.Primary, tableName: Term.Arg): Seq[Stat] = {
     val tname = if (tableName == null) Term.Name("\"" + clsName.value + "\"") else Term.Name(tableName.toString)
     val propertySize = ctor.paramss.flatten.size
 
@@ -201,7 +201,7 @@ object EntityTypeGenerator {
   }
 
   // TODO: @GeneratedValueの有無で判定
-  protected def makeGeneratedIdPropertyType(clsName: Type.Name, ctor: Ctor.Primary) = {
+  protected def makeGeneratedIdPropertyType(clsName: Type.Name, ctor: Ctor.Primary): Term with Pat = {
     if(clsName.value == "Person") {
       q"$$id"
     } else {
@@ -209,7 +209,7 @@ object EntityTypeGenerator {
     }
   }
   // TODO: @Versionの有無で判定
-  protected def makeVersionPropertyType(clsName: Type.Name, ctor: Ctor.Primary) = {
+  protected def makeVersionPropertyType(clsName: Type.Name, ctor: Ctor.Primary): Term with Pat = {
     if(clsName.value == "Person") {
       q"$$version"
     } else {
@@ -217,7 +217,7 @@ object EntityTypeGenerator {
     }
   }
 
-  protected def makeMethods(clsName: Type.Name, ctor: Ctor.Primary) = {
+  protected def makeMethods(clsName: Type.Name, ctor: Ctor.Primary): Seq[Stat] = {
     q"""
 
     override def getNamingType() = __namingType
