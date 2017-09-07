@@ -23,8 +23,19 @@ object SelectGenerator {
       case None => (Nil, false)
       case Some(q"SelectType.RETURN") => (Nil, false)
       case Some(q"SelectType.STREAM") => (Seq {
-        val lastParam = Term.Name(paramss.flatten.last.name.toString)
-        q"""if ($lastParam == null) throw new org.seasar.doma.DomaNullPointerException(${lastParam.value})"""
+        val functionParams = paramss.flatten.filter{ p =>
+          p.decltpe.get match {
+            case t"$_ => $_" => true
+            case _ => false
+          }
+        }
+        if (functionParams.isEmpty) {
+          abort(_def.pos, org.seasar.doma.message.Message.DOMA4247.getMessage(trtName.value, name.value))
+        } else if (functionParams.length > 1) {
+          abort(_def.pos, org.seasar.doma.message.Message.DOMA4249.getMessage(trtName.value, name.value))
+        }
+        val functionParam = Term.Name(functionParams.head.name.toString)
+        q"""if ($functionParam == null) throw new org.seasar.doma.DomaNullPointerException(${functionParam.value})"""
       }, true)
     }
 
@@ -57,18 +68,33 @@ object SelectGenerator {
                 q"__command.execute().asScala",
                 Seq(q"__query.setEntityType($internalTpeTerm.getSingletonInternal())")
               )
-              case t"Seq" => (
-                t"java.util.List[$internalTpe]",
-                q"new org.seasar.doma.internal.jdbc.command.EntityResultListHandler($internalTpeTerm.getSingletonInternal())",
-                q"__command.execute().asScala",
-                Seq(q"__query.setEntityType($internalTpeTerm.getSingletonInternal())")
-              )
+              case t"Seq" =>
+                internalTpe match {
+                  case t"Map[String, $_]" => (
+                    t"java.util.List[java.util.Map[String, Object]]",
+                    q"new org.seasar.doma.internal.jdbc.command.MapResultListHandler(org.seasar.doma.MapKeyNamingType.NONE)",
+                    q"__command.execute().asScala.map(_.asScala.toMap)",
+                    Nil
+                  )
+                  case _ => (
+                    t"java.util.List[$internalTpe]",
+                    q"new org.seasar.doma.internal.jdbc.command.EntityResultListHandler($internalTpeTerm.getSingletonInternal())",
+                    q"__command.execute().asScala",
+                    Seq(q"__query.setEntityType($internalTpeTerm.getSingletonInternal())")
+                  )
+                }
             }
           }
           case t"Int" => (
             t"Integer",
             q"new org.seasar.doma.internal.jdbc.command.BasicSingleResultHandler[Integer](() => new org.seasar.doma.wrapper.IntegerWrapper, false)",
             q"__command.execute()",
+            Nil
+          )
+          case t"Map[String, $_]" => (
+            t"java.util.Map[String, Object]",
+            q"new org.seasar.doma.internal.jdbc.command.MapSingleResultHandler(org.seasar.doma.MapKeyNamingType.NONE)",
+            q"Option(__command.execute()).map(_.asScala.toMap).getOrElse(null)",
             Nil
           )
           case _ => { // Entity

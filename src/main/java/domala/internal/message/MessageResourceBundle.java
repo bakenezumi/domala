@@ -3,13 +3,13 @@ package domala.internal.message;
 import domala.message.Message;
 
 /**
- * {@link Message} を扱うリソースバンドルです。
+ * Resource bundle for {@link Message}.
  *
  * @author bakenezumi
  *
  */public class MessageResourceBundle extends org.seasar.doma.internal.message.AbstractMessageResourceBundle<Message> {
     /**
-     * インスタンスを構築します。
+     * Constructor
      */
     public MessageResourceBundle() {
         super(Message.class);

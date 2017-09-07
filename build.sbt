@@ -14,6 +14,7 @@ lazy val root = (project in file(".")).settings(
     version      := "0.1.0-SNAPSHOT"
   )),
   name := "domala",
+  javacOptions ++= List("-encoding", "utf8"),
   metaMacroSettings,
   libraryDependencies ++= Seq(
     "org.seasar.doma" % "doma" % "2.16.1",
@@ -35,4 +36,4 @@ lazy val sample = (project in file("sample")).settings(
     scalaTest % Test
   ),
   metaMacroSettings
-) dependsOn (root) aggregate (root)
+) dependsOn root aggregate root

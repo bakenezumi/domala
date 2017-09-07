@@ -4,9 +4,7 @@ import org.scalatest._
 import domala.Config
 import domala.Required
 
-import scala.collection.mutable
-
-class IntegrationTestSuite extends FunSuite with BeforeAndAfter {
+class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
   implicit val config: Config = TestConfig
 
   val dao: PersonDao = PersonDao
@@ -33,6 +31,7 @@ class IntegrationTestSuite extends FunSuite with BeforeAndAfter {
                  Address("Tokyo", "Yaesu"),
                  Some(1),
                  Some(0))))
+      assert(dao.selectById(5) === None)
     }
   }
 
@@ -45,7 +44,7 @@ class IntegrationTestSuite extends FunSuite with BeforeAndAfter {
   test("select to return Seq") {
     Required {
       assert(
-        dao.selectAll === mutable.Buffer(
+        dao.selectAll === Seq(
           Person(Some(1),
                  Name("SMITH"),
                  Some(10),
@@ -62,16 +61,17 @@ class IntegrationTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("select to return entity") {
+  test("select to return nullable entity") {
     Required {
       assert(
-        dao.selectById2(1) ===
+        dao.selectByIdNullable(1) ===
           Person(Some(1),
-                 Name("SMITH"),
-                 Some(10),
-                 Address("Tokyo", "Yaesu"),
-                 Some(1),
-                 Some(0)))
+            Name("SMITH"),
+            Some(10),
+            Address("Tokyo", "Yaesu"),
+            Some(1),
+            Some(0)))
+      assert(dao.selectByIdNullable(5) === null)
     }
   }
 
@@ -90,8 +90,8 @@ class IntegrationTestSuite extends FunSuite with BeforeAndAfter {
   test("join select to enbedded entity") {
     Required {
       assert(
-        dao.selectWithDepartmentById2(1) ===
-          Some(PersonDepartment2(1, "SMITH", Department(1, "ACCOUNTING"))))
+        dao.selectWithDepartmentEmbeddedById(1) ===
+          Some(PersonDepartmentEmbedded(1, "SMITH", Department(1, "ACCOUNTING"))))
     }
   }
 
@@ -108,6 +108,26 @@ class IntegrationTestSuite extends FunSuite with BeforeAndAfter {
       assert(dao.selectByIdStream(1) { stream =>
         stream.head.address
       } == Address("Tokyo", "Yaesu"))
+      assert(dao.selectByIdStream(5) { stream =>
+        if (stream.isEmpty) null else fail()
+      } == null)
+    }
+  }
+
+  test("Sequential Map select") {
+    Required {
+      assert(dao.selectAllSeqMap() == Seq(
+        Map("ID" -> 1, "NAME" -> "SMITH", "AGE" -> 10, "CITY" -> "Tokyo", "STREET" -> "Yaesu", "DEPARTMENT_ID" -> 1, "VERSION" -> 0),
+        Map("ID" -> 2, "NAME" -> "ALLEN", "AGE" -> 20, "CITY" -> "Kyoto", "STREET" -> "Karasuma", "DEPARTMENT_ID" -> 2, "VERSION" -> 0)
+      ))
+    }
+  }
+
+  test("Single Map select") {
+    Required {
+      assert(dao.selectByIdMap(1) ==
+        Map("ID" -> 1, "NAME" -> "SMITH", "AGE" -> 10, "CITY" -> "Tokyo", "STREET" -> "Yaesu", "DEPARTMENT_ID" -> 1, "VERSION" -> 0))
+      assert(dao.selectByIdMap(5) == null)
     }
   }
 

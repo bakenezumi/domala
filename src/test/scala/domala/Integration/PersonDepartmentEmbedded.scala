@@ -3,7 +3,7 @@ package domala.Integration
 import domala._
 
 @Entity
-case class PersonDepartment2(
+case class PersonDepartmentEmbedded(
   id: Int,
   name: String,
   @Embedded
