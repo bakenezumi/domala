@@ -21,6 +21,7 @@ object EntityTypeGenerator {
         val listener = 
           new org.seasar.doma.jdbc.entity.NullEntityListener[${cls.name}]()
       }
+      val instance = this
       ..${fields ++ constructor ++ methods}
     }
     """

@@ -21,6 +21,7 @@ lazy val root = (project in file(".")).settings(
     "org.scala-lang.modules" %% "scala-java8-compat" % "0.8.0",
     "org.scalameta" %% "scalameta" % "1.8.0",
     "org.scalameta" %% "contrib" % "1.8.0",
+    "org.scala-lang" % "scala-reflect" % scalaVersion.value,
     "com.h2database" % "h2" % "1.4.193" % Test,
     scalaTest % Test
   )

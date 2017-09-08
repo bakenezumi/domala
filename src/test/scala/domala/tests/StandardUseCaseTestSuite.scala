@@ -139,6 +139,12 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  test("select domain") {
+    Required {
+      assert(dao.selectNameById(1) == Name("SMITH"))
+    }
+  }
+
   test("stream map select") {
     Required {
       assert(dao.selectAllStreamMap { stream =>
