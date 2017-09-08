@@ -1,18 +1,21 @@
 package domala.internal.macros
 
 import domala._
-import domala.tests.entity.AnyRefType
 import org.scalatest.{BeforeAndAfter, FunSuite}
-import org.seasar.doma.DomaException
 import org.seasar.doma.internal.jdbc.command.{DomainSingleResultHandler, EntitySingleResultHandler}
 
 class DaoRefrectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
-  test("Entity get") {
-    assert(DaoRefrectionMacros.getSingleResultHandler(DummyEntity, "MacrosTestSuite", "Entity get").isInstanceOf[EntitySingleResultHandler[_]])
+  test("Entity getgetSingleResultHandler") {
+    assert(DaoRefrectionMacros.getSingleResultHandler(classOf[DummyEntity], "MacrosTestSuite", "Entity get").isInstanceOf[EntitySingleResultHandler[_]])
   }
 
-  test("Domain get") {
-    assert(DaoRefrectionMacros.getSingleResultHandler(DummyDomain, "MacrosTestSuite", "Domain get").isInstanceOf[DomainSingleResultHandler[_, _]])
+  test("Domain getSingleResultHandler") {
+    assert(DaoRefrectionMacros.getSingleResultHandler(classOf[DummyDomain], "MacrosTestSuite", "Domain get").isInstanceOf[DomainSingleResultHandler[_, _]])
+  }
+
+  test("Error getSingleResultHandler") {
+    //コンパイルエラー
+    //DaoRefrectionMacros.getSingleResultHandler("abc", "MacrosTestSuite", "type error")
   }
 
 }

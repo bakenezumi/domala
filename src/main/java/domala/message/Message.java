@@ -31,6 +31,7 @@ import org.seasar.doma.message.MessageResource;
  *
  */
 public enum Message implements MessageResource {
+    DOMALA4235("Optionに対する実型引数の型[{0}]はサポートされていません。サポートされている型は次のものです。基本型、ドメインクラス、エンティティクラス。  at {1}.{2}"),
     DOMALA4244("Functionの1番目の実型引数の型は、Streamでなければいけません。 at {0}.{1}"),;
 
     private final String messagePattern;

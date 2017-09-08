@@ -89,17 +89,17 @@ object SelectGenerator {
         }
       } else {
         TypeHelper.convertToDomaType(tpe) match {
-          case DomaType.Option(DomaType.Map) => (
+          case DomaType.Option(DomaType.Map, _) => (
             q"new org.seasar.doma.internal.jdbc.command.OptionalMapSingleResultHandler(org.seasar.doma.MapKeyNamingType.NONE)",
             q"__command.execute().asScala.map(x => x.asScala.toMap)",
             Nil
           )
-          case DomaType.Option(DomaType.Basic(_, _, wrapperSupplier)) => (
+          case DomaType.Option(DomaType.Basic(_, _, wrapperSupplier), _) => (
             q"new org.seasar.doma.internal.jdbc.command.OptionalBasicSingleResultHandler($wrapperSupplier, false)",
             q"__command.execute().asScala.map(x => x)",
             Nil
           )
-          case DomaType.Option(DomaType.EntityOrDomain(elementType)) => { //TODO Domain未対応
+          case DomaType.Option(DomaType.EntityOrDomain(elementType), _) => { //TODO Domain未対応
             val elementTypeTerm = Term.Name(elementType.toString)
             (
               q"new org.seasar.doma.internal.jdbc.command.OptionalEntitySingleResultHandler($elementTypeTerm)",
@@ -107,20 +107,21 @@ object SelectGenerator {
               Seq(q"domala.internal.macros.DaoRefrectionMacros.setEntityType(__query, $elementTypeTerm)")
             )
           }
+          case DomaType.Option(_, elementTpe) => abort(_def.pos, domala.message.Message.DOMALA4235.getMessage(elementTpe, trtName.value, name.value))
 
-          case DomaType.Seq(DomaType.Map) => (
+          case DomaType.Seq(DomaType.Map, _) => (
             q"new org.seasar.doma.internal.jdbc.command.MapResultListHandler(org.seasar.doma.MapKeyNamingType.NONE)",
             q"__command.execute().asScala.map(_.asScala.toMap)",
             Nil
           )
-          case DomaType.Seq(DomaType.Basic(originalType, convertedType, wrapperSupplier)) => {
+          case DomaType.Seq(DomaType.Basic(originalType, convertedType, wrapperSupplier), _) => {
             (
               q"""new org.seasar.doma.internal.jdbc.command.BasicResultListHandler(($wrapperSupplier): java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$convertedType]])""",
               q"__command.execute().asScala.map(x => x: $originalType)",
               Nil
             )
           }
-          case DomaType.Seq(DomaType.EntityOrDomain(internalTpe)) => { //TODO Domain未対応
+          case DomaType.Seq(DomaType.EntityOrDomain(internalTpe), _) => { //TODO Domain未対応
             val internalTpeTerm = Term.Name(internalTpe.toString)
             (
               q"new org.seasar.doma.internal.jdbc.command.EntityResultListHandler($internalTpeTerm)",
@@ -145,7 +146,7 @@ object SelectGenerator {
           case DomaType.EntityOrDomain(tpe) => { // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
             val tpeTerm = Term.Name(tpe.toString)
             (
-              q"domala.internal.macros.DaoRefrectionMacros.getSingleResultHandler($tpeTerm, $trtNameStr, ${name.value})",
+              q"domala.internal.macros.DaoRefrectionMacros.getSingleResultHandler(classOf[$tpe], $trtNameStr, ${name.value})",
               q"__command.execute().asInstanceOf[$tpe]",
               Seq(q"domala.internal.macros.DaoRefrectionMacros.setEntityType(__query, $tpeTerm)")
             )

@@ -51,9 +51,9 @@ object TypeHelper {
     tpe match {
       case t"Map[String, $_]" => DomaType.Map
       case t"Map[$_,$_]" => DomaType.Unknown
-      case t"Seq[$elementTpe]" => DomaType.Seq(convertToDomaType(elementTpe))
-      case t"Option[$elementTpe]" => DomaType.Option(convertToDomaType(elementTpe))
-      case t"Optional[$elementTpe]" => DomaType.Option(convertToDomaType(elementTpe))
+      case t"Seq[$elementTpe]" => DomaType.Seq(convertToDomaType(elementTpe), elementTpe)
+      case t"Option[$elementTpe]" => DomaType.Option(convertToDomaType(elementTpe), elementTpe)
+      case t"Optional[$elementTpe]" => DomaType.Option(convertToDomaType(elementTpe), elementTpe)
       case t"BigDecimal" => DomaType.Basic(
         toType(tpe), toType(tpe),
         q"() => new domala.wrapper.BigDecimalWrapper(): org.seasar.doma.wrapper.Wrapper[BigDecimal]"
