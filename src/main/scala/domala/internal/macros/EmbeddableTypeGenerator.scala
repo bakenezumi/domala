@@ -47,7 +47,7 @@ object EmbeddableTypeGenerator {
           val Term.Param(mods, name, Some(decltpe), default) = p
           val nameStr = name.value
           val tpe = Type.Name(decltpe.toString)
-          val (basicTpe, newWrapperExpr, domainTpe) = MacroUtil.convertPropertyType(decltpe)
+          val (basicTpe, newWrapperExpr, domainTpe) = TypeHelper.generateEntityTypeParts(decltpe)
 
           q"""
           new domala.jdbc.entity.DefaultPropertyType(
@@ -77,7 +77,7 @@ object EmbeddableTypeGenerator {
           val Term.Param(mods, name, Some(decltpe), default) = p
           val nameStr = name.value
           val tpe = Type.Name(decltpe.toString)
-          val (basicTpe, newWrapperExpr, domainTpe) = MacroUtil.convertPropertyType(tpe)
+          val (basicTpe, newWrapperExpr, domainTpe) = TypeHelper.generateEntityTypeParts(tpe)
           q"""
           { (if(__args.get(embeddedPropertyName + "." + $nameStr) != null )
               __args.get(embeddedPropertyName + "." + $nameStr)

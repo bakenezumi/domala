@@ -1,6 +1,6 @@
 package domala
 
-import domala.internal.macros.MacroUtil
+import domala.internal.macros.{DomaType, TypeHelper}
 
 import collection.immutable.Seq
 import scala.meta._
@@ -42,7 +42,6 @@ object SelectGenerator {
     }
 
     // Todo: 戻りの型の対応を増やす
-    // Todo: 処理構造見直し
     val (javaTpe, handler, result, setEntity) =
       if (isStream) {
         val (functionParamTerm, internalTpe, retTpe) = paramss.flatten.find { p =>
@@ -55,10 +54,11 @@ object SelectGenerator {
             case t"Stream[$internalTpe] => $retTpe" => (Term.Name(p.name.value), internalTpe, retTpe)
           }
         }.getOrElse(abort(_def.pos, domala.message.Message.DOMALA4244.getMessage(trtName.value, name.value)))
-
-        if(retTpe.toString() != tpe.toString()) abort(_def.pos, org.seasar.doma.message.Message.DOMA4246.getMessage(tpe, retTpe, trtName.value, name.value))
-        internalTpe match {
-          case t"Map[String, $_]" => (
+        if(retTpe.toString() != tpe.toString()) {
+          abort(_def.pos, org.seasar.doma.message.Message.DOMA4246.getMessage(tpe, retTpe, trtName.value, name.value))
+        }
+        TypeHelper.convertToDomaType(internalTpe) match {
+          case DomaType.Map => (
             retTpe,
             q"""new org.seasar.doma.internal.jdbc.command.MapStreamHandler[$retTpe](org.seasar.doma.MapKeyNamingType.NONE, new java.util.function.Function[java.util.stream.Stream[java.util.Map[String, Object]], $retTpe](){
               def apply(p: java.util.stream.Stream[java.util.Map[String, Object]]) = $functionParamTerm(p.toScala[Stream].map(_.asScala.toMap))
@@ -66,7 +66,17 @@ object SelectGenerator {
             q"__command.execute()",
             Nil
           )
-          // TODO: Other type
+          case DomaType.Basic(_, convertedType, wrapperSupplier) => {
+            (
+              retTpe,
+              q"""new org.seasar.doma.internal.jdbc.command.BasicStreamHandler(($wrapperSupplier): java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$convertedType]],
+                new java.util.function.Function[java.util.stream.Stream[$convertedType], $retTpe](){
+                def apply(p: java.util.stream.Stream[$convertedType]) = $functionParamTerm(p.toScala[Stream].map(x => x: $internalTpe))
+              })""",
+              q"__command.execute()",
+              Nil
+            )
+          }
           case _ => { // Entity
             val internalTpeTerm = Term.Name(internalTpe.toString)
             (
@@ -80,79 +90,74 @@ object SelectGenerator {
           }
         }
       } else {
-        tpe match {
-          case t"$containerTpe[$internalTpe]" => {
-            val internalTpeTerm = Term.Name(internalTpe.toString)
-            containerTpe match {
-              case t"Option" => MacroUtil.convertType(internalTpe) match {
-                case Some((javaTpe, wrapperSupplier)) => (
-                  t"java.util.Optional[$javaTpe]",
-                  q"new org.seasar.doma.internal.jdbc.command.OptionalBasicSingleResultHandler($wrapperSupplier, false)",
-                  q"__command.execute().asScala.map(x => x)",
-                  Nil
-                )
-                case _ => (
-                  t"java.util.Optional[$internalTpe]",
-                  q"new org.seasar.doma.internal.jdbc.command.OptionalEntitySingleResultHandler($internalTpeTerm.getSingletonInternal())",
-                  q"__command.execute().asScala",
-                  Seq(q"__query.setEntityType($internalTpeTerm.getSingletonInternal())")
-                )
-              }
-              case t"Seq" => internalTpe match {
-                case t"Map[String, $_]" => (
-                  t"java.util.List[java.util.Map[String, Object]]",
-                  q"new org.seasar.doma.internal.jdbc.command.MapResultListHandler(org.seasar.doma.MapKeyNamingType.NONE)",
-                  q"__command.execute().asScala.map(_.asScala.toMap)",
-                  Nil
-                )
-                // TODO: Other type
-                case _ => MacroUtil.convertType(internalTpe) match {
-                  case Some((javaTpe, wrapperSupplier)) => {
-                    (
-                      t"java.util.List[$javaTpe]",
-//                      q"""new org.seasar.doma.internal.jdbc.command.BasicResultListHandler($wrapperSupplier)""",
-                      q"""new org.seasar.doma.internal.jdbc.command.BasicResultListHandler(($wrapperSupplier): java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$javaTpe]])""",
-                      q"__command.execute().asScala.map(x => x: $internalTpe)",
-                      Nil
-                    )
-                  }
-                  case _ => (
-                    t"java.util.List[$internalTpe]",
-                    q"new org.seasar.doma.internal.jdbc.command.EntityResultListHandler($internalTpeTerm.getSingletonInternal())",
-                    q"__command.execute().asScala",
-                    Seq(q"__query.setEntityType($internalTpeTerm.getSingletonInternal())")
-                  )
-                }
-              }
-              case _ => abort(_def.pos, org.seasar.doma.message.Message.DOMA4008.getMessage(tpe, trtName.value, name.value))
-            }
+        TypeHelper.convertToDomaType(tpe) match {
+          case DomaType.Option(DomaType.Map) => abort("未実装") // TODO
+          case DomaType.Option(DomaType.Basic(_, convertedType, wrapperSupplier)) => (
+            t"java.util.Optional[$convertedType]",
+            q"new org.seasar.doma.internal.jdbc.command.OptionalBasicSingleResultHandler($wrapperSupplier, false)",
+            q"__command.execute().asScala.map(x => x)",
+            Nil
+          )
+          case DomaType.Option(DomaType.Entity(elementType)) => {
+            val elementTypeTerm = Term.Name(elementType.toString)
+            (
+              t"java.util.Optional[$elementType]",
+              q"new org.seasar.doma.internal.jdbc.command.OptionalEntitySingleResultHandler($elementTypeTerm.getSingletonInternal())",
+              q"__command.execute().asScala",
+              Seq(q"__query.setEntityType($elementTypeTerm.getSingletonInternal())")
+            )
           }
-          case t"Map[String, $_]" => (
+
+          case DomaType.Seq(DomaType.Map) => (
+            t"java.util.List[java.util.Map[String, Object]]",
+            q"new org.seasar.doma.internal.jdbc.command.MapResultListHandler(org.seasar.doma.MapKeyNamingType.NONE)",
+            q"__command.execute().asScala.map(_.asScala.toMap)",
+            Nil
+          )
+          case DomaType.Seq(DomaType.Basic(originalType, convertedType, wrapperSupplier)) => {
+            (
+              t"java.util.List[$convertedType]",
+              q"""new org.seasar.doma.internal.jdbc.command.BasicResultListHandler(($wrapperSupplier): java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$convertedType]])""",
+              q"__command.execute().asScala.map(x => x: $originalType)",
+              Nil
+            )
+          }
+          case DomaType.Seq(DomaType.Entity(internalTpe)) => {
+            val internalTpeTerm = Term.Name(internalTpe.toString)
+            (
+              t"java.util.List[$internalTpe]",
+              q"new org.seasar.doma.internal.jdbc.command.EntityResultListHandler($internalTpeTerm.getSingletonInternal())",
+              q"__command.execute().asScala",
+              Seq(q"__query.setEntityType($internalTpeTerm.getSingletonInternal())")
+            )
+          }
+
+          case DomaType.Map => (
             t"java.util.Map[String, Object]",
             q"new org.seasar.doma.internal.jdbc.command.MapSingleResultHandler(org.seasar.doma.MapKeyNamingType.NONE)",
             q"Option(__command.execute()).map(_.asScala.toMap).getOrElse(null)",
             Nil
           )
-          case _ => {
-            MacroUtil.convertType(tpe) match {
-              case Some((javaTpe, wrapperSupplier)) =>
-                (
-                  javaTpe,
-                  q"new org.seasar.doma.internal.jdbc.command.BasicSingleResultHandler($wrapperSupplier, false)",
-                  q"__command.execute()",
-                  Nil
-                )
-              case _ => {
-                val tpeTerm = Term.Name(tpe.toString)
-                (
-                  tpe,
-                  q"new org.seasar.doma.internal.jdbc.command.EntitySingleResultHandler($tpeTerm.getSingletonInternal())",
-                  q"__command.execute()",
-                  Seq(q"__query.setEntityType($tpeTerm.getSingletonInternal())")
-                )
-              }
-            }
+
+          case DomaType.Basic(_, convertedType, wrapperSupplier) =>
+            (
+              convertedType,
+              q"new org.seasar.doma.internal.jdbc.command.BasicSingleResultHandler($wrapperSupplier, false)",
+              q"__command.execute()",
+              Nil
+            )
+
+          case DomaType.Entity(tpe) => {
+            val tpeTerm = Term.Name(tpe.toString)
+            (
+              tpe,
+              q"new org.seasar.doma.internal.jdbc.command.EntitySingleResultHandler($tpeTerm.getSingletonInternal())",
+              q"__command.execute()",
+              Seq(q"__query.setEntityType($tpeTerm.getSingletonInternal())")
+            )
           }
+
+          case _ => abort(_def.pos, org.seasar.doma.message.Message.DOMA4008.getMessage(tpe, trtName.value, name.value))
         }
       }
     val command =

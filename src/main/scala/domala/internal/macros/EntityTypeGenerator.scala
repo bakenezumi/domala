@@ -89,7 +89,7 @@ object EntityTypeGenerator {
             __namingType))
         """        
       } else {
-        val (basicTpe, newWrapperExpr, domainTpe) = MacroUtil.convertPropertyType(decltpe)
+        val (basicTpe, newWrapperExpr, domainTpe) = TypeHelper.generateEntityTypeParts(decltpe)
 
         if (p contains mod"@Id") {
           p.mods.collect{

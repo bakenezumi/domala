@@ -8,7 +8,9 @@ DomalaはJavaのDBアクセスフレームワーク[Doma2](https://github.com/do
 
 - scala metaを使用してコードの自動生成とコードの検証を行う
 
-- Scalaの`scala.Option`や`scala.collection.Seq`を利用できる
+- Scalaの`scala.Option`や`scala.collection.Seq`、`scala.collection.Stream`を利用できる
+
+- SQLファイルは使用せず、アノテーションパラメータに記述されたSQLを実行する（ヒアドキュメント形式で書けるため）
 
 ### 利用例
 
@@ -18,7 +20,6 @@ DomalaはJavaのDBアクセスフレームワーク[Doma2](https://github.com/do
 @Entity
 case class Person(
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
   id: Option[Int] = None,
   name: Name,
   age: Option[Int],
@@ -68,13 +69,15 @@ implicit val config = SampleConfig
 
 val dao: PersonDao = PersonDao
 
+val entity = Person(
+  id = 1
+  name = Name("SMITH"),
+  age = Some(10),
+  address = Address("TOKYO", "YAESU"),
+  departmentId = Some(1)
+)
 Required {
-  dao.insert(Person(
-    name = Name("SMITH"),
-    age = Some(10),
-    address = Address("TOKYO", "YAESU"),
-    departmentId = Some(1)
-  ))
+  dao.insert(entity)
   dao.selectById(1)
 }
 ```
