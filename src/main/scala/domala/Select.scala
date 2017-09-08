@@ -82,9 +82,10 @@ object SelectGenerator {
                 def apply(p: java.util.stream.Stream[$internalTpe]) = $functionParamTerm(p.toScala[Stream])
              })""",
               q"__command.execute()",
-              Seq(q"__query.setEntityType($internalTpeTerm)")
+              Seq(q"domala.internal.macros.DaoRefrectionMacros.setEntityType(__query, $internalTpeTerm)")
             )
           }
+          case _ => abort(_def.pos, org.seasar.doma.message.Message.DOMA4008.getMessage(tpe, trtName.value, name.value))
         }
       } else {
         TypeHelper.convertToDomaType(tpe) match {
@@ -103,7 +104,7 @@ object SelectGenerator {
             (
               q"new org.seasar.doma.internal.jdbc.command.OptionalEntitySingleResultHandler($elementTypeTerm)",
               q"__command.execute().asScala",
-              Seq(q"__query.setEntityType($elementTypeTerm)")
+              Seq(q"domala.internal.macros.DaoRefrectionMacros.setEntityType(__query, $elementTypeTerm)")
             )
           }
 
@@ -119,7 +120,7 @@ object SelectGenerator {
               Nil
             )
           }
-          case DomaType.Seq(DomaType.EntityOrDomain(internalTpe)) => {
+          case DomaType.Seq(DomaType.EntityOrDomain(internalTpe)) => { //TODO Domain未対応
             val internalTpeTerm = Term.Name(internalTpe.toString)
             (
               q"new org.seasar.doma.internal.jdbc.command.EntityResultListHandler($internalTpeTerm)",

@@ -15,15 +15,6 @@ class DaoRefrectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
     assert(DaoRefrectionMacros.getSingleResultHandler(DummyDomain, "MacrosTestSuite", "Domain get").isInstanceOf[DomainSingleResultHandler[_, _]])
   }
 
-//  test("get error") {
-//    var stat = false
-//    try {
-//      Macros.getSingleResultHandler("123", "MacrosTestSuite", "get error")
-//    } catch {
-//      case e: DomaException  => stat = true
-//    }
-//    assert(stat)
-//  }
 }
 
 @Entity
