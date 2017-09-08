@@ -1,4 +1,4 @@
-package domala.Integration
+package domala.tests
 
 import domala.Entity
 

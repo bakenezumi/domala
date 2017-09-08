@@ -41,7 +41,7 @@ object SelectGenerator {
       }, true)
     }
 
-    // Todo: 戻りの型の対応を増やす
+    // Todo: Domain型の戻りに未対応（要リフレクション）
     val (javaTpe, handler, result, setEntity) =
       if (isStream) {
         val (functionParamTerm, internalTpe, retTpe) = paramss.flatten.find { p =>
@@ -77,34 +77,39 @@ object SelectGenerator {
               Nil
             )
           }
-          case _ => { // Entity
+          case DomaType.EntityOrDomain(tpe) => { //TODO Domain未対応
             val internalTpeTerm = Term.Name(internalTpe.toString)
             (
               retTpe,
-              q"""new org.seasar.doma.internal.jdbc.command.EntityStreamHandler($internalTpeTerm.getSingletonInternal(), new java.util.function.Function[java.util.stream.Stream[$internalTpe], $retTpe](){
+              q"""new org.seasar.doma.internal.jdbc.command.EntityStreamHandler($internalTpeTerm, new java.util.function.Function[java.util.stream.Stream[$internalTpe], $retTpe](){
                 def apply(p: java.util.stream.Stream[$internalTpe]) = $functionParamTerm(p.toScala[Stream])
              })""",
               q"__command.execute()",
-              Seq(q"__query.setEntityType($internalTpeTerm.getSingletonInternal())")
+              Seq(q"__query.setEntityType($internalTpeTerm)")
             )
           }
         }
       } else {
         TypeHelper.convertToDomaType(tpe) match {
-          case DomaType.Option(DomaType.Map) => abort("未実装") // TODO
+          case DomaType.Option(DomaType.Map) => (
+            t"java.util.Optional[java.util.Map[String, Object]]",
+            q"new org.seasar.doma.internal.jdbc.command.OptionalMapSingleResultHandler(org.seasar.doma.MapKeyNamingType.NONE)",
+            q"__command.execute().asScala.map(x => x.asScala.toMap)",
+            Nil
+          )
           case DomaType.Option(DomaType.Basic(_, convertedType, wrapperSupplier)) => (
             t"java.util.Optional[$convertedType]",
             q"new org.seasar.doma.internal.jdbc.command.OptionalBasicSingleResultHandler($wrapperSupplier, false)",
             q"__command.execute().asScala.map(x => x)",
             Nil
           )
-          case DomaType.Option(DomaType.Entity(elementType)) => {
+          case DomaType.Option(DomaType.EntityOrDomain(elementType)) => { //TODO Domain未対応
             val elementTypeTerm = Term.Name(elementType.toString)
             (
               t"java.util.Optional[$elementType]",
-              q"new org.seasar.doma.internal.jdbc.command.OptionalEntitySingleResultHandler($elementTypeTerm.getSingletonInternal())",
+              q"new org.seasar.doma.internal.jdbc.command.OptionalEntitySingleResultHandler($elementTypeTerm)",
               q"__command.execute().asScala",
-              Seq(q"__query.setEntityType($elementTypeTerm.getSingletonInternal())")
+              Seq(q"__query.setEntityType($elementTypeTerm)")
             )
           }
 
@@ -122,13 +127,13 @@ object SelectGenerator {
               Nil
             )
           }
-          case DomaType.Seq(DomaType.Entity(internalTpe)) => {
+          case DomaType.Seq(DomaType.EntityOrDomain(internalTpe)) => {
             val internalTpeTerm = Term.Name(internalTpe.toString)
             (
               t"java.util.List[$internalTpe]",
-              q"new org.seasar.doma.internal.jdbc.command.EntityResultListHandler($internalTpeTerm.getSingletonInternal())",
+              q"new org.seasar.doma.internal.jdbc.command.EntityResultListHandler($internalTpeTerm)",
               q"__command.execute().asScala",
-              Seq(q"__query.setEntityType($internalTpeTerm.getSingletonInternal())")
+              Seq(q"__query.setEntityType($internalTpeTerm)")
             )
           }
 
@@ -147,13 +152,13 @@ object SelectGenerator {
               Nil
             )
 
-          case DomaType.Entity(tpe) => {
+          case DomaType.EntityOrDomain(tpe) => { //TODO Domain未対応
             val tpeTerm = Term.Name(tpe.toString)
             (
               tpe,
-              q"new org.seasar.doma.internal.jdbc.command.EntitySingleResultHandler($tpeTerm.getSingletonInternal())",
+              q" new org.seasar.doma.internal.jdbc.command.EntitySingleResultHandler($tpeTerm)",
               q"__command.execute()",
-              Seq(q"__query.setEntityType($tpeTerm.getSingletonInternal())")
+              Seq(q"__query.setEntityType($tpeTerm)")
             )
           }
 
@@ -207,7 +212,7 @@ object SelectGenerator {
           __query.setFetchSize(-1)
           __query.setSqlLogType(org.seasar.doma.jdbc.SqlLogType.FORMATTED)
           __query.prepare()
-          val __command: org.seasar.doma.jdbc.command.SelectCommand[$javaTpe] = $command
+          val __command = $command
           val __result: $tpe = $result
           __query.complete()
           exiting($trtNameStr, $nameStr, __result)

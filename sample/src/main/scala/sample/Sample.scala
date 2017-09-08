@@ -1,7 +1,7 @@
 package sample
 
-import domala.Config
 import domala.Required
+import domala.jdbc.Config
 
 object Sample extends App {
   implicit val config: Config = SampleConfig

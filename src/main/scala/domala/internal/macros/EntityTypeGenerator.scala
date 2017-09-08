@@ -11,21 +11,17 @@ import org.scalameta.logger
 object EntityTypeGenerator {
 
   def generate(cls: Defn.Class, name: Term.Arg): Term.Block = {
-    val internalClass = makeInternalClass(cls.name, cls.ctor, name)
+    val fields = makeFields(cls.name, cls.ctor)
+    val constructor = makeConstructor(cls.name, cls.ctor, name)
+    val methods = makeMethods(cls.name,cls. ctor)
 
     val obj = q"""
-    object ${Term.Name(cls.name.value)} {
-      private val __singleton = new Internal()
-
-      def getSingletonInternal() = __singleton
-
-      def newInstance() = new Internal()
-
+    object ${Term.Name(cls.name.value)} extends org.seasar.doma.jdbc.entity.AbstractEntityType[${cls.name}] {
       object ListenerHolder {
         val listener = 
           new org.seasar.doma.jdbc.entity.NullEntityListener[${cls.name}]()
       }
-      $internalClass
+      ..${fields ++ constructor ++ methods}
     }
     """
 
@@ -35,21 +31,6 @@ object EntityTypeGenerator {
       cls.copy(ctor = cls.ctor.copy(paramss = cls.ctor.paramss.map(x => x.map(xx => xx.copy(mods = Nil))))),
       obj
     ))
-  }
-
-  protected def makeInternalClass(clsName: Type.Name, ctor: Ctor.Primary, tableName: Term.Arg): Defn.Class = {
-    val fields = makeFields(clsName, ctor)
-
-    val constructor = makeConstructor(clsName, ctor, tableName)
-
-    val methods = makeMethods(clsName, ctor)
-    
-    q"""
-    class Internal private[$clsName] ()
-    extends org.seasar.doma.jdbc.entity.AbstractEntityType[$clsName] {
-      ..${fields ++ constructor ++ methods}
-    }
-    """
   }
 
   protected def makeFields(clsName: Type.Name, ctor: Ctor.Primary): Seq[Stat] = {
@@ -83,7 +64,7 @@ object EntityTypeGenerator {
         ](
           $nameStr,
           classOf[$clsName],
-          $tpeTerm.getSingletonInternal.getEmbeddablePropertyTypes(
+          $tpeTerm.getEmbeddablePropertyTypes(
             $nameStr,
             classOf[$clsName],
             __namingType))
@@ -328,7 +309,7 @@ object EntityTypeGenerator {
         val nameStr = name.value
         if (p contains mod"@Embedded") {
           val tpe = Term.Name(decltpe.toString)
-          q"""$tpe.getSingletonInternal.newEmbeddable[$clsName]($nameStr, __args)"""
+          q"""$tpe.newEmbeddable[$clsName]($nameStr, __args)"""
         } else {
           val tpe = Type.Name(decltpe.toString)
 

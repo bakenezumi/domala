@@ -10,15 +10,11 @@ import org.scalameta.logger
  */
 object EmbeddableTypeGenerator {
   def generate(cls: Defn.Class): Term.Block = {
-    val internalClass = makeInternalClass(cls.name, cls.ctor)
+    val methods = makeMethods(cls.name, cls.ctor)
 
     val obj = q"""
-    object ${Term.Name(cls.name.value)} {
-      private val __singleton = new Internal()
-
-      def getSingletonInternal() = __singleton
-
-      $internalClass
+    object ${Term.Name(cls.name.value)} extends org.seasar.doma.jdbc.entity.EmbeddableType[${cls.name}] {
+      ..$methods
     }
     """
 
@@ -27,17 +23,6 @@ object EmbeddableTypeGenerator {
       cls,
       obj
     ))
-  }
-
-  protected def makeInternalClass(clsName: Type.Name, ctor: Ctor.Primary): Defn.Class = {
-    val methods = makeMethods(clsName, ctor)
-    
-    q"""
-    class Internal private[$clsName] ()
-    extends org.seasar.doma.jdbc.entity.EmbeddableType[$clsName] {
-      ..$methods
-    }
-    """
   }
 
   protected def makeMethods(clsName: Type.Name, ctor: Ctor.Primary): Seq[Defn.Def] = {

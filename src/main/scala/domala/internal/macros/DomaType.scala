@@ -12,5 +12,6 @@ object DomaType {
   case class Domain(value: Basic) extends DomaType
   case object Embeddable extends DomaType
   case class Entity(tpe: Type) extends DomaType
+  case class EntityOrDomain(tpe: Type) extends DomaType
   case object Unknown extends DomaType
 }

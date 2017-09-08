@@ -26,7 +26,7 @@ object InsertGenerator {
         val __query: org.seasar.doma.jdbc.query.AutoInsertQuery[$paramTpe] =
           getQueryImplementors.createAutoInsertQuery(
             $internalMethodName,
-            ${Term.Name(paramTpe.value)}.getSingletonInternal)
+            ${Term.Name(paramTpe.value)})
         __query.setMethod($internalMethodName)
         __query.setConfig(__config)
         __query.setEntity($paramName)

@@ -1,9 +1,10 @@
-package domala.Integration.select
+package domala.tests.select
 
 import java.time.{LocalDate, LocalDateTime, LocalTime}
 
 import domala._
-import domala.Integration.TestConfig
+import domala.jdbc.Config
+import domala.tests.TestConfig
 import org.scalactic.TolerantNumerics
 import org.scalatest.{BeforeAndAfter, FunSuite}
 

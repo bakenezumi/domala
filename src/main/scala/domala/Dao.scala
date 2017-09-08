@@ -1,5 +1,6 @@
 package domala
 
+import domala.jdbc.Config
 import org.scalameta.logger
 
 import scala.collection.immutable.Seq

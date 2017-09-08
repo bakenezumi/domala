@@ -1,10 +1,11 @@
-package domala.Integration.entity
+package domala.tests.entity
 
 import java.sql.{Blob, Clob}
 import javax.sql.rowset.serial.{SerialBlob, SerialClob}
 
 import domala._
-import domala.Integration.TestConfig
+import domala.jdbc.Config
+import domala.tests.TestConfig
 import org.scalatest.{BeforeAndAfter, FunSuite}
 import org.seasar.doma.jdbc.Result
 

@@ -27,7 +27,7 @@ object DeleteGenerator {
         val __query: org.seasar.doma.jdbc.query.AutoDeleteQuery[$paramTpe] =
           getQueryImplementors.createAutoDeleteQuery(
             $internalMethodName,
-            ${Term.Name(paramTpe.value)}.getSingletonInternal)
+            ${Term.Name(paramTpe.value)})
         __query.setMethod($internalMethodName)
         __query.setConfig(__config)
         __query.setEntity($paramName)

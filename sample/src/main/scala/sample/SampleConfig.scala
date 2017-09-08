@@ -1,10 +1,9 @@
 package sample
 
+import domala.jdbc.Config
 import org.seasar.doma.jdbc.Naming
 import org.seasar.doma.jdbc.dialect.H2Dialect
 import org.seasar.doma.jdbc.tx.LocalTransactionDataSource
-
-import domala.Config
 
 object SampleConfig extends Config(
   dataSource =  new LocalTransactionDataSource(

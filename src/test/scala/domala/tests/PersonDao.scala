@@ -1,4 +1,4 @@
-package domala.Integration
+package domala.tests
 
 import domala._
 
@@ -125,8 +125,25 @@ where
   @Select(sql = """
 select *
 from person
+where
+    id = /*id*/0
+  """)
+  def selectByIdOptionMap(id: Int): Option[Map[String, Any]]
+
+  @Select(sql = """
+select *
+from person
   """, strategy = SelectType.STREAM)
   def selectAllStreamMap(f: Stream[Map[String, Any]] => Int): Int
+
+// TODO: Domainの戻りは未対応
+//  @Select(sql = """
+//select name
+//from person
+//where
+//    id = /*id*/0
+//  """)
+//  def selectNameById(id: Int): Name
 
   @Insert
   def insert(person: Person): org.seasar.doma.jdbc.Result[Person]

@@ -1,12 +1,10 @@
-package domala
+package domala.jdbc
 
 import javax.sql.DataSource
 
 import org.seasar.doma.jdbc.Naming
 import org.seasar.doma.jdbc.dialect.Dialect
-import org.seasar.doma.jdbc.tx.LocalTransactionDataSource
-import org.seasar.doma.jdbc.tx.LocalTransactionManager
-import org.seasar.doma.jdbc.tx.TransactionManager
+import org.seasar.doma.jdbc.tx.{LocalTransactionDataSource, LocalTransactionManager, TransactionManager}
 
 class Config(dataSource: DataSource, dialect: Dialect, naming: Naming = Naming.NONE) extends org.seasar.doma.jdbc.Config {
 

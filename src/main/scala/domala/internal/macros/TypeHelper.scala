@@ -50,6 +50,7 @@ object TypeHelper {
   def convertToDomaType(tpe: Type.Arg): DomaType = {
     tpe match {
       case t"Map[String, $_]" => DomaType.Map
+      case t"Map[$_,$_]" => DomaType.Unknown
       case t"Seq[$elementTpe]" => DomaType.Seq(convertToDomaType(elementTpe))
       case t"Option[$elementTpe]" => DomaType.Option(convertToDomaType(elementTpe))
       case t"Optional[$elementTpe]" => DomaType.Option(convertToDomaType(elementTpe))
@@ -145,8 +146,7 @@ object TypeHelper {
         toType(tpe), toType(tpe),
         q"() => new org.seasar.doma.wrapper.SQLXMLWrapper(): org.seasar.doma.wrapper.Wrapper[java.sql.SQLXML]"
       )
-      case t"$_[..$_]" => DomaType.Unknown
-      case _ => DomaType.Entity(toType(tpe))
+      case _ => DomaType.EntityOrDomain(toType(tpe))
     }
   }
 
@@ -157,9 +157,9 @@ object TypeHelper {
         case _  => Term.Name(tpe.toString)
       }
       (
-        q"$domainTpe.getSingletonInternal.getBasicClass()",
-        q"$domainTpe.wrapperSupplier",
-        q"$domainTpe.getSingletonInternal"
+        q"$domainTpe.getBasicClass()",
+        q"$domainTpe.wrapper",
+        q"$domainTpe"
       )
     } else {
       val targetTpe = tpe match {

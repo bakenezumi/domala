@@ -18,18 +18,22 @@ object DomainTypeGenerator {
       case "Int" => (q"new org.seasar.doma.wrapper.IntegerWrapper()", Type.Name("Integer"))
     }
 
-    val internalClass = makeInternalClass(cls.name, cls.ctor, basicTpe, wrapper)
+    val wrapperSupplier = q"""
+    new java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$basicTpe]]() {
+      def get = $wrapper
+    }
+    """
+
+    val methods = makeMethods(cls.name, cls.ctor, basicTpe)
 
     val obj = q"""
-    object ${Term.Name(cls.name.value)} {
-      val singleton = new Internal()
-      def getSingletonInternal() = singleton
-
-      val wrapperSupplier = new java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$basicTpe]]() {
-          def get = $wrapper
-      }
-
-      $internalClass
+    object ${Term.Name(cls.name.value)} extends
+      org.seasar.doma.jdbc.domain.AbstractDomainType[
+        $basicTpe, ${cls.name}](
+        $wrapperSupplier) {
+      def getSingletonInternal() = this
+      val wrapper = $wrapperSupplier
+      ..$methods
     }
     """
 
@@ -38,20 +42,6 @@ object DomainTypeGenerator {
       cls,
       obj
     ))
-  }
-
-  protected def makeInternalClass(clsName: Type.Name, ctor: Ctor.Primary, basicTpe: Type.Name, wrapper: Term.New) = {
-    val methods = makeMethods(clsName, ctor, basicTpe)
-    
-    q"""
-    class Internal private[$clsName] ()
-    extends org.seasar.doma.jdbc.domain.AbstractDomainType[$basicTpe, $clsName](
-      new java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$basicTpe]]() {
-      def get = $wrapper
-    }) {
-      ..$methods
-    }
-    """
   }
 
   protected def makeMethods(clsName: Type.Name, ctor: Ctor.Primary, basicTpe: Type.Name) = {

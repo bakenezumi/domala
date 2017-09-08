@@ -1,8 +1,8 @@
-package domala.Integration
+package domala.tests
 
 import org.scalatest._
-import domala.Config
 import domala.Required
+import domala.jdbc.Config
 
 class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
   implicit val config: Config = TestConfig
@@ -128,6 +128,14 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
       assert(dao.selectByIdMap(1) ==
         Map("ID" -> 1, "NAME" -> "SMITH", "AGE" -> 10, "CITY" -> "Tokyo", "STREET" -> "Yaesu", "DEPARTMENT_ID" -> 1, "VERSION" -> 0))
       assert(dao.selectByIdMap(5) == null)
+    }
+  }
+
+  test("Option Map select") {
+    Required {
+      assert(dao.selectByIdOptionMap(1) ==
+        Some(Map("ID" -> 1, "NAME" -> "SMITH", "AGE" -> 10, "CITY" -> "Tokyo", "STREET" -> "Yaesu", "DEPARTMENT_ID" -> 1, "VERSION" -> 0)))
+      assert(dao.selectByIdOptionMap(5) == None)
     }
   }
 

@@ -1,6 +1,6 @@
-package domala.Integration
+package domala.tests
 
-import domala.Config
+import domala.jdbc.Config
 import org.seasar.doma.jdbc.Naming
 import org.seasar.doma.jdbc.dialect.H2Dialect
 import org.seasar.doma.jdbc.tx.LocalTransactionDataSource
