@@ -128,7 +128,7 @@ from person
 where
     id = /*id*/0
   """)
-  def selectByIdOptionMap(id: Int): Option[Map[String, Any]]
+  def selectByIdOptionMap(id: Int): Option[Map[String, Object]]
 
   @Select(sql = """
 select *
@@ -142,7 +142,27 @@ from person
 where
     id = /*id*/0
   """)
-  def selectNameById(id: Int): Name
+  def selectNameById(id: Int): Option[Name]
+
+  @Select(sql = """
+select name
+from person
+where
+    id = /*id*/0
+  """)
+  def selectNameByIdNullable(id: Int): Name
+
+  @Select(sql = """
+select name
+from person
+  """)
+  def selectNames: Seq[Name]
+
+  @Select(sql = """
+select name
+from person
+  """, strategy = SelectType.STREAM)
+  def selectNameStream(f: Stream[Name] => Int): Int
 
   @Insert
   def insert(person: Person): org.seasar.doma.jdbc.Result[Person]

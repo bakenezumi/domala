@@ -95,7 +95,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("stream select no param") {
+  test("select stream no param") {
     Required {
       assert(dao.selectAllStream { stream =>
         stream.length
@@ -103,7 +103,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("stream select with one param") {
+  test("select stream with one param") {
     Required {
       assert(dao.selectByIdStream(1) { stream =>
         stream.head.address
@@ -114,7 +114,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("Sequential Map select") {
+  test("select Sequential Map") {
     Required {
       assert(dao.selectAllSeqMap() == Seq(
         Map("ID" -> 1, "NAME" -> "SMITH", "AGE" -> 10, "CITY" -> "Tokyo", "STREET" -> "Yaesu", "DEPARTMENT_ID" -> 1, "VERSION" -> 0),
@@ -123,7 +123,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("Single Map select") {
+  test("select Single Map") {
     Required {
       assert(dao.selectByIdMap(1) ==
         Map("ID" -> 1, "NAME" -> "SMITH", "AGE" -> 10, "CITY" -> "Tokyo", "STREET" -> "Yaesu", "DEPARTMENT_ID" -> 1, "VERSION" -> 0))
@@ -131,7 +131,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("Option Map select") {
+  test("select Option Map") {
     Required {
       assert(dao.selectByIdOptionMap(1) ==
         Some(Map("ID" -> 1, "NAME" -> "SMITH", "AGE" -> 10, "CITY" -> "Tokyo", "STREET" -> "Yaesu", "DEPARTMENT_ID" -> 1, "VERSION" -> 0)))
@@ -139,15 +139,38 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("select domain") {
+  test("select option domain") {
     Required {
-      assert(dao.selectNameById(1) == Name("SMITH"))
+      assert(dao.selectNameById(1) == Some(Name("SMITH")))
+      assert(dao.selectNameById(99) == None)
     }
   }
 
-  test("stream map select") {
+  test("select nullable domain") {
+    Required {
+      assert(dao.selectNameByIdNullable(1) == Name("SMITH"))
+      assert(dao.selectNameByIdNullable(99) == null)
+    }
+  }
+
+  test("select domain list") {
+    Required {
+      assert(dao.selectNames == Seq(Name("SMITH"), Name("ALLEN")))
+    }
+  }
+
+  test("select map stream") {
     Required {
       assert(dao.selectAllStreamMap { stream =>
+        stream.length
+      } == 2)
+    }
+  }
+
+  test("select domain stream") {
+    Required {
+      assert(dao.selectNameStream{ stream =>
+        assert(stream.toList == List(Name("SMITH"), Name("ALLEN")))
         stream.length
       } == 2)
     }

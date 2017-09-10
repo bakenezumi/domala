@@ -41,7 +41,6 @@ object SelectGenerator {
       }, true)
     }
 
-    // Todo: Domain型の戻りに未対応（要リフレクション）
     val (handler, result, setEntity) =
       if (isStream) {
         val (functionParamTerm, internalTpe, retTpe) = paramss.flatten.find { p =>
@@ -75,14 +74,12 @@ object SelectGenerator {
               Nil
             )
           }
-          case DomaType.EntityOrDomain(tpe) => { //TODO Domain未対応
-            val internalTpeTerm = Term.Name(internalTpe.toString)
+          case DomaType.EntityOrDomain(tpe) => {
+            // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
             (
-              q"""new org.seasar.doma.internal.jdbc.command.EntityStreamHandler($internalTpeTerm, new java.util.function.Function[java.util.stream.Stream[$internalTpe], $retTpe](){
-                def apply(p: java.util.stream.Stream[$internalTpe]) = $functionParamTerm(p.toScala[Stream])
-             })""",
+              q"domala.internal.macros.DaoRefrectionMacros.getStreamHandler(classOf[$internalTpe], $functionParamTerm, $trtNameStr, ${name.value})",
               q"__command.execute()",
-              Seq(q"domala.internal.macros.DaoRefrectionMacros.setEntityType(__query, $internalTpeTerm)")
+              Seq(q"domala.internal.macros.DaoRefrectionMacros.setEntityType(__query, classOf[$internalTpe])")
             )
           }
           case _ => abort(_def.pos, org.seasar.doma.message.Message.DOMA4008.getMessage(tpe, trtName.value, name.value))
@@ -99,12 +96,12 @@ object SelectGenerator {
             q"__command.execute().asScala.map(x => x)",
             Nil
           )
-          case DomaType.Option(DomaType.EntityOrDomain(elementType), _) => { //TODO Domain未対応
-            val elementTypeTerm = Term.Name(elementType.toString)
+          case DomaType.Option(DomaType.EntityOrDomain(elementType), _) => {
+            // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
             (
-              q"new org.seasar.doma.internal.jdbc.command.OptionalEntitySingleResultHandler($elementTypeTerm)",
+              q"domala.internal.macros.DaoRefrectionMacros.getOptionalSingleResultHandler(classOf[$elementType], $trtNameStr, ${name.value})",
               q"__command.execute().asScala",
-              Seq(q"domala.internal.macros.DaoRefrectionMacros.setEntityType(__query, $elementTypeTerm)")
+              Seq(q"domala.internal.macros.DaoRefrectionMacros.setEntityType(__query, classOf[$elementType])")
             )
           }
           case DomaType.Option(_, elementTpe) => abort(_def.pos, domala.message.Message.DOMALA4235.getMessage(elementTpe, trtName.value, name.value))
@@ -121,12 +118,12 @@ object SelectGenerator {
               Nil
             )
           }
-          case DomaType.Seq(DomaType.EntityOrDomain(internalTpe), _) => { //TODO Domain未対応
-            val internalTpeTerm = Term.Name(internalTpe.toString)
+          case DomaType.Seq(DomaType.EntityOrDomain(internalTpe), _) => {
             (
-              q"new org.seasar.doma.internal.jdbc.command.EntityResultListHandler($internalTpeTerm)",
+              // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
+              q"domala.internal.macros.DaoRefrectionMacros.getResultListHandler(classOf[$internalTpe], $trtNameStr, ${name.value})",
               q"__command.execute().asScala",
-              Seq(q"__query.setEntityType($internalTpeTerm)")
+              Seq(q"domala.internal.macros.DaoRefrectionMacros.setEntityType(__query, classOf[$internalTpe])")
             )
           }
 
@@ -143,12 +140,12 @@ object SelectGenerator {
               Nil
             )
 
-          case DomaType.EntityOrDomain(tpe) => { // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
-            val tpeTerm = Term.Name(tpe.toString)
+          case DomaType.EntityOrDomain(tpe) => {
+            // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
             (
               q"domala.internal.macros.DaoRefrectionMacros.getSingleResultHandler(classOf[$tpe], $trtNameStr, ${name.value})",
               q"__command.execute().asInstanceOf[$tpe]",
-              Seq(q"domala.internal.macros.DaoRefrectionMacros.setEntityType(__query, $tpeTerm)")
+              Seq(q"domala.internal.macros.DaoRefrectionMacros.setEntityType(__query, classOf[$tpe])")
             )
           }
 
