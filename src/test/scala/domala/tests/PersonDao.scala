@@ -1,6 +1,7 @@
 package domala.tests
 
 import domala._
+import domala.jdbc.Result
 
 @Dao(config = TestConfig)
 trait PersonDao {
@@ -165,11 +166,11 @@ from person
   def selectNameStream(f: Stream[Name] => Int): Int
 
   @Insert
-  def insert(person: Person): org.seasar.doma.jdbc.Result[Person]
+  def insert(person: Person): Result[Person]
 
   @Update
-  def update(person: Person): org.seasar.doma.jdbc.Result[Person]
+  def update(person: Person): Result[Person]
 
   @Delete
-  def delete(person: Person): org.seasar.doma.jdbc.Result[Person]
+  def delete(person: Person): Result[Person]
 }

@@ -6,7 +6,7 @@ import domala._
 import domala.jdbc.Config
 import domala.tests.TestConfig
 import org.scalatest.{BeforeAndAfter, FunSuite}
-import org.seasar.doma.jdbc.Result
+import domala.jdbc.Result
 
 class BigIntTestSuite  extends FunSuite with BeforeAndAfter {
   implicit val config: Config = TestConfig

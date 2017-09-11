@@ -1,6 +1,7 @@
 package sample
 
 import domala._
+import domala.jdbc.Result
 
 @Dao(config = SampleConfig)
 trait PersonDao {
@@ -60,5 +61,11 @@ where
   def selectWithDepartmentById(id: Int): Option[PersonDepartment]
 
   @Insert
-  def insert(person: Person): org.seasar.doma.jdbc.Result[Person]
+  def insert(person: Person): Result[Person]
+
+  @Update
+  def update(person: Person): Result[Person]
+
+  @Delete
+  def delete(person: Person): Result[Person]
 }

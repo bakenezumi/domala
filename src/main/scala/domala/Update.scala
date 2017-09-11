@@ -47,8 +47,7 @@ object UpdateGenerator {
         val __count: Int = __command.execute()
         __query.complete()
         val __result =
-          new org.seasar.doma.jdbc.Result[$paramTpe](__count,
-                                                        __query.getEntity)
+          domala.jdbc.Result[$paramTpe](__count, __query.getEntity)
         exiting($trtNameStr, $nameStr, __result)
         __result
       } catch {

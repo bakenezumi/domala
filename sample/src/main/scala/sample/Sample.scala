@@ -10,13 +10,23 @@ object Sample extends App {
 
   Required {
     dao.create()
-    println(dao.selectById(1))
-    dao.insert(Person(
+    println(dao.selectAll())
+    // new person insert
+    val newPerson = Person(
       name = Name("name1"),
       age = Some(10),
       address = Address("city1", "street1"),
       departmentId = Some(1)
-    ))
+    )
+    dao.insert(newPerson)
+    // Person(id = 2) update to (age + 1)
+    dao.selectById(2).foreach(entity =>
+      dao.update(entity.copy(age = entity.age.map(_ + 1)))
+    )
+    // Person(id = 1) delete
+    dao.selectById(1).foreach(entity =>
+      dao.delete(entity)
+    )
     println(dao.selectAll())
     println(dao.selectWithDepartmentById(2))
   }

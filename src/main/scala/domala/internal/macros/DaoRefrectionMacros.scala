@@ -95,14 +95,14 @@ object DaoRefrectionMacros {
     import c.universe._
     val wtt = weakTypeOf[T]
     if (wtt.companion <:< typeOf[AbstractEntityType[_]]) {
+      val entity = getCompanion(c)(param)
       reify {
-        val entity = Class.forName(param.splice.getName + "$").getField("MODULE$").get(null).asInstanceOf[AbstractEntityType[T]]
-        new EntitySingleResultHandler(entity)
+        new EntitySingleResultHandler(entity.splice.asInstanceOf[AbstractEntityType[T]])
       }
     } else if (wtt.companion <:< typeOf[AbstractDomainType[_, _]]){
+      val domain = getCompanion(c)(param)
       reify {
-        val domain = Class.forName(param.splice.getName + "$").getField("MODULE$").get(null).asInstanceOf[AbstractDomainType[_, T]]
-        new DomainSingleResultHandler(domain)
+        new DomainSingleResultHandler(domain.splice.asInstanceOf[AbstractDomainType[_, T]])
       }
     } else {
       val Literal(Constant(daoNameText: String)) = daoName.tree
@@ -115,11 +115,11 @@ object DaoRefrectionMacros {
   def setEntityTypeImpl[T: c.WeakTypeTag](c: Context)(query: c.Expr[AbstractSelectQuery], param: c.Expr[Class[T]]): c.universe.Expr[Unit] = {
     import c.universe._
     if (param.actualType <:< typeOf[AbstractEntityType[_]]) {
+      val entity = getCompanion(c)(param)
       reify {
-        val entity = Class.forName(param.splice.getName + "$").getField("MODULE$").get(null).asInstanceOf[AbstractEntityType[T]]
-        query.splice.setEntityType(entity)
+        query.splice.setEntityType(entity.splice.asInstanceOf[AbstractEntityType[T]])
       }
-    } else reify ()
+    } else reify () // No operation
   }
   def setEntityType[T](query: AbstractSelectQuery, param: Class[T]): Unit = macro setEntityTypeImpl[T]
 }
