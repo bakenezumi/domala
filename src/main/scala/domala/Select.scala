@@ -74,7 +74,7 @@ object SelectGenerator {
               Nil
             )
           }
-          case DomaType.EntityOrDomain(tpe) => {
+          case DomaType.EntityOrDomain(internalTpe) => {
             // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
             (
               q"domala.internal.macros.DaoRefrectionMacros.getStreamHandler(classOf[$internalTpe], $functionParamTerm, $trtNameStr, ${name.value})",

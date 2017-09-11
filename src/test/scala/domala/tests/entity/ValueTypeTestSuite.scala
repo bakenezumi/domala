@@ -57,32 +57,105 @@ class ValueTypeTestSuite  extends FunSuite with BeforeAndAfter {
       assert(dao.selectOption(1) === entity)
     }
   }
-}
+
+  test("select basic value holder") {
+    Required {
+      assert(dao.selectHolder(0) === ValueTypeHolder(0, BooleanHolder(false), ByteHolder(0: Byte), ShortHolder(0: Short), IntHolder(0), LongHolder(0), FloatHolder(0.0f), DoubleHolder(0.0)))
+    }
+  }
+
+  test("insert basic value holder") {
+    Required {
+      val entity = ValueTypeHolder(1, BooleanHolder(true), ByteHolder(1: Byte), ShortHolder(1: Short), IntHolder(1), LongHolder(1), FloatHolder(1.0f), DoubleHolder(1.0))
+      dao.insertHolder(entity)
+      assert(dao.selectHolder(1) === entity)
+    }
+  }
+
+  test("select basic value holder option") {
+    Required {
+      assert(dao.selectHolderOption(0) === ValueTypeHolderOption(0, Some(BooleanHolder(false)), Some(ByteHolder(0: Byte)), Some(ShortHolder(0: Short)), Some(IntHolder(0)), Some(LongHolder(0)), Some(FloatHolder(0.0f)), Some(DoubleHolder(0.0))))
+    }
+  }
+
+  test("insert basic value holder option") {
+    Required {
+      val entity = ValueTypeHolderOption(1, Some(BooleanHolder(true)), Some(ByteHolder(1: Byte)), Some(ShortHolder(1: Short)), Some(IntHolder(1)), Some(LongHolder(1)), Some(FloatHolder(1.0f)), Some(DoubleHolder(1.0)))
+      dao.insertHolderOption(entity)
+      assert(dao.selectHolderOption(1) === entity)
+    }
+  }
+
+  test("insert basic value holder none") {
+    Required {
+      val entity = ValueTypeHolderOption(1, None, None, None, None, None, None, None)
+      dao.insertHolderOption(entity)
+      assert(dao.selectHolderOption(1) === entity)
+    }
+  }}
 
 @Entity(name = "value_types")
 case class ValueTypeBasic(
-  id : Int,
-  boolean : Boolean,
-  byte : Byte,
-  short : Short,
-  int : Int,
-  long : Long,
-  float : Float,
-  double : Double
+  id: Int,
+  boolean: Boolean,
+  byte: Byte,
+  short: Short,
+  int: Int,
+  long: Long,
+  float: Float,
+  double: Double
 )
 
 @Entity(name = "value_types")
 case class ValueTypeOption(
- id : Int,
- boolean : Option[Boolean],
- byte : Option[Byte],
- short : Option[Short],
- int : Option[Int],
- long : Option[Long],
- float : Option[Float],
- double : Option[Double]
+ id: Int,
+ boolean: Option[Boolean],
+ byte: Option[Byte],
+ short: Option[Short],
+ int: Option[Int],
+ long: Option[Long],
+ float: Option[Float],
+ double: Option[Double]
 )
 
+@Domain
+case class BooleanHolder(value: Boolean)
+@Domain
+case class ByteHolder(value: Byte)
+@Domain
+case class ShortHolder(value: Short)
+@Domain
+case class IntHolder(value: Int)
+@Domain
+case class LongHolder(value: Long)
+@Domain
+case class FloatHolder(value: Float)
+@Domain
+case class DoubleHolder(value: Double)
+
+@Entity(name = "value_types")
+case class ValueTypeHolder(
+  id: Int,
+  boolean: BooleanHolder,
+  byte: ByteHolder,
+  short: ShortHolder,
+  int: IntHolder,
+  long: LongHolder,
+  float: FloatHolder,
+  double: DoubleHolder
+)
+
+@Entity(name = "value_types")
+case class ValueTypeHolderOption(
+  id: Int,
+  boolean: Option[BooleanHolder],
+  byte: Option[ByteHolder],
+  short: Option[ShortHolder],
+  int: Option[IntHolder],
+  long: Option[LongHolder],
+  float: Option[FloatHolder],
+  double: Option[DoubleHolder]
+)
 
 @Dao(config = TestConfig)
 trait ValueTypeTestDao {
@@ -129,5 +202,25 @@ select * from value_types where id = /* id */0
 
   @Insert
   def insertOption(entity: ValueTypeOption): Result[ValueTypeOption]
+
+  @Select(sql=
+    """
+select * from value_types where id = /* id */0
+"""
+  )
+  def selectHolder(id: Int): ValueTypeHolder
+
+  @Insert
+  def insertHolder(entity: ValueTypeHolder): Result[ValueTypeHolder]
+
+  @Select(sql=
+    """
+select * from value_types where id = /* id */0
+"""
+  )
+  def selectHolderOption(id: Int): ValueTypeHolderOption
+
+  @Insert
+  def insertHolderOption(entity: ValueTypeHolderOption): Result[ValueTypeHolderOption]
 }
 

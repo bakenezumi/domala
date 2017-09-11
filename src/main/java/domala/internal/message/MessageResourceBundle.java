@@ -7,7 +7,8 @@ import domala.message.Message;
  *
  * @author bakenezumi
  *
- */public class MessageResourceBundle extends org.seasar.doma.internal.message.AbstractMessageResourceBundle<Message> {
+ */
+public class MessageResourceBundle extends org.seasar.doma.internal.message.AbstractMessageResourceBundle<Message> {
     /**
      * Constructor
      */

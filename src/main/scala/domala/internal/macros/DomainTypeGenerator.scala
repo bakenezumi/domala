@@ -11,18 +11,13 @@ import org.scalameta.logger
 object DomainTypeGenerator {
   def generate(cls: Defn.Class) = {
 
-    val basicTpeStr = cls.ctor.paramss.flatten.head.decltpe.get.toString
-    // TODO: その他の型
-    val (wrapper, basicTpe) = basicTpeStr match {
-      case "String" => (q"new org.seasar.doma.wrapper.StringWrapper()", Type.Name("String"))
-      case "Int" => (q"new org.seasar.doma.wrapper.IntegerWrapper()", Type.Name("Integer"))
+    if (cls.ctor.paramss.flatten.length != 1) abort(cls.pos, domala.message.Message.DOMALA6001.getMessage())
+    val valueParam = cls.ctor.paramss.flatten.headOption.getOrElse(abort(cls.pos, domala.message.Message.DOMALA6001.getMessage()))
+    if(valueParam.name.value != "value") abort(cls.pos, domala.message.Message.DOMALA6002.getMessage())
+    val (basicTpe, wrapperSupplier) = TypeHelper.convertToDomaType(valueParam.decltpe.get) match {
+      case DomaType.Basic(_, convertedType, wrapperSupplier) => (convertedType, wrapperSupplier)
+      case _ => abort(cls.pos, domala.message.Message.DOMALA4096.getMessage(valueParam.decltpe.get.toString(), cls.name.value, valueParam.name.value))
     }
-
-    val wrapperSupplier = q"""
-    new java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$basicTpe]]() {
-      def get = $wrapper
-    }
-    """
 
     val methods = makeMethods(cls.name, cls.ctor, basicTpe)
 
@@ -30,9 +25,9 @@ object DomainTypeGenerator {
     object ${Term.Name(cls.name.value)} extends
       org.seasar.doma.jdbc.domain.AbstractDomainType[
         $basicTpe, ${cls.name}](
-        $wrapperSupplier) {
+        $wrapperSupplier: java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$basicTpe]]) {
       def getSingletonInternal() = this
-      val wrapper = $wrapperSupplier
+      val wrapper: java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$basicTpe]] = $wrapperSupplier
       ..$methods
     }
     """
@@ -44,7 +39,7 @@ object DomainTypeGenerator {
     ))
   }
 
-  protected def makeMethods(clsName: Type.Name, ctor: Ctor.Primary, basicTpe: Type.Name) = {
+  protected def makeMethods(clsName: Type.Name, ctor: Ctor.Primary, basicTpe: Type) = {
     q"""
     override protected def newDomain(value: $basicTpe): $clsName = {
       if (value == null) null else ${Term.Name(clsName.toString)}(value)

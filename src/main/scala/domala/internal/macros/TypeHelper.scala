@@ -167,8 +167,8 @@ object TypeHelper {
         case t"Optional[$inner]" => inner
         case _ => tpe
       }
-      val DomaType.Basic(_, convertedType, wrapper) = convertToDomaType(targetTpe)
-      (q"classOf[$convertedType]", wrapper, q"null")
+      val DomaType.Basic(_, convertedType, wrapperSupplier) = convertToDomaType(targetTpe)
+      (q"classOf[$convertedType]", wrapperSupplier, q"null")
     }
   }
 

@@ -128,7 +128,7 @@ from person
 where
     id = /*id*/0
   """)
-  def selectByIdOptionMap(id: Int): Option[Map[String, Object]]
+  def selectByIdOptionMap(id: Int): Option[Map[String, Any]]
 
   @Select(sql = """
 select *

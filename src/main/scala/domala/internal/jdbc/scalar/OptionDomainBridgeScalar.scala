@@ -9,27 +9,32 @@ import org.seasar.doma.wrapper.Wrapper
 class OptionDomainBridgeScalar[BASIC, DOMAIN](optionalScalar: Scalar[BASIC, Optional[DOMAIN]])
     extends Scalar[BASIC, Option[DOMAIN]] {
 
-  protected val wrapper: Wrapper[BASIC] = optionalScalar.getWrapper
-
   AssertionUtil.assertNotNull(optionalScalar, "")
-  AssertionUtil.assertNotNull(wrapper, "")
 
-  override def getDomainClass: java.util.Optional[Class[_]] = java.util.Optional.empty()
+  override def getDomainClass: java.util.Optional[Class[_]] = {
+    optionalScalar.getDomainClass
+  }
 
   override def cast(value: AnyRef): Option[DOMAIN] =
     value.asInstanceOf[Option[DOMAIN]]
 
-  override def get(): Option[DOMAIN] = Option(optionalScalar.get.get())
+  override def get(): Option[DOMAIN] = {
+    if (optionalScalar.get == null) null
+    else Option(optionalScalar.get.orElse(null.asInstanceOf[DOMAIN]))
+  }
 
   override def getDefault: Option[DOMAIN] = None
 
-  override def set(optional: Option[DOMAIN]): Unit = {
-    if (optional == null) {
-      wrapper.set(null.asInstanceOf[BASIC])
+  override def set(option: Option[DOMAIN]): Unit = {
+    if (option == null) {
+      optionalScalar.set(Optional.of[DOMAIN](null.asInstanceOf[DOMAIN]))
     } else {
-      wrapper.set(optional.getOrElse(null).asInstanceOf[BASIC])
+      optionalScalar.set(option match {
+        case None => Optional.empty()
+        case Some(value) => Optional.of(value)
+      })
     }
   }
 
-  override def getWrapper: Wrapper[BASIC] = wrapper
+  override def getWrapper: Wrapper[BASIC] = optionalScalar.getWrapper
 }
