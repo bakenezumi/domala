@@ -24,9 +24,9 @@ object AutoModifyQueryGenerator {
                otherQuerySettings: Seq[Stat],
                command: Term.Apply): Defn.Def = {
    defDecl.tpe match {
-    case t"Result[$entity]" => ()
-    case t"jdbc.Result[$entity]" => ()
-    case t"domala.jdbc.Result[$entity]" => ()
+    case t"Result[$entity]" if entity.toString() == paramType.toString() => ()
+    case t"jdbc.Result[$entity]" if entity.toString() == paramType.toString() => ()
+    case t"domala.jdbc.Result[$entity]" if entity.toString() == paramType.toString() => ()
     case _ => abort(defDecl._def.pos,
      domala.message.Message.DOMALA4222
        .getMessage(defDecl.trtName.value, defDecl.name.value))

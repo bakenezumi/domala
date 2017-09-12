@@ -1,11 +1,34 @@
 package domala
 
-import domala.internal.macros.{DomaType, TypeHelper}
+import domala.internal.macros._
+import org.seasar.doma.jdbc.SqlLogType
+import org.seasar.doma.{FetchType, MapKeyNamingType}
 
 import collection.immutable.Seq
 import scala.meta._
 
-class Select(sql: String, strategy: SelectType = SelectType.RETURN) extends scala.annotation.StaticAnnotation
+class Select(
+  sql: String,
+  queryTimeout: Int = -1,
+  fetchSize: Int = -1,
+  maxRows: Int = -1,
+  strategy: SelectType = SelectType.RETURN,
+  fetch: FetchType = FetchType.LAZY,
+  ensureResult: Boolean = false,
+  ensureResultMapping: Boolean = false,
+  mapKeyNaming: MapKeyNamingType = MapKeyNamingType.NONE,
+  sqlLog: SqlLogType = SqlLogType.FORMATTED
+) extends scala.annotation.StaticAnnotation
+
+case class SelectSetting(
+  fetchSize: Term.Arg,
+  maxRows: Term.Arg,
+  strategy: Term.Arg,
+  fetch: Term.Arg,
+  ensureResult: Term.Arg,
+  ensureResultMapping: Term.Arg,
+  mapKeyNaming: Term.Arg
+)
 
 sealed trait SelectType
 object SelectType {
@@ -14,36 +37,49 @@ object SelectType {
 }
 
 object SelectGenerator {
-  def generate(trtName: Type.Name, _def: Decl.Def, internalMethodName: Term.Name, args: Seq[Term.Arg]): Defn.Def = {
-    val sql = args.collectFirst{case arg"sql = $sql" => sql}.get
-    val strategy = args.collectFirst{case arg"strategy = $strategy" => strategy}
-    val Decl.Def(mods, name, tparams, paramss, tpe) = _def
-    val trtNameStr = trtName.value
-    val nameStr = name.value
+  def readSelectSetting(args: Seq[Term.Arg]): SelectSetting = {
+    val fetchSize =  args.collectFirst{ case arg"fetchSize = $x" => x }.getOrElse(q"-1")
+    val maxRows =  args.collectFirst{ case arg"maxRows = $x" => x }.getOrElse(q"-1")
+    val strategy = args.collectFirst{ case arg"strategy = $x" => x }.getOrElse(q"SelectType.RETURN")
+    val fetch = args.collectFirst{ case arg"fetch = $x" => x }.getOrElse(q"org.seasar.doma.FetchType.LAZY")
+    val ensureResult =  args.collectFirst{ case arg"ensureResult = $x" => x }.getOrElse(q"false")
+    val ensureResultMapping =  args.collectFirst{ case arg"ensureResultMapping = $x" => x }.getOrElse(q"false")
+    val mapKeyNaming = args.collectFirst{ case arg"mapKeyNaming = $x" => x }.getOrElse(q"org.seasar.doma.MapKeyNamingType.NONE")
+    SelectSetting(fetchSize, maxRows, strategy, fetch, ensureResult, ensureResultMapping, mapKeyNaming)
+  }
 
-    val (checkParameter: Seq[Stat], isStream: Boolean) = strategy match {
-      case None => (Nil, false)
-      case Some(q"SelectType.RETURN") | Some(q"RETURN") => (Nil, false)
-      case Some(q"SelectType.STREAM") | Some(q"STREAM") => (Seq {
-        val functionParams = paramss.flatten.filter{ p =>
+  def generate(trtName: Type.Name, _def: Decl.Def, internalMethodName: Term.Name, args: Seq[Term.Arg]): Defn.Def = {
+    val defDecl =  QueryDefDecl.of(trtName, _def)
+    val commonSetting = DaoMethodMacroHelper.readCommonSetting(args)
+    commonSetting.sql match {
+      case arg""" "" """  => abort(_def.pos, domala.message.Message.DOMALA4020.getMessage(trtName.value, defDecl.name.value))
+      case _ => ()
+    }
+    val selectSetting = readSelectSetting(args)
+
+    val (checkParameter: Seq[Stat], isStream: Boolean) = selectSetting.strategy match {
+      case q"SelectType.RETURN" | q"RETURN" => (Nil, false)
+      case q"SelectType.STREAM" | q"STREAM" => (Seq {
+        val functionParams = defDecl.paramss.flatten.filter{ p =>
           p.decltpe.get match {
             case t"$_ => $_" => true
             case _ => false
           }
         }
         if (functionParams.isEmpty) {
-          abort(_def.pos, org.seasar.doma.message.Message.DOMA4247.getMessage(trtName.value, name.value))
+          abort(_def.pos, org.seasar.doma.message.Message.DOMA4247.getMessage(trtName.value, defDecl.name.value))
         } else if (functionParams.length > 1) {
-          abort(_def.pos, org.seasar.doma.message.Message.DOMA4249.getMessage(trtName.value, name.value))
+          abort(_def.pos, org.seasar.doma.message.Message.DOMA4249.getMessage(trtName.value, defDecl.name.value))
         }
         val functionParam = Term.Name(functionParams.head.name.toString)
         q"""if ($functionParam == null) throw new org.seasar.doma.DomaNullPointerException(${functionParam.value})"""
       }, true)
+      case _ => abort(_def.pos, "error")
     }
 
     val (handler, result, setEntity) =
       if (isStream) {
-        val (functionParamTerm, internalTpe, retTpe) = paramss.flatten.find { p =>
+        val (functionParamTerm, internalTpe, retTpe) = defDecl.paramss.flatten.find { p =>
           p.decltpe.get match {
             case t"Stream[$_] => $_" => true
             case _ => false
@@ -52,13 +88,13 @@ object SelectGenerator {
           p.decltpe.get match {
             case t"Stream[$internalTpe] => $retTpe" => (Term.Name(p.name.value), internalTpe, retTpe)
           }
-        }.getOrElse(abort(_def.pos, domala.message.Message.DOMALA4244.getMessage(trtName.value, name.value)))
-        if(retTpe.toString().trim != tpe.toString().trim) {
-          abort(_def.pos, org.seasar.doma.message.Message.DOMA4246.getMessage(tpe, retTpe, trtName.value, name.value))
+        }.getOrElse(abort(_def.pos, domala.message.Message.DOMALA4244.getMessage(trtName.value, defDecl.name.value)))
+        if(retTpe.toString().trim != defDecl.tpe.toString().trim) {
+          abort(_def.pos, org.seasar.doma.message.Message.DOMA4246.getMessage(defDecl.tpe, retTpe, trtName.value, defDecl.name.value))
         }
         TypeHelper.convertToDomaType(internalTpe) match {
           case DomaType.Map => (
-            q"""new org.seasar.doma.internal.jdbc.command.MapStreamHandler[$retTpe](org.seasar.doma.MapKeyNamingType.NONE, new java.util.function.Function[java.util.stream.Stream[java.util.Map[String, Object]], $retTpe](){
+            q"""new org.seasar.doma.internal.jdbc.command.MapStreamHandler[$retTpe](${selectSetting.mapKeyNaming}, new java.util.function.Function[java.util.stream.Stream[java.util.Map[String, Object]], $retTpe](){
               def apply(p: java.util.stream.Stream[java.util.Map[String, Object]]) = $functionParamTerm(p.toScala[Stream].map(_.asScala.toMap))
               })""",
             q"__command.execute()",
@@ -77,17 +113,17 @@ object SelectGenerator {
           case DomaType.EntityOrDomain(internalTpe) => {
             // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
             (
-              q"domala.internal.macros.DaoRefrectionMacros.getStreamHandler(classOf[$internalTpe], $functionParamTerm, $trtNameStr, ${name.value})",
+              q"domala.internal.macros.DaoRefrectionMacros.getStreamHandler(classOf[$internalTpe], $functionParamTerm, ${trtName.value}, ${defDecl.name.value})",
               q"__command.execute()",
               Seq(q"domala.internal.macros.DaoRefrectionMacros.setEntityType(__query, classOf[$internalTpe])")
             )
           }
-          case _ => abort(_def.pos, org.seasar.doma.message.Message.DOMA4008.getMessage(tpe, trtName.value, name.value))
+          case _ => abort(_def.pos, org.seasar.doma.message.Message.DOMA4008.getMessage(defDecl.tpe, trtName.value, defDecl.name.value))
         }
       } else {
-        TypeHelper.convertToDomaType(tpe) match {
+        TypeHelper.convertToDomaType(defDecl.tpe) match {
           case DomaType.Option(DomaType.Map, _) => (
-            q"new org.seasar.doma.internal.jdbc.command.OptionalMapSingleResultHandler(org.seasar.doma.MapKeyNamingType.NONE)",
+            q"new org.seasar.doma.internal.jdbc.command.OptionalMapSingleResultHandler(${selectSetting.mapKeyNaming})",
             q"__command.execute().asScala.map(x => x.asScala.toMap)",
             Nil
           )
@@ -99,15 +135,15 @@ object SelectGenerator {
           case DomaType.Option(DomaType.EntityOrDomain(elementType), _) => {
             // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
             (
-              q"domala.internal.macros.DaoRefrectionMacros.getOptionalSingleResultHandler(classOf[$elementType], $trtNameStr, ${name.value})",
+              q"domala.internal.macros.DaoRefrectionMacros.getOptionalSingleResultHandler(classOf[$elementType], ${trtName.value}, ${defDecl.name.value})",
               q"__command.execute().asScala",
               Seq(q"domala.internal.macros.DaoRefrectionMacros.setEntityType(__query, classOf[$elementType])")
             )
           }
-          case DomaType.Option(_, elementTpe) => abort(_def.pos, domala.message.Message.DOMALA4235.getMessage(elementTpe, trtName.value, name.value))
+          case DomaType.Option(_, elementTpe) => abort(_def.pos, domala.message.Message.DOMALA4235.getMessage(elementTpe, trtName.value, defDecl.name.value))
 
           case DomaType.Seq(DomaType.Map, _) => (
-            q"new org.seasar.doma.internal.jdbc.command.MapResultListHandler(org.seasar.doma.MapKeyNamingType.NONE)",
+            q"new org.seasar.doma.internal.jdbc.command.MapResultListHandler(${selectSetting.mapKeyNaming})",
             q"__command.execute().asScala.map(_.asScala.toMap)",
             Nil
           )
@@ -121,14 +157,14 @@ object SelectGenerator {
           case DomaType.Seq(DomaType.EntityOrDomain(internalTpe), _) => {
             (
               // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
-              q"domala.internal.macros.DaoRefrectionMacros.getResultListHandler(classOf[$internalTpe], $trtNameStr, ${name.value})",
+              q"domala.internal.macros.DaoRefrectionMacros.getResultListHandler(classOf[$internalTpe], ${trtName.value}, ${defDecl.name.value})",
               q"__command.execute().asScala",
               Seq(q"domala.internal.macros.DaoRefrectionMacros.setEntityType(__query, classOf[$internalTpe])")
             )
           }
 
           case DomaType.Map => (
-            q"new org.seasar.doma.internal.jdbc.command.MapSingleResultHandler(org.seasar.doma.MapKeyNamingType.NONE)",
+            q"new org.seasar.doma.internal.jdbc.command.MapSingleResultHandler(${selectSetting.mapKeyNaming})",
             q"Option(__command.execute()).map(_.asScala.toMap).getOrElse(null)",
             Nil
           )
@@ -143,13 +179,13 @@ object SelectGenerator {
           case DomaType.EntityOrDomain(tpe) => {
             // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
             (
-              q"domala.internal.macros.DaoRefrectionMacros.getSingleResultHandler(classOf[$tpe], $trtNameStr, ${name.value})",
+              q"domala.internal.macros.DaoRefrectionMacros.getSingleResultHandler(classOf[$tpe], ${trtName.value}, ${defDecl.name.value})",
               q"__command.execute().asInstanceOf[$tpe]",
               Seq(q"domala.internal.macros.DaoRefrectionMacros.setEntityType(__query, classOf[$tpe])")
             )
           }
 
-          case _ => abort(_def.pos, org.seasar.doma.message.Message.DOMA4008.getMessage(tpe, trtName.value, name.value))
+          case _ => abort(_def.pos, org.seasar.doma.message.Message.DOMA4008.getMessage(defDecl.tpe, trtName.value, defDecl.name.value))
         }
       }
     val command =
@@ -161,11 +197,11 @@ object SelectGenerator {
       )
       """
 
-    val enteringParam = paramss.flatten.map( p =>
+    val enteringParam = defDecl.paramss.flatten.map( p =>
       arg"${Term.Name(p.name.toString)}.asInstanceOf[Object]"
     )
 
-    val addParameterStats = paramss.flatten.map{ p =>
+    val addParameterStats = defDecl.paramss.flatten.map{ p =>
       val paramTpe = p.decltpe.get match {
         case t"$container[..$inner]" =>  {
           val placeHolder = inner.map(_ => t"_")
@@ -180,33 +216,33 @@ object SelectGenerator {
     }
 
     q"""
-      override def $name = {
-        entering($trtNameStr, $nameStr ..$enteringParam)
+      override def ${defDecl.name} = {
+        entering(${trtName.value}, ${defDecl.name.value} ..$enteringParam)
         try {
-          val __query = new domala.jdbc.query.SqlSelectQuery($sql)
+          val __query = new domala.jdbc.query.SqlSelectQuery(${commonSetting.sql})
           ..$checkParameter
           __query.setMethod($internalMethodName)
           __query.setConfig(__config)
           ..$setEntity
           ..$addParameterStats
-          __query.setCallerClassName($trtNameStr)
-          __query.setCallerMethodName($nameStr)
-          __query.setResultEnsured(false)
-          __query.setResultMappingEnsured(false)
-          __query.setFetchType(org.seasar.doma.FetchType.LAZY)
-          __query.setQueryTimeout(-1)
-          __query.setMaxRows(-1)
-          __query.setFetchSize(-1)
-          __query.setSqlLogType(org.seasar.doma.jdbc.SqlLogType.FORMATTED)
+          __query.setCallerClassName(${trtName.value})
+          __query.setCallerMethodName(${defDecl.name.value})
+          __query.setResultEnsured(${selectSetting.ensureResult})
+          __query.setResultMappingEnsured(${selectSetting.ensureResultMapping})
+          __query.setFetchType(${selectSetting.fetch})
+          __query.setQueryTimeout(${commonSetting.queryTimeout})
+          __query.setMaxRows(${selectSetting.maxRows})
+          __query.setFetchSize(${selectSetting.fetchSize})
+          __query.setSqlLogType(${commonSetting.sqlLogType})
           __query.prepare()
           val __command = $command
-          val __result: $tpe = $result
+          val __result: ${defDecl.tpe} = $result
           __query.complete()
-          exiting($trtNameStr, $nameStr, __result)
+          exiting(${trtName.value}, ${defDecl.name.value}, __result)
           __result
         } catch {
           case  __e: java.lang.RuntimeException => {
-            throwing($trtNameStr, $nameStr, __e)
+            throwing(${trtName.value}, ${defDecl.name.value}, __e)
             throw __e
           }
         }

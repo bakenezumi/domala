@@ -33,6 +33,7 @@ import org.seasar.doma.message.MessageResource;
 public enum Message implements MessageResource {
     // macros
     DOMALA4008("戻り値のSeqに対する実型引数の型[{0}]はサポートされていません。 at {1}.{2}"),
+    DOMALA4020("[{0}.{1}]のSQLが空です。"),
     // TODO: @ExternalDomainは未対応
     //DOMALA4096("クラス[{0}]は、永続対象の型としてサポートされていません。 at {1}.{2}。@ExternalDomainでマッピングすることを意図している場合、登録や設定が不足している可能性があります。@DomainConvertersを注釈したクラスと注釈処理のオプション（domala.domain.converters）を見直してください。"),
     DOMALA4096("クラス[{0}]は、永続対象の型としてサポートされていません。 at {1}.{2}。"),

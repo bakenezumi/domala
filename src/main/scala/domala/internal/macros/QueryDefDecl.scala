@@ -1,5 +1,6 @@
 package domala.internal.macros
 import scala.meta._
+import scala.collection.immutable.Seq
 
 case class QueryDefDecl(
   _def: Decl.Def,
