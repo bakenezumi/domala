@@ -71,12 +71,12 @@ object DaoGenerator {
       _def.mods.collectFirst {
         case mod"@Script(sql = $sql)" => ScriptGenerator.generate(trtName, _def, internalMethodName, sql)
         case mod"@Select(..$modParams)" => SelectGenerator.generate(trtName, _def, internalMethodName, modParams)
-        case mod"@Insert" => InsertGenerator.generate(trtName, _def, internalMethodName)
-        case mod"@Insert(..$modParams)" => InsertGenerator.generate(trtName, _def, internalMethodName)
-        case mod"@Update" => UpdateGenerator.generate(trtName, _def, internalMethodName)
-        case mod"@Update(..$modParams)" => UpdateGenerator.generate(trtName, _def, internalMethodName)
-        case mod"@Delete" => DeleteGenerator.generate(trtName, _def, internalMethodName)
-        case mod"@Delete(..$modParams)" => DeleteGenerator.generate(trtName, _def, internalMethodName)
+        case mod"@Insert" => InsertGenerator.generate(trtName, _def, internalMethodName, Nil)
+        case mod"@Insert(..$modParams)" => InsertGenerator.generate(trtName, _def, internalMethodName, modParams)
+        case mod"@Update" => UpdateGenerator.generate(trtName, _def, internalMethodName, Nil)
+        case mod"@Update(..$modParams)" => UpdateGenerator.generate(trtName, _def, internalMethodName, modParams)
+        case mod"@Delete" => DeleteGenerator.generate(trtName, _def, internalMethodName, Nil)
+        case mod"@Delete(..$modParams)" => DeleteGenerator.generate(trtName, _def, internalMethodName, modParams)
       }.get.copy(tparams = _def.tparams, paramss = _def.paramss)
     )
   }

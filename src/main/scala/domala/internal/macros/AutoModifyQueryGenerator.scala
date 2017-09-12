@@ -16,6 +16,7 @@ object AutoModifyQueryGenerator {
   }
 
   def generate(defDecl: QueryDefDecl,
+               commonSetting: DaoMethodCommonSetting,
                paramName: Term.Name,
                paramType: Type.Name,
                internalMethodName: Term.Name,
@@ -44,8 +45,8 @@ object AutoModifyQueryGenerator {
         __query.setEntity($paramName)
         __query.setCallerClassName(${defDecl.trtName.value})
         __query.setCallerMethodName(${defDecl.name.value})
-        __query.setQueryTimeout(-1)
-        __query.setSqlLogType(org.seasar.doma.jdbc.SqlLogType.FORMATTED)
+        __query.setQueryTimeout(${commonSetting.queryTimeout})
+        __query.setSqlLogType(${commonSetting.sqlLogType})
         ..$otherQuerySettings
         __query.prepare()
         val __command = $command
