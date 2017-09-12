@@ -45,7 +45,8 @@ class SqlDateTestSuite  extends FunSuite with BeforeAndAfter {
   }
 }
 
-@Entity(name = "sqldate")
+@Entity
+@Table(name = "sqldate")
 case class SqlDateEntity(
    id : Int,
    basicDate : Date,

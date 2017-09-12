@@ -45,7 +45,8 @@ class JavaDateTestSuite  extends FunSuite with BeforeAndAfter {
   }
 }
 
-@Entity(name = "javadate")
+@Entity
+@Table(name = "javadate")
 case class JavaDateEntity(
    id : Int,
    basicDate : LocalDate,

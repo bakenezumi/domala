@@ -53,14 +53,16 @@ class BigDecimalTestSuite  extends FunSuite with BeforeAndAfter {
   }
 }
 
-@Entity(name = "bigdecimal")
+@Entity
+@Table(name = "bigdecimal")
 case class BigDecimalEntity(
   id : Int,
   basic : BigDecimal,
   option : Option[BigDecimal],
 )
 
-@Entity(name = "bigdecimal")
+@Entity
+@Table(name = "bigdecimal")
 case class JavaBigDecimalEntity(
   id : Int,
   basic : java.math.BigDecimal,

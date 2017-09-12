@@ -55,14 +55,16 @@ class BigIntTestSuite  extends FunSuite with BeforeAndAfter {
   }
 }
 
-@Entity(name = "bigint")
+@Entity
+@Table(name = "bigint")
 case class BigIntEntity(
   id : Int,
   basic : BigInt,
   option : Option[BigInt],
 )
 
-@Entity(name = "bigint")
+@Entity
+@Table(name = "bigint")
 case class JavaBigIntegerEntity(
   id : Int,
   basic : java.math.BigInteger,

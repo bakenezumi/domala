@@ -94,7 +94,8 @@ class ValueTypeTestSuite  extends FunSuite with BeforeAndAfter {
     }
   }}
 
-@Entity(name = "value_types")
+@Entity
+@Table(name = "value_types")
 case class ValueTypeBasic(
   id: Int,
   boolean: Boolean,
@@ -106,7 +107,8 @@ case class ValueTypeBasic(
   double: Double
 )
 
-@Entity(name = "value_types")
+@Entity
+@Table(name = "value_types")
 case class ValueTypeOption(
  id: Int,
  boolean: Option[Boolean],
@@ -133,7 +135,8 @@ case class FloatHolder(value: Float)
 @Domain
 case class DoubleHolder(value: Double)
 
-@Entity(name = "value_types")
+@Entity
+@Table(name = "value_types")
 case class ValueTypeHolder(
   id: Int,
   boolean: BooleanHolder,
@@ -145,7 +148,8 @@ case class ValueTypeHolder(
   double: DoubleHolder
 )
 
-@Entity(name = "value_types")
+@Entity
+@Table(name = "value_types")
 case class ValueTypeHolderOption(
   id: Int,
   boolean: Option[BooleanHolder],

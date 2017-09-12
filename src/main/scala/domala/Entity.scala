@@ -10,9 +10,8 @@ import scala.meta.contrib._
 class Entity(val name: String = null) extends scala.annotation.StaticAnnotation {
   inline def apply(defn: Any): Any = meta {
     val q"new $_(..$params)" = this
-    val name = params.collectFirst{ case arg"name = $x" => x }.orNull
     defn match {
-      case cls: Defn.Class => EntityTypeGenerator.generate(cls, name)
+      case cls: Defn.Class => EntityTypeGenerator.generate(cls, params)
       case _ => abort("@Entity most annotate a class")
     }
   }
@@ -23,9 +22,14 @@ class Entity(val name: String = null) extends scala.annotation.StaticAnnotation 
   */
 object EntityTypeGenerator {
 
-  def generate(cls: Defn.Class, name: Term.Arg): Term.Block = {
+  def generate(cls: Defn.Class, params: Seq[Term.Arg]): Term.Block = {
+    val tableSetting = TableSetting.read(cls.mods)
+    val name = cls.mods.collect {
+      case mod"@Table(name = $p)" => p
+    }.headOption.orNull
+
     val fields = makeFields(cls.name, cls.ctor)
-    val constructor = makeConstructor(cls.name, cls.ctor, name)
+    val constructor = makeConstructor(cls.name, cls.ctor, tableSetting)
     val methods = makeMethods(cls.name,cls. ctor)
 
     val obj = q"""
@@ -41,8 +45,11 @@ object EntityTypeGenerator {
 
     logger.debug(obj)
     Term.Block(Seq(
-      // 処理済みコンストラクタ内アノテーション除去
-      cls.copy(ctor = cls.ctor.copy(paramss = cls.ctor.paramss.map(x => x.map(xx => xx.copy(mods = Nil))))),
+      // 処理済みアノテーション除去
+      cls.copy(
+        mods = cls.mods.collect{case m@mod"case" => m},
+        ctor = cls.ctor.copy(paramss = cls.ctor.paramss.map(x => x.map(xx => xx.copy(mods = Nil))))
+      ),
       obj
     ))
   }
@@ -146,18 +153,20 @@ object EntityTypeGenerator {
     }
   }
 
-  protected def makeConstructor(clsName: Type.Name, ctor: Ctor.Primary, tableName: Term.Arg): Seq[Stat] = {
-    val tname = if (tableName == null) Term.Name("\"" + clsName.syntax + "\"") else Term.Name(tableName.toString)
+  protected def makeConstructor(clsName: Type.Name, ctor: Ctor.Primary, tableSetting:TableSetting): Seq[Stat] = {
+    val catalogName = tableSetting.catalog.map(x => Term.Name(x.syntax)).getOrElse(Term.Name(""""""""))
+    val schemaName = tableSetting.schema.map(x => Term.Name(x.syntax)).getOrElse(Term.Name(""""""""))
+    val tableName = tableSetting.name.map(x => Term.Name(x.syntax)).getOrElse(Term.Name(""""""""))
     val propertySize = ctor.paramss.flatten.size
 
     q"""
     val __listenerSupplier: java.util.function.Supplier[org.seasar.doma.jdbc.entity.NullEntityListener[$clsName]] =
       () => ListenerHolder.listener
     val __immutable = true
-    val __name = $tname
-    val __catalogName = ""
-    val __schemaName = ""
-    val __tableName = ""
+    val __name = ${Term.Name("\"" + clsName.syntax + "\"")}
+    val __catalogName = $catalogName
+    val __schemaName = $schemaName
+    val __tableName = $tableName
     val __isQuoteRequired = false
 
     val __idList = new java.util.ArrayList[org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]]()

@@ -45,9 +45,9 @@ object DaoGenerator {
     logger.debug(obj)
     Term.Block(Seq(
       // 処理済みdefアノテーション除去
-      trt.copy(templ = trt.templ.copy(stats = trt.templ.stats.map(stat => stat.map(x => x match {
+      trt.copy(templ = trt.templ.copy(stats = trt.templ.stats.map(stat => stat.map(_ match {
         case _def :Decl.Def => _def.copy(mods = Nil)
-        case _def => _def
+        case x => x
       })))),
       obj))
   }
