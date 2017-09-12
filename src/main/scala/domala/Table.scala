@@ -10,10 +10,10 @@ class Table(
 ) extends scala.annotation.StaticAnnotation
 
 case class TableSetting(
-  catalog: Option[Term.Arg],
-  schema: Option[Term.Arg],
-  name: Option[Term.Arg],
-  quote: Option[Term.Arg]
+  catalog: Term.Arg,
+  schema: Term.Arg,
+  name: Term.Arg,
+  quote: Term
 )
 
 object TableSetting {
@@ -21,15 +21,15 @@ object TableSetting {
     val table = mods.collect {
       case mod"@Table(..$args)" => args
     }.headOption
+    val blank = q""" "" """
     table match {
       case Some(args)  =>
-        val catalog = args.collectFirst{ case arg"catalog = $x" => Some(x) }.getOrElse(None)
-        val schema = args.collectFirst{ case arg"schema = $x" => Some(x) }.getOrElse(None)
-        val name = args.collectFirst{ case arg"name = $x" => Some(x) }.getOrElse(None)
-        val quote = args.collectFirst{ case arg"quote = $x" => Some(x) }.getOrElse(None)
+        val catalog = args.collectFirst{ case arg"catalog = $x" => x }.getOrElse(blank)
+        val schema = args.collectFirst{ case arg"schema = $x" => x }.getOrElse(blank)
+        val name = args.collectFirst{ case arg"name = $x" => x }.getOrElse(blank)
+        val quote = args.collectFirst{ case arg"quote = $x" => x.syntax.parse[Term].get }.getOrElse("false".parse[Term].get)
         TableSetting(catalog, schema, name, quote)
-      case None => TableSetting(None, None, None, None)
+      case None => TableSetting(blank, blank, blank, "false".parse[Term].get)
     }
   }
-
 }

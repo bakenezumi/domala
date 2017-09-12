@@ -210,11 +210,11 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
       assert(
         dao.selectById(1) === Some(
           Person(Some(1),
-            Name("aaa"),
+            Name("SMITH"), // @Column(updatable = false)
             Some(5),
             Address("bbb", "ccc"),
             Some(2),
-            Some(1))))
+            Some(1)))) // @Version
     }
   }
 

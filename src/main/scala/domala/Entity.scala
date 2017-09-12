@@ -24,10 +24,6 @@ object EntityTypeGenerator {
 
   def generate(cls: Defn.Class, params: Seq[Term.Arg]): Term.Block = {
     val tableSetting = TableSetting.read(cls.mods)
-    val name = cls.mods.collect {
-      case mod"@Table(name = $p)" => p
-    }.headOption.orNull
-
     val fields = makeFields(cls.name, cls.ctor)
     val constructor = makeConstructor(cls.name, cls.ctor, tableSetting)
     val methods = makeMethods(cls.name,cls. ctor)
@@ -71,6 +67,7 @@ object EntityTypeGenerator {
 
   protected def makePropertyTypeFields(clsName: Type.Name, ctor: Ctor.Primary): Seq[Defn.Val] = {
     ctor.paramss.flatten.map { p =>
+      val columnSetting = ColumnSetting.read(p.mods)
       val Term.Param(mods, name, Some(decltpe), default) = p
       val tpe = Type.Name(decltpe.toString)
       val tpeTerm = Term.Name(decltpe.toString)
@@ -141,11 +138,11 @@ object EntityTypeGenerator {
             null,
             $domainTpe,
             ${name.syntax},
-            "",
+            ${columnSetting.name},
             __namingType,
-            true,
-            true,
-            false
+            ${columnSetting.insertable},
+            ${columnSetting.updatable},
+            ${columnSetting.quote}
           )
           """
         }
@@ -154,9 +151,6 @@ object EntityTypeGenerator {
   }
 
   protected def makeConstructor(clsName: Type.Name, ctor: Ctor.Primary, tableSetting:TableSetting): Seq[Stat] = {
-    val catalogName = tableSetting.catalog.map(x => Term.Name(x.syntax)).getOrElse(Term.Name(""""""""))
-    val schemaName = tableSetting.schema.map(x => Term.Name(x.syntax)).getOrElse(Term.Name(""""""""))
-    val tableName = tableSetting.name.map(x => Term.Name(x.syntax)).getOrElse(Term.Name(""""""""))
     val propertySize = ctor.paramss.flatten.size
 
     q"""
@@ -164,10 +158,10 @@ object EntityTypeGenerator {
       () => ListenerHolder.listener
     val __immutable = true
     val __name = ${Term.Name("\"" + clsName.syntax + "\"")}
-    val __catalogName = $catalogName
-    val __schemaName = $schemaName
-    val __tableName = $tableName
-    val __isQuoteRequired = false
+    val __catalogName = ${Term.Name(tableSetting.catalog.syntax)}
+    val __schemaName = ${Term.Name(tableSetting.schema.syntax)}
+    val __tableName = ${Term.Name(tableSetting.name.syntax)}
+    val __isQuoteRequired = ${tableSetting.quote}
 
     val __idList = new java.util.ArrayList[org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]]()
     val __list = new java.util.ArrayList[org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]]($propertySize)
@@ -352,3 +346,4 @@ object EntityTypeGenerator {
     """.stats
   }
 }
+
