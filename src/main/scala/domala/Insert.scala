@@ -31,7 +31,7 @@ object InsertGenerator {
     }
     val defDecl = QueryDefDecl.of(trtName, _def)
     val (paramName, paramTpe) = AutoModifyQueryGenerator.extractParameter(defDecl)
-    val query = q"getQueryImplementors.createAutoInsertQuery($internalMethodName, ${Term.Name(paramTpe.value)})"
+    val query = q"getQueryImplementors.createAutoInsertQuery($internalMethodName, ${Term.Name(paramTpe.syntax)})"
     val command = q"getCommandImplementors.createInsertCommand($internalMethodName, __query)"
     val otherQuerySettings = Seq[Stat](
       q"__query.setNullExcluded($excludeNull)",

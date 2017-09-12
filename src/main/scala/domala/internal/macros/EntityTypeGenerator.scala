@@ -16,7 +16,7 @@ object EntityTypeGenerator {
     val methods = makeMethods(cls.name,cls. ctor)
 
     val obj = q"""
-    object ${Term.Name(cls.name.value)} extends org.seasar.doma.jdbc.entity.AbstractEntityType[${cls.name}] {
+    object ${Term.Name(cls.name.syntax)} extends org.seasar.doma.jdbc.entity.AbstractEntityType[${cls.name}] {
       object ListenerHolder {
         val listener = 
           new org.seasar.doma.jdbc.entity.NullEntityListener[${cls.name}]()
@@ -54,8 +54,8 @@ object EntityTypeGenerator {
       val Term.Param(mods, name, Some(decltpe), default) = p
       val tpe = Type.Name(decltpe.toString)
       val tpeTerm = Term.Name(decltpe.toString)
-      val nameStr = name.value
-      val propertyName = Pat.Var.Term(Term.Name("$" + name.value))
+      val nameStr = name.syntax
+      val propertyName = Pat.Var.Term(Term.Name("$" + name.syntax))
 
       if (p contains mod"@Embedded") {
         q"""
@@ -135,7 +135,7 @@ object EntityTypeGenerator {
   }
 
   protected def makeConstructor(clsName: Type.Name, ctor: Ctor.Primary, tableName: Term.Arg): Seq[Stat] = {
-    val tname = if (tableName == null) Term.Name("\"" + clsName.value + "\"") else Term.Name(tableName.toString)
+    val tname = if (tableName == null) Term.Name("\"" + clsName.syntax + "\"") else Term.Name(tableName.toString)
     val propertySize = ctor.paramss.flatten.size
 
     q"""
@@ -154,8 +154,8 @@ object EntityTypeGenerator {
     """.stats ++
     ctor.paramss.flatten.flatMap { p =>
       val Term.Param(mods, name, Some(decltpe), default) = p
-      val nameStr = name.value
-      val propertyName = Term.Name("$" + name.value)
+      val nameStr = name.syntax
+      val propertyName = Term.Name("$" + name.syntax)
 
       if (p contains mod"@Embedded") {
         Seq(
@@ -184,7 +184,7 @@ object EntityTypeGenerator {
 
   // TODO: @GeneratedValueの有無で判定
   protected def makeGeneratedIdPropertyType(clsName: Type.Name, ctor: Ctor.Primary): Term with Pat = {
-    if(clsName.value == "Person") {
+    if(clsName.syntax == "Person") {
       q"$$id"
     } else {
       q"null"
@@ -192,7 +192,7 @@ object EntityTypeGenerator {
   }
   // TODO: @Versionの有無で判定
   protected def makeVersionPropertyType(clsName: Type.Name, ctor: Ctor.Primary): Term with Pat = {
-    if(clsName.value == "Person") {
+    if(clsName.syntax == "Person") {
       q"$$version"
     } else {
       q"null"
@@ -307,7 +307,7 @@ object EntityTypeGenerator {
     """.stats ++ {
       val params = ctor.paramss.flatten.map { p =>
         val Term.Param(mods, name, Some(decltpe), default) = p
-        val nameStr = name.value
+        val nameStr = name.syntax
         if (p contains mod"@Embedded") {
           val tpe = Term.Name(decltpe.toString)
           q"""$tpe.newEmbeddable[$clsName]($nameStr, __args)"""

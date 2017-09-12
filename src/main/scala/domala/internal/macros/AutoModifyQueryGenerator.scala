@@ -29,22 +29,22 @@ object AutoModifyQueryGenerator {
     case t"domala.jdbc.Result[$entity]" if entity.toString() == paramType.toString() => ()
     case _ => abort(defDecl._def.pos,
      domala.message.Message.DOMALA4222
-       .getMessage(defDecl.trtName.value, defDecl.name.value))
+       .getMessage(defDecl.trtName.syntax, defDecl.name.syntax))
    }
 
     q"""
     override def ${defDecl.name} = {
-      entering(${defDecl.trtName.value}, ${defDecl.name.value}, $paramName)
+      entering(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, $paramName)
       try {
         if ($paramName == null) {
-          throw new org.seasar.doma.DomaNullPointerException(${paramName.value})
+          throw new org.seasar.doma.DomaNullPointerException(${paramName.syntax})
         }
         val __query = $query
         __query.setMethod($internalMethodName)
         __query.setConfig(__config)
         __query.setEntity($paramName)
-        __query.setCallerClassName(${defDecl.trtName.value})
-        __query.setCallerMethodName(${defDecl.name.value})
+        __query.setCallerClassName(${defDecl.trtName.syntax})
+        __query.setCallerMethodName(${defDecl.name.syntax})
         __query.setQueryTimeout(${commonSetting.queryTimeout})
         __query.setSqlLogType(${commonSetting.sqlLogType})
         ..$otherQuerySettings
@@ -54,11 +54,11 @@ object AutoModifyQueryGenerator {
         __query.complete()
         val __result =
           new domala.jdbc.Result[$paramType](__count, __query.getEntity)
-        exiting(${defDecl.trtName.value}, ${defDecl.name.value}, __result)
+        exiting(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, __result)
         __result
       } catch {
         case __e: java.lang.RuntimeException => {
-          throwing(${defDecl.trtName.value}, ${defDecl.name.value}, __e)
+          throwing(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, __e)
           throw __e
         }
       }

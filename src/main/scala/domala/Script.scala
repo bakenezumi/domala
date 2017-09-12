@@ -7,8 +7,8 @@ class Script(sql: String) extends scala.annotation.StaticAnnotation
 object ScriptGenerator {
   def generate(trtName: Type.Name, _def: Decl.Def, internalMethodName: Term.Name, sql: Term.Arg): Defn.Def = {
     val Decl.Def(mods, name, tparams, paramss, tpe) = _def
-    val trtNameStr = trtName.value
-    val nameStr = name.value
+    val trtNameStr = trtName.syntax
+    val nameStr = name.syntax
 
     q"""
       override def $name = {

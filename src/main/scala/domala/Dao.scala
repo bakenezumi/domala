@@ -33,9 +33,9 @@ object DaoGenerator {
 
     val obj =
       q"""
-      object ${Term.Name(trt.name.value)}
+      object ${Term.Name(trt.name.syntax)}
         extends org.seasar.doma.internal.jdbc.dao.AbstractDao($config)
-        with ${Ctor.Ref.Name(trt.name.value)} {
+        with ${Ctor.Ref.Name(trt.name.syntax)} {
         import scala.collection.JavaConverters._
         import scala.compat.java8.OptionConverters._
         import scala.compat.java8.StreamConverters._
@@ -71,7 +71,7 @@ object DaoGenerator {
           }
         })
         q"""private val ${Pat.Var.Term(internalMethodName)} =
-              org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[$trtName], ${_def.name.value}..$paramClasses)"""
+              org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[$trtName], ${_def.name.syntax}..$paramClasses)"""
       },
       // TODO: Anotationが無い場合
       _def.mods.collectFirst {

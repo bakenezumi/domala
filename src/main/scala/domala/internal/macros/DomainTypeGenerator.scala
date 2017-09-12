@@ -13,16 +13,16 @@ object DomainTypeGenerator {
 
     if (cls.ctor.paramss.flatten.length != 1) abort(cls.pos, domala.message.Message.DOMALA6001.getMessage())
     val valueParam = cls.ctor.paramss.flatten.headOption.getOrElse(abort(cls.pos, domala.message.Message.DOMALA6001.getMessage()))
-    if(valueParam.name.value != "value") abort(cls.pos, domala.message.Message.DOMALA6002.getMessage())
+    if(valueParam.name.syntax != "value") abort(cls.pos, domala.message.Message.DOMALA6002.getMessage())
     val (basicTpe, wrapperSupplier) = TypeHelper.convertToDomaType(valueParam.decltpe.get) match {
       case DomaType.Basic(_, convertedType, wrapperSupplier) => (convertedType, wrapperSupplier)
-      case _ => abort(cls.pos, domala.message.Message.DOMALA4096.getMessage(valueParam.decltpe.get.toString(), cls.name.value, valueParam.name.value))
+      case _ => abort(cls.pos, domala.message.Message.DOMALA4096.getMessage(valueParam.decltpe.get.toString(), cls.name.syntax, valueParam.name.syntax))
     }
 
     val methods = makeMethods(cls.name, cls.ctor, basicTpe)
 
     val obj = q"""
-    object ${Term.Name(cls.name.value)} extends
+    object ${Term.Name(cls.name.syntax)} extends
       org.seasar.doma.jdbc.domain.AbstractDomainType[
         $basicTpe, ${cls.name}](
         $wrapperSupplier: java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$basicTpe]]) {

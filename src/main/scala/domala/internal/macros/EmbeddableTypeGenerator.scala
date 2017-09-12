@@ -13,7 +13,7 @@ object EmbeddableTypeGenerator {
     val methods = makeMethods(cls.name, cls.ctor)
 
     val obj = q"""
-    object ${Term.Name(cls.name.value)} extends org.seasar.doma.jdbc.entity.EmbeddableType[${cls.name}] {
+    object ${Term.Name(cls.name.syntax)} extends org.seasar.doma.jdbc.entity.EmbeddableType[${cls.name}] {
       ..$methods
     }
     """
@@ -30,7 +30,7 @@ object EmbeddableTypeGenerator {
       {
         val params = ctor.paramss.flatten.map { p =>
           val Term.Param(mods, name, Some(decltpe), default) = p
-          val nameStr = name.value
+          val nameStr = name.syntax
           val tpe = Type.Name(decltpe.toString)
           val (basicTpe, newWrapperExpr, domainTpe) = TypeHelper.generateEntityTypeParts(decltpe)
 
@@ -60,7 +60,7 @@ object EmbeddableTypeGenerator {
       {
         val params = ctor.paramss.flatten.map { p =>
           val Term.Param(mods, name, Some(decltpe), default) = p
-          val nameStr = name.value
+          val nameStr = name.syntax
           val tpe = Type.Name(decltpe.toString)
           val (basicTpe, newWrapperExpr, domainTpe) = TypeHelper.generateEntityTypeParts(tpe)
           q"""
@@ -72,7 +72,7 @@ object EmbeddableTypeGenerator {
 
         q"""
         override def newEmbeddable[ENTITY](embeddedPropertyName: String,  __args: java.util.Map[String, org.seasar.doma.jdbc.entity.Property[ENTITY, _]]) = {
-          ${Term.Name(clsName.value)}(..$params)
+          ${Term.Name(clsName.syntax)}(..$params)
         }
         """
       }

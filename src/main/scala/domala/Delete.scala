@@ -21,7 +21,7 @@ object DeleteGenerator {
     val suppressOptimisticLockException =  args.collectFirst{case arg"suppressOptimisticLockException = $x" => x}.getOrElse(q"false")
     val defDecl = QueryDefDecl.of(trtName, _def)
     val (paramName, paramTpe) = AutoModifyQueryGenerator.extractParameter(defDecl)
-    val query = q"getQueryImplementors.createAutoDeleteQuery($internalMethodName, ${Term.Name(paramTpe.value)})"
+    val query = q"getQueryImplementors.createAutoDeleteQuery($internalMethodName, ${Term.Name(paramTpe.syntax)})"
     val command = q"getCommandImplementors.createDeleteCommand($internalMethodName, __query)"
     val otherQuerySettings = Seq[Stat](
       q"__query.setVersionIgnored($ignoreVersion)",
