@@ -53,7 +53,7 @@ object SelectGenerator {
             case t"Stream[$internalTpe] => $retTpe" => (Term.Name(p.name.value), internalTpe, retTpe)
           }
         }.getOrElse(abort(_def.pos, domala.message.Message.DOMALA4244.getMessage(trtName.value, name.value)))
-        if(retTpe.toString() != tpe.toString()) {
+        if(retTpe.toString().trim != tpe.toString().trim) {
           abort(_def.pos, org.seasar.doma.message.Message.DOMA4246.getMessage(tpe, retTpe, trtName.value, name.value))
         }
         TypeHelper.convertToDomaType(internalTpe) match {
