@@ -176,6 +176,12 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  test("select by builder") {
+    Required {
+      assert(dao.selectByIDBuilder(1) === "SMITH")
+    }
+  }
+
   test("insert from entity") {
     Required {
       dao.insert(

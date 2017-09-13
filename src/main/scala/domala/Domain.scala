@@ -1,9 +1,6 @@
 package domala
 
-import domala.internal.macros.{DomaType, TypeHelper}
-import org.scalameta.logger
-
-import scala.collection.immutable.Seq
+import domala.internal.macros.DomainTypeGenerator
 import scala.meta._
 
 class Domain extends scala.annotation.StaticAnnotation {
@@ -15,23 +12,29 @@ class Domain extends scala.annotation.StaticAnnotation {
   }
 }
 
-/**
-  * @see [[https://github.com/domaframework/doma/blob/master/src/main/java/org/seasar/doma/internal/apt/DomainTypeGenerator.java]]
-  */
-object DomainTypeGenerator {
-  def generate(cls: Defn.Class) = {
+package internal { package macros {
 
-    if (cls.ctor.paramss.flatten.length != 1) abort(cls.pos, domala.message.Message.DOMALA6001.getMessage())
-    val valueParam = cls.ctor.paramss.flatten.headOption.getOrElse(abort(cls.pos, domala.message.Message.DOMALA6001.getMessage()))
-    if(valueParam.name.syntax != "value") abort(cls.pos, domala.message.Message.DOMALA6002.getMessage())
-    val (basicTpe, wrapperSupplier) = TypeHelper.convertToDomaType(valueParam.decltpe.get) match {
-      case DomaType.Basic(_, convertedType, wrapperSupplier) => (convertedType, wrapperSupplier)
-      case _ => abort(cls.pos, domala.message.Message.DOMALA4096.getMessage(valueParam.decltpe.get.toString(), cls.name.syntax, valueParam.name.syntax))
-    }
+  import org.scalameta.logger
+  import scala.collection.immutable.Seq
 
-    val methods = makeMethods(cls.name, cls.ctor, basicTpe)
+  /**
+    * @see [[https://github.com/domaframework/doma/blob/master/src/main/java/org/seasar/doma/internal/apt/DomainTypeGenerator.java]]
+    */
+  object DomainTypeGenerator {
+    def generate(cls: Defn.Class) = {
 
-    val obj = q"""
+      if (cls.ctor.paramss.flatten.length != 1) abort(cls.pos, domala.message.Message.DOMALA6001.getMessage())
+      val valueParam = cls.ctor.paramss.flatten.headOption.getOrElse(abort(cls.pos, domala.message.Message.DOMALA6001.getMessage()))
+      if (valueParam.name.syntax != "value") abort(cls.pos, domala.message.Message.DOMALA6002.getMessage())
+      val (basicTpe, wrapperSupplier) = TypeHelper.convertToDomaType(valueParam.decltpe.get) match {
+        case DomaType.Basic(_, convertedType, wrapperSupplier) => (convertedType, wrapperSupplier)
+        case _ => abort(cls.pos, domala.message.Message.DOMALA4096.getMessage(valueParam.decltpe.get.toString(), cls.name.syntax, valueParam.name.syntax))
+      }
+
+      val methods = makeMethods(cls.name, cls.ctor, basicTpe)
+
+      val obj =
+        q"""
     object ${Term.Name(cls.name.syntax)} extends
       org.seasar.doma.jdbc.domain.AbstractDomainType[
         $basicTpe, ${cls.name}](
@@ -42,15 +45,15 @@ object DomainTypeGenerator {
     }
     """
 
-    logger.debug(obj)
-    Term.Block(Seq(
-      cls,
-      obj
-    ))
-  }
+      logger.debug(obj)
+      Term.Block(Seq(
+        cls,
+        obj
+      ))
+    }
 
-  protected def makeMethods(clsName: Type.Name, ctor: Ctor.Primary, basicTpe: Type) = {
-    q"""
+    protected def makeMethods(clsName: Type.Name, ctor: Ctor.Primary, basicTpe: Type) = {
+      q"""
     override protected def newDomain(value: $basicTpe): $clsName = {
       if (value == null) null else ${Term.Name(clsName.toString)}(value)
     }
@@ -67,5 +70,6 @@ object DomainTypeGenerator {
       classOf[$clsName]
     }
     """.stats
+    }
   }
-}
+}}

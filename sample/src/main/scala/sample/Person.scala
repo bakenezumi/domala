@@ -7,7 +7,6 @@ case class Person(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   id: Option[Int] = None,
-  @Column(updatable = false)
   name: Name,
   age: Option[Int],
   @Embedded

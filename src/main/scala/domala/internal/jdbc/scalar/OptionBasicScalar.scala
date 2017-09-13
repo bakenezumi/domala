@@ -22,11 +22,11 @@ class OptionBasicScalar[BASIC](supplier: Supplier[Wrapper[BASIC]])
 
   override def getDefault: Option[BASIC] = None
 
-  override def set(optional: Option[BASIC]): Unit = {
-    if (optional == null) {
+  override def set(option: Option[BASIC]): Unit = {
+    if (option == null) {
       wrapper.set(null.asInstanceOf[BASIC])
     } else {
-      wrapper.set(optional.getOrElse(null).asInstanceOf[BASIC])
+      wrapper.set(option.getOrElse(null.asInstanceOf[BASIC]))
     }
   }
 

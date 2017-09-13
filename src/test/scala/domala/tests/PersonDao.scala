@@ -2,6 +2,7 @@ package domala.tests
 
 import domala._
 import domala.jdbc.Result
+import org.seasar.doma.jdbc.builder.SelectBuilder
 
 @Dao(config = TestConfig)
 trait PersonDao {
@@ -164,6 +165,17 @@ select name
 from person
   """, strategy = SelectType.STREAM)
   def selectNameStream(f: Stream[Name] => Int): Int
+
+  def selectByIDBuilder(id: Int): String = {
+    val builder = SelectBuilder.newInstance(TestConfig)
+    builder.sql("select")
+    builder.sql("name")
+    builder.sql("from person")
+    builder.sql("where")
+    builder.sql("id =").param(classOf[Int], id)
+    builder.getScalarSingleResult(classOf[String])
+  }
+
 
   @Insert
   def insert(person: Person): Result[Person]
