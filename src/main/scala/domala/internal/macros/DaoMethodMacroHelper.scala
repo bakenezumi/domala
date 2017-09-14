@@ -12,7 +12,7 @@ object DaoMethodMacroHelper {
   }
 
   def readCommonBatchSetting(args: Seq[Term.Arg]): DaoMethodCommonBatchSetting = {
-    val commonSetting = readCommonSetting((args))
+    val commonSetting = readCommonSetting(args)
     val batchSize = args.collectFirst{ case arg"batchSize = $x" => x }.getOrElse(arg"-1")
     DaoMethodCommonBatchSetting(commonSetting.sql, commonSetting.queryTimeout, commonSetting.sqlLogType, batchSize)
   }

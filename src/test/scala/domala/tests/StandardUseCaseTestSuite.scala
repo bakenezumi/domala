@@ -233,7 +233,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
 
   test("batch insert") {
     Required {
-      dao.batchInsert(Seq(
+      dao.batchInsert(List(
         Person(
           name = Name("aaa"),
           age = Some(5),
@@ -263,6 +263,30 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
             Address("eee", "fff"),
             Some(2),
             Some(1))))
+    }
+  }
+
+  test("batch update") {
+    Required {
+      dao.batchUpdate(dao.selectAll().map(entity => entity.copy(age = entity.age.map(_ + 1))))
+      assert(
+        dao.selectAll === Seq(
+          Person(
+            Some(1),
+            Name("SMITH"),
+            Some(11),
+            Address("Tokyo", "Yaesu"),
+            Some(1),
+            Some(1)),
+          Person(
+            Some(2),
+            Name("ALLEN"),
+            Some(21),
+            Address("Kyoto", "Karasuma"),
+            Some(2),
+            Some(1)),
+        )
+      )
     }
   }
 }

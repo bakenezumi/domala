@@ -11,6 +11,7 @@ object AutoBatchModifyQueryGenerator {
           .getMessage(defDecl.trtName.value, defDecl.name.value))
     defDecl.paramss.flatten.head match {
       case param"$paramName: ${Some(paramTpe)}" => paramTpe match {
+        // TODO: +Seqでないとコンパイルエラー
         case t"$_[$internalTpe]" => (Term.Name(paramName.value), Type.Name(internalTpe.toString))
       }
     }

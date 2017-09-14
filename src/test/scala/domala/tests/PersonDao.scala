@@ -187,4 +187,7 @@ from person
 
   @BatchInsert
   def batchInsert(persons: Seq[Person]): BatchResult[Person]
+
+  @BatchUpdate
+  def batchUpdate(persons: Seq[Person]): BatchResult[Person]
 }
