@@ -230,4 +230,39 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
       assert(dao.selectCount() === 1)
     }
   }
+
+  test("batch insert") {
+    Required {
+      dao.batchInsert(Seq(
+        Person(
+          name = Name("aaa"),
+          age = Some(5),
+          address = Address("bbb", "ccc"),
+          departmentId = Some(1)),
+        Person(
+          name = Name("ddd"),
+          age = Some(10),
+          address = Address("eee", "fff"),
+          departmentId = Some(2))))
+      assert(dao.selectCount === 4)
+      assert(
+        dao.selectById(3) === Some(
+          Person(
+            Some(3),
+            Name("aaa"),
+            Some(5),
+            Address("bbb", "ccc"),
+            Some(1),
+            Some(1))))
+      assert(
+        dao.selectById(4) === Some(
+          Person(
+            Some(4),
+            Name("ddd"),
+            Some(10),
+            Address("eee", "fff"),
+            Some(2),
+            Some(1))))
+    }
+  }
 }

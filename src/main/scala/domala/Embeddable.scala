@@ -25,10 +25,10 @@ package internal { package macros {
       val methods = makeMethods(cls.name, cls.ctor)
       val obj =
         q"""
-    object ${Term.Name(cls.name.syntax)} extends org.seasar.doma.jdbc.entity.EmbeddableType[${cls.name}] {
-      ..$methods
-    }
-    """
+        object ${Term.Name(cls.name.syntax)} extends org.seasar.doma.jdbc.entity.EmbeddableType[${cls.name}] {
+          ..$methods
+        }
+        """
 
       logger.debug(obj)
       Term.Block(Seq(
@@ -38,15 +38,12 @@ package internal { package macros {
     }
 
     protected def makeMethods(clsName: Type.Name, ctor: Ctor.Primary): Seq[Defn.Def] = {
-      Seq(
-        {
-          val params = ctor.paramss.flatten.map { p =>
-            val Term.Param(mods, name, Some(decltpe), default) = p
-            val nameStr = name.syntax
-            val tpe = Type.Name(decltpe.toString)
-            val (basicTpe, newWrapperExpr, domainTpe) = TypeHelper.generateEntityTypeParts(decltpe)
-
-            q"""
+      Seq({
+        val params = ctor.paramss.flatten.map { p =>
+          val Term.Param(mods, name, Some(decltpe), default) = p
+          val tpe = Type.Name(decltpe.toString)
+          val (basicTpe, newWrapperExpr, domainTpe) = TypeHelper.generateEntityTypeParts(decltpe)
+          q"""
           new domala.jdbc.entity.DefaultPropertyType(
               entityClass,
               classOf[$tpe],
@@ -54,7 +51,7 @@ package internal { package macros {
               $newWrapperExpr,
               null,
               null,
-              embeddedPropertyName + "." + $nameStr,
+              embeddedPropertyName + "." + ${name.syntax},
               "",
               namingType,
               true,
@@ -62,32 +59,29 @@ package internal { package macros {
               false
             )
           """
-          }
-          q"""
+        }
+        q"""
         override def getEmbeddablePropertyTypes[ENTITY](embeddedPropertyName: String, entityClass: Class[ENTITY], namingType: org.seasar.doma.jdbc.entity.NamingType) = {
           java.util.Arrays.asList(..$params)
         }
         """
-        }, {
-          val params = ctor.paramss.flatten.map { p =>
-            val Term.Param(mods, name, Some(decltpe), default) = p
-            val nameStr = name.syntax
-            val tpe = Type.Name(decltpe.toString)
-            val (basicTpe, newWrapperExpr, domainTpe) = TypeHelper.generateEntityTypeParts(tpe)
-            q"""
-          { (if(__args.get(embeddedPropertyName + "." + $nameStr) != null )
-              __args.get(embeddedPropertyName + "." + $nameStr)
+      }, {
+        val params = ctor.paramss.flatten.map { p =>
+          val Term.Param(mods, name, Some(decltpe), default) = p
+          val tpe = Type.Name(decltpe.toString)
+          val (basicTpe, newWrapperExpr, domainTpe) = TypeHelper.generateEntityTypeParts(tpe)
+          q"""
+          { (if(__args.get(embeddedPropertyName + "." + ${name.syntax}) != null )
+              __args.get(embeddedPropertyName + "." + ${name.syntax} )
             else null).get().asInstanceOf[$tpe] }
           """
-          }
-
-          q"""
+        }
+        q"""
         override def newEmbeddable[ENTITY](embeddedPropertyName: String,  __args: java.util.Map[String, org.seasar.doma.jdbc.entity.Property[ENTITY, _]]) = {
           ${Term.Name(clsName.syntax)}(..$params)
         }
         """
-        }
-      )
+      })
     }
   }
 }}

@@ -24,7 +24,7 @@ package internal { package macros {
 
   case class EntitySetting(
     listener: Type,
-    naming: Term.Arg
+    naming: Term with Pat
   )
 
   /**
@@ -34,7 +34,7 @@ package internal { package macros {
     def generate(cls: Defn.Class, args: Seq[Term.Arg]): Term.Block = {
       val entitySetting = EntitySetting(
         args.collectFirst { case arg"listener = classOf[$x]" => x }.getOrElse(t"org.seasar.doma.jdbc.entity.NullEntityListener[${cls.name}]"),
-        args.collectFirst { case arg"naming = $x" => x }.getOrElse(q"org.seasar.doma.jdbc.entity.NamingType.NONE")
+        args.collectFirst { case arg"naming = $x" => Term.Name(x.syntax) }.getOrElse(q"null")
       )
       val tableSetting = TableSetting.read(cls.mods)
       val fields = makeFields(cls.name, cls.ctor, entitySetting)
@@ -67,7 +67,7 @@ package internal { package macros {
     protected def makeFields(clsName: Type.Name, ctor: Ctor.Primary, entitySetting: EntitySetting): Seq[Stat] = {
       val fields1 =
         q"""
-        private val __namingType: org.seasar.doma.jdbc.entity.NamingType = null
+        private val __namingType: org.seasar.doma.jdbc.entity.NamingType = ${entitySetting.naming}
         private val __idGenerator =
           new org.seasar.doma.jdbc.id.BuiltinIdentityIdGenerator()
         """

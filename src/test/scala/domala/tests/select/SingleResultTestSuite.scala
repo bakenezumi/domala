@@ -5,7 +5,7 @@ import java.time.{LocalDate, LocalDateTime, LocalTime}
 import domala._
 import domala.jdbc.Config
 import domala.tests.TestConfig
-import org.scalactic.TolerantNumerics
+import org.scalactic.{Equality, TolerantNumerics}
 import org.scalatest.{BeforeAndAfter, FunSuite}
 
 class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
@@ -29,6 +29,7 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
     Required {
       assert(dao.selectBoolean(0) === false)
       assert(dao.selectBoolean(1) === true)
+      assert(dao.selectBoolean(5) === false)
       assert(dao.selectBooleanOption(0) === None)
       assert(dao.selectBooleanOption(1) === Some(true))
       assert(dao.selectBooleanOption(5) === None)
@@ -45,6 +46,7 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
     Required {
       assert(dao.selectByte(0) === 0)
       assert(dao.selectByte(1) === 1)
+      assert(dao.selectByte(5) === 0)
       assert(dao.selectByteOption(0) === None)
       assert(dao.selectByteOption(1) === Some(1))
       assert(dao.selectByteOption(5) === None)
@@ -61,6 +63,7 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
     Required {
       assert(dao.selectShort(0) === 0)
       assert(dao.selectShort(1) === 1)
+      assert(dao.selectShort(5) === 0)
       assert(dao.selectShortOption(0) === None)
       assert(dao.selectShortOption(1) === Some(1))
       assert(dao.selectShortOption(5) === None)
@@ -77,6 +80,7 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
     Required {
       assert(dao.selectInt(0) === 0)
       assert(dao.selectInt(1) === 1)
+      assert(dao.selectInt(5) === 0)
       assert(dao.selectIntOption(0) === None)
       assert(dao.selectIntOption(1) === Some(1))
       assert(dao.selectIntOption(5) === None)
@@ -93,6 +97,7 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
     Required {
       assert(dao.selectLong(0) === 0)
       assert(dao.selectLong(1) === 1)
+      assert(dao.selectLong(5) === 0)
       assert(dao.selectLongOption(0) === None)
       assert(dao.selectLongOption(1) === Some(1))
       assert(dao.selectLongOption(5) === None)
@@ -106,11 +111,11 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
   }
 
   test("select Float") {
-    val epsilon = 1e-4f
-    implicit val doubleEq = TolerantNumerics.tolerantDoubleEquality(epsilon)
+    implicit val doubleEq: Equality[Double] = TolerantNumerics.tolerantDoubleEquality(1e-4f)
     Required {
       assert(dao.selectFloat(0) === 0f)
       assert(dao.selectFloat(1) === 1.1f)
+      assert(dao.selectFloat(5) === 0f)
       assert(dao.selectFloatOption(0) === None)
       assert(dao.selectFloatOption(1) === Some(1.1f))
       assert(dao.selectFloatOption(5) === None)
@@ -124,11 +129,11 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
   }
 
   test("select Double") {
-    val epsilon = 1e-4f
-    implicit val doubleEq = TolerantNumerics.tolerantDoubleEquality(epsilon)
+    implicit val doubleEq: Equality[Double] = TolerantNumerics.tolerantDoubleEquality(1e-4f)
     Required {
       assert(dao.selectDouble(0) === 0d)
       assert(dao.selectDouble(1) === 1.1)
+      assert(dao.selectDouble(5) === 0d)
       assert(dao.selectDoubleOption(0) === None)
       assert(dao.selectDoubleOption(1) === Some(1.1))
       assert(dao.selectDoubleOption(5) === None)
@@ -145,6 +150,7 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
     Required {
       assert(dao.selectString(0) === null)
       assert(dao.selectString(1) === "abc")
+      assert(dao.selectString(5) === null)
       assert(dao.selectStringOption(0) === None)
       assert(dao.selectStringOption(1) === Some("abc"))
       assert(dao.selectStringOption(5) === None)
@@ -161,6 +167,7 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
     Required {
       assert(dao.selectBigDecimal(0) === null)
       assert(dao.selectBigDecimal(1) === BigDecimal("1234567890.123456789"))
+      assert(dao.selectBigDecimal(5) === null)
       assert(dao.selectBigDecimalOption(0) === None)
       assert(dao.selectBigDecimalOption(1) === Some(BigDecimal("1234567890.123456789")))
       assert(dao.selectBigDecimalOption(5) === None)
@@ -177,6 +184,7 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
     Required {
       assert(dao.selectBigInt(0) === null)
       assert(dao.selectBigInt(1) === BigInt("12345678901234567890"))
+      assert(dao.selectBigInt(5) === null)
       assert(dao.selectBigIntOption(0) === None)
       assert(dao.selectBigIntOption(1) === Some(BigInt("12345678901234567890")))
       assert(dao.selectBigIntOption(5) === None)
@@ -193,6 +201,7 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
     Required {
       assert(dao.selectLocalDate(0) === null)
       assert(dao.selectLocalDate(1) === LocalDate.of(2017, 12, 31))
+      assert(dao.selectLocalDate(5) === null)
       assert(dao.selectLocalDateOption(0) === None)
       assert(dao.selectLocalDateOption(1) === Some(LocalDate.of(2017, 12, 31)))
       assert(dao.selectLocalDateOption(5) === None)
@@ -209,6 +218,7 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
     Required {
       assert(dao.selectLocalTime(0) === null)
       assert(dao.selectLocalTime(1) === LocalTime.of(11, 59, 59))
+      assert(dao.selectLocalTime(5) === null)
       assert(dao.selectLocalTimeOption(0) === None)
       assert(dao.selectLocalTimeOption(1) === Some(LocalTime.of(11, 59, 59)))
       assert(dao.selectLocalTimeOption(5) === None)
@@ -225,6 +235,7 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
     Required {
       assert(dao.selectLocalDateTime(0) === null)
       assert(dao.selectLocalDateTime(1) === LocalDateTime.of(2017, 12, 31, 11, 59, 59, 999999999))
+      assert(dao.selectLocalDateTime(5) === null)
       assert(dao.selectLocalDateTimeOption(0) === None)
       assert(dao.selectLocalDateTimeOption(1) === Some(LocalDateTime.of(2017, 12, 31, 11, 59, 59, 999999999)))
       assert(dao.selectLocalDateTimeOption(5) === None)

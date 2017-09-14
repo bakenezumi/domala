@@ -1,8 +1,7 @@
 package domala.tests
 
 import domala._
-import domala.jdbc.Result
-import org.seasar.doma.jdbc.builder.SelectBuilder
+import domala.jdbc.{BatchResult, Result}
 
 @Dao(config = TestConfig)
 trait PersonDao {
@@ -167,6 +166,7 @@ from person
   def selectNameStream(f: Stream[Name] => Int): Int
 
   def selectByIDBuilder(id: Int): String = {
+    import org.seasar.doma.jdbc.builder.SelectBuilder
     val builder = SelectBuilder.newInstance(TestConfig)
     builder.sql("select")
     builder.sql("name")
@@ -176,7 +176,6 @@ from person
     builder.getScalarSingleResult(classOf[String])
   }
 
-
   @Insert
   def insert(person: Person): Result[Person]
 
@@ -185,4 +184,7 @@ from person
 
   @Delete
   def delete(person: Person): Result[Person]
+
+  @BatchInsert
+  def batchInsert(persons: Seq[Person]): BatchResult[Person]
 }

@@ -87,6 +87,8 @@ package internal { package macros {
           case mod"@Update(..$modParams)" => UpdateGenerator.generate(trtName, _def, internalMethodName, modParams)
           case mod"@Delete" => DeleteGenerator.generate(trtName, _def, internalMethodName, Nil)
           case mod"@Delete(..$modParams)" => DeleteGenerator.generate(trtName, _def, internalMethodName, modParams)
+          case mod"@BatchInsert" => BatchInsertGenerator.generate(trtName, _def, internalMethodName, Nil)
+          case mod"@BatchInsert(..$modParams)" => BatchInsertGenerator.generate(trtName, _def, internalMethodName, modParams)
         }.get.copy(tparams = _def.tparams, paramss = _def.paramss)
       )
     }

@@ -21,7 +21,7 @@ package internal { package macros {
     * @see [[https://github.com/domaframework/doma/blob/master/src/main/java/org/seasar/doma/internal/apt/DomainTypeGenerator.java]]
     */
   object DomainTypeGenerator {
-    def generate(cls: Defn.Class) = {
+    def generate(cls: Defn.Class): Term.Block = {
 
       if (cls.ctor.paramss.flatten.length != 1) abort(cls.pos, domala.message.Message.DOMALA6001.getMessage())
       val valueParam = cls.ctor.paramss.flatten.headOption.getOrElse(abort(cls.pos, domala.message.Message.DOMALA6001.getMessage()))
@@ -35,15 +35,15 @@ package internal { package macros {
 
       val obj =
         q"""
-    object ${Term.Name(cls.name.syntax)} extends
-      org.seasar.doma.jdbc.domain.AbstractDomainType[
-        $basicTpe, ${cls.name}](
-        $wrapperSupplier: java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$basicTpe]]) {
-      def getSingletonInternal() = this
-      val wrapper: java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$basicTpe]] = $wrapperSupplier
-      ..$methods
-    }
-    """
+        object ${Term.Name(cls.name.syntax)} extends
+          org.seasar.doma.jdbc.domain.AbstractDomainType[
+            $basicTpe, ${cls.name}](
+            $wrapperSupplier: java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$basicTpe]]) {
+          def getSingletonInternal() = this
+          val wrapper: java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$basicTpe]] = $wrapperSupplier
+          ..$methods
+        }
+        """
 
       logger.debug(obj)
       Term.Block(Seq(
@@ -52,24 +52,24 @@ package internal { package macros {
       ))
     }
 
-    protected def makeMethods(clsName: Type.Name, ctor: Ctor.Primary, basicTpe: Type) = {
+    protected def makeMethods(clsName: Type.Name, ctor: Ctor.Primary, basicTpe: Type): Seq[Stat] = {
       q"""
-    override protected def newDomain(value: $basicTpe): $clsName = {
-      if (value == null) null else ${Term.Name(clsName.toString)}(value)
-    }
+      override protected def newDomain(value: $basicTpe): $clsName = {
+        if (value == null) null else ${Term.Name(clsName.toString)}(value)
+      }
 
-    override protected def getBasicValue(domain: $clsName): $basicTpe = {
-      if (domain == null) null else domain.value
-    }
+      override protected def getBasicValue(domain: $clsName): $basicTpe = {
+        if (domain == null) null else domain.value
+      }
 
-    override def getBasicClass() = {
-      classOf[$basicTpe]
-    }
+      override def getBasicClass() = {
+        classOf[$basicTpe]
+      }
 
-    override def getDomainClass() = {
-      classOf[$clsName]
-    }
-    """.stats
+      override def getDomainClass() = {
+        classOf[$clsName]
+      }
+      """.stats
     }
   }
 }}

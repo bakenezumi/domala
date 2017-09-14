@@ -10,4 +10,10 @@ object DaoMethodMacroHelper {
     val sqlLog =  args.collectFirst{ case arg"sqlLog = $x" => x }.getOrElse(arg"org.seasar.doma.jdbc.SqlLogType.FORMATTED")
     DaoMethodCommonSetting(sql, queryTimeOut, sqlLog)
   }
+
+  def readCommonBatchSetting(args: Seq[Term.Arg]): DaoMethodCommonBatchSetting = {
+    val commonSetting = readCommonSetting((args))
+    val batchSize = args.collectFirst{ case arg"batchSize = $x" => x }.getOrElse(arg"-1")
+    DaoMethodCommonBatchSetting(commonSetting.sql, commonSetting.queryTimeout, commonSetting.sqlLogType, batchSize)
+  }
 }
