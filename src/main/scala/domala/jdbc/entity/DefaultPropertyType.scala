@@ -24,35 +24,36 @@ import domala.internal.jdbc.scalar.{OptionBasicScalar, OptionDomainBridgeScalar}
 import domala.jdbc.entity
 
 class DefaultPropertyType[PARENT, ENTITY <: PARENT, BASIC, DOMAIN](
-    entityClass: Class[ENTITY],
-    entityPropertyClass: Class[_],
-    basicClassClass: Class[BASIC],
-    wrapperSupplier: Supplier[Wrapper[BASIC]],
-    parentEntityPropertyType: EntityPropertyType[PARENT, BASIC],
-    domainType: DomainType[BASIC, DOMAIN],
-    name: String,
-    columnName: String,
-    namingType: NamingType,
-    insertable: Boolean,
-    updatable: Boolean,
-    quoteRequired: Boolean
-) extends org.seasar.doma.jdbc.entity.DefaultPropertyType[PARENT,
-                                                            ENTITY,
-                                                            BASIC,
-                                                            DOMAIN](
-      entityClass,
-      entityPropertyClass,
-      basicClassClass,
-      wrapperSupplier,
-      parentEntityPropertyType,
-      domainType,
-      name,
-      columnName,
-      namingType,
-      insertable,
-      updatable,
-      quoteRequired
-    ) {
+  entityClass: Class[ENTITY],
+  entityPropertyClass: Class[_],
+  basicClassClass: Class[BASIC],
+  wrapperSupplier: Supplier[Wrapper[BASIC]],
+  parentEntityPropertyType: EntityPropertyType[PARENT, BASIC],
+  domainType: DomainType[BASIC, DOMAIN],
+  name: String,
+  columnName: String,
+  namingType: NamingType,
+  insertable: Boolean,
+  updatable: Boolean,
+  quoteRequired: Boolean
+) extends org.seasar.doma.jdbc.entity.DefaultPropertyType[
+  PARENT,
+  ENTITY,
+  BASIC,
+  DOMAIN](
+  entityClass,
+  entityPropertyClass,
+  basicClassClass,
+  wrapperSupplier,
+  parentEntityPropertyType,
+  domainType,
+  name,
+  columnName,
+  namingType,
+  insertable,
+  updatable,
+  quoteRequired
+) {
 
   override def createProperty: entity.DefaultProperty[_, ENTITY, BASIC] =
     DefaultPropertyType.createPropertySupplier[ENTITY, BASIC, DOMAIN](

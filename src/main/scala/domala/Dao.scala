@@ -77,7 +77,6 @@ package internal { package macros {
           q"""private val ${Pat.Var.Term(internalMethodName)} =
               org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[$trtName], ${_def.name.syntax}..$paramClasses)"""
         },
-        // TODO: Anotationが無い場合
         _def.mods.collectFirst {
           case mod"@Script(sql = $sql)" => ScriptGenerator.generate(trtName, _def, internalMethodName, sql)
           case mod"@Select(..$modParams)" => SelectGenerator.generate(trtName, _def, internalMethodName, modParams)
@@ -91,7 +90,11 @@ package internal { package macros {
           case mod"@BatchInsert(..$modParams)" => BatchInsertGenerator.generate(trtName, _def, internalMethodName, modParams)
           case mod"@BatchUpdate" => BatchUpdateGenerator.generate(trtName, _def, internalMethodName, Nil)
           case mod"@BatchUpdate(..$modParams)" => BatchUpdateGenerator.generate(trtName, _def, internalMethodName, modParams)
-        }.get.copy(tparams = _def.tparams, paramss = _def.paramss)
+          case mod"@BatchDelete" => BatchDeleteGenerator.generate(trtName, _def, internalMethodName, Nil)
+          case mod"@BatchDelete(..$modParams)" => BatchDeleteGenerator.generate(trtName, _def, internalMethodName, modParams)
+        }.getOrElse(
+          abort(_def.pos, org.seasar.doma.message.Message.DOMA4005.getMessage(trtName.syntax, _def.name.syntax))
+        ).copy(tparams = _def.tparams, paramss = _def.paramss)
       )
     }
   }

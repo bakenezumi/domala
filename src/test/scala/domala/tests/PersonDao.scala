@@ -190,4 +190,7 @@ from person
 
   @BatchUpdate
   def batchUpdate(persons: Seq[Person]): BatchResult[Person]
+
+  @BatchDelete
+  def batchDelete(persons: Seq[Person]): BatchResult[Person]
 }
