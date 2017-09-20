@@ -19,7 +19,7 @@ package internal { package macros {
 
   object BatchDeleteGenerator {
     def generate(trtName: Type.Name, _def: Decl.Def, internalMethodName: Term.Name, args: Seq[Term.Arg]): Defn.Def = {
-      val commonSetting = DaoMethodMacroHelper.readCommonBatchSetting(args)
+      val commonSetting = DaoMacroHelper.readCommonBatchSetting(args)
       val ignoreVersion = args.collectFirst { case arg"ignoreVersion = $x" => x }.getOrElse(q"false")
       val suppressOptimisticLockException = args.collectFirst { case arg"suppressOptimisticLockException = $x" => x }.getOrElse(q"false")
       val defDecl = QueryDefDecl.of(trtName, _def)

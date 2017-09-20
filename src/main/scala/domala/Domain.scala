@@ -36,11 +36,11 @@ package internal { package macros {
       val obj =
         q"""
         object ${Term.Name(cls.name.syntax)} extends
-          org.seasar.doma.jdbc.domain.AbstractDomainType[
+          domala.jdbc.holder.AbstractHolderDesc[
             $basicTpe, ${cls.name}](
             $wrapperSupplier: java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$basicTpe]]) {
           def getSingletonInternal() = this
-          val wrapper: java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$basicTpe]] = $wrapperSupplier
+         override def wrapper: java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$basicTpe]] = $wrapperSupplier
           ..$methods
         }
         """

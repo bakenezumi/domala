@@ -14,7 +14,7 @@ DomalaはJavaのDBアクセスフレームワーク[Doma2](https://github.com/do
 
 ### 利用例
 
-#### エンティティクラス
+#### Entity class
 
 ```scala
 @Entity
@@ -23,7 +23,6 @@ case class Person(
   id: Option[Int] = None,
   name: Name,
   age: Option[Int],
-  @Embedded
   address: Address,
   departmentId: Option[Int],
   @Version
@@ -31,21 +30,21 @@ case class Person(
 )
 ```
 
-#### ドメインクラス
+#### Holder class
 
 ```scala
 @Domain
 case class Name(value: String)
 ```
 
-#### エンベッダブルクラス
+#### Embeddable class
 
 ```scala
 @Embeddable
 case class Address(city: String, street: String)
 ```
 
-#### Daoクラス
+#### Dao trait
 
 ```scala
 @Dao(config = SampleConfig)

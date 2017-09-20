@@ -22,6 +22,7 @@ import org.seasar.doma.jdbc.entity.Property
 import org.seasar.doma.wrapper.Wrapper
 import domala.internal.jdbc.scalar.{OptionBasicScalar, OptionDomainBridgeScalar}
 import domala.jdbc.entity
+import domala.jdbc.holder.AbstractHolderDesc
 
 class DefaultPropertyType[PARENT, ENTITY <: PARENT, BASIC, DOMAIN](
   entityClass: Class[ENTITY],
@@ -117,6 +118,34 @@ object DefaultPropertyType {
               new BasicScalar(wrapperSupplier, field.isPrimitive))
         }
     }
+
+  def ofDomain[ENTITY, BASIC, DOMAIN](
+    entityClass: Class[ENTITY],
+    entityPropertyClass: Class[_],
+    domainType: AbstractHolderDesc[BASIC, DOMAIN],
+    name: String,
+    columnName: String,
+    namingType: NamingType,
+    insertable: Boolean,
+    updatable: Boolean,
+    quoteRequired: Boolean
+  ): DefaultPropertyType[ENTITY, ENTITY, BASIC, DOMAIN] = {
+    new DefaultPropertyType[ENTITY, ENTITY, BASIC, DOMAIN](
+      entityClass,
+      entityPropertyClass,
+      domainType.getBasicClass.asInstanceOf[Class[BASIC]],
+      domainType.wrapper,
+      null,
+      domainType,
+      name,
+      columnName,
+      namingType,
+      insertable,
+      updatable,
+      quoteRequired
+    )
+  }
+
 }
 
 class DefaultProperty[CONTAINER, ENTITY, BASIC](

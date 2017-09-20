@@ -11,9 +11,9 @@ import org.seasar.doma.message.Message
 import scala.language.experimental.macros
 import scala.reflect.macros.blackbox
 
-object DaoRefrectionMacros {
+object DaoReflectionMacros {
 
-  def getCompanion[T: c.WeakTypeTag](c: blackbox.Context)(param: c.Expr[Class[T]]): c.universe.Expr[Any] = {
+  def getCompanion(c: blackbox.Context)(param: c.Expr[Class[_]]): c.universe.Expr[Any] = {
     import c.universe._
     reify {
       Class.forName(param.splice.getName + "$").getField("MODULE$").get(null)

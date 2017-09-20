@@ -6,7 +6,6 @@ import domala._
 case class PersonDepartmentEmbedded(
   id: Int,
   name: String,
-  @Embedded
   department: Department
 )
 

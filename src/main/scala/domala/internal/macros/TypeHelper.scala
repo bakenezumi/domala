@@ -150,6 +150,15 @@ object TypeHelper {
     }
   }
 
+  def convertToEntityDomaType(tpe: Type.Arg): DomaType = {
+    convertToDomaType(tpe) match {
+      case option: DomaType.Option => option
+      case basic: DomaType.Basic => basic
+      case other: DomaType.EntityOrDomain => other
+      case _ => DomaType.Unknown
+    }
+  }
+
   def generateEntityTypeParts(tpe: Type.Arg): (Ctor.Call, Term, Term) = {
     if (!isBasic(tpe)) {
       val domainTpe = tpe match {

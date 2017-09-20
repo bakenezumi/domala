@@ -50,7 +50,7 @@ package internal { package macros {
 
     def generate(trtName: Type.Name, _def: Decl.Def, internalMethodName: Term.Name, args: Seq[Term.Arg]): Defn.Def = {
       val defDecl = QueryDefDecl.of(trtName, _def)
-      val commonSetting = DaoMethodMacroHelper.readCommonSetting(args)
+      val commonSetting = DaoMacroHelper.readCommonSetting(args)
       if (commonSetting.sql.syntax == """""""") abort(_def.pos, domala.message.Message.DOMALA4020.getMessage(trtName.syntax, defDecl.name.syntax))
 
       val selectSetting = readSelectSetting(args)
@@ -110,9 +110,9 @@ package internal { package macros {
             case DomaType.EntityOrDomain(_) =>
               // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
               (
-                q"domala.internal.macros.DaoRefrectionMacros.getStreamHandler(classOf[$internalTpe], $functionParamTerm, ${trtName.syntax}, ${defDecl.name.syntax})",
+                q"domala.internal.macros.DaoReflectionMacros.getStreamHandler(classOf[$internalTpe], $functionParamTerm, ${trtName.syntax}, ${defDecl.name.syntax})",
                 q"__command.execute()",
-                Seq(q"domala.internal.macros.DaoRefrectionMacros.setEntityType(__query, classOf[$internalTpe])")
+                Seq(q"domala.internal.macros.DaoReflectionMacros.setEntityType(__query, classOf[$internalTpe])")
               )
             case _ => abort(_def.pos, org.seasar.doma.message.Message.DOMA4008.getMessage(defDecl.tpe, trtName.syntax, defDecl.name.syntax))
           }
@@ -130,9 +130,9 @@ package internal { package macros {
           case DomaType.Option(DomaType.EntityOrDomain(elementType), _) =>
             // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
             (
-              q"domala.internal.macros.DaoRefrectionMacros.getOptionalSingleResultHandler(classOf[$elementType], ${trtName.syntax}, ${defDecl.name.syntax})",
+              q"domala.internal.macros.DaoReflectionMacros.getOptionalSingleResultHandler(classOf[$elementType], ${trtName.syntax}, ${defDecl.name.syntax})",
               q"__command.execute().asScala",
-              Seq(q"domala.internal.macros.DaoRefrectionMacros.setEntityType(__query, classOf[$elementType])")
+              Seq(q"domala.internal.macros.DaoReflectionMacros.setEntityType(__query, classOf[$elementType])")
             )
           case DomaType.Option(_, elementTpe) => abort(_def.pos, domala.message.Message.DOMALA4235.getMessage(elementTpe, trtName.syntax, defDecl.name.syntax))
 
@@ -150,9 +150,9 @@ package internal { package macros {
           case DomaType.Seq(DomaType.EntityOrDomain(internalTpe), _) =>
             (
               // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
-              q"domala.internal.macros.DaoRefrectionMacros.getResultListHandler(classOf[$internalTpe], ${trtName.syntax}, ${defDecl.name.syntax})",
+              q"domala.internal.macros.DaoReflectionMacros.getResultListHandler(classOf[$internalTpe], ${trtName.syntax}, ${defDecl.name.syntax})",
               q"__command.execute().asScala",
-              Seq(q"domala.internal.macros.DaoRefrectionMacros.setEntityType(__query, classOf[$internalTpe])")
+              Seq(q"domala.internal.macros.DaoReflectionMacros.setEntityType(__query, classOf[$internalTpe])")
             )
 
           case DomaType.Map => (
@@ -171,9 +171,9 @@ package internal { package macros {
           case DomaType.EntityOrDomain(tpe) =>
             // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
             (
-              q"domala.internal.macros.DaoRefrectionMacros.getSingleResultHandler(classOf[$tpe], ${trtName.syntax}, ${defDecl.name.syntax})",
+              q"domala.internal.macros.DaoReflectionMacros.getSingleResultHandler(classOf[$tpe], ${trtName.syntax}, ${defDecl.name.syntax})",
               q"__command.execute().asInstanceOf[$tpe]",
-              Seq(q"domala.internal.macros.DaoRefrectionMacros.setEntityType(__query, classOf[$tpe])")
+              Seq(q"domala.internal.macros.DaoReflectionMacros.setEntityType(__query, classOf[$tpe])")
             )
 
           case _ => abort(_def.pos, org.seasar.doma.message.Message.DOMA4008.getMessage(defDecl.tpe, trtName.syntax, defDecl.name.syntax))

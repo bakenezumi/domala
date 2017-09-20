@@ -19,7 +19,7 @@ package internal { package macros {
 
   object InsertGenerator {
     def generate(trtName: Type.Name, _def: Decl.Def, internalMethodName: Term.Name, args: Seq[Term.Arg]): Defn.Def = {
-      val commonSetting = DaoMethodMacroHelper.readCommonSetting(args)
+      val commonSetting = DaoMacroHelper.readCommonSetting(args)
       val excludeNull = args.collectFirst { case arg"excludeNull = $x" => x }.getOrElse(q"false")
       val include = args.collectFirst { case arg"include = $x" => Some(x) }.getOrElse(None)
       val exclude = args.collectFirst { case arg"exclude = $x" => Some(x) }.getOrElse(None)

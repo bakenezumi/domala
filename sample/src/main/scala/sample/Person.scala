@@ -9,7 +9,6 @@ case class Person(
   id: Option[Int] = None,
   name: Name,
   age: Option[Int],
-  @Embedded
   address: Address,
   departmentId: Option[Int],
   @Version

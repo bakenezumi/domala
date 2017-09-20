@@ -18,8 +18,9 @@ class Entity(listener: Class[_ <: EntityListener[_ <: Any]] = classOf[NullEntity
 
 package internal { package macros {
 
-  import scala.meta.contrib._
+  import domala.GeneratedValue
   import org.scalameta.logger
+
   import scala.collection.immutable.Seq
 
   case class EntitySetting(
@@ -37,9 +38,9 @@ package internal { package macros {
         args.collectFirst { case arg"naming = $x" => Term.Name(x.syntax) }.getOrElse(q"null")
       )
       val tableSetting = TableSetting.read(cls.mods)
-      val fields = makeFields(cls.name, cls.ctor, entitySetting)
-      val constructor = makeConstructor(cls.name, cls.ctor, entitySetting, tableSetting)
-      val methods = makeMethods(cls.name, cls.ctor, entitySetting)
+      val fields = generateFields(cls.name, cls.ctor, entitySetting)
+      val constructor = generateConstructor(cls.name, cls.ctor, entitySetting, tableSetting)
+      val methods = generateMethods(cls.name, cls.ctor, entitySetting)
 
       val obj =
       q"""
@@ -64,22 +65,23 @@ package internal { package macros {
       ))
     }
 
-    protected def makeFields(clsName: Type.Name, ctor: Ctor.Primary, entitySetting: EntitySetting): Seq[Stat] = {
+    protected def generateFields(clsName: Type.Name, ctor: Ctor.Primary, entitySetting: EntitySetting): Seq[Stat] = {
+      val propertySize = ctor.paramss.flatten.size
       val fields1 =
         q"""
         private val __namingType: org.seasar.doma.jdbc.entity.NamingType = ${entitySetting.naming}
         private val __idGenerator =
           new org.seasar.doma.jdbc.id.BuiltinIdentityIdGenerator()
+        val __idList = new java.util.ArrayList[org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]]()
+        val __list = new java.util.ArrayList[org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]]($propertySize)
+        val __map = new java.util.HashMap[String, org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]]($propertySize)
         """
-      val propertyTypeFields = makePropertyTypeFields(clsName, ctor)
+      val propertyTypeFields = generatePropertyTypeFields(clsName, ctor)
 
       fields1.stats ++ propertyTypeFields
     }
 
-
-    private case class PropertyTypeSet()
-
-    protected def makePropertyTypeFields(clsName: Type.Name, ctor: Ctor.Primary): Seq[Defn.Val] = {
+    protected def generatePropertyTypeFields(clsName: Type.Name, ctor: Ctor.Primary): Seq[Defn.Val] = {
       ctor.paramss.flatten.map { p =>
         val columnSetting = ColumnSetting.read(p.mods)
         val Term.Param(mods, name, Some(decltpe), default) = p
@@ -87,86 +89,55 @@ package internal { package macros {
         val tpeTerm = Term.Name(decltpe.toString)
         val propertyName = Pat.Var.Term(Term.Name("$" + name.syntax))
 
-        if (p contains mod"@Embedded") {
-          q"""
-          val $propertyName = new org.seasar.doma.jdbc.entity.EmbeddedPropertyType[
-            $clsName,
-            $tpe
-          ](
-            ${name.syntax},
-            classOf[$clsName],
-            $tpeTerm.getEmbeddablePropertyTypes(
-              ${name.syntax},
-              classOf[$clsName],
-              __namingType))
-          """
-        } else {
-          val (basicTpe, newWrapperExpr, domainTpe) = TypeHelper.generateEntityTypeParts(decltpe)
-
-          if (p contains mod"@Id") {
-            p.mods.collect {
-              case mod"@GeneratedValue(strategy = GenerationType.$strategy)" => strategy
-            }.headOption match {
-              case Some(strategy) => {
-                q"""
-                val $propertyName = new domala.jdbc.entity.GeneratedIdPropertyType(
-                  classOf[$clsName],
-                  classOf[$tpe],
-                  $basicTpe,
-                  $newWrapperExpr,
-                  null,
-                  $domainTpe,
-                  ${name.syntax},
-                  "",
-                  __namingType,
-                  false,
-                  __idGenerator
-                )
-                """
-              }
-              // TODO:
-              case _ => abort("not implementation now")
-            }
-          } else if (p contains mod"@Version") {
-            q"""
-            val $propertyName = new domala.jdbc.entity.VersionPropertyType(
-              classOf[$clsName],
-              classOf[$tpe],
-              $basicTpe,
-              $newWrapperExpr,
-              null,
-              $domainTpe,
-              ${name.syntax},
-              "",
-              __namingType,
-              false
-            )
-            """
-          } else {
-            q"""
-            val $propertyName = new domala.jdbc.entity.DefaultPropertyType(
-              classOf[$clsName],
-              classOf[$tpe],
-              $basicTpe,
-              $newWrapperExpr,
-              null,
-              $domainTpe,
-              ${name.syntax},
-              ${columnSetting.name},
-              __namingType,
-              ${columnSetting.insertable},
-              ${columnSetting.updatable},
-              ${columnSetting.quote}
-            )
-            """
-          }
+        val (basicTpe, newWrapperExpr) = TypeHelper.convertToEntityDomaType(decltpe) match {
+          case DomaType.Basic(_, convertedType, wrapperSupplier) => (convertedType, wrapperSupplier)
+          case DomaType.Option(DomaType.Basic(_, convertedType, wrapperSupplier), _) => (convertedType, wrapperSupplier)
+          case DomaType.EntityOrDomain(unknownTpe) => (unknownTpe, q"null")
+          case DomaType.Option(DomaType.EntityOrDomain(unknownTpe), _) => (unknownTpe,  q"null")
+          case _ => abort(domala.message.Message.DOMALA4096.getMessage(decltpe.syntax, clsName.syntax, name.syntax))
         }
+
+        val isId = mods.exists {
+          case mod"@Id" => true
+          case _ => false
+        }
+//        if(isId) {
+//          mods.exists {
+//            case mod"@GeneratedValue(strategy = GenerationType.IDENTITY)" => true
+//            case mod"@GeneratedValue(strategy = GenerationType.SEQUENCE)" => abort("not implementation now") // TODO:
+//            case _ => abort("not implementation now") // TODO:
+//          }
+//        }
+
+        val isVersion = mods.exists {
+          case mod"@Version" => true
+          case _ => false
+        }
+
+        q"""
+        val $propertyName = domala.internal.macros.EntityReflectionMacros.generatePropertyType(
+          classOf[$tpe],
+          classOf[$clsName],
+          ${name.syntax},
+          __namingType,
+          ${if(isId) q"true" else q"false"},
+          __idGenerator,
+          ${if(isVersion) q"true" else q"false"},
+          classOf[$basicTpe],
+          $newWrapperExpr,
+          ${columnSetting.name},
+          ${columnSetting.insertable},
+          ${columnSetting.updatable},
+          ${columnSetting.quote},
+          __list,
+          __map,
+          __idList
+        )
+        """
       }
     }
 
-    protected def makeConstructor(clsName: Type.Name, ctor: Ctor.Primary, entitySetting: EntitySetting, tableSetting: TableSetting): Seq[Stat] = {
-      val propertySize = ctor.paramss.flatten.size
-
+    protected def generateConstructor(clsName: Type.Name, ctor: Ctor.Primary, entitySetting: EntitySetting, tableSetting: TableSetting): Seq[Stat] = {
       q"""
       val __listenerSupplier: java.util.function.Supplier[${entitySetting.listener}] =
         () => ListenerHolder.listener
@@ -176,30 +147,6 @@ package internal { package macros {
       val __schemaName = ${Term.Name(tableSetting.schema.syntax)}
       val __tableName = ${Term.Name(tableSetting.name.syntax)}
       val __isQuoteRequired = ${tableSetting.quote}
-      val __idList = new java.util.ArrayList[org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]]()
-      val __list = new java.util.ArrayList[org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]]($propertySize)
-      val __map = new java.util.HashMap[String, org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]]($propertySize)
-      """.stats ++
-          ctor.paramss.flatten.flatMap { p =>
-            val Term.Param(mods, name, Some(decltpe), default) = p
-            val propertyName = Term.Name("$" + name.syntax)
-
-            if (p contains mod"@Embedded") {
-              Seq(
-                q"__list.addAll($propertyName.getEmbeddablePropertyTypes)",
-                q"__map.putAll($propertyName.getEmbeddablePropertyTypeMap)"
-              )
-            } else {
-              (if (p contains mod"@Id") {
-                Seq(q"__idList.add($propertyName)")
-              } else Nil) ++
-                Seq(
-                  q"__list.add($propertyName)",
-                  q"__map.put(${name.syntax}, $propertyName)"
-                )
-            }
-          } ++
-          q"""
       val __idPropertyTypes = java.util.Collections.unmodifiableList(__idList)
       val __entityPropertyTypes = java.util.Collections.unmodifiableList(__list)
       val __entityPropertyTypeMap: java.util.Map[
@@ -209,21 +156,21 @@ package internal { package macros {
       """.stats
     }
 
-    protected def makeGeneratedIdPropertyType(clsName: Type.Name, ctor: Ctor.Primary): Term = {
+    protected def generateGeneratedIdPropertyType(clsName: Type.Name, ctor: Ctor.Primary): Term = {
       ctor.paramss.flatten.collect {
         case param if param.mods.exists(mod => mod.syntax.startsWith("@GeneratedValue")) =>
-          ("$" + param.name.syntax).parse[Term].get
+          ("$" + param.name.syntax + s".asInstanceOf[org.seasar.doma.jdbc.entity.GeneratedIdPropertyType[$clsName, $clsName, _ <: Number, _]]").parse[Term].get
       }.headOption.getOrElse(q"null")
     }
 
-    protected def makeVersionPropertyType(clsName: Type.Name, ctor: Ctor.Primary): Term = {
+    protected def generateVersionPropertyType(clsName: Type.Name, ctor: Ctor.Primary): Term = {
       ctor.paramss.flatten.collect {
         case param if param.mods.exists(mod => mod.syntax.startsWith("@Version")) =>
-          ("$" + param.name.syntax).parse[Term].get
+          ("$" + param.name.syntax  + s".asInstanceOf[org.seasar.doma.jdbc.entity.VersionPropertyType[$clsName, $clsName, _ <: Number, _]]").parse[Term].get
       }.headOption.getOrElse(q"null")
     }
 
-    protected def makeMethods(clsName: Type.Name, ctor: Ctor.Primary, entitySetting: EntitySetting): Seq[Stat] = {
+    protected def generateMethods(clsName: Type.Name, ctor: Ctor.Primary, entitySetting: EntitySetting): Seq[Stat] = {
       q"""
 
       override def getNamingType() = __namingType
@@ -325,20 +272,26 @@ package internal { package macros {
 
       override def getIdPropertyTypes() = __idPropertyTypes
 
-      override def getGeneratedIdPropertyType() = ${makeGeneratedIdPropertyType(clsName, ctor)}
+      override def getGeneratedIdPropertyType(): org.seasar.doma.jdbc.entity.GeneratedIdPropertyType[_ >: $clsName, $clsName, _, _] = ${generateGeneratedIdPropertyType(clsName, ctor)}
 
-      override def getVersionPropertyType() = ${makeVersionPropertyType(clsName, ctor)}
+      override def getVersionPropertyType(): org.seasar.doma.jdbc.entity.VersionPropertyType[_ >: $clsName, $clsName, _, _] = ${generateVersionPropertyType(clsName, ctor)}
       """.stats ++ {
-          val params = ctor.paramss.flatten.map { p =>
+          val params2 = ctor.paramss.flatten.map { p =>
             val Term.Param(mods, name, Some(decltpe), default) = p
-            if (p contains mod"@Embedded") {
+            if (mods.exists {
+              case mod"@Embedded" => true
+              case _ => false
+            }) {
               val tpe = Term.Name(decltpe.toString)
-              q"""$tpe.newEmbeddable[$clsName](${name.syntax}, __args)"""
+              q"""$tpe.newEmbeddable[$clsName](${name.syntax}, __args).asInstanceOf[${Type.Name(decltpe.toString)}]"""
             } else {
               val tpe = Type.Name(decltpe.toString)
-
               q"""(if (__args.get(${name.syntax}) != null) __args.get(${name.syntax}).get else null).asInstanceOf[$tpe]"""
             }
+          }
+          val params = ctor.paramss.flatten.map { p =>
+            val tpe = Type.Name(p.decltpe.get.toString)
+            q"domala.internal.macros.EntityReflectionMacros.readProperty(__args, ${p.name.syntax}, classOf[$tpe])"
           }
           Seq(
             q"""

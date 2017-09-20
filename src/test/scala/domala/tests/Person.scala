@@ -10,7 +10,6 @@ case class Person(
   @Column(updatable = false)
   name: Name,
   age: Option[Int],
-  @Embedded
   address: Address,
   departmentId: Option[Int],
   @Version
