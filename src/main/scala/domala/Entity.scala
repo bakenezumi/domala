@@ -18,9 +18,7 @@ class Entity(listener: Class[_ <: EntityListener[_ <: Any]] = classOf[NullEntity
 
 package internal { package macros {
 
-  import domala.GeneratedValue
   import org.scalameta.logger
-
   import scala.collection.immutable.Seq
 
   case class EntitySetting(
@@ -92,13 +90,14 @@ package internal { package macros {
         val (basicTpe, newWrapperExpr) = TypeHelper.convertToEntityDomaType(decltpe) match {
           case DomaType.Basic(_, convertedType, wrapperSupplier) => (convertedType, wrapperSupplier)
           case DomaType.Option(DomaType.Basic(_, convertedType, wrapperSupplier), _) => (convertedType, wrapperSupplier)
-          case DomaType.EntityOrDomain(unknownTpe) => (unknownTpe, q"null")
-          case DomaType.Option(DomaType.EntityOrDomain(unknownTpe), _) => (unknownTpe,  q"null")
+          case DomaType.EntityOrHolderOrEmbeddable(unknownTpe) => (unknownTpe, q"null")
+          case DomaType.Option(DomaType.EntityOrHolderOrEmbeddable(unknownTpe), _) => (unknownTpe,  q"null")
           case _ => abort(domala.message.Message.DOMALA4096.getMessage(decltpe.syntax, clsName.syntax, name.syntax))
         }
 
         val isId = mods.exists {
           case mod"@Id" => true
+          case mod"@domala.Id" => true
           case _ => false
         }
 //        if(isId) {
@@ -111,6 +110,7 @@ package internal { package macros {
 
         val isVersion = mods.exists {
           case mod"@Version" => true
+          case mod"@domala.Version" => true
           case _ => false
         }
 
@@ -165,7 +165,7 @@ package internal { package macros {
 
     protected def generateVersionPropertyType(clsName: Type.Name, ctor: Ctor.Primary): Term = {
       ctor.paramss.flatten.collect {
-        case param if param.mods.exists(mod => mod.syntax.startsWith("@Version")) =>
+        case param if param.mods.exists(mod => mod.syntax.startsWith("@Version") || mod.syntax.startsWith("@domala.Version")) =>
           ("$" + param.name.syntax  + s".asInstanceOf[org.seasar.doma.jdbc.entity.VersionPropertyType[$clsName, $clsName, _ <: Number, _]]").parse[Term].get
       }.headOption.getOrElse(q"null")
     }
@@ -184,7 +184,7 @@ package internal { package macros {
       override def getSchemaName() = __schemaName
 
       override def getTableName() =
-        getTableName(org.seasar.doma.jdbc.Naming.DEFAULT.apply)
+        getTableName(org.seasar.doma.jdbc.Naming.DEFAULT.apply _)
 
       override def getTableName(
         namingFunction: java.util.function.BiFunction[
@@ -276,22 +276,8 @@ package internal { package macros {
 
       override def getVersionPropertyType(): org.seasar.doma.jdbc.entity.VersionPropertyType[_ >: $clsName, $clsName, _, _] = ${generateVersionPropertyType(clsName, ctor)}
       """.stats ++ {
-          val params2 = ctor.paramss.flatten.map { p =>
-            val Term.Param(mods, name, Some(decltpe), default) = p
-            if (mods.exists {
-              case mod"@Embedded" => true
-              case _ => false
-            }) {
-              val tpe = Term.Name(decltpe.toString)
-              q"""$tpe.newEmbeddable[$clsName](${name.syntax}, __args).asInstanceOf[${Type.Name(decltpe.toString)}]"""
-            } else {
-              val tpe = Type.Name(decltpe.toString)
-              q"""(if (__args.get(${name.syntax}) != null) __args.get(${name.syntax}).get else null).asInstanceOf[$tpe]"""
-            }
-          }
           val params = ctor.paramss.flatten.map { p =>
-            val tpe = Type.Name(p.decltpe.get.toString)
-            q"domala.internal.macros.EntityReflectionMacros.readProperty(__args, ${p.name.syntax}, classOf[$tpe])"
+            q"domala.internal.macros.EntityReflectionMacros.readProperty(classOf[$clsName], __args, ${p.name.syntax}, classOf[${Type.Name(p.decltpe.get.toString)}])"
           }
           Seq(
             q"""

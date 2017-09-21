@@ -1,6 +1,6 @@
 package sample
 
-import domala.Domain
+import domala.Holder
 
-@Domain
+@Holder
 case class Name(value: String)

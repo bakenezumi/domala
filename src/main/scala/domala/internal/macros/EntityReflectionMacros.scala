@@ -1,9 +1,8 @@
 package domala.internal.macros
 
-import java.util
 import java.util.function.Supplier
 
-import domala.jdbc.entity.{DefaultPropertyType, VersionPropertyType}
+import domala.jdbc.entity.{DefaultPropertyType, GeneratedIdPropertyType, VersionPropertyType}
 import domala.jdbc.holder.AbstractHolderDesc
 import org.seasar.doma.jdbc.entity._
 import org.seasar.doma.jdbc.id.IdGenerator
@@ -35,11 +34,13 @@ object EntityReflectionMacros {
     columnInsertable: c.Expr[Boolean],
     columnUpdatable: c.Expr[Boolean],
     columnQuote: c.Expr[Boolean],
-    list: c.Expr[java.util.ArrayList[_ <: EntityPropertyType[E, _]]],
-    map: c.Expr[ java.util.HashMap[String, _ <: EntityPropertyType[E, _]]],
-    idList: c.Expr[java.util.ArrayList[_ <: EntityPropertyType[E, _]]],
+    list: c.Expr[java.util.List[EntityPropertyType[E, _]]],
+    map: c.Expr[java.util.Map[String, EntityPropertyType[E, _]]],
+    idList: c.Expr[java.util.List[EntityPropertyType[E, _]]],
   ): c.universe.Expr[Object] = {
     import c.universe._
+    val Literal(Constant(isIdActual: Boolean)) = isId.tree
+    val Literal(Constant(isVersionActual: Boolean)) = isVersion.tree
     val wtt = weakTypeOf[T]
     if (wtt.companion <:< typeOf[EmbeddableType[_]]) {
       val embeddable = getCompanion(c)(propertyClass)
@@ -51,26 +52,55 @@ object EntityReflectionMacros {
             paramName.splice,
             entityClass.splice,
             namingType.splice))
-        val __list = list.splice.asInstanceOf[util.ArrayList[EntityPropertyType[E, _]]]
-        __list.addAll(prop.getEmbeddablePropertyTypes)
-        val __map = map.splice.asInstanceOf[util.HashMap[String, EntityPropertyType[E, _]]]
-        __map.putAll(prop.getEmbeddablePropertyTypeMap)
+        list.splice.addAll(prop.getEmbeddablePropertyTypes)
+        map.splice.putAll(prop.getEmbeddablePropertyTypeMap)
         prop
       }
-    } else {
-      val Literal(Constant(isIdActual: Boolean)) = isId.tree
-      val Literal(Constant(isVersionActual: Boolean)) = isVersion.tree
-      if(wtt.companion <:< typeOf[AbstractHolderDesc[_, _]] || (wtt <:< typeOf[Option[_]] && wtt.typeArgs.head.companion <:< typeOf[AbstractHolderDesc[_, _]])) {
-        val domain = if (wtt.companion <:< typeOf[AbstractHolderDesc[_, _]]) {
-          getCompanion(c)(propertyClass)
-        } else {
-          getCompanion(c)(basicClass)
+    } else if(wtt.companion <:< typeOf[AbstractHolderDesc[_, _]] ||
+      (wtt <:< typeOf[Option[_]] && wtt.typeArgs.head.companion <:< typeOf[AbstractHolderDesc[_, _]])) {
+      val domain = if (wtt.companion <:< typeOf[AbstractHolderDesc[_, _]]) {
+        getCompanion(c)(propertyClass)
+      } else {
+        getCompanion(c)(basicClass)
+      }
+      if(isIdActual) {
+        reify {
+          val prop = GeneratedIdPropertyType.ofDomain(
+            entityClass.splice,
+            propertyClass.splice,
+            domain.splice.asInstanceOf[AbstractHolderDesc[Number, _]],
+            paramName.splice,
+            columnName.splice,
+            namingType.splice,
+            columnQuote.splice,
+            idGenerator.splice
+          )
+          idList.splice.add(prop)
+          list.splice.add(prop)
+          map.splice.put(paramName.splice, prop)
+          prop
         }
+      } else if(isVersionActual) {
+        reify {
+          val prop = VersionPropertyType.ofDomain(
+            entityClass.splice,
+            propertyClass.splice,
+            domain.splice.asInstanceOf[AbstractHolderDesc[Number, _]],
+            paramName.splice,
+            columnName.splice,
+            namingType.splice,
+            columnQuote.splice
+          )
+          list.splice.add(prop)
+          map.splice.put(paramName.splice, prop)
+          prop
+        }
+      } else {
         reify {
           val prop = DefaultPropertyType.ofDomain(
             entityClass.splice,
             propertyClass.splice,
-            domain.splice.asInstanceOf[AbstractHolderDesc[_, T]],
+            domain.splice.asInstanceOf[AbstractHolderDesc[_, _]],
             paramName.splice,
             columnName.splice,
             namingType.splice,
@@ -78,13 +108,13 @@ object EntityReflectionMacros {
             columnUpdatable.splice,
             columnQuote.splice
           )
-          val __list = list.splice.asInstanceOf[util.ArrayList[EntityPropertyType[E, _]]]
-          __list.add(prop.asInstanceOf[EntityPropertyType[E, _]])
-          val __map = map.splice.asInstanceOf[util.HashMap[String, EntityPropertyType[E, _]]]
-          __map.put(paramName.splice ,prop.asInstanceOf[EntityPropertyType[E, _]])
+          list.splice.add(prop)
+          map.splice.put(paramName.splice, prop)
           prop
         }
-      } else if(isIdActual) {
+      }
+    } else {
+      if(isIdActual) {
         reify {
           val prop = new domala.jdbc.entity.GeneratedIdPropertyType(
             entityClass.splice,
@@ -99,12 +129,9 @@ object EntityReflectionMacros {
             columnQuote.splice,
             idGenerator.splice
           )
-          val __idList = idList.splice.asInstanceOf[util.ArrayList[EntityPropertyType[E, _]]]
-          __idList.add(prop.asInstanceOf[EntityPropertyType[E, _]])
-          val __list = list.splice.asInstanceOf[util.ArrayList[EntityPropertyType[E, _]]]
-          __list.add(prop.asInstanceOf[EntityPropertyType[E, _]])
-          val __map = map.splice.asInstanceOf[util.HashMap[String, EntityPropertyType[E, _]]]
-          __map.put(paramName.splice ,prop.asInstanceOf[EntityPropertyType[E, _]])
+          idList.splice.add(prop)
+          list.splice.add(prop)
+          map.splice.put(paramName.splice ,prop)
           prop
         }
       } else if(isVersionActual) {
@@ -121,10 +148,8 @@ object EntityReflectionMacros {
             namingType.splice,
             columnQuote.splice
           )
-          val __list = list.splice.asInstanceOf[util.ArrayList[EntityPropertyType[E, _]]]
-          __list.add(prop.asInstanceOf[EntityPropertyType[E, _]])
-          val __map = map.splice.asInstanceOf[util.HashMap[String, EntityPropertyType[E, _]]]
-          __map.put(paramName.splice ,prop.asInstanceOf[EntityPropertyType[E, _]])
+          list.splice.add(prop)
+          map.splice.put(paramName.splice, prop)
           prop
         }
       } else {
@@ -143,15 +168,14 @@ object EntityReflectionMacros {
             columnUpdatable.splice,
             columnQuote.splice
           )
-          val __list = list.splice.asInstanceOf[util.ArrayList[EntityPropertyType[E, _]]]
-          __list.add(prop.asInstanceOf[EntityPropertyType[E, _]])
-          val __map = map.splice.asInstanceOf[util.HashMap[String, EntityPropertyType[E, _]]]
-          __map.put(paramName.splice ,prop.asInstanceOf[EntityPropertyType[E, _]])
+          list.splice.add(prop)
+          map.splice.put(paramName.splice ,prop)
           prop
         }
       }
     }
   }
+
   def generatePropertyType[T, E, B](
     propertyClass: Class[T],
     entityClass: Class[E],
@@ -166,14 +190,15 @@ object EntityReflectionMacros {
     columnInsertable: Boolean,
     columnUpdatable: Boolean,
     columnQuote: Boolean,
-    list: java.util.ArrayList[_ <: EntityPropertyType[E, _]],
-    map: java.util.HashMap[String, _ <: EntityPropertyType[E, _]],
-    idList: java.util.ArrayList[_ <: EntityPropertyType[E, _]],
+    list: java.util.List[EntityPropertyType[E, _]],
+    map: java.util.Map[String, EntityPropertyType[E, _]],
+    idList: java.util.List[EntityPropertyType[E, _]],
   ) = macro generatePropertyTypeImpl[T, E, B]
 
 
   def readPropertyImpl[T: c.WeakTypeTag, E: c.WeakTypeTag](c: blackbox.Context)(
-    args:  c.Expr[java.util.Map[String, _ <: Property[E, _]]],
+    entityClass: c.Expr[Class[E]],
+    args:  c.Expr[java.util.Map[String, Property[E, _]]],
     propertyName: c.Expr[String],
     propertyClass:  c.Expr[Class[T]]): c.universe.Expr[T] = {
     import c.universe._
@@ -181,7 +206,7 @@ object EntityReflectionMacros {
     if(wtt.companion <:< typeOf[EmbeddableType[_]]) {
       val embeddable = getCompanion(c)(propertyClass)
       reify {
-        embeddable.splice.asInstanceOf[EmbeddableType[_]].newEmbeddable[E](propertyName.splice, args.splice.asInstanceOf[java.util.Map[String, Property[E, _]]]).asInstanceOf[T]
+        embeddable.splice.asInstanceOf[EmbeddableType[_]].newEmbeddable[E](propertyName.splice, args.splice).asInstanceOf[T]
       }
     } else {
       reify {
@@ -191,8 +216,9 @@ object EntityReflectionMacros {
   }
 
   def readProperty[T, E](
-    args: java.util.Map[String, _ <: Property[E, _]],
+    entityClass: Class[E],
+    args: java.util.Map[String, Property[E, _]],
     propertyName: String,
-    propertyClass: Class[T]) = macro readPropertyImpl[T, E]
+    propertyClass: Class[T]): T = macro readPropertyImpl[T, E]
 
 }

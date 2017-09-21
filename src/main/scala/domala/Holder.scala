@@ -1,12 +1,12 @@
 package domala
 
-import domala.internal.macros.DomainTypeGenerator
+import domala.internal.macros.HolderTypeGenerator
 import scala.meta._
 
-class Domain extends scala.annotation.StaticAnnotation {
+class Holder extends scala.annotation.StaticAnnotation {
   inline def apply(defn: Any): Any = meta {
     defn match {
-      case cls: Defn.Class => DomainTypeGenerator.generate(cls)
+      case cls: Defn.Class => HolderTypeGenerator.generate(cls)
       case _ => abort("@Domain most annotate a class")
     }
   }
@@ -20,7 +20,7 @@ package internal { package macros {
   /**
     * @see [[https://github.com/domaframework/doma/blob/master/src/main/java/org/seasar/doma/internal/apt/DomainTypeGenerator.java]]
     */
-  object DomainTypeGenerator {
+  object HolderTypeGenerator {
     def generate(cls: Defn.Class): Term.Block = {
 
       if (cls.ctor.paramss.flatten.length != 1) abort(cls.pos, domala.message.Message.DOMALA6001.getMessage())

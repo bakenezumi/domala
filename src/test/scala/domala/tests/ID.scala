@@ -1,6 +1,6 @@
 package domala.tests
 
-import domala.Domain
+import domala.Holder
 
-@Domain
+@Holder
 case class ID(value: Int)

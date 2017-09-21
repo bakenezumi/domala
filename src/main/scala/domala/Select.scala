@@ -107,7 +107,7 @@ package internal { package macros {
                 q"__command.execute()",
                 Nil
               )
-            case DomaType.EntityOrDomain(_) =>
+            case DomaType.EntityOrHolderOrEmbeddable(_) =>
               // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
               (
                 q"domala.internal.macros.DaoReflectionMacros.getStreamHandler(classOf[$internalTpe], $functionParamTerm, ${trtName.syntax}, ${defDecl.name.syntax})",
@@ -127,7 +127,7 @@ package internal { package macros {
             q"__command.execute().asScala.map(x => x)",
             Nil
           )
-          case DomaType.Option(DomaType.EntityOrDomain(elementType), _) =>
+          case DomaType.Option(DomaType.EntityOrHolderOrEmbeddable(elementType), _) =>
             // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
             (
               q"domala.internal.macros.DaoReflectionMacros.getOptionalSingleResultHandler(classOf[$elementType], ${trtName.syntax}, ${defDecl.name.syntax})",
@@ -147,7 +147,7 @@ package internal { package macros {
               q"__command.execute().asScala.map(x => x: $originalType)",
               Nil
             )
-          case DomaType.Seq(DomaType.EntityOrDomain(internalTpe), _) =>
+          case DomaType.Seq(DomaType.EntityOrHolderOrEmbeddable(internalTpe), _) =>
             (
               // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
               q"domala.internal.macros.DaoReflectionMacros.getResultListHandler(classOf[$internalTpe], ${trtName.syntax}, ${defDecl.name.syntax})",
@@ -168,7 +168,7 @@ package internal { package macros {
               Nil
             )
 
-          case DomaType.EntityOrDomain(tpe) =>
+          case DomaType.EntityOrHolderOrEmbeddable(tpe) =>
             // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
             (
               q"domala.internal.macros.DaoReflectionMacros.getSingleResultHandler(classOf[$tpe], ${trtName.syntax}, ${defDecl.name.syntax})",

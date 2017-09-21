@@ -9,9 +9,6 @@ object DomaType {
   case class Seq(elementDomaType: DomaType, elementType: Type) extends DomaType
   case class Option(elementDomaType: DomaType, elementType: Type) extends DomaType
   case class Basic(originalType: Type, convertedType: Type, wrapperSupplier: Term.Function) extends DomaType
-  case class Domain(value: Basic) extends DomaType
-  case object Embeddable extends DomaType
-  case class Entity(tpe: Type) extends DomaType
-  case class EntityOrDomain(tpe: Type) extends DomaType
-  case object Unknown extends DomaType
+  case class EntityOrHolderOrEmbeddable(tpe: Type) extends DomaType
+  case object UnSupport extends DomaType
 }

@@ -120,19 +120,19 @@ case class ValueTypeOption(
  double: Option[Double]
 )
 
-@Domain
+@Holder
 case class BooleanHolder(value: Boolean)
-@Domain
+@Holder
 case class ByteHolder(value: Byte)
-@Domain
+@Holder
 case class ShortHolder(value: Short)
-@Domain
+@Holder
 case class IntHolder(value: Int)
-@Domain
+@Holder
 case class LongHolder(value: Long)
-@Domain
+@Holder
 case class FloatHolder(value: Float)
-@Domain
+@Holder
 case class DoubleHolder(value: Double)
 
 @Entity

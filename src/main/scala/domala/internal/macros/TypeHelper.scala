@@ -50,7 +50,7 @@ object TypeHelper {
   def convertToDomaType(tpe: Type.Arg): DomaType = {
     tpe match {
       case t"Map[String, $_]" => DomaType.Map
-      case t"Map[$_,$_]" => DomaType.Unknown
+      case t"Map[$_,$_]" => DomaType.UnSupport
       case t"Seq[$elementTpe]" => DomaType.Seq(convertToDomaType(elementTpe), elementTpe)
       case t"Option[$elementTpe]" => DomaType.Option(convertToDomaType(elementTpe), elementTpe)
       case t"Optional[$elementTpe]" => DomaType.Option(convertToDomaType(elementTpe), elementTpe)
@@ -146,7 +146,7 @@ object TypeHelper {
         toType(tpe), toType(tpe),
         q"() => new org.seasar.doma.wrapper.SQLXMLWrapper(): org.seasar.doma.wrapper.Wrapper[java.sql.SQLXML]"
       )
-      case _ => DomaType.EntityOrDomain(toType(tpe))
+      case _ => DomaType.EntityOrHolderOrEmbeddable(toType(tpe))
     }
   }
 
@@ -154,8 +154,8 @@ object TypeHelper {
     convertToDomaType(tpe) match {
       case option: DomaType.Option => option
       case basic: DomaType.Basic => basic
-      case other: DomaType.EntityOrDomain => other
-      case _ => DomaType.Unknown
+      case other: DomaType.EntityOrHolderOrEmbeddable => other
+      case _ => DomaType.UnSupport
     }
   }
 

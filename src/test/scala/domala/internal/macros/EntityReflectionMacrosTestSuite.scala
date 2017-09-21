@@ -140,14 +140,14 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
 case class DummyEntity(
   @Id @GeneratedValue(strategy = GenerationType.IDENTITY) id: Int,
   domain: DummyDomain,
-  basic: Option[String],
+  basic: String,
   @Version version: Int
 )
 
-@Domain
+@Holder
 case class DummyDomain(value: String)
-
-
 
 @Embeddable
 case class DummyEmbeddable(value1: Int, value2: String)
+
+

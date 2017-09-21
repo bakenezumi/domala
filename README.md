@@ -33,7 +33,7 @@ case class Person(
 #### Holder class
 
 ```scala
-@Domain
+@Holder
 case class Name(value: String)
 ```
 
