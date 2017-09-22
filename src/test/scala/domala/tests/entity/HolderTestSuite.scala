@@ -23,7 +23,7 @@ class HolderTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("insert & select Holder") {
+  test("insert & update Holder") {
     Required {
       val newEntity = new Holders(name = Name("AAA"), optionName = Some(Name("BBB")))
       dao.insert(newEntity)

@@ -2,9 +2,9 @@ package domala.internal.macros
 
 import java.util.function.Supplier
 
-import domala.jdbc.entity.{DefaultPropertyType, GeneratedIdPropertyType, VersionPropertyType}
+import domala.jdbc.entity.{AssignedIdPropertyType, DefaultPropertyType, GeneratedIdPropertyType, VersionPropertyType}
 import domala.jdbc.holder.AbstractHolderDesc
-import org.seasar.doma.jdbc.entity._
+import org.seasar.doma.jdbc.entity.{EmbeddedPropertyType, _}
 import org.seasar.doma.jdbc.id.IdGenerator
 import org.seasar.doma.wrapper.Wrapper
 
@@ -20,26 +20,43 @@ object EntityReflectionMacros {
     }
   }
 
+  def extractionClassString(str: String): String = {
+    val r = ".*classOf\\[(.*)\\].*".r
+    str match {
+      case r(x) => x
+      case _ => str
+    }
+  }
+  def extractionQuotedString(str: String): String = {
+    val r = """.*"(.*)".*""".r
+    str match {
+      case r(x) => x
+      case _ => str
+    }
+  }
+
   def generatePropertyTypeImpl[T: c.WeakTypeTag, E: c.WeakTypeTag, B: c.WeakTypeTag](c: blackbox.Context)(
     propertyClass: c.Expr[Class[T]],
     entityClass: c.Expr[Class[E]],
     paramName: c.Expr[String],
     namingType: c.Expr[NamingType],
     isId: c.Expr[Boolean],
+    isIdGenerate: c.Expr[Boolean],
     idGenerator: c.Expr[IdGenerator],
     isVersion: c.Expr[Boolean],
+    isBasic: c.Expr[Boolean],
     basicClass: c.Expr[Class[B]],
     wrapperSupplier: c.Expr[Supplier[Wrapper[B]]],
     columnName: c.Expr[String],
     columnInsertable: c.Expr[Boolean],
     columnUpdatable: c.Expr[Boolean],
     columnQuote: c.Expr[Boolean],
-    list: c.Expr[java.util.List[EntityPropertyType[E, _]]],
-    map: c.Expr[java.util.Map[String, EntityPropertyType[E, _]]],
-    idList: c.Expr[java.util.List[EntityPropertyType[E, _]]],
+    collections: c.Expr[EntityCollections[E]]
   ): c.universe.Expr[Object] = {
     import c.universe._
+    val Literal(Constant(isBasicActual: Boolean)) = isBasic.tree
     val Literal(Constant(isIdActual: Boolean)) = isId.tree
+    val Literal(Constant(isIdGenerateActual: Boolean)) = isIdGenerate.tree
     val Literal(Constant(isVersionActual: Boolean)) = isVersion.tree
     val wtt = weakTypeOf[T]
     if (wtt.companion <:< typeOf[EmbeddableType[_]]) {
@@ -52,8 +69,7 @@ object EntityReflectionMacros {
             paramName.splice,
             entityClass.splice,
             namingType.splice))
-        list.splice.addAll(prop.getEmbeddablePropertyTypes)
-        map.splice.putAll(prop.getEmbeddablePropertyTypeMap)
+        collections.splice.putAll(prop)
         prop
       }
     } else if(wtt.companion <:< typeOf[AbstractHolderDesc[_, _]] ||
@@ -64,21 +80,37 @@ object EntityReflectionMacros {
         getCompanion(c)(basicClass)
       }
       if(isIdActual) {
-        reify {
-          val prop = GeneratedIdPropertyType.ofDomain(
-            entityClass.splice,
-            propertyClass.splice,
-            domain.splice.asInstanceOf[AbstractHolderDesc[Number, _]],
-            paramName.splice,
-            columnName.splice,
-            namingType.splice,
-            columnQuote.splice,
-            idGenerator.splice
-          )
-          idList.splice.add(prop)
-          list.splice.add(prop)
-          map.splice.put(paramName.splice, prop)
-          prop
+        if (isIdGenerateActual) {
+          reify {
+            val prop = GeneratedIdPropertyType.ofDomain(
+              entityClass.splice,
+              propertyClass.splice,
+              domain.splice.asInstanceOf[AbstractHolderDesc[Number, _]],
+              paramName.splice,
+              columnName.splice,
+              namingType.splice,
+              columnQuote.splice,
+              idGenerator.splice
+            )
+            collections.splice.putId(prop)
+            collections.splice.put(paramName.splice, prop)
+            prop
+          }
+        } else {
+          reify {
+            val prop = AssignedIdPropertyType.ofDomain(
+              entityClass.splice,
+              propertyClass.splice,
+              domain.splice.asInstanceOf[AbstractHolderDesc[Number, _]],
+              paramName.splice,
+              columnName.splice,
+              namingType.splice,
+              columnQuote.splice
+            )
+            collections.splice.putId(prop)
+            collections.splice.put(paramName.splice, prop)
+            prop
+          }
         }
       } else if(isVersionActual) {
         reify {
@@ -91,8 +123,7 @@ object EntityReflectionMacros {
             namingType.splice,
             columnQuote.splice
           )
-          list.splice.add(prop)
-          map.splice.put(paramName.splice, prop)
+          collections.splice.put(paramName.splice, prop)
           prop
         }
       } else {
@@ -108,31 +139,52 @@ object EntityReflectionMacros {
             columnUpdatable.splice,
             columnQuote.splice
           )
-          list.splice.add(prop)
-          map.splice.put(paramName.splice, prop)
+          collections.splice.put(paramName.splice, prop)
           prop
         }
       }
     } else {
+      if(!isBasicActual) {
+        c.abort(c.enclosingPosition, domala.message.Message.DOMALA4096.getMessage(extractionClassString(propertyClass.toString()), extractionClassString(entityClass.toString), extractionQuotedString(paramName.toString())))
+      }
       if(isIdActual) {
-        reify {
-          val prop = new domala.jdbc.entity.GeneratedIdPropertyType(
-            entityClass.splice,
-            propertyClass.splice,
-            basicClass.splice.asInstanceOf[Class[Number]],
-            wrapperSupplier.splice.asInstanceOf[Supplier[Wrapper[Number]]],
-            null,
-            null,
-            paramName.splice,
-            columnName.splice,
-            namingType.splice,
-            columnQuote.splice,
-            idGenerator.splice
-          )
-          idList.splice.add(prop)
-          list.splice.add(prop)
-          map.splice.put(paramName.splice ,prop)
-          prop
+        if(isIdGenerateActual) {
+          reify {
+            val prop = new domala.jdbc.entity.GeneratedIdPropertyType(
+              entityClass.splice,
+              propertyClass.splice,
+              basicClass.splice.asInstanceOf[Class[Number]],
+              wrapperSupplier.splice.asInstanceOf[Supplier[Wrapper[Number]]],
+              null,
+              null,
+              paramName.splice,
+              columnName.splice,
+              namingType.splice,
+              columnQuote.splice,
+              idGenerator.splice
+            )
+            collections.splice.putId(prop)
+            collections.splice.put(paramName.splice, prop)
+            prop
+          }
+        } else {
+          reify {
+            val prop = new domala.jdbc.entity.AssignedIdPropertyType(
+              entityClass.splice,
+              propertyClass.splice,
+              basicClass.splice.asInstanceOf[Class[Number]],
+              wrapperSupplier.splice.asInstanceOf[Supplier[Wrapper[Number]]],
+              null,
+              null,
+              paramName.splice,
+              columnName.splice,
+              namingType.splice,
+              columnQuote.splice
+            )
+            collections.splice.putId(prop)
+            collections.splice.put(paramName.splice, prop)
+            prop
+          }
         }
       } else if(isVersionActual) {
         reify {
@@ -148,8 +200,7 @@ object EntityReflectionMacros {
             namingType.splice,
             columnQuote.splice
           )
-          list.splice.add(prop)
-          map.splice.put(paramName.splice, prop)
+          collections.splice.put(paramName.splice, prop)
           prop
         }
       } else {
@@ -168,8 +219,7 @@ object EntityReflectionMacros {
             columnUpdatable.splice,
             columnQuote.splice
           )
-          list.splice.add(prop)
-          map.splice.put(paramName.splice ,prop)
+          collections.splice.put(paramName.splice, prop)
           prop
         }
       }
@@ -182,19 +232,18 @@ object EntityReflectionMacros {
     paramName: String,
     namingType: NamingType,
     isId: Boolean,
+    isIdGenerate: Boolean,
     idGenerator: IdGenerator,
     isVersion: Boolean,
+    isBasic: Boolean,
     basicClass: Class[B],
     wrapperSupplier: Supplier[Wrapper[B]],
     columnName: String,
     columnInsertable: Boolean,
     columnUpdatable: Boolean,
     columnQuote: Boolean,
-    list: java.util.List[EntityPropertyType[E, _]],
-    map: java.util.Map[String, EntityPropertyType[E, _]],
-    idList: java.util.List[EntityPropertyType[E, _]],
+    collections: EntityCollections[E]
   ) = macro generatePropertyTypeImpl[T, E, B]
-
 
   def readPropertyImpl[T: c.WeakTypeTag, E: c.WeakTypeTag](c: blackbox.Context)(
     entityClass: c.Expr[Class[E]],
@@ -220,5 +269,30 @@ object EntityReflectionMacros {
     args: java.util.Map[String, Property[E, _]],
     propertyName: String,
     propertyClass: Class[T]): T = macro readPropertyImpl[T, E]
+
+}
+
+case class EntityCollections[E](
+  list: java.util.List[EntityPropertyType[E, _]] = null,
+  map: java.util.Map[String, EntityPropertyType[E, _]] = null,
+  idList: java.util.List[EntityPropertyType[E, _]]= null
+) {
+
+  def putId(propertyType: EntityPropertyType[E, _]): Unit = {
+    if (idList == null) return
+    idList.add(propertyType)
+  }
+
+  def put(propertyName: String, propertyType: EntityPropertyType[E, _]): Unit = {
+    if (list == null) return
+    list.add(propertyType)
+    map.put(propertyName, propertyType)
+  }
+
+  def putAll[T](propertyType: EmbeddedPropertyType[E, T]): Unit = {
+    if (list == null) return
+    list.addAll(propertyType.getEmbeddablePropertyTypes)
+    map.putAll(propertyType.getEmbeddablePropertyTypeMap)
+  }
 
 }

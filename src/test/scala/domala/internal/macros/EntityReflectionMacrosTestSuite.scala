@@ -26,17 +26,17 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
       "basic",
       NamingType.NONE,
       false,
+      false,
       null,
       false,
+      true,
       classOf[String],
       () => new StringWrapper(): Wrapper[String],
       "",
       true,
       true,
       false,
-      __list,
-      __map,
-      __idList
+      EntityCollections[DummyEntity](__list, __map, __idList)
     )
     assert(
       propertyType
@@ -58,17 +58,17 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
       "id",
       NamingType.NONE,
       true,
+      true,
       __idGenerator,
       false,
+      true,
       classOf[String],
       () => new StringWrapper(): Wrapper[String],
       "",
       true,
       true,
       false,
-      __list,
-      __map,
-      __idList
+      EntityCollections[DummyEntity](__list, __map, __idList)
     )
     assert(propertyType.isInstanceOf[GeneratedIdPropertyType[_, _, _, _]])
     assert(__idList.get(0) == propertyType)
@@ -87,7 +87,9 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
       "version",
       NamingType.NONE,
       false,
+      false,
       null,
+      true,
       true,
       classOf[Integer],
       () => new IntegerWrapper(): Wrapper[Integer],
@@ -95,9 +97,7 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
       true,
       true,
       false,
-      __list,
-      __map,
-      __idList
+      EntityCollections[DummyEntity](__list, __map, __idList)
     )
     assert(propertyType.isInstanceOf[VersionPropertyType[_, _, _, _]])
     assert(__idList.isEmpty)
@@ -116,7 +116,9 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
       "domain",
       NamingType.NONE,
       false,
+      false,
       null,
+      false,
       false,
       classOf[DummyDomain],
       null,
@@ -124,9 +126,7 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
       true,
       true,
       false,
-      __list,
-      __map,
-      __idList
+      EntityCollections[DummyEntity](__list, __map, __idList)
     )
     assert(propertyType.isInstanceOf[DefaultPropertyType[_, _, _, _]])
     assert(__idList.isEmpty)

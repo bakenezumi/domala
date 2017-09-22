@@ -4,49 +4,6 @@ import scala.meta._
 
 object TypeHelper {
 
-  private val basicTypes = Set[Type](
-    t"Boolean",
-    t"Byte",
-    t"Short",
-    t"Int", t"Integer",
-    t"Long",
-    t"Float",
-    t"Double",
-    t"Array[Byte]",
-    t"String",
-    t"AnyRef", t"Object",
-    t"BigDecimal",
-    t"java.math.BigDecimal",
-    t"BigInt",
-    t"BigInteger", t"java.math.BigInteger",
-    t"LocalDate", t"java.time.LocalDate",
-    t"LocalTime", t"java.time.LocalTime",
-    t"LocalDateTime", t"java.time.LocalDateTime",
-    t"Date", t"java.sql.Date",
-    t"Time", t"java.sql.Time",
-    t"Timestamp", t"java.sql.Timestamp",
-    t"Blob", t"java.sql.Blob",
-    t"Clob", t"java.sql.Clob",
-    t"SQLXML", t"java.sql.SQLXML"
-  )
-
-  private val basicTypesAndOptions = Set[Option[Type]](
-    None,
-    Some(t"Option"),
-    Some(t"Optional")).flatMap(container =>
-    basicTypes.map(tp =>
-      container match {
-        case None => tp
-        case Some(ctp) => t"$ctp[$tp]"
-      }
-    )) ++ Set(t"OptionalInt", t"OptionalLong", t"OptionalLong")
-
-  private val basicTypeStrings: Set[String] = basicTypesAndOptions.map(_.toString)
-
-  def isBasic(tpe: Type.Arg): Boolean = {
-    basicTypeStrings.contains(tpe.toString())
-  }
-
   def convertToDomaType(tpe: Type.Arg): DomaType = {
     tpe match {
       case t"Map[String, $_]" => DomaType.Map
@@ -159,29 +116,7 @@ object TypeHelper {
     }
   }
 
-  def generateEntityTypeParts(tpe: Type.Arg): (Ctor.Call, Term, Term) = {
-    if (!isBasic(tpe)) {
-      val domainTpe = tpe match {
-        case t"$_[$internalTpe]" => Term.Name(internalTpe.toString)
-        case _  => Term.Name(tpe.toString)
-      }
-      (
-        q"$domainTpe.getBasicClass()",
-        q"$domainTpe.wrapper",
-        q"$domainTpe"
-      )
-    } else {
-      val targetTpe = tpe match {
-        case t"Option[$inner]" => inner
-        case t"Optional[$inner]" => inner
-        case _ => tpe
-      }
-      val DomaType.Basic(_, convertedType, wrapperSupplier) = convertToDomaType(targetTpe)
-      (q"classOf[$convertedType]", wrapperSupplier, q"null")
-    }
-  }
-
-  private def toType(arg: Type.Arg): Type = arg match {
+  def toType(arg: Type.Arg): Type = arg match {
     case Type.Arg.Repeated(tpe) => tpe
     case Type.Arg.ByName(tpe) => tpe
     case tpe: Type => tpe
