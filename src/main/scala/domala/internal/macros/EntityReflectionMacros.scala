@@ -35,9 +35,10 @@ object EntityReflectionMacros {
     }
   }
 
-  def generatePropertyTypeImpl[T: c.WeakTypeTag, E: c.WeakTypeTag, B: c.WeakTypeTag](c: blackbox.Context)(
+  def generatePropertyTypeImpl[T: c.WeakTypeTag, E: c.WeakTypeTag, N: c.WeakTypeTag](c: blackbox.Context)(
     propertyClass: c.Expr[Class[T]],
     entityClass: c.Expr[Class[E]],
+    nakedClass: c.Expr[Class[N]],
     paramName: c.Expr[String],
     namingType: c.Expr[NamingType],
     isId: c.Expr[Boolean],
@@ -45,8 +46,7 @@ object EntityReflectionMacros {
     idGenerator: c.Expr[IdGenerator],
     isVersion: c.Expr[Boolean],
     isBasic: c.Expr[Boolean],
-    basicClass: c.Expr[Class[B]],
-    wrapperSupplier: c.Expr[Supplier[Wrapper[B]]],
+    wrapperSupplier: c.Expr[Supplier[Wrapper[N]]],
     columnName: c.Expr[String],
     columnInsertable: c.Expr[Boolean],
     columnUpdatable: c.Expr[Boolean],
@@ -58,8 +58,18 @@ object EntityReflectionMacros {
     val Literal(Constant(isIdActual: Boolean)) = isId.tree
     val Literal(Constant(isIdGenerateActual: Boolean)) = isIdGenerate.tree
     val Literal(Constant(isVersionActual: Boolean)) = isVersion.tree
-    val wtt = weakTypeOf[T]
-    if (wtt.companion <:< typeOf[EmbeddableType[_]]) {
+    val tpe = weakTypeOf[T]
+    val nakedTpe = weakTypeOf[N]
+    if (tpe.companion <:< typeOf[EmbeddableType[_]]) {
+      if(isIdActual) {
+        c.abort(c.enclosingPosition, org.seasar.doma.message.Message.DOMA4302.getMessage(extractionClassString(entityClass.toString), extractionQuotedString(paramName.toString())))
+      }
+      if(isIdGenerateActual) {
+        c.abort(c.enclosingPosition, org.seasar.doma.message.Message.DOMA4303.getMessage(extractionClassString(entityClass.toString), extractionQuotedString(paramName.toString())))
+      }
+      if(isVersionActual) {
+        c.abort(c.enclosingPosition, org.seasar.doma.message.Message.DOMA4304.getMessage(extractionClassString(entityClass.toString), extractionQuotedString(paramName.toString())))
+      }
       val embeddable = getCompanion(c)(propertyClass)
       reify {
         val prop = new EmbeddedPropertyType[E, T](
@@ -72,15 +82,13 @@ object EntityReflectionMacros {
         collections.splice.putAll(prop)
         prop
       }
-    } else if(wtt.companion <:< typeOf[AbstractHolderDesc[_, _]] ||
-      (wtt <:< typeOf[Option[_]] && wtt.typeArgs.head.companion <:< typeOf[AbstractHolderDesc[_, _]])) {
-      val domain = if (wtt.companion <:< typeOf[AbstractHolderDesc[_, _]]) {
-        getCompanion(c)(propertyClass)
-      } else {
-        getCompanion(c)(basicClass)
-      }
+    } else if(nakedTpe.companion <:< typeOf[AbstractHolderDesc[_, _]]) {
+      val domain = getCompanion(c)(nakedClass)
       if(isIdActual) {
         if (isIdGenerateActual) {
+          if(!(nakedTpe.companion <:< typeOf[AbstractHolderDesc[_ <: Number, _]])) {
+            c.abort(c.enclosingPosition, org.seasar.doma.message.Message.DOMA4095.getMessage(extractionClassString(entityClass.toString), extractionQuotedString(paramName.toString())))
+          }
           reify {
             val prop = GeneratedIdPropertyType.ofDomain(
               entityClass.splice,
@@ -101,7 +109,7 @@ object EntityReflectionMacros {
             val prop = AssignedIdPropertyType.ofDomain(
               entityClass.splice,
               propertyClass.splice,
-              domain.splice.asInstanceOf[AbstractHolderDesc[Number, _]],
+              domain.splice.asInstanceOf[AbstractHolderDesc[_, _]],
               paramName.splice,
               columnName.splice,
               namingType.splice,
@@ -113,6 +121,9 @@ object EntityReflectionMacros {
           }
         }
       } else if(isVersionActual) {
+        if(!(nakedTpe.companion <:< typeOf[AbstractHolderDesc[_ <: Number, _]])) {
+          c.abort(c.enclosingPosition, org.seasar.doma.message.Message.DOMA4093.getMessage(extractionClassString(entityClass.toString), extractionQuotedString(paramName.toString())))
+        }
         reify {
           val prop = VersionPropertyType.ofDomain(
             entityClass.splice,
@@ -149,11 +160,14 @@ object EntityReflectionMacros {
       }
       if(isIdActual) {
         if(isIdGenerateActual) {
+          if(!(nakedTpe <:< typeOf[Number])) {
+            c.abort(c.enclosingPosition, org.seasar.doma.message.Message.DOMA4095.getMessage(extractionClassString(entityClass.toString), extractionQuotedString(paramName.toString())))
+          }
           reify {
             val prop = new domala.jdbc.entity.GeneratedIdPropertyType(
               entityClass.splice,
               propertyClass.splice,
-              basicClass.splice.asInstanceOf[Class[Number]],
+              nakedClass.splice.asInstanceOf[Class[Number]],
               wrapperSupplier.splice.asInstanceOf[Supplier[Wrapper[Number]]],
               null,
               null,
@@ -172,8 +186,8 @@ object EntityReflectionMacros {
             val prop = new domala.jdbc.entity.AssignedIdPropertyType(
               entityClass.splice,
               propertyClass.splice,
-              basicClass.splice.asInstanceOf[Class[Number]],
-              wrapperSupplier.splice.asInstanceOf[Supplier[Wrapper[Number]]],
+              nakedClass.splice,
+              wrapperSupplier.splice,
               null,
               null,
               paramName.splice,
@@ -187,11 +201,14 @@ object EntityReflectionMacros {
           }
         }
       } else if(isVersionActual) {
+        if(!(nakedTpe <:< typeOf[Number])) {
+          c.abort(c.enclosingPosition, org.seasar.doma.message.Message.DOMA4093.getMessage(extractionClassString(entityClass.toString), extractionQuotedString(paramName.toString())))
+        }
         reify {
           val prop = new VersionPropertyType(
             entityClass.splice,
             propertyClass.splice,
-            basicClass.splice.asInstanceOf[Class[Number]],
+            nakedClass.splice.asInstanceOf[Class[Number]],
             wrapperSupplier.splice.asInstanceOf[Supplier[Wrapper[Number]]],
             null,
             null,
@@ -208,7 +225,7 @@ object EntityReflectionMacros {
           val prop = new DefaultPropertyType(
             entityClass.splice,
             propertyClass.splice,
-            basicClass.splice,
+            nakedClass.splice,
             wrapperSupplier.splice,
             null,
             null,
@@ -226,9 +243,10 @@ object EntityReflectionMacros {
     }
   }
 
-  def generatePropertyType[T, E, B](
+  def generatePropertyType[T, E, N](
     propertyClass: Class[T],
     entityClass: Class[E],
+    nakedClass: Class[N],
     paramName: String,
     namingType: NamingType,
     isId: Boolean,
@@ -236,14 +254,13 @@ object EntityReflectionMacros {
     idGenerator: IdGenerator,
     isVersion: Boolean,
     isBasic: Boolean,
-    basicClass: Class[B],
-    wrapperSupplier: Supplier[Wrapper[B]],
+    wrapperSupplier: Supplier[Wrapper[N]],
     columnName: String,
     columnInsertable: Boolean,
     columnUpdatable: Boolean,
     columnQuote: Boolean,
     collections: EntityCollections[E]
-  ) = macro generatePropertyTypeImpl[T, E, B]
+  ) = macro generatePropertyTypeImpl[T, E, N]
 
   def readPropertyImpl[T: c.WeakTypeTag, E: c.WeakTypeTag](c: blackbox.Context)(
     entityClass: c.Expr[Class[E]],

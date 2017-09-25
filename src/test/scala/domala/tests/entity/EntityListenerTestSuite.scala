@@ -37,7 +37,7 @@ class EntityListenerTestSuite extends FunSuite with BeforeAndAfter {
 
 @Entity(listener = classOf[MyListener])
 case class Listened(
-  @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @domala.Id @GeneratedValue(strategy = GenerationType.IDENTITY)
   id: Option[Int] = None,
   name: String,
 )
@@ -78,13 +78,12 @@ select * from listened
 
 @Entity
 case class ListenLog(
-  @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @domala.Id @GeneratedValue(strategy = GenerationType.IDENTITY)
   id: Option[Int] = None,
   operation: String,
   entityId: Option[Int],
   entityName: String,
 )
-
 
 @Dao(config = TestConfig)
 trait ListenLogDao {

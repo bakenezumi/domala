@@ -9,7 +9,7 @@ import org.seasar.doma.jdbc.entity.EntityPropertyType
 import org.seasar.doma.jdbc.entity.NamingType
 import org.seasar.doma.wrapper.Wrapper
 
-class AssignedIdPropertyType[PARENT, ENTITY <: PARENT, BASIC <: Number, DOMAIN] (
+class AssignedIdPropertyType[PARENT, ENTITY <: PARENT, BASIC, DOMAIN] (
   entityClass: Class[ENTITY],
   entityPropertyClass: Class[_],
   basicClass: Class[BASIC],
@@ -37,7 +37,7 @@ class AssignedIdPropertyType[PARENT, ENTITY <: PARENT, BASIC <: Number, DOMAIN] 
 }
 
 object AssignedIdPropertyType {
-  def ofDomain[ENTITY, BASIC <: Number, DOMAIN](
+  def ofDomain[ENTITY, BASIC, DOMAIN](
     entityClass: Class[ENTITY],
     entityPropertyClass: Class[_],
     domainType: AbstractHolderDesc[BASIC, DOMAIN],

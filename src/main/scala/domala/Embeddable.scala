@@ -54,7 +54,7 @@ package internal { package macros {
           val Term.Param(mods, name, Some(decltpe), default) = p
           val tpe = Type.Name(decltpe.toString)
           val columnSetting = ColumnSetting.read(mods)
-          val (isBasic, basicTpe, newWrapperExpr) = TypeHelper.convertToEntityDomaType(decltpe) match {
+          val (isBasic, nakedTpe, newWrapperExpr) = TypeHelper.convertToEntityDomaType(decltpe) match {
             case DomaType.Basic(_, convertedType, wrapperSupplier) => (true, convertedType, wrapperSupplier)
             case DomaType.Option(DomaType.Basic(_, convertedType, wrapperSupplier), _) => (true, convertedType, wrapperSupplier)
             case DomaType.EntityOrHolderOrEmbeddable(otherType) => (false, otherType, q"null")
@@ -65,6 +65,7 @@ package internal { package macros {
           domala.internal.macros.EntityReflectionMacros.generatePropertyType(
             classOf[$tpe],
             entityClass,
+            classOf[$nakedTpe],
             embeddedPropertyName + "." + ${name.syntax},
             namingType,
             false,
@@ -72,7 +73,6 @@ package internal { package macros {
             null,
             false,
             ${if(isBasic) q"true" else q"false"},
-            classOf[$basicTpe],
             $newWrapperExpr,
             ${columnSetting.name},
             ${columnSetting.insertable},

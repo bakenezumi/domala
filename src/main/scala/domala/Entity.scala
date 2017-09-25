@@ -148,13 +148,18 @@ package internal { package macros {
     }
 
     protected def generatePropertyTypeFields(clsName: Type.Name, ctor: Ctor.Primary): Seq[Defn.Val] = {
+      if (ctor.paramss.flatten.flatMap(_.mods).count {
+        case mod"@Version" | mod"@domala.Version" => true
+        case _ => false
+      } > 1) abort(org.seasar.doma.message.Message.DOMA4024.getMessage(clsName.syntax))
+
       ctor.paramss.flatten.map { p =>
         val Term.Param(mods, name, Some(decltpe), default) = p
         val columnSetting = ColumnSetting.read(mods)
         val tpe = Type.Name(decltpe.toString)
         val propertyName = Pat.Var.Term(Term.Name("$" + name.syntax))
 
-        val (isBasic, basicTpe, newWrapperExpr) = TypeHelper.convertToEntityDomaType(decltpe) match {
+        val (isBasic, nakedTpe, newWrapperExpr) = TypeHelper.convertToEntityDomaType(decltpe) match {
           case DomaType.Basic(_, convertedType, wrapperSupplier) => (true, convertedType, wrapperSupplier)
           case DomaType.Option(DomaType.Basic(_, convertedType, wrapperSupplier), _) => (true, convertedType, wrapperSupplier)
           case DomaType.EntityOrHolderOrEmbeddable(otherType) => (false, otherType, q"null")
@@ -176,7 +181,7 @@ package internal { package macros {
         // if(isIdGenerate && !isId) abort(org.seasar.doma.message.Message.DOMA4033.getMessage(clsName.syntax, name.syntax))
 
         val isVersion = mods.exists {
-          case mod"@Version" | mod"@domala.Version"=> true
+          case mod"@Version" | mod"@domala.Version" => true
           case _ => false
         }
 
@@ -184,6 +189,7 @@ package internal { package macros {
         val $propertyName = domala.internal.macros.EntityReflectionMacros.generatePropertyType(
           classOf[$tpe],
           classOf[$clsName],
+          classOf[$nakedTpe],
           ${name.syntax},
           __namingType,
           ${if(isId) q"true" else q"false"},
@@ -191,7 +197,6 @@ package internal { package macros {
           __idGenerator,
           ${if(isVersion) q"true" else q"false"},
           ${if(isBasic) q"true" else q"false"},
-          classOf[$basicTpe],
           $newWrapperExpr,
           ${columnSetting.name},
           ${columnSetting.insertable},
