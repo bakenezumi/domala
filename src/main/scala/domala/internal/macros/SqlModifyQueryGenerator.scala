@@ -1,9 +1,9 @@
 package domala.internal.macros
 
-import scala.meta._
 import scala.collection.immutable.Seq
+import scala.meta._
 
-object AutoModifyQueryGenerator {
+object SqlModifyQueryGenerator {
   def extractParameter(defDecl: QueryDefDecl): (Term.Name, Type.Name) = {
     if (defDecl.paramss.flatten.length != 1)
       abort(defDecl._def.pos,
@@ -17,30 +17,63 @@ object AutoModifyQueryGenerator {
 
   def generate(defDecl: QueryDefDecl,
                commonSetting: DaoMethodCommonSetting,
-               paramName: Term.Name,
-               paramType: Type.Name,
                internalMethodName: Term.Name,
-               query: Term.Apply,
+               query: Term,
                otherQuerySettings: Seq[Stat],
                command: Term.Apply): Defn.Def = {
-
+    val params = defDecl.paramss.flatten
     val (isReturnResult, entityType) = DaoMacroHelper.getResultType(defDecl)
+
+    val enteringParam = params.map(p =>
+      arg"${Term.Name(p.name.toString)}.asInstanceOf[Object]"
+    )
+
+    val checkNullParameter = params.map(p => {
+      TypeHelper.convertToDomaType(p.decltpe.get) match {
+        case DomaType.Basic(_, _, _) => q"()"
+        case _ =>
+          q"""
+          if (${Term.Name(p.name.syntax)} == null) {
+            throw new org.seasar.doma.DomaNullPointerException(${p.name.syntax})
+          }
+          """
+      }
+    })
+
+    val addParameters = params.map { p =>
+      val paramTpe = p.decltpe.get match {
+        case t"$container[..$inner]" =>
+          val placeHolder = inner.map(_ => t"_")
+          t"${Type.Name(container.toString)}[..$placeHolder]"
+        case _ => t"${Type.Name(p.decltpe.get.toString)}"
+      }
+      q"__query.addParameter(${p.name.syntax}, classOf[$paramTpe], ${Term.Name(p.name.syntax): Term.Arg})"
+    }
+
+    val entityAndEntityType = if(isReturnResult) {
+      val entityParam = params.collectFirst{
+        case x if x.decltpe.get.syntax == entityType.syntax => x
+      }.get
+      q"Some(domala.jdbc.query.EntityAndEntityType(${entityParam.name.syntax}, ${Term.Name(entityParam.name.syntax)}, ${Term.Name(entityType.syntax)}))"
+    } else {
+      q"None"
+    }
+
     val result = if(isReturnResult) {
       q"new domala.jdbc.Result[$entityType](__count, __query.getEntity)"
     } else {
       q"__count"
     }
+
     q"""
     override def ${defDecl.name} = {
-      entering(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, $paramName)
+      entering(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, ..$enteringParam)
       try {
-        if ($paramName == null) {
-          throw new org.seasar.doma.DomaNullPointerException(${paramName.syntax})
-        }
-        val __query = $query
+        val __query = $query($entityAndEntityType)
+        ..$checkNullParameter
         __query.setMethod($internalMethodName)
         __query.setConfig(__config)
-        __query.setEntity($paramName)
+        ..$addParameters
         __query.setCallerClassName(${defDecl.trtName.syntax})
         __query.setCallerMethodName(${defDecl.name.syntax})
         __query.setQueryTimeout(${commonSetting.queryTimeout})

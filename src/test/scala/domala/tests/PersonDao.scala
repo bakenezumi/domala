@@ -75,7 +75,7 @@ from
     department d
     on (p.department_id = d.id)
 where
-    p.id = /*id*/0  
+    p.id = /*id*/0
   """)
   def selectWithDepartmentById(id: Int): Option[PersonDepartment]
 
@@ -91,7 +91,7 @@ from
     department d
     on (p.department_id = d.id)
 where
-    p.id = /*id*/0  
+    p.id = /*id*/0
   """)
   def selectWithDepartmentEmbeddedById(id: Int): Option[PersonDepartmentEmbedded]
 
@@ -183,7 +183,7 @@ from person
   def update(person: Person): Result[Person]
 
   @Delete
-  def delete(person: Person): Result[Person]
+  def delete(person: Person): Int
 
   @BatchInsert
   def batchInsert(persons: Seq[Person]): BatchResult[Person]
@@ -193,4 +193,39 @@ from person
 
   @BatchDelete
   def batchDelete(persons: Seq[Person]): BatchResult[Person]
+
+  @Insert(sql = """
+insert into person(id, name, age, city, street, department_id, version)
+values(
+  /* entity.id.get() */0,
+  /* entity.name.value */'hoge',
+  /* entity.age.get() */0,
+  /* entity2.address.city */'hoge',
+  /* entity2.address.street */'hoge',
+  /* 2 */0,
+  /* version */0)
+  """)
+  def insertSql(entity: Person, entity2: Person, version: Int): Result[Person]
+
+  @Update(sql = """
+update person set
+  name =  /* entity.name.value */'hoge',
+  age = /* entity.age.get() */0,
+  city = /* entity2.address.city */'hoge',
+  street = /* entity2.address.street */'hoge',
+  department_id = /* 2 */0,
+  version = version + 1
+where
+  id = /* entity.id.get() */0 and
+  version = /* version */0
+  """)
+  def updateSql(entity: Person, entity2: Person, version: Int): Result[Person]
+
+  @Update(sql = """
+delete from person
+where
+  id = /* entity.id.get() */0 and
+  version = /* version */0
+  """)
+  def deleteSql(entity: Person, version: Int): Int
 }

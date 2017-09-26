@@ -80,10 +80,11 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
       assert(
         dao.selectWithDepartmentById(1) ===
           Some(
-            PersonDepartment(ID(1),
-                             Name("SMITH"),
-                             Some(ID(1)),
-                             Some(Name("ACCOUNTING")))))
+            PersonDepartment(
+              ID(1),
+              Name("SMITH"),
+              Some(ID(1)),
+              Some(Name("ACCOUNTING")))))
     }
   }
 
@@ -133,16 +134,15 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
 
   test("select Option Map") {
     Required {
-      assert(dao.selectByIdOptionMap(1) ==
-        Some(Map("ID" -> 1, "NAME" -> "SMITH", "AGE" -> 10, "CITY" -> "Tokyo", "STREET" -> "Yaesu", "DEPARTMENT_ID" -> 1, "VERSION" -> 0)))
-      assert(dao.selectByIdOptionMap(5) == None)
+      assert(dao.selectByIdOptionMap(1).contains(Map("ID" -> 1, "NAME" -> "SMITH", "AGE" -> 10, "CITY" -> "Tokyo", "STREET" -> "Yaesu", "DEPARTMENT_ID" -> 1, "VERSION" -> 0)))
+      assert(dao.selectByIdOptionMap(5).isEmpty)
     }
   }
 
   test("select option domain") {
     Required {
-      assert(dao.selectNameById(1) == Some(Name("SMITH")))
-      assert(dao.selectNameById(99) == None)
+      assert(dao.selectNameById(1).contains(Name("SMITH")))
+      assert(dao.selectNameById(99).isEmpty)
     }
   }
 
@@ -294,6 +294,83 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       dao.batchDelete(dao.selectAll())
       assert(dao.selectCount() === 0)
+    }
+  }
+
+  test("insert by Sql") {
+    Required {
+      dao.insertSql(
+        Person(
+          Some(3),
+          Name("aaa"),
+          Some(5),
+          Address("bbb", "ccc"),
+          Some(1),
+          Some(1)),
+        Person(
+          Some(3),
+          Name("ddd"),
+          Some(10),
+          Address("eee", "fff"),
+          Some(1),
+          Some(2)),
+        3
+      )
+      assert(dao.selectCount === 3)
+      assert(
+        dao.selectById(3).contains(Person(
+          Some(3),
+          Name("aaa"),
+          Some(5),
+          Address("eee", "fff"),
+          Some(2),
+          Some(3))))
+    }
+  }
+
+  test("update by Sql") {
+    Required {
+      dao.updateSql(
+        Person(
+          Some(1),
+          Name("aaa"),
+          Some(5),
+          Address("bbb", "ccc"),
+          Some(1),
+          Some(1)),
+        Person(
+          Some(3),
+          Name("ddd"),
+          Some(10),
+          Address("eee", "fff"),
+          Some(1),
+          Some(2)),
+        0
+      )
+      assert(
+        dao.selectById(1).contains(Person(
+          Some(1),
+          Name("aaa"),
+          Some(5),
+          Address("eee", "fff"),
+          Some(2),
+          Some(1))))
+    }
+  }
+
+  test("delete by Sql") {
+    Required {
+      dao.deleteSql(
+        Person(
+          Some(1),
+          Name("aaa"),
+          Some(5),
+          Address("bbb", "ccc"),
+          Some(1),
+          Some(1)),
+        0
+      )
+      assert(dao.selectById(1).isEmpty)
     }
   }
 }

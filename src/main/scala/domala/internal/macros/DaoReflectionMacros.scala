@@ -115,7 +115,7 @@ object DaoReflectionMacros {
       reify {
         query.splice.setEntityType(entity.splice.asInstanceOf[AbstractEntityType[T]])
       }
-    } else reify () // No operation
+    } else reify ((): Unit) // No operation
   }
   def setEntityType[T](query: AbstractSelectQuery, param: Class[T]): Unit = macro setEntityTypeImpl[T]
 }

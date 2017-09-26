@@ -21,7 +21,7 @@ class Holder extends scala.annotation.StaticAnnotation {
       case cls: Defn.Class => (cls, HolderTypeGenerator.generate(cls))
       case _ => abort("@Domain most annotate a class")
     }
-    logger.debug(newCompanion)
+    //logger.debug(newCompanion)
     Term.Block(Seq(
       cls,
       newCompanion

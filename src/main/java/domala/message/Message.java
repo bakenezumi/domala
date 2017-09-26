@@ -32,6 +32,7 @@ import org.seasar.doma.message.MessageResource;
  */
 public enum Message implements MessageResource {
     // macros
+    DOMALA4001("戻り値の型は更新件数を示すIntでなければいけません。 at {0}.{1}"),
     DOMALA4008("戻り値のSeqに対する実型引数の型[{0}]はサポートされていません。 at {1}.{2}"),
     DOMALA4020("[{0}.{1}]のSQLが空です。"),
     // TODO: @ExternalDomainは未対応

@@ -17,10 +17,10 @@ package internal { package macros {
 
   object DeleteGenerator {
     def generate(trtName: Type.Name, _def: Decl.Def, internalMethodName: Term.Name, args: Seq[Term.Arg]): Defn.Def = {
+      val defDecl = QueryDefDecl.of(trtName, _def)
       val commonSetting = DaoMacroHelper.readCommonSetting(args)
       val ignoreVersion = args.collectFirst { case arg"ignoreVersion = $x" => x }.getOrElse(q"false")
       val suppressOptimisticLockException = args.collectFirst { case arg"suppressOptimisticLockException = $x" => x }.getOrElse(q"false")
-      val defDecl = QueryDefDecl.of(trtName, _def)
       val (paramName, paramTpe) = AutoModifyQueryGenerator.extractParameter(defDecl)
       val query = q"getQueryImplementors.createAutoDeleteQuery($internalMethodName, ${Term.Name(paramTpe.syntax)})"
       val command = q"getCommandImplementors.createDeleteCommand($internalMethodName, __query)"

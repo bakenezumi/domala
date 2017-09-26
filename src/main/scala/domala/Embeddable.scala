@@ -21,7 +21,7 @@ class Embeddable extends scala.annotation.StaticAnnotation {
       case cls: Defn.Class => (cls, EmbeddableTypeGenerator.generate(cls))
       case _ => abort("@Embeddable most annotate a class")
     }
-    logger.debug(newCompanion)
+    //logger.debug(newCompanion)
     Term.Block(Seq(
       cls,
       newCompanion

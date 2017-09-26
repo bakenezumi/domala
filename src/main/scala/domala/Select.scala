@@ -191,7 +191,7 @@ package internal { package macros {
         arg"${Term.Name(p.name.toString)}.asInstanceOf[Object]"
       )
 
-      val addParameterStats = defDecl.paramss.flatten.map { p =>
+      val addParameters = defDecl.paramss.flatten.map { p =>
         val paramTpe = p.decltpe.get match {
           case t"$container[..$inner]" =>
             val placeHolder = inner.map(_ => t"_")
@@ -212,7 +212,7 @@ package internal { package macros {
           __query.setMethod($internalMethodName)
           __query.setConfig(__config)
           ..$setEntity
-          ..$addParameterStats
+          ..$addParameters
           __query.setCallerClassName(${trtName.syntax})
           __query.setCallerMethodName(${defDecl.name.syntax})
           __query.setResultEnsured(${selectSetting.ensureResult})

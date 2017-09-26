@@ -46,7 +46,7 @@ package internal { package macros {
         ..${stats.get}
       }
       """
-      logger.debug(obj)
+      //logger.debug(obj)
       Term.Block(Seq(
         // 処理済みdefアノテーション除去
         trt.copy(templ = trt.templ.copy(stats = trt.templ.stats.map(stat => stat.map(_ match {

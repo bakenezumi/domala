@@ -11,7 +11,7 @@ object AutoBatchModifyQueryGenerator {
           .getMessage(defDecl.trtName.value, defDecl.name.value))
     defDecl.paramss.flatten.head match {
       case param"$paramName: ${Some(paramTpe)}" => paramTpe match {
-        // TODO: +Seqでないとコンパイルエラー
+        // TODO: Seqでないとコンパイルエラー
         case t"$_[$internalTpe]" => (Term.Name(paramName.value), Type.Name(internalTpe.toString))
       }
     }
@@ -29,11 +29,11 @@ object AutoBatchModifyQueryGenerator {
 
     defDecl.tpe match {
       case t"BatchResult[$entity]"
-          if entity.toString() == paramType.toString() => ()
+          if entity.syntax == paramType.syntax => ()
       case t"jdbc.BatchResult[$entity]"
-          if entity.toString() == paramType.toString() => ()
+          if entity.syntax == paramType.syntax => ()
       case t"domala.jdbc.BatchResult[$entity]"
-          if entity.toString() == paramType.toString() => ()
+          if entity.syntax == paramType.syntax => ()
       case _ =>
         abort(defDecl._def.pos,
               domala.message.Message.DOMALA4223

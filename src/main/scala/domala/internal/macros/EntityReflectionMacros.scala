@@ -260,7 +260,7 @@ object EntityReflectionMacros {
     columnUpdatable: Boolean,
     columnQuote: Boolean,
     collections: EntityCollections[E]
-  ) = macro generatePropertyTypeImpl[T, E, N]
+  ): Object = macro generatePropertyTypeImpl[T, E, N]
 
   def readPropertyImpl[T: c.WeakTypeTag, E: c.WeakTypeTag](c: blackbox.Context)(
     entityClass: c.Expr[Class[E]],
