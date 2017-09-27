@@ -1,4 +1,5 @@
-package domala.internal.macros
+package domala.internal.macros.reflect
+
 import java.util.Optional
 
 import org.seasar.doma.internal.jdbc.command._

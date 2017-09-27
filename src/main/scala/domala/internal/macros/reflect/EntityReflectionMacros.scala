@@ -1,10 +1,10 @@
-package domala.internal.macros
+package domala.internal.macros.reflect
 
 import java.util.function.Supplier
 
 import domala.jdbc.entity.{AssignedIdPropertyType, DefaultPropertyType, GeneratedIdPropertyType, VersionPropertyType}
 import domala.jdbc.holder.AbstractHolderDesc
-import org.seasar.doma.jdbc.entity.{EmbeddedPropertyType, _}
+import org.seasar.doma.jdbc.entity._
 import org.seasar.doma.jdbc.id.IdGenerator
 import org.seasar.doma.wrapper.Wrapper
 

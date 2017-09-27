@@ -1,4 +1,4 @@
-package domala.internal.macros
+package domala.internal.macros.reflect
 
 import org.scalatest.{BeforeAndAfter, FunSuite}
 import org.seasar.doma.internal.jdbc.command._

@@ -1,16 +1,9 @@
-package domala.internal.macros
+package domala.internal.macros.reflect
 
 import domala._
-import domala.jdbc.entity.{
-  DefaultPropertyType,
-  GeneratedIdPropertyType,
-  VersionPropertyType
-}
+import domala.jdbc.entity.{DefaultPropertyType, GeneratedIdPropertyType, VersionPropertyType}
 import org.scalatest.{BeforeAndAfter, FunSuite}
-import org.seasar.doma.jdbc.entity.{
-  EntityPropertyType,
-  NamingType
-}
+import org.seasar.doma.jdbc.entity.{EntityPropertyType, NamingType}
 import org.seasar.doma.wrapper.{IntegerWrapper, StringWrapper, Wrapper}
 
 class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
@@ -149,5 +142,3 @@ case class DummyDomain(value: String)
 
 @Embeddable
 case class DummyEmbeddable(value1: Int, value2: String)
-
-
