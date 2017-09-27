@@ -24,10 +24,3 @@ object SelectType {
   case object RETURN extends SelectType
   case object STREAM extends SelectType
 }
-
-package internal { package macros {
-
-
-
-
-}}

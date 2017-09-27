@@ -9,16 +9,17 @@ import scala.meta._
 object DaoMacroHelper {
   def readCommonSetting(args: Seq[Term.Arg], traitName: String, methodName: String): DaoMethodCommonSetting = {
     val (hasSql, sql) =  args.collectFirst{
-      case arg"sql = $x" => {
-        try {
-          new SqlParser(x.syntax).parse()
-        } catch {
-          case e: JdbcException =>
-            abort(domala.message.Message.DOMALA4069
-              .getMessage(traitName, methodName, e))
-        }
-        (true, x)
+      case arg"sql = $x" => x
+      case arg"$x" => x.syntax.parse[Term.Arg].get
+    }.map { x =>
+      try {
+        new SqlParser(x.syntax).parse()
+      } catch {
+        case e: JdbcException =>
+          abort(domala.message.Message.DOMALA4069
+            .getMessage(traitName, methodName, e))
       }
+      (true, x)
     }.getOrElse((false, arg""""""""))
     val queryTimeOut =  args.collectFirst{ case arg"queryTimeOut = $x" => x }.getOrElse(arg"-1")
     val sqlLog =  args.collectFirst{ case arg"sqlLog = $x" => x }.getOrElse(arg"org.seasar.doma.jdbc.SqlLogType.FORMATTED")

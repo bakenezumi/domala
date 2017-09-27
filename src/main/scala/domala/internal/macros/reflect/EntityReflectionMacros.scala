@@ -13,13 +13,6 @@ import scala.reflect.macros.blackbox
 
 object EntityReflectionMacros {
 
-  def getCompanion(c: blackbox.Context)(param: c.Expr[Class[_]]): c.Expr[Any] = {
-    import c.universe._
-    reify {
-      Class.forName(param.splice.getName + "$").getField("MODULE$").get(null)
-    }
-  }
-
   def extractionClassString(str: String): String = {
     val r = ".*classOf\\[(.*)\\].*".r
     str match {
@@ -70,12 +63,12 @@ object EntityReflectionMacros {
       if(isVersionActual) {
         c.abort(c.enclosingPosition, org.seasar.doma.message.Message.DOMA4304.getMessage(extractionClassString(entityClass.toString), extractionQuotedString(paramName.toString())))
       }
-      val embeddable = getCompanion(c)(propertyClass)
+      val embeddable = ReflectionUtil.getCompanion[EmbeddableType[_]](c)(propertyClass)
       reify {
         val prop = new EmbeddedPropertyType[E, T](
           paramName.splice,
           entityClass.splice,
-          embeddable.splice.asInstanceOf[EmbeddableType[_]].getEmbeddablePropertyTypes(
+          embeddable.splice.getEmbeddablePropertyTypes(
             paramName.splice,
             entityClass.splice,
             namingType.splice))
@@ -83,7 +76,7 @@ object EntityReflectionMacros {
         prop
       }
     } else if(nakedTpe.companion <:< typeOf[AbstractHolderDesc[_, _]]) {
-      val domain = getCompanion(c)(nakedClass)
+      val domain = ReflectionUtil.getCompanion[AbstractHolderDesc[_, _]](c)(nakedClass)
       if(isIdActual) {
         if (isIdGenerateActual) {
           if(!(nakedTpe.companion <:< typeOf[AbstractHolderDesc[_ <: Number, _]])) {
@@ -109,7 +102,7 @@ object EntityReflectionMacros {
             val prop = AssignedIdPropertyType.ofDomain(
               entityClass.splice,
               propertyClass.splice,
-              domain.splice.asInstanceOf[AbstractHolderDesc[_, _]],
+              domain.splice,
               paramName.splice,
               columnName.splice,
               namingType.splice,
@@ -142,7 +135,7 @@ object EntityReflectionMacros {
           val prop = DefaultPropertyType.ofDomain(
             entityClass.splice,
             propertyClass.splice,
-            domain.splice.asInstanceOf[AbstractHolderDesc[_, _]],
+            domain.splice,
             paramName.splice,
             columnName.splice,
             namingType.splice,
@@ -270,9 +263,9 @@ object EntityReflectionMacros {
     import c.universe._
     val wtt = weakTypeOf[T]
     if(wtt.companion <:< typeOf[EmbeddableType[_]]) {
-      val embeddable = getCompanion(c)(propertyClass)
+      val embeddable = ReflectionUtil.getCompanion[EmbeddableType[_]](c)(propertyClass)
       reify {
-        embeddable.splice.asInstanceOf[EmbeddableType[_]].newEmbeddable[E](propertyName.splice, args.splice).asInstanceOf[T]
+        embeddable.splice.newEmbeddable[E](propertyName.splice, args.splice).asInstanceOf[T]
       }
     } else {
       reify {

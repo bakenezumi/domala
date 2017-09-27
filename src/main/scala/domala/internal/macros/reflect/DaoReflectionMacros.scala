@@ -14,28 +14,21 @@ import scala.reflect.macros.blackbox
 
 object DaoReflectionMacros {
 
-  def getCompanion(c: blackbox.Context)(param: c.Expr[Class[_]]): c.Expr[Any] = {
-    import c.universe._
-    reify {
-      Class.forName(param.splice.getName + "$").getField("MODULE$").get(null)
-    }
-  }
-
   def getStreamHandlerImpl[T: c.WeakTypeTag, R: c.WeakTypeTag](c: blackbox.Context)(param: c.Expr[Class[T]], f: c.Expr[Stream[T] => R], daoName: c.Expr[String], methodName: c.Expr[String]): c.Expr[AbstractStreamHandler[T, R]] = {
     import c.universe._
     val tpe = weakTypeOf[T]
     if (tpe.companion <:< typeOf[AbstractEntityType[_]]) {
-      val entity = getCompanion(c)(param)
+      val entity = ReflectionUtil.getCompanion[AbstractEntityType[T]](c)(param)
       reify {
         import scala.compat.java8.StreamConverters._
-        new EntityStreamHandler(entity.splice.asInstanceOf[AbstractEntityType[T]],
+        new EntityStreamHandler(entity.splice,
           (p: java.util.stream.Stream[T]) => f.splice.apply(p.toScala[Stream]))
       }
     } else if (tpe.companion <:< typeOf[AbstractDomainType[_, _]]){
-      val domain = getCompanion(c)(param)
+      val domain = ReflectionUtil.getCompanion[AbstractDomainType[_, T]](c)(param)
       reify {
         import scala.compat.java8.StreamConverters._
-        new DomainStreamHandler(domain.splice.asInstanceOf[AbstractDomainType[_, T]],
+        new DomainStreamHandler(domain.splice,
           (p: java.util.stream.Stream[T]) => f.splice.apply(p.toScala[Stream]))
       }
     } else {
@@ -50,14 +43,14 @@ object DaoReflectionMacros {
     import c.universe._
     val tpe = weakTypeOf[T]
     if (tpe.companion <:< typeOf[AbstractEntityType[_]]) {
-      val entity = getCompanion(c)(param)
+      val entity = ReflectionUtil.getCompanion[AbstractEntityType[T]](c)(param)
       reify {
-        new EntityResultListHandler(entity.splice.asInstanceOf[AbstractEntityType[T]])
+        new EntityResultListHandler(entity.splice)
       }
     } else if (tpe.companion <:< typeOf[AbstractDomainType[_, _]]){
-      val domain = getCompanion(c)(param)
+      val domain = ReflectionUtil.getCompanion[AbstractDomainType[_, T]](c)(param)
       reify {
-        new DomainResultListHandler(domain.splice.asInstanceOf[AbstractDomainType[_, T]])
+        new DomainResultListHandler(domain.splice)
       }
     } else {
       val Literal(Constant(daoNameText: String)) = daoName.tree
@@ -71,14 +64,14 @@ object DaoReflectionMacros {
     import c.universe._
     val tpe = weakTypeOf[T]
     if (tpe.companion <:< typeOf[AbstractEntityType[_]]) {
-      val entity = getCompanion(c)(param)
+      val entity = ReflectionUtil.getCompanion[AbstractEntityType[T]](c)(param)
       reify {
-        new OptionalEntitySingleResultHandler(entity.splice.asInstanceOf[AbstractEntityType[T]])
+        new OptionalEntitySingleResultHandler(entity.splice)
       }
     } else if (tpe.companion <:< typeOf[AbstractDomainType[_, _]]){
-      val domain = getCompanion(c)(param)
+      val domain = ReflectionUtil.getCompanion[AbstractDomainType[_, T]](c)(param)
       reify {
-        new OptionalDomainSingleResultHandler(domain.splice.asInstanceOf[AbstractDomainType[_, T]])
+        new OptionalDomainSingleResultHandler(domain.splice)
       }
     } else {
       val Literal(Constant(daoNameText: String)) = daoName.tree
@@ -92,14 +85,14 @@ object DaoReflectionMacros {
     import c.universe._
     val tpe = weakTypeOf[T]
     if (tpe.companion <:< typeOf[AbstractEntityType[_]]) {
-      val entity = getCompanion(c)(param)
+      val entity = ReflectionUtil.getCompanion[AbstractEntityType[T]](c)(param)
       reify {
-        new EntitySingleResultHandler(entity.splice.asInstanceOf[AbstractEntityType[T]])
+        new EntitySingleResultHandler(entity.splice)
       }
     } else if (tpe.companion <:< typeOf[AbstractDomainType[_, _]]){
-      val domain = getCompanion(c)(param)
+      val domain = ReflectionUtil.getCompanion[AbstractDomainType[_, T]](c)(param)
       reify {
-        new DomainSingleResultHandler(domain.splice.asInstanceOf[AbstractDomainType[_, T]])
+        new DomainSingleResultHandler(domain.splice)
       }
     } else {
       val Literal(Constant(daoNameText: String)) = daoName.tree
@@ -111,10 +104,11 @@ object DaoReflectionMacros {
 
   def setEntityTypeImpl[T: c.WeakTypeTag](c: blackbox.Context)(query: c.Expr[AbstractSelectQuery], param: c.Expr[Class[T]]): c.Expr[Unit] = {
     import c.universe._
-    if (param.actualType <:< typeOf[AbstractEntityType[_]]) {
-      val entity = getCompanion(c)(param)
+    val tpe = weakTypeOf[T]
+    if (tpe.companion <:< typeOf[AbstractEntityType[_]]) {
+      val entity = ReflectionUtil.getCompanion[AbstractEntityType[T]](c)(param)
       reify {
-        query.splice.setEntityType(entity.splice.asInstanceOf[AbstractEntityType[T]])
+        query.splice.setEntityType(entity.splice)
       }
     } else reify ((): Unit) // No operation
   }

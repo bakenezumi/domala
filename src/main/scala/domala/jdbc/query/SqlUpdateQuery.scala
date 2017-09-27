@@ -2,9 +2,10 @@ package domala.jdbc.query
 
 import java.lang.reflect.Method
 
+import org.seasar.doma.internal.expr.ExpressionEvaluator
 import org.seasar.doma.internal.jdbc.entity.{AbstractPostUpdateContext, AbstractPreUpdateContext}
 import org.seasar.doma.internal.jdbc.sql.node.PopulateNode
-import org.seasar.doma.internal.jdbc.sql.{SqlContext, SqlParser}
+import org.seasar.doma.internal.jdbc.sql.{NodePreparedSqlBuilder, SqlContext, SqlParser}
 import org.seasar.doma.internal.util.AssertionUtil.assertNotNull
 import org.seasar.doma.jdbc.Config
 import org.seasar.doma.jdbc.entity.{EntityPropertyType, EntityType}
@@ -13,7 +14,7 @@ import org.seasar.doma.jdbc.SqlExecutionSkipCause
 
 
 class SqlUpdateQuery[E](
-  sql: String,
+  sqlString: String,
   nullExcluded: Boolean = false,
   versionIgnored: Boolean = false,
   optimisticLockExceptionSuppressed: Boolean = false,
@@ -21,7 +22,7 @@ class SqlUpdateQuery[E](
   excludedPropertyNames: Array[String] = new Array[String](0))(
   entityAndEntityType: Option[EntityAndEntityType[E]] = None) extends org.seasar.doma.jdbc.query.SqlUpdateQuery {
   // TODO: キャッシュ
-  setSqlNode(new SqlParser(sql).parse())
+  setSqlNode(new SqlParser(sqlString).parse())
 
   var targetPropertyTypes: java.util.List[EntityPropertyType[E, _]] = _
   val entityHandler: Option[EntityHandler] = entityAndEntityType.map(e => new this.EntityHandler(e.name, e.entity, e.entityType))
@@ -29,13 +30,13 @@ class SqlUpdateQuery[E](
   var sqlExecutionSkipCause = SqlExecutionSkipCause.STATE_UNCHANGED
 
   override def prepare(): Unit = {
-    super.prepare()
-    assertNotNull(method, sql)
+    assertNotNull(method, sqlString)
     initEntityHandler()
+    prepareTargetPropertyTypes()
+    super.prepare()
     preUpdate()
     prepareOptimisticLock()
     prepareOptions()
-    prepareTargetPropertyTypes()
     prepareExecutable()
     prepareSql()
   }
@@ -72,6 +73,16 @@ class SqlUpdateQuery[E](
   override def isExecutable: Boolean = executable
 
   override def getSqlExecutionSkipCause: SqlExecutionSkipCause = sqlExecutionSkipCause
+
+  import org.seasar.doma.internal.jdbc.sql.node.ExpandNode
+
+  protected def expandColumns(node: ExpandNode) = throw new UnsupportedOperationException
+
+  override protected def prepareSql(): Unit = {
+    val evaluator = new ExpressionEvaluator(this.parameters, this.config.getDialect.getExpressionFunctions, this.config.getClassHelper)
+    val sqlBuilder = new NodePreparedSqlBuilder(this.config, this.kind, null.asInstanceOf[String], evaluator, this.sqlLogType, this.expandColumns _, this.populateValues _)
+    this.sql = sqlBuilder.build(this.sqlNode, this.comment _)
+  }
 
   protected class EntityHandler(name: String, var entity: E, entityType: EntityType[E]) {
     assertNotNull(name, entity, entityType)

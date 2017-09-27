@@ -29,7 +29,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
                  Name("SMITH"),
                  Some(10),
                  Address("Tokyo", "Yaesu"),
-                 Some(1),
+                 Some(2),
                  Some(0))))
       assert(dao.selectById(5) === None)
     }
@@ -49,13 +49,13 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
                  Name("SMITH"),
                  Some(10),
                  Address("Tokyo", "Yaesu"),
-                 Some(1),
+                 Some(2),
                  Some(0)),
           Person(Some(2),
                  Name("ALLEN"),
                  Some(20),
                  Address("Kyoto", "Karasuma"),
-                 Some(2),
+                 Some(1),
                  Some(0))
         ))
     }
@@ -69,7 +69,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
             Name("SMITH"),
             Some(10),
             Address("Tokyo", "Yaesu"),
-            Some(1),
+            Some(2),
             Some(0)))
       assert(dao.selectByIdNullable(5) === null)
     }
@@ -83,8 +83,8 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
             PersonDepartment(
               ID(1),
               Name("SMITH"),
-              Some(ID(1)),
-              Some(Name("ACCOUNTING")))))
+              Some(ID(2)),
+              Some(Name("SALES")))))
     }
   }
 
@@ -92,7 +92,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       assert(
         dao.selectWithDepartmentEmbeddedById(1) ===
-          Some(PersonDepartmentEmbedded(1, "SMITH", Department(1, "ACCOUNTING"))))
+          Some(PersonDepartmentEmbedded(1, "SMITH", Department(2, "SALES"))))
     }
   }
 
@@ -118,8 +118,8 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
   test("select Sequential Map") {
     Required {
       assert(dao.selectAllSeqMap() == Seq(
-        Map("ID" -> 1, "NAME" -> "SMITH", "AGE" -> 10, "CITY" -> "Tokyo", "STREET" -> "Yaesu", "DEPARTMENT_ID" -> 1, "VERSION" -> 0),
-        Map("ID" -> 2, "NAME" -> "ALLEN", "AGE" -> 20, "CITY" -> "Kyoto", "STREET" -> "Karasuma", "DEPARTMENT_ID" -> 2, "VERSION" -> 0)
+        Map("ID" -> 1, "NAME" -> "SMITH", "AGE" -> 10, "CITY" -> "Tokyo", "STREET" -> "Yaesu", "DEPARTMENT_ID" -> 2, "VERSION" -> 0),
+        Map("ID" -> 2, "NAME" -> "ALLEN", "AGE" -> 20, "CITY" -> "Kyoto", "STREET" -> "Karasuma", "DEPARTMENT_ID" -> 1, "VERSION" -> 0)
       ))
     }
   }
@@ -127,14 +127,14 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
   test("select Single Map") {
     Required {
       assert(dao.selectByIdMap(1) ==
-        Map("ID" -> 1, "NAME" -> "SMITH", "AGE" -> 10, "CITY" -> "Tokyo", "STREET" -> "Yaesu", "DEPARTMENT_ID" -> 1, "VERSION" -> 0))
+        Map("ID" -> 1, "NAME" -> "SMITH", "AGE" -> 10, "CITY" -> "Tokyo", "STREET" -> "Yaesu", "DEPARTMENT_ID" -> 2, "VERSION" -> 0))
       assert(dao.selectByIdMap(5) == null)
     }
   }
 
   test("select Option Map") {
     Required {
-      assert(dao.selectByIdOptionMap(1).contains(Map("ID" -> 1, "NAME" -> "SMITH", "AGE" -> 10, "CITY" -> "Tokyo", "STREET" -> "Yaesu", "DEPARTMENT_ID" -> 1, "VERSION" -> 0)))
+      assert(dao.selectByIdOptionMap(1).contains(Map("ID" -> 1, "NAME" -> "SMITH", "AGE" -> 10, "CITY" -> "Tokyo", "STREET" -> "Yaesu", "DEPARTMENT_ID" -> 2, "VERSION" -> 0)))
       assert(dao.selectByIdOptionMap(5).isEmpty)
     }
   }
@@ -276,14 +276,14 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
             Name("SMITH"),
             Some(11),
             Address("Tokyo", "Yaesu"),
-            Some(1),
+            Some(2),
             Some(1)),
           Person(
             Some(2),
             Name("ALLEN"),
             Some(21),
             Address("Kyoto", "Karasuma"),
-            Some(2),
+            Some(1),
             Some(1)),
         )
       )
