@@ -18,7 +18,7 @@ object SqlModifyQueryGenerator {
   def generate(defDecl: QueryDefDecl,
                commonSetting: DaoMethodCommonSetting,
                internalMethodName: Term.Name,
-               query: Term,
+               query: Term => Term.New,
                otherQuerySettings: Seq[Stat],
                command: Term.Apply): Defn.Def = {
     val params = defDecl.paramss.flatten
@@ -69,7 +69,7 @@ object SqlModifyQueryGenerator {
     override def ${defDecl.name} = {
       entering(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, ..$enteringParam)
       try {
-        val __query = $query($entityAndEntityType)
+        val __query = ${query(entityAndEntityType)}
         ..$checkNullParameter
         __query.setMethod($internalMethodName)
         __query.setConfig(__config)

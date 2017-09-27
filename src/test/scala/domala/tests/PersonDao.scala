@@ -192,7 +192,7 @@ from person
   def batchUpdate(persons: Seq[Person]): BatchResult[Person]
 
   @BatchDelete
-  def batchDelete(persons: Seq[Person]): BatchResult[Person]
+  def batchDelete(persons: Seq[Person]): Array[Int]
 
   @Insert(sql = """
 insert into person(id, name, age, city, street, department_id, version)
@@ -209,7 +209,7 @@ values(
 
   @Update(sql = """
 update person set
-  name =  /* entity.name.value */'hoge',
+  name = /* entity.name.value */'hoge',
   age = /* entity.age.get() */0,
   city = /* entity2.address.city */'hoge',
   street = /* entity2.address.street */'hoge',

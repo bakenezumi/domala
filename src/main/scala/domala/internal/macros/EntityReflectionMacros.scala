@@ -13,7 +13,7 @@ import scala.reflect.macros.blackbox
 
 object EntityReflectionMacros {
 
-  def getCompanion(c: blackbox.Context)(param: c.Expr[Class[_]]): c.universe.Expr[Any] = {
+  def getCompanion(c: blackbox.Context)(param: c.Expr[Class[_]]): c.Expr[Any] = {
     import c.universe._
     reify {
       Class.forName(param.splice.getName + "$").getField("MODULE$").get(null)
@@ -52,7 +52,7 @@ object EntityReflectionMacros {
     columnUpdatable: c.Expr[Boolean],
     columnQuote: c.Expr[Boolean],
     collections: c.Expr[EntityCollections[E]]
-  ): c.universe.Expr[Object] = {
+  ): c.Expr[Object] = {
     import c.universe._
     val Literal(Constant(isBasicActual: Boolean)) = isBasic.tree
     val Literal(Constant(isIdActual: Boolean)) = isId.tree
@@ -266,7 +266,7 @@ object EntityReflectionMacros {
     entityClass: c.Expr[Class[E]],
     args:  c.Expr[java.util.Map[String, Property[E, _]]],
     propertyName: c.Expr[String],
-    propertyClass:  c.Expr[Class[T]]): c.universe.Expr[T] = {
+    propertyClass:  c.Expr[Class[T]]): c.Expr[T] = {
     import c.universe._
     val wtt = weakTypeOf[T]
     if(wtt.companion <:< typeOf[EmbeddableType[_]]) {

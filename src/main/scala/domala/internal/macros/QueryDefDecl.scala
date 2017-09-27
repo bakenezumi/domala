@@ -11,8 +11,8 @@ case class QueryDefDecl(
   tpe: Type
 )
 
-object QueryDefDecl{
-  def of(trtName: Type.Name, _def: Decl.Def) = {
+object QueryDefDecl {
+  def of(trtName: Type.Name, _def: Decl.Def): QueryDefDecl = {
     val Decl.Def(mods, name, tparams, paramss, tpe) = _def
       QueryDefDecl(_def, trtName, _def.name, _def.tparams, _def.paramss, tpe)
   }

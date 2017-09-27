@@ -26,6 +26,7 @@ object SelectType {
 }
 
 package internal { package macros {
+
   case class SelectSetting(
     fetchSize: Term.Arg,
     maxRows: Term.Arg,
@@ -50,9 +51,8 @@ package internal { package macros {
 
     def generate(trtName: Type.Name, _def: Decl.Def, internalMethodName: Term.Name, args: Seq[Term.Arg]): Defn.Def = {
       val defDecl = QueryDefDecl.of(trtName, _def)
-      val commonSetting = DaoMacroHelper.readCommonSetting(args)
+      val commonSetting = DaoMacroHelper.readCommonSetting(args, trtName.syntax, defDecl.name.syntax)
       if (commonSetting.sql.syntax == """""""") abort(_def.pos, domala.message.Message.DOMALA4020.getMessage(trtName.syntax, defDecl.name.syntax))
-
       val selectSetting = readSelectSetting(args)
 
       val (checkParameter: Seq[Stat], isStream: Boolean) = selectSetting.strategy match {
@@ -180,7 +180,7 @@ package internal { package macros {
         }
       val command =
         q"""
-      getCommandImplementors().createSelectCommand(
+      getCommandImplementors.createSelectCommand(
         $internalMethodName,
         __query,
         $handler

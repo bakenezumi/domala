@@ -30,6 +30,7 @@ object AutoModifyQueryGenerator {
     } else {
       q"__count"
     }
+
     q"""
     override def ${defDecl.name} = {
       entering(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, $paramName)

@@ -20,9 +20,9 @@ package internal { package macros {
   object InsertGenerator {
     def generate(trtName: Type.Name, _def: Decl.Def, internalMethodName: Term.Name, args: Seq[Term.Arg]): Defn.Def = {
       val defDecl = QueryDefDecl.of(trtName, _def)
-      val commonSetting = DaoMacroHelper.readCommonSetting(args)
+      val commonSetting = DaoMacroHelper.readCommonSetting(args, trtName.syntax, _def.name.syntax)
       if (commonSetting.hasSql) {
-        val query = q"new domala.jdbc.query.SqlInsertQuery(${commonSetting.sql})"
+        val query: Term => Term.New = (entityAndEntityType) => q"new domala.jdbc.query.SqlInsertQuery(${commonSetting.sql})($entityAndEntityType)"
         val otherQuerySettings = Seq[Stat]()
         val command = q"getCommandImplementors.createInsertCommand($internalMethodName, __query)"
         SqlModifyQueryGenerator.generate(defDecl, commonSetting, internalMethodName, query, otherQuerySettings, command)

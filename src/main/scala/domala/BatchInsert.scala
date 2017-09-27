@@ -19,7 +19,7 @@ package internal { package macros {
 
   object BatchInsertGenerator {
     def generate(trtName: Type.Name, _def: Decl.Def, internalMethodName: Term.Name, args: Seq[Term.Arg]): Defn.Def = {
-      val commonSetting = DaoMacroHelper.readCommonBatchSetting(args)
+      val commonSetting = DaoMacroHelper.readCommonBatchSetting(args, trtName.syntax, _def.name.syntax)
       val include = args.collectFirst { case arg"include = $x" => Some(x) }.getOrElse(None)
       val exclude = args.collectFirst { case arg"exclude = $x" => Some(x) }.getOrElse(None)
       val includedPropertyNames = include match {

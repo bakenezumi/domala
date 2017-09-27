@@ -11,8 +11,8 @@ object AutoBatchModifyQueryGenerator {
           .getMessage(defDecl.trtName.value, defDecl.name.value))
     defDecl.paramss.flatten.head match {
       case param"$paramName: ${Some(paramTpe)}" => paramTpe match {
-        // TODO: Seqでないとコンパイルエラー
-        case t"$_[$internalTpe]" => (Term.Name(paramName.value), Type.Name(internalTpe.toString))
+        // TODO: _ <: Seqでないとコンパイルエラーにすべき
+        case t"Seq[$internalTpe]" => (Term.Name(paramName.value), Type.Name(internalTpe.toString))
       }
     }
   }
@@ -27,17 +27,11 @@ object AutoBatchModifyQueryGenerator {
     otherQuerySettings: Seq[Stat],
     command: Term.Apply): Defn.Def = {
 
-    defDecl.tpe match {
-      case t"BatchResult[$entity]"
-          if entity.syntax == paramType.syntax => ()
-      case t"jdbc.BatchResult[$entity]"
-          if entity.syntax == paramType.syntax => ()
-      case t"domala.jdbc.BatchResult[$entity]"
-          if entity.syntax == paramType.syntax => ()
-      case _ =>
-        abort(defDecl._def.pos,
-              domala.message.Message.DOMALA4223
-                .getMessage(defDecl.trtName.syntax, defDecl.name.syntax))
+    val (isReturnBatchResult, entityType) = DaoMacroHelper.getBatchResultType(defDecl)
+    val result = if(isReturnBatchResult) {
+      q"new domala.jdbc.BatchResult[$entityType](__count, __query.getEntities.asScala)"
+    } else {
+      q"__count"
     }
 
     q"""
@@ -61,8 +55,7 @@ object AutoBatchModifyQueryGenerator {
         val __command = $command
         val __count = __command.execute()
         __query.complete()
-        val __result =
-          new domala.jdbc.BatchResult[$paramType](__count, __query.getEntities.asScala)
+        val __result = $result
         exiting(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, __result)
         __result
       } catch {

@@ -101,7 +101,7 @@ package internal { package macros {
 
     protected def generateIdGeneratorFields(clsName: Type.Name, ctor: Ctor.Primary): Seq[Stat] = {
       val params = ctor.paramss.flatten
-      val idMods = params.filter(p => p.mods.exists{
+      val idMods = params.filter(p => p.mods.exists {
         case  mod"@Id" | mod"@domala.Id" => true
         case _ => false
       })

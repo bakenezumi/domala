@@ -13,14 +13,14 @@ import scala.reflect.macros.blackbox
 
 object DaoReflectionMacros {
 
-  def getCompanion(c: blackbox.Context)(param: c.Expr[Class[_]]): c.universe.Expr[Any] = {
+  def getCompanion(c: blackbox.Context)(param: c.Expr[Class[_]]): c.Expr[Any] = {
     import c.universe._
     reify {
       Class.forName(param.splice.getName + "$").getField("MODULE$").get(null)
     }
   }
 
-  def getStreamHandlerImpl[T: c.WeakTypeTag, R: c.WeakTypeTag](c: blackbox.Context)(param: c.Expr[Class[T]], f: c.Expr[Stream[T] => R], daoName: c.Expr[String], methodName: c.Expr[String]): c.universe.Expr[AbstractStreamHandler[T, R]] = {
+  def getStreamHandlerImpl[T: c.WeakTypeTag, R: c.WeakTypeTag](c: blackbox.Context)(param: c.Expr[Class[T]], f: c.Expr[Stream[T] => R], daoName: c.Expr[String], methodName: c.Expr[String]): c.Expr[AbstractStreamHandler[T, R]] = {
     import c.universe._
     val tpe = weakTypeOf[T]
     if (tpe.companion <:< typeOf[AbstractEntityType[_]]) {
@@ -45,7 +45,7 @@ object DaoReflectionMacros {
   }
   def getStreamHandler[T, R](param: Class[T], f: Stream[T] => R, daoName: String, methodName: String): AbstractStreamHandler[T, R] = macro getStreamHandlerImpl[T, R]
 
-  def getResultListHandlerImpl[T: c.WeakTypeTag](c: blackbox.Context)(param: c.Expr[Class[T]], daoName: c.Expr[String], methodName: c.Expr[String]): c.universe.Expr[AbstractResultListHandler[T]] = {
+  def getResultListHandlerImpl[T: c.WeakTypeTag](c: blackbox.Context)(param: c.Expr[Class[T]], daoName: c.Expr[String], methodName: c.Expr[String]): c.Expr[AbstractResultListHandler[T]] = {
     import c.universe._
     val tpe = weakTypeOf[T]
     if (tpe.companion <:< typeOf[AbstractEntityType[_]]) {
@@ -61,12 +61,12 @@ object DaoReflectionMacros {
     } else {
       val Literal(Constant(daoNameText: String)) = daoName.tree
       val Literal(Constant(methodNameText: String)) = methodName.tree
-      c.abort(c.enclosingPosition, domala.message.Message.DOMALA4008.getMessage(tpe.typeSymbol.name, daoNameText, methodNameText))
+      c.abort(c.enclosingPosition, domala.message.Message.DOMALA4007.getMessage(tpe.typeSymbol.name, daoNameText, methodNameText))
     }
   }
   def getResultListHandler[T](param: Class[T], daoName: String, methodName: String): AbstractResultListHandler[T] = macro getResultListHandlerImpl[T]
 
-  def getOptionalSingleResultHandlerImpl[T: c.WeakTypeTag](c: blackbox.Context)(param: c.Expr[Class[T]], daoName: c.Expr[String], methodName: c.Expr[String]): c.universe.Expr[AbstractSingleResultHandler[Optional[T]]] = {
+  def getOptionalSingleResultHandlerImpl[T: c.WeakTypeTag](c: blackbox.Context)(param: c.Expr[Class[T]], daoName: c.Expr[String], methodName: c.Expr[String]): c.Expr[AbstractSingleResultHandler[Optional[T]]] = {
     import c.universe._
     val tpe = weakTypeOf[T]
     if (tpe.companion <:< typeOf[AbstractEntityType[_]]) {
@@ -87,7 +87,7 @@ object DaoReflectionMacros {
   }
   def getOptionalSingleResultHandler[T](param: Class[T], daoName: String, methodName: String): AbstractSingleResultHandler[Optional[T]] = macro getOptionalSingleResultHandlerImpl[T]
 
-  def getSingleResultHandlerImpl[T: c.WeakTypeTag](c: blackbox.Context)(param: c.Expr[Class[T]], daoName: c.Expr[String], methodName: c.Expr[String]): c.universe.Expr[AbstractSingleResultHandler[T]] = {
+  def getSingleResultHandlerImpl[T: c.WeakTypeTag](c: blackbox.Context)(param: c.Expr[Class[T]], daoName: c.Expr[String], methodName: c.Expr[String]): c.Expr[AbstractSingleResultHandler[T]] = {
     import c.universe._
     val tpe = weakTypeOf[T]
     if (tpe.companion <:< typeOf[AbstractEntityType[_]]) {
@@ -108,7 +108,7 @@ object DaoReflectionMacros {
   }
   def getSingleResultHandler[T](param: Class[T], daoName: String, methodName: String): ResultSetHandler[T] = macro getSingleResultHandlerImpl[T]
 
-  def setEntityTypeImpl[T: c.WeakTypeTag](c: blackbox.Context)(query: c.Expr[AbstractSelectQuery], param: c.Expr[Class[T]]): c.universe.Expr[Unit] = {
+  def setEntityTypeImpl[T: c.WeakTypeTag](c: blackbox.Context)(query: c.Expr[AbstractSelectQuery], param: c.Expr[Class[T]]): c.Expr[Unit] = {
     import c.universe._
     if (param.actualType <:< typeOf[AbstractEntityType[_]]) {
       val entity = getCompanion(c)(param)
