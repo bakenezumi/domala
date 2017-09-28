@@ -4,7 +4,7 @@ import domala._
 import domala.tests._
 import org.scalatest.{BeforeAndAfter, FunSuite}
 
-class ExpressionTestSuite extends FunSuite with BeforeAndAfter{
+class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
   implicit val config: jdbc.Config = TestConfig
   val personDao: PersonDao = PersonDao
   val dao: ExpressionDao = ExpressionDao
@@ -22,8 +22,10 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter{
   }
 
   test("Iterable parameter") {
-    // TODO
-    //dao.inSelect(Nil)
+    Required {
+      // TODO
+      dao.inSelect(new java.util.ArrayList[Int]{add(1);add(3);add(5)})
+    }
   }
 
   test("literal") {
@@ -149,7 +151,7 @@ select * from person
 where
 id in /*ids*/(0)
   """)
-  def inSelect(ids: List[Int]): Seq[Person]
+  def inSelect(ids: java.util.List[Int]): Seq[Person]
 
   @Select("""
 select * from person

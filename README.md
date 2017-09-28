@@ -1,50 +1,60 @@
-# Domala(Doma for Scala)
-------------------
-DomalaはJavaのDBアクセスフレームワーク[Doma2](https://github.com/domaframework/doma)をScala用にラップしたライブラリです。
+Domala: Doma for Scala
+======================
 
-### 特徴
+Domala is a database access framework for Scala. This wraps [Doma2](https://github.com/domaframework/doma).
 
-基本的には本家Doma2の特徴を引き継いでいますが、下記の拡張を加えています。
+- Domala uses [scala meta](http://scalameta.org/paradise/) to generate code and validate sql mappings at **compile time**.
 
-- scala metaを使用してコードの自動生成とコードの検証を行う
+- Select statements are write by yourself. It is automatically mapped to `Option[`*`Entity`*`]`, `Seq[`*`Entity`*`]`, `Stream[`*`Entity`*`]`, `Seq[Map[String, Any]]`, and more.
 
-- Scalaの`scala.Option`や`scala.collection.Seq`、`scala.collection.Stream`を利用できる
+- Other statements are automatically generated from Entity. It can also write SQL.
 
-- SQLファイルは使用せず、アノテーションパラメータに記述されたSQLを実行する（ヒアドキュメント形式で書けるため）
+### Example
 
-### 利用例
+#### Config
 
-#### Entity class
+```scala
+object SampleConfig extends Config(
+  dataSource = new LocalTransactionDataSource(
+    "jdbc:h2:mem:sample;DB_CLOSE_DELAY=-1", "sa", null),
+  dialect = new H2Dialect,
+  naming = Naming.SNAKE_LOWER_CASE
+) {
+  Class.forName("org.h2.Driver")
+}
+```
+
+#### Entity
 
 ```scala
 @Entity
 case class Person(
   @Id
-  id: Option[Int] = None,
+  id: Int,
   name: Name,
   age: Option[Int],
   address: Address,
   departmentId: Option[Int],
   @Version
-  version: Option[Int] = Some(-1)
+  version: Option[Int] = None
 )
 ```
 
-#### Holder class
+#### Holder
 
 ```scala
 @Holder
 case class Name(value: String)
 ```
 
-#### Embeddable class
+#### Embeddable
 
 ```scala
 @Embeddable
 case class Address(city: String, street: String)
 ```
 
-#### Dao trait
+#### Dao
 
 ```scala
 @Dao(config = SampleConfig)
@@ -59,10 +69,13 @@ where id = /*id*/0
 
   @Insert
   def insert(person: Person): Result[Person]
+
+  @Update
+  def update(person: Person): Result[Person]
 }
 ```
 
-#### Daoの利用
+#### Usage
 ```scala
 implicit val config = SampleConfig
 
@@ -77,14 +90,20 @@ val entity = Person(
 )
 Required {
   dao.insert(entity)
-  dao.selectById(1)
+  dao.selectById(1).foreach(e =>
+    dao.update(e.copy(age = e.age.map(_ + 1)))
+  )
 }
 ```
 
 
-### サンプルアプリの実行方法
+### Run sample
 
 ```sh
 sbt
 >sample/run
 ```
+
+License
+--------
+Apache License, Version 2.0
