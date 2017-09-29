@@ -4,16 +4,6 @@ import scala.collection.immutable.Seq
 import scala.meta._
 
 object SqlModifyQueryGenerator {
-  def extractParameter(defDecl: QueryDefDecl): (Term.Name, Type.Name) = {
-    if (defDecl.paramss.flatten.length != 1)
-      abort(defDecl._def.pos,
-            org.seasar.doma.message.Message.DOMA4002
-              .getMessage(defDecl.trtName.value, defDecl.name.value))
-    defDecl.paramss.flatten.head match {
-      case param"$paramName: ${Some(paramTpe)}" =>
-        (Term.Name(paramName.value), Type.Name(paramTpe.toString))
-    }
-  }
 
   def generate(defDecl: QueryDefDecl,
                commonSetting: DaoMethodCommonSetting,
@@ -22,7 +12,6 @@ object SqlModifyQueryGenerator {
                otherQuerySettings: Seq[Stat],
                command: Term.Apply): Defn.Def = {
     val params = defDecl.paramss.flatten
-    val (isReturnResult, entityType) = DaoMacroHelper.getResultType(defDecl)
 
     val enteringParam = params.map(p =>
       arg"${Term.Name(p.name.toString)}.asInstanceOf[Object]"
@@ -50,17 +39,17 @@ object SqlModifyQueryGenerator {
       q"__query.addParameter(${p.name.syntax}, classOf[$paramTpe], ${Term.Name(p.name.syntax): Term.Arg})"
     }
 
-    val entityAndEntityType = if(isReturnResult) {
-      val entityParam = params.collectFirst{
-        case x if x.decltpe.get.syntax == entityType.syntax => x
-      }.get
-      q"Some(domala.jdbc.query.EntityAndEntityType(${entityParam.name.syntax}, ${Term.Name(entityParam.name.syntax)}, ${Term.Name(entityType.syntax)}))"
-    } else {
-      q"None"
+    val (isReturnResult, entityType) = DaoMacroHelper.getResultType(defDecl)
+
+    val daoParams = defDecl.paramss.flatten.map { p =>
+      q"domala.internal.macros.DaoParam.apply(${p.name.syntax}, ${Term.Name(p.name.syntax)}, classOf[${Type.Name(p.decltpe.get.syntax)}])"
     }
 
+    val entityAndEntityType = q"""
+    domala.internal.macros.reflect.DaoReflectionMacros.getEntityAndEntityType(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, classOf[${defDecl.tpe}], ..$daoParams)
+    """
     val result = if(isReturnResult) {
-      q"new domala.jdbc.Result[$entityType](__count, __query.getEntity)"
+      q"new domala.jdbc.Result(__count, __query.getEntity.asInstanceOf[$entityType])"
     } else {
       q"__count"
     }

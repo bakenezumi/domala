@@ -11,7 +11,7 @@ import domala.jdbc.Result
 class SqlDateTestSuite  extends FunSuite with BeforeAndAfter {
   implicit val config: Config = TestConfig
 
-  val dao: SqlDateDao = SqlDateDao
+  val dao: SqlDateDao = SqlDateDao.impl
 
   before {
     Required {

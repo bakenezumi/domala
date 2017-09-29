@@ -7,7 +7,7 @@ import domala.jdbc.Config
 class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
   implicit val config: Config = TestConfig
 
-  val dao: PersonDao = PersonDao
+  val dao: PersonDao = PersonDao.impl
 
   before {
     Required {

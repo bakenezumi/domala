@@ -9,7 +9,7 @@ import org.scalatest.{BeforeAndAfter, FunSuite}
 class HolderTestSuite extends FunSuite with BeforeAndAfter {
   implicit val config: Config = TestConfig
 
-  val dao: HolderDao = HolderDao
+  val dao: HolderDao = HolderDao.impl
 
   before {
     Required {

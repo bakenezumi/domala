@@ -9,7 +9,7 @@ import domala.jdbc.Result
 class AnyRefTypeTestSuite  extends FunSuite with BeforeAndAfter {
   implicit val config: Config = TestConfig
 
-  val dao: AnyRefTypeDao = AnyRefTypeDao
+  val dao: AnyRefTypeDao =AnyRefTypeDao.impl
 
   before {
     Required {

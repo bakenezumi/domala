@@ -1,18 +1,14 @@
 package domala.jdbc.query
 
 import org.seasar.doma.internal.util.AssertionUtil.assertNotNull
-import org.seasar.doma.internal.util.AssertionUtil.assertTrue
 import org.seasar.doma.internal.util.AssertionUtil.assertUnreachable
 
-import org.seasar.doma.internal.Constants;
-import org.seasar.doma.internal.jdbc.sql.SqlParser
-import org.seasar.doma.jdbc.query.AbstractQuery 
+import org.seasar.doma.jdbc.query.AbstractQuery
 import org.seasar.doma.jdbc.query.ScriptQuery 
-import org.seasar.doma.jdbc.Sql;
-import org.seasar.doma.jdbc.SqlLogType;
+import org.seasar.doma.jdbc.SqlLogType
 
 
-class SqlScriptQuery(val scripts: String) extends AbstractQuery with ScriptQuery {
+class SqlAnnotationScriptQuery(val scripts: String) extends AbstractQuery with ScriptQuery {
 
   protected var blockDelimiter = ""
 
@@ -32,7 +28,7 @@ class SqlScriptQuery(val scripts: String) extends AbstractQuery with ScriptQuery
       this.sqlLogType = sqlLogType
   }
 
-  override def prepare() = {
+  override def prepare(): Unit = {
       super.prepare()
       assertNotNull(blockDelimiter, "")
       if (blockDelimiter.isEmpty()) {
@@ -40,30 +36,30 @@ class SqlScriptQuery(val scripts: String) extends AbstractQuery with ScriptQuery
       }
   }
 
-  override def complete() = {
+  override def complete(): Unit = {
   }
 
-  override def getQueryTimeout() = {
+  override def getQueryTimeout: Int = {
     -1
   }
 
-  override def getSql() = {
+  override def getSql: Null = {
     assertUnreachable()
     null
   }
 
-  override def getBlockDelimiter() = {
+  override def getBlockDelimiter: String = {
     blockDelimiter
   }
 
-  override def getHaltOnError() = {
+  override def getHaltOnError: Boolean = {
     haltOnError
   }
 
-  override def getSqlLogType() = {
+  override def getSqlLogType: SqlLogType = {
     sqlLogType
   }
 
-  override def getScriptFilePath(): String = ""
-  override def getScriptFileUrl(): java.net.URL = null
+  override def getScriptFilePath: String = ""
+  override def getScriptFileUrl: java.net.URL = null
 }

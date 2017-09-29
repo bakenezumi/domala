@@ -11,7 +11,7 @@ import domala.jdbc.Result
 class BigIntTestSuite  extends FunSuite with BeforeAndAfter {
   implicit val config: Config = TestConfig
 
-  val dao: BigIntDao = BigIntDao
+  val dao: BigIntDao = BigIntDao.impl
 
   before {
     Required {

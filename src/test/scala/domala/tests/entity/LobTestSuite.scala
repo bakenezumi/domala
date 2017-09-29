@@ -12,7 +12,7 @@ import domala.jdbc.Result
 class LobTestSuite  extends FunSuite with BeforeAndAfter {
   implicit val config: Config = TestConfig
 
-  val dao: LobDao = LobDao
+  val dao: LobDao = LobDao.impl
 
   before {
     Required {
@@ -37,7 +37,7 @@ class LobTestSuite  extends FunSuite with BeforeAndAfter {
       val entity = Lob(1, new SerialBlob("abc".map(_.toByte).toArray), Some(new SerialBlob("def".map(_.toByte).toArray)),
         new SerialClob("ghi".map(_.toChar).toArray), Some(new SerialClob("jkl".map(_.toChar).toArray)))
       dao.insert(entity)
-      val selected = (dao.select(1))
+      val selected = dao.select(1)
       assert(new String(selected.basicBlob.getBytes(0, 4)) === "abc")
       assert(new String(selected.optionBlob.get.getBytes(0, 4)) === "def")
       assert(selected.basicClob.getSubString(1, 4) === "ghi")

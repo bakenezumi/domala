@@ -8,7 +8,7 @@ object UpdateGenerator {
     val defDecl = QueryDefDecl.of(trtName, _def)
     val commonSetting = DaoMacroHelper.readCommonSetting(args, trtName.syntax, _def.name.syntax)
     if (commonSetting.hasSql) {
-      val query: Term => Term.New = (entityAndEntityType) => q"new domala.jdbc.query.SqlUpdateQuery(${commonSetting.sql})($entityAndEntityType)"
+      val query: Term => Term.New = (entityAndEntityType) => q"new domala.jdbc.query.SqlAnnotationUpdateQuery(${commonSetting.sql})($entityAndEntityType)"
       val otherQuerySettings = Seq[Stat]()
       val command = q"getCommandImplementors.createUpdateCommand($internalMethodName, __query)"
       SqlModifyQueryGenerator.generate(defDecl, commonSetting, internalMethodName, query, otherQuerySettings, command)

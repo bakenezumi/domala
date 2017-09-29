@@ -79,10 +79,11 @@ where id = /*id*/0
 ```scala
 implicit val config = SampleConfig
 
-val dao: PersonDao = PersonDao
+// Dao implementation is auto generated.
+val dao: PersonDao = PersonDao.impl 
 
 val entity = Person(
-  id = 1
+  id = 1,
   name = Name("SMITH"),
   age = Some(10),
   address = Address("TOKYO", "YAESU"),
@@ -95,7 +96,6 @@ Required {
   )
 }
 ```
-
 
 ### Run sample
 

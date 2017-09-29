@@ -2,25 +2,23 @@ package domala.jdbc.query
 
 import java.lang.reflect.Method
 
-import org.seasar.doma.internal.expr.ExpressionEvaluator
 import org.seasar.doma.internal.jdbc.entity.{AbstractPostUpdateContext, AbstractPreUpdateContext}
 import org.seasar.doma.internal.jdbc.sql.node.PopulateNode
-import org.seasar.doma.internal.jdbc.sql.{NodePreparedSqlBuilder, SqlContext, SqlParser}
+import org.seasar.doma.internal.jdbc.sql.{SqlContext, SqlParser}
 import org.seasar.doma.internal.util.AssertionUtil.assertNotNull
-import org.seasar.doma.jdbc.Config
+import org.seasar.doma.jdbc.{Config, SqlExecutionSkipCause, SqlKind}
 import org.seasar.doma.jdbc.entity.{EntityPropertyType, EntityType}
-import org.seasar.doma.jdbc.query.UpdateQueryHelper
-import org.seasar.doma.jdbc.SqlExecutionSkipCause
+import org.seasar.doma.jdbc.query.{UpdateQuery, UpdateQueryHelper}
 
 
-class SqlUpdateQuery[E](
+class SqlAnnotationUpdateQuery[E](
   sqlString: String,
   nullExcluded: Boolean = false,
   versionIgnored: Boolean = false,
   optimisticLockExceptionSuppressed: Boolean = false,
   includedPropertyNames: Array[String] = new Array[String](0),
   excludedPropertyNames: Array[String] = new Array[String](0))(
-  entityAndEntityType: Option[EntityAndEntityType[E]] = None) extends org.seasar.doma.jdbc.query.SqlUpdateQuery {
+  entityAndEntityType: Option[EntityAndEntityType[E]] = None) extends SqlAnnotationModifyQuery(SqlKind.UPDATE) with UpdateQuery {
   // TODO: キャッシュ
   setSqlNode(new SqlParser(sqlString).parse())
 
@@ -30,13 +28,13 @@ class SqlUpdateQuery[E](
   var sqlExecutionSkipCause = SqlExecutionSkipCause.STATE_UNCHANGED
 
   override def prepare(): Unit = {
+    super.prepare()
     assertNotNull(method, sqlString)
     initEntityHandler()
-    prepareTargetPropertyTypes()
-    super.prepare()
     preUpdate()
     prepareOptimisticLock()
     prepareOptions()
+    prepareTargetPropertyTypes()
     prepareExecutable()
     prepareSql()
   }
@@ -54,7 +52,7 @@ class SqlUpdateQuery[E](
     }
   }
 
-  protected def populateValues(node: PopulateNode, context: SqlContext): Unit = {
+  override protected def populateValues(node: PopulateNode, context: SqlContext): Unit = {
     entityHandler.getOrElse(throw new UnsupportedOperationException).populateValues(context)
   }
 
@@ -73,16 +71,6 @@ class SqlUpdateQuery[E](
   override def isExecutable: Boolean = executable
 
   override def getSqlExecutionSkipCause: SqlExecutionSkipCause = sqlExecutionSkipCause
-
-  import org.seasar.doma.internal.jdbc.sql.node.ExpandNode
-
-  protected def expandColumns(node: ExpandNode) = throw new UnsupportedOperationException
-
-  override protected def prepareSql(): Unit = {
-    val evaluator = new ExpressionEvaluator(this.parameters, this.config.getDialect.getExpressionFunctions, this.config.getClassHelper)
-    val sqlBuilder = new NodePreparedSqlBuilder(this.config, this.kind, null.asInstanceOf[String], evaluator, this.sqlLogType, this.expandColumns _, this.populateValues _)
-    this.sql = sqlBuilder.build(this.sqlNode, this.comment _)
-  }
 
   protected class EntityHandler(name: String, var entity: E, entityType: EntityType[E]) {
     assertNotNull(name, entity, entityType)
@@ -117,8 +105,6 @@ class SqlUpdateQuery[E](
       if (context.getNewEntity != null) entity = context.getNewEntity
       entityType.saveCurrentStates(entity)
     }
-
-    import org.seasar.doma.internal.jdbc.sql.SqlContext
 
     def prepareOptimisticLock(): Unit = {
       if (versionPropertyType != null && !versionIgnored) if (!optimisticLockExceptionSuppressed) optimisticLockCheckRequired = true

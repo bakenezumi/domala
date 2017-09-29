@@ -221,7 +221,7 @@ where
   """)
   def updateSql(entity: Person, entity2: Person, version: Int): Result[Person]
 
-  @Update(sql = """
+  @Delete(sql = """
 delete from person
 where
   id = /* entity.id.get() */0 and

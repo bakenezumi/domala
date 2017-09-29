@@ -2,6 +2,9 @@ package domala.internal.macros.reflect
 
 import java.util.Optional
 
+import domala.internal.macros.DaoParam
+import domala.jdbc.Result
+import domala.jdbc.query.EntityAndEntityType
 import org.seasar.doma.internal.jdbc.command._
 import org.seasar.doma.jdbc.command.ResultSetHandler
 import org.seasar.doma.jdbc.domain.AbstractDomainType
@@ -113,4 +116,34 @@ object DaoReflectionMacros {
     } else reify ((): Unit) // No operation
   }
   def setEntityType[T](query: AbstractSelectQuery, param: Class[T]): Unit = macro setEntityTypeImpl[T]
+
+  def EntityAndEntityTypeInternal[E](param: DaoParam[E]): EntityAndEntityType[E] = {
+    val entity = Class.forName(param.clazz.getName + "$").getField("MODULE$").get(null).asInstanceOf[AbstractEntityType[E]]
+    EntityAndEntityType(param.name, param.value, entity)
+  }
+
+  def getEntityAndEntityTypeImpl[T: c.WeakTypeTag](c: blackbox.Context)(traitName: c.Expr[String], methodName: c.Expr[String], resultClass: c.Expr[Class[T]], params: c.Expr[DaoParam[_]]*): c.Expr[Option[EntityAndEntityType[Any]]] = {
+    import c.universe._
+    params.map {
+      case param if param.actualType.typeArgs.head.companion <:< typeOf[AbstractEntityType[_]] =>
+        if(weakTypeOf[T] =:= weakTypeOf[Int])  Some(param)
+        else if (weakTypeOf[T] <:< weakTypeOf[Result[_]]) {
+          if (weakTypeOf[T].typeArgs.head =:= param.actualType.typeArgs.head) Some(param)
+          else None
+        } else c.abort(c.enclosingPosition, domala.message.Message.DOMALA4222
+          .getMessage(traitName.tree.toString().tail.init, methodName.tree.toString().tail.init))
+      case _ => None
+    }.collectFirst {
+      case Some(param) =>
+        reify {
+          Some(EntityAndEntityTypeInternal(param.splice).asInstanceOf[EntityAndEntityType[Any]])
+        }
+    }.getOrElse(
+      if(weakTypeOf[T] =:= weakTypeOf[Int]) reify(None)
+      else c.abort(c.enclosingPosition, domala.message.Message.DOMALA4001
+        .getMessage(traitName.tree.toString().tail.init, methodName.tree.toString().tail.init))
+    )
+  }
+  def getEntityAndEntityType[T](traitName: String, methodName: String, resultClass: Class[T], params: (DaoParam[_])*): Option[EntityAndEntityType[Any]] = macro getEntityAndEntityTypeImpl[T]
+
 }

@@ -12,7 +12,7 @@ object ScriptGenerator {
     override def $name = {
       entering($trtNameStr, $nameStr)
       try {
-        val __query = new domala.jdbc.query.SqlScriptQuery($sql)
+        val __query = new domala.jdbc.query.SqlAnnotationScriptQuery($sql)
         __query.setMethod($internalMethodName)
         __query.setConfig(__config)
         __query.setCallerClassName($trtNameStr)

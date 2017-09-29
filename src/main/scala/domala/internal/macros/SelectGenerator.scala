@@ -180,10 +180,10 @@ object SelectGenerator {
     }
 
     q"""
-    override def ${defDecl.name} = {
+    override def ${defDecl.name}= {
       entering(${trtName.syntax}, ${defDecl.name.syntax} ..$enteringParam)
       try {
-        val __query = new domala.jdbc.query.SqlSelectQuery(${commonSetting.sql})
+        val __query = new domala.jdbc.query.SqlAnnotationSelectQuery(${commonSetting.sql})
         ..$checkParameter
         __query.setMethod($internalMethodName)
         __query.setConfig(__config)

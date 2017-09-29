@@ -1,15 +1,17 @@
 package domala.jdbc.query
 
 import java.lang.reflect.Method
+import java.sql.Statement
 
 import org.seasar.doma.internal.jdbc.sql.SqlParser
 import org.seasar.doma.internal.util.AssertionUtil.assertNotNull
-import org.seasar.doma.jdbc.Config
+import org.seasar.doma.jdbc.{Config, SqlKind}
 import org.seasar.doma.internal.jdbc.entity.AbstractPostInsertContext
 import org.seasar.doma.internal.jdbc.entity.AbstractPreInsertContext
 import org.seasar.doma.jdbc.entity.EntityType
+import org.seasar.doma.jdbc.query.InsertQuery
 
-class SqlInsertQuery[E](sql: String)(entityAndEntityType: Option[EntityAndEntityType[E]] = None) extends org.seasar.doma.jdbc.query.SqlInsertQuery {
+class SqlAnnotationInsertQuery[E](sql: String)(entityAndEntityType: Option[EntityAndEntityType[E]] = None) extends SqlAnnotationModifyQuery(SqlKind.INSERT) with InsertQuery {
   // TODO: キャッシュ
   setSqlNode(new SqlParser(sql).parse())
 
@@ -55,5 +57,7 @@ class SqlInsertQuery[E](sql: String)(entityAndEntityType: Option[EntityAndEntity
   protected class SqlPreInsertContext(entityType: EntityType[E], method: Method, config: Config) extends AbstractPreInsertContext[E](entityType, method, config)
 
   protected class SqlPostInsertContext(entityType: EntityType[E], method: Method, config: Config) extends AbstractPostInsertContext[E](entityType, method, config)
+
+  override def generateId(statement: Statement): Unit = ()
 
 }

@@ -9,8 +9,8 @@ import org.seasar.doma.jdbc.entity._
 
 class EntityListenerTestSuite extends FunSuite with BeforeAndAfter {
   implicit val config: Config = TestConfig
-  val dao: ListenedDao = ListenedDao
-  val logDao: ListenLogDao = ListenLogDao
+  val dao: ListenedDao = ListenedDao.impl
+  val logDao: ListenLogDao = ListenLogDao.impl
   test("listener test") {
     Required {
       dao.create()
@@ -98,7 +98,7 @@ select * from listen_log
 }
 
 class MyListener extends EntityListener[Listened] {
-  val dao: ListenLogDao = ListenLogDao
+  val dao: ListenLogDao = ListenLogDao.impl
 
   override def preInsert(entity: Listened, context: PreInsertContext[Listened]): Unit = {
    val log = ListenLog(operation = "preInsert", entityId = entity.id, entityName = entity.name)

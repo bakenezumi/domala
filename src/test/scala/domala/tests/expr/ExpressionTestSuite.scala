@@ -5,9 +5,9 @@ import domala.tests._
 import org.scalatest.{BeforeAndAfter, FunSuite}
 
 class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
-  implicit val config: jdbc.Config = TestConfig
-  val personDao: PersonDao = PersonDao
-  val dao: ExpressionDao = ExpressionDao
+  implicit val config: jdbc.Config = ExprTestConfig
+  val personDao: PersonDao = PersonDao.impl(ExprTestConfig)
+  val dao: ExpressionDao = ExpressionDao.impl
 
   before {
     Required {
@@ -23,8 +23,14 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
 
   test("Iterable parameter") {
     Required {
-      // TODO
-      dao.inSelect(new java.util.ArrayList[Int]{add(1);add(3);add(5)})
+      assert(dao.inSelect(List(1, 3, 5)) == Seq(
+        Person(Some(1),
+          Name("SMITH"),
+          Some(10),
+          Address("Tokyo", "Yaesu"),
+          Some(2),
+          Some(0))
+      ))
     }
   }
 
@@ -116,8 +122,16 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
   }
 
   test("for expression") {
-    // TODO
-    //dao.forSelect(Nil)
+    Required {
+      assert(dao.forSelect(List("BB", "AL")) == Seq(
+        Person(Some(2),
+          Name("ALLEN"),
+          Some(20),
+          Address("Kyoto", "Karasuma"),
+          Some(1),
+          Some(0))
+      ))
+    }
   }
 
   test("expand expression") {
@@ -141,9 +155,23 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
       dao.populateUpdate(entity, 2)
     }
   }
+
+  test("populate expression int result") {
+    Required {
+      val entity =
+        Person(
+          Some(3),
+          Name("AAA"),
+          Some(3),
+          Address("BBB", "CCC"),
+          Some(1),
+          Some(1))
+      dao.populateUpdate2(entity, 2)
+    }
+  }
 }
 
-@Dao(config = TestConfig)
+@Dao(config = ExprTestConfig)
 trait ExpressionDao {
 
   @Select("""
@@ -151,7 +179,7 @@ select * from person
 where
 id in /*ids*/(0)
   """)
-  def inSelect(ids: java.util.List[Int]): Seq[Person]
+  def inSelect(ids: List[Int]): Seq[Person]
 
   @Select("""
 select * from person
@@ -194,7 +222,7 @@ where
 select * from person
 where
 /*%for name : names */
-name like /* name */'hoge'
+name like /* name + "%" */'hoge%'
   /*%if name_has_next */
 /*# "or" */
   /*%end */
@@ -218,9 +246,9 @@ update person set /*%populate*/id = id where id = /* id */0
   def populateUpdate(entity: Person, id: Int): jdbc.Result[Person]
 
   // TODO: Entityのパラメータ判定変更
-//  @Update("""
-//update person set /*%populate*/id = id where id = /* id */0
-//  """)
-//  def populateUpdate2(entity: Person, id: Int): Int
+    @Update("""
+  update person set /*%populate*/id = id where id = /* id */0
+    """)
+    def populateUpdate2(entity: Person, id: Int): Int
 
 }

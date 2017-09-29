@@ -11,7 +11,7 @@ import org.scalatest.{BeforeAndAfter, FunSuite}
 class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
   implicit val config: Config = TestConfig
 
-  val dao: SingleResultTestDao = SingleResultTestDao
+  val dao: SingleResultTestDao = SingleResultTestDao.impl
 
   before {
     Required {

@@ -6,7 +6,7 @@ import domala.jdbc.Config
 object Sample extends App {
   implicit val config: Config = SampleConfig
 
-  val dao: PersonDao = PersonDao
+  val dao: PersonDao = PersonDao.impl
 
   Required {
     dao.create()

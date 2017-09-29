@@ -13,7 +13,6 @@ case class QueryDefDecl(
 
 object QueryDefDecl {
   def of(trtName: Type.Name, _def: Decl.Def): QueryDefDecl = {
-    val Decl.Def(mods, name, tparams, paramss, tpe) = _def
-      QueryDefDecl(_def, trtName, _def.name, _def.tparams, _def.paramss, tpe)
+    QueryDefDecl(_def, trtName, _def.name, _def.tparams, _def.paramss, _def.decltpe)
   }
 }

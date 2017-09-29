@@ -9,7 +9,7 @@ import domala.jdbc.Result
 class BigDecimalTestSuite  extends FunSuite with BeforeAndAfter {
   implicit val config: Config = TestConfig
 
-  val dao: BigDecimalDao = BigDecimalDao
+  val dao: BigDecimalDao = BigDecimalDao.impl
 
   before {
     Required {

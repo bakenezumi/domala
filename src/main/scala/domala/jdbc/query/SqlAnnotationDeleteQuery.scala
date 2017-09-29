@@ -5,15 +5,16 @@ import java.lang.reflect.Method
 import org.seasar.doma.internal.jdbc.entity.{AbstractPostDeleteContext, AbstractPreDeleteContext}
 import org.seasar.doma.internal.jdbc.sql.SqlParser
 import org.seasar.doma.internal.util.AssertionUtil.assertNotNull
-import org.seasar.doma.jdbc.Config
+import org.seasar.doma.jdbc.{Config, SqlKind}
 import org.seasar.doma.jdbc.entity.EntityType
+import org.seasar.doma.jdbc.query.DeleteQuery
 
-class SqlDeleteQuery[E](
+class SqlAnnotationDeleteQuery[E](
   sql: String,
   nullExcluded: Boolean = false,
   versionIgnored: Boolean = false,
   optimisticLockExceptionSuppressed: Boolean = false)(
-  entityAndEntityType: Option[EntityAndEntityType[E]] = None) extends org.seasar.doma.jdbc.query.SqlDeleteQuery {
+  entityAndEntityType: Option[EntityAndEntityType[E]] = None) extends SqlAnnotationModifyQuery(SqlKind.UPDATE) with DeleteQuery {
   // TODO: キャッシュ
   setSqlNode(new SqlParser(sql).parse())
 

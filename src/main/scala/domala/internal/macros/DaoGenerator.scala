@@ -19,13 +19,17 @@ object DaoGenerator {
 
     val obj =
     q"""
-    object ${Term.Name(trt.name.syntax)}
-      extends org.seasar.doma.internal.jdbc.dao.AbstractDao($config)
+    object ${Term.Name(trt.name.syntax)} {
+      def impl = new Internal( ${Term.Name(config.syntax)})
+      def impl(config: org.seasar.doma.jdbc.Config): ${Type.Name(trt.name.syntax)} = new Internal(config)
+
+      class Internal(config: org.seasar.doma.jdbc.Config) extends org.seasar.doma.internal.jdbc.dao.AbstractDao(config)
       with ${Ctor.Ref.Name(trt.name.syntax)} {
-      import scala.collection.JavaConverters._
-      import scala.compat.java8.OptionConverters._
-      import scala.compat.java8.StreamConverters._
-      ..${stats.get}
+        import scala.collection.JavaConverters._
+        import scala.compat.java8.OptionConverters._
+        import scala.compat.java8.StreamConverters._
+        ..${stats.get}
+      }
     }
     """
     //logger.debug(obj)
@@ -58,25 +62,30 @@ object DaoGenerator {
         })
         q"""private val ${Pat.Var.Term(internalMethodName)} =
             org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[$trtName], ${_def.name.syntax}..$paramClasses)"""
-      },
-      _def.mods.collectFirst {
-        case mod"@Script(sql = $sql)" => ScriptGenerator.generate(trtName, _def, internalMethodName, sql)
-        case mod"@Select(..$modParams)" => SelectGenerator.generate(trtName, _def, internalMethodName, modParams)
-        case mod"@Insert" => InsertGenerator.generate(trtName, _def, internalMethodName, Nil)
-        case mod"@Insert(..$modParams)" => InsertGenerator.generate(trtName, _def, internalMethodName, modParams)
-        case mod"@Update" => UpdateGenerator.generate(trtName, _def, internalMethodName, Nil)
-        case mod"@Update(..$modParams)" => UpdateGenerator.generate(trtName, _def, internalMethodName, modParams)
-        case mod"@Delete" => DeleteGenerator.generate(trtName, _def, internalMethodName, Nil)
-        case mod"@Delete(..$modParams)" => DeleteGenerator.generate(trtName, _def, internalMethodName, modParams)
-        case mod"@BatchInsert" => BatchInsertGenerator.generate(trtName, _def, internalMethodName, Nil)
-        case mod"@BatchInsert(..$modParams)" => BatchInsertGenerator.generate(trtName, _def, internalMethodName, modParams)
-        case mod"@BatchUpdate" => BatchUpdateGenerator.generate(trtName, _def, internalMethodName, Nil)
-        case mod"@BatchUpdate(..$modParams)" => BatchUpdateGenerator.generate(trtName, _def, internalMethodName, modParams)
-        case mod"@BatchDelete" => BatchDeleteGenerator.generate(trtName, _def, internalMethodName, Nil)
-        case mod"@BatchDelete(..$modParams)" => BatchDeleteGenerator.generate(trtName, _def, internalMethodName, modParams)
-      }.getOrElse(
-        abort(_def.pos, org.seasar.doma.message.Message.DOMA4005.getMessage(trtName.syntax, _def.name.syntax))
-      ).copy(tparams = _def.tparams, paramss = _def.paramss)
+      }, {
+        _def.mods.collectFirst {
+          case mod"@Script(sql = $sql)" => ScriptGenerator.generate(trtName, _def, internalMethodName, sql)
+          case mod"@Select(..$modParams)" => SelectGenerator.generate(trtName, _def, internalMethodName, modParams)
+          case mod"@Insert" => InsertGenerator.generate(trtName, _def, internalMethodName, Nil)
+          case mod"@Insert(..$modParams)" => InsertGenerator.generate(trtName, _def, internalMethodName, modParams)
+          case mod"@Update" => UpdateGenerator.generate(trtName, _def, internalMethodName, Nil)
+          case mod"@Update(..$modParams)" => UpdateGenerator.generate(trtName, _def, internalMethodName, modParams)
+          case mod"@Delete" => DeleteGenerator.generate(trtName, _def, internalMethodName, Nil)
+          case mod"@Delete(..$modParams)" => DeleteGenerator.generate(trtName, _def, internalMethodName, modParams)
+          case mod"@BatchInsert" => BatchInsertGenerator.generate(trtName, _def, internalMethodName, Nil)
+          case mod"@BatchInsert(..$modParams)" => BatchInsertGenerator.generate(trtName, _def, internalMethodName, modParams)
+          case mod"@BatchUpdate" => BatchUpdateGenerator.generate(trtName, _def, internalMethodName, Nil)
+          case mod"@BatchUpdate(..$modParams)" => BatchUpdateGenerator.generate(trtName, _def, internalMethodName, modParams)
+          case mod"@BatchDelete" => BatchDeleteGenerator.generate(trtName, _def, internalMethodName, Nil)
+          case mod"@BatchDelete(..$modParams)" => BatchDeleteGenerator.generate(trtName, _def, internalMethodName, modParams)
+        }.getOrElse(
+          abort(_def.pos, org.seasar.doma.message.Message.DOMA4005.getMessage(trtName.syntax, _def.name.syntax))
+        ).copy(
+          tparams = _def.tparams,
+          paramss = _def.paramss,
+          decltpe = Some(_def.decltpe)
+        )
+      }
     )
   }
 }

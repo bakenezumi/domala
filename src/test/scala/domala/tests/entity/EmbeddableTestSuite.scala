@@ -10,7 +10,7 @@ import org.scalatest.{BeforeAndAfter, FunSuite}
 class EmbeddableTestSuite extends FunSuite with BeforeAndAfter {
   implicit val config: Config = TestConfig
 
-  val dao: EmbeddableDao = EmbeddableDao
+  val dao: EmbeddableDao = EmbeddableDao.impl
 
   before {
     Required {
