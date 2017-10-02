@@ -31,10 +31,8 @@ object EmbeddableTypeGenerator {
           case _ => abort(domala.message.Message.DOMALA4096.getMessage(decltpe.syntax, clsName.syntax, name.syntax))
         }
         q"""
-        domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyType(
-          classOf[$tpe],
+        domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyType[$tpe, ENTITY, $nakedTpe](
           entityClass,
-          classOf[$nakedTpe],
           embeddedPropertyName + "." + ${name.syntax},
           namingType,
           false,

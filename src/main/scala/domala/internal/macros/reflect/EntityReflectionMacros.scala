@@ -9,6 +9,7 @@ import org.seasar.doma.jdbc.id.IdGenerator
 import org.seasar.doma.wrapper.Wrapper
 
 import scala.language.experimental.macros
+import scala.reflect.ClassTag
 import scala.reflect.macros.blackbox
 
 object EntityReflectionMacros {
@@ -29,9 +30,7 @@ object EntityReflectionMacros {
   }
 
   def generatePropertyTypeImpl[T: c.WeakTypeTag, E: c.WeakTypeTag, N: c.WeakTypeTag](c: blackbox.Context)(
-    propertyClass: c.Expr[Class[T]],
     entityClass: c.Expr[Class[E]],
-    nakedClass: c.Expr[Class[N]],
     paramName: c.Expr[String],
     namingType: c.Expr[NamingType],
     isId: c.Expr[Boolean],
@@ -45,6 +44,9 @@ object EntityReflectionMacros {
     columnUpdatable: c.Expr[Boolean],
     columnQuote: c.Expr[Boolean],
     collections: c.Expr[EntityCollections[E]]
+  )(
+    propertyClassTag: c.Expr[ClassTag[T]],
+    nakedClassTag: c.Expr[ClassTag[N]]
   ): c.Expr[Object] = {
     import c.universe._
     val Literal(Constant(isBasicActual: Boolean)) = isBasic.tree
@@ -63,12 +65,12 @@ object EntityReflectionMacros {
       if(isVersionActual) {
         c.abort(c.enclosingPosition, org.seasar.doma.message.Message.DOMA4304.getMessage(extractionClassString(entityClass.toString), extractionQuotedString(paramName.toString())))
       }
-      val embeddable = ReflectionUtil.getCompanion[EmbeddableType[_]](c)(propertyClass)
       reify {
+        val embeddable = ReflectionUtil.getEmbeddableCompanion(propertyClassTag.splice)
         val prop = new EmbeddedPropertyType[E, T](
           paramName.splice,
           entityClass.splice,
-          embeddable.splice.getEmbeddablePropertyTypes(
+          embeddable.getEmbeddablePropertyTypes(
             paramName.splice,
             entityClass.splice,
             namingType.splice))
@@ -76,7 +78,7 @@ object EntityReflectionMacros {
         prop
       }
     } else if(nakedTpe.companion <:< typeOf[AbstractHolderDesc[_, _]]) {
-      val domain = ReflectionUtil.getCompanion[AbstractHolderDesc[_, _]](c)(nakedClass)
+      val domain = reify(ReflectionUtil.getHolderCompanion(nakedClassTag.splice))
       if(isIdActual) {
         if (isIdGenerateActual) {
           if(!(nakedTpe.companion <:< typeOf[AbstractHolderDesc[_ <: Number, _]])) {
@@ -85,7 +87,7 @@ object EntityReflectionMacros {
           reify {
             val prop = GeneratedIdPropertyType.ofDomain(
               entityClass.splice,
-              propertyClass.splice,
+              propertyClassTag.splice.runtimeClass,
               domain.splice.asInstanceOf[AbstractHolderDesc[Number, _]],
               paramName.splice,
               columnName.splice,
@@ -101,7 +103,7 @@ object EntityReflectionMacros {
           reify {
             val prop = AssignedIdPropertyType.ofDomain(
               entityClass.splice,
-              propertyClass.splice,
+              propertyClassTag.splice.runtimeClass,
               domain.splice,
               paramName.splice,
               columnName.splice,
@@ -120,7 +122,7 @@ object EntityReflectionMacros {
         reify {
           val prop = VersionPropertyType.ofDomain(
             entityClass.splice,
-            propertyClass.splice,
+            propertyClassTag.splice.runtimeClass,
             domain.splice.asInstanceOf[AbstractHolderDesc[Number, _]],
             paramName.splice,
             columnName.splice,
@@ -134,7 +136,7 @@ object EntityReflectionMacros {
         reify {
           val prop = DefaultPropertyType.ofDomain(
             entityClass.splice,
-            propertyClass.splice,
+            propertyClassTag.splice.runtimeClass,
             domain.splice,
             paramName.splice,
             columnName.splice,
@@ -149,7 +151,7 @@ object EntityReflectionMacros {
       }
     } else {
       if(!isBasicActual) {
-        c.abort(c.enclosingPosition, domala.message.Message.DOMALA4096.getMessage(extractionClassString(propertyClass.toString()), extractionClassString(entityClass.toString), extractionQuotedString(paramName.toString())))
+        c.abort(c.enclosingPosition, domala.message.Message.DOMALA4096.getMessage(extractionClassString(propertyClassTag.toString()), extractionClassString(entityClass.toString), extractionQuotedString(paramName.toString())))
       }
       if(isIdActual) {
         if(isIdGenerateActual) {
@@ -159,8 +161,8 @@ object EntityReflectionMacros {
           reify {
             val prop = new domala.jdbc.entity.GeneratedIdPropertyType(
               entityClass.splice,
-              propertyClass.splice,
-              nakedClass.splice.asInstanceOf[Class[Number]],
+              propertyClassTag.splice.runtimeClass,
+              nakedClassTag.splice.runtimeClass.asInstanceOf[Class[Number]],
               wrapperSupplier.splice.asInstanceOf[Supplier[Wrapper[Number]]],
               null,
               null,
@@ -178,9 +180,9 @@ object EntityReflectionMacros {
           reify {
             val prop = new domala.jdbc.entity.AssignedIdPropertyType(
               entityClass.splice,
-              propertyClass.splice,
-              nakedClass.splice,
-              wrapperSupplier.splice,
+              propertyClassTag.splice.runtimeClass,
+              nakedClassTag.splice.runtimeClass.asInstanceOf[Class[Any]],
+              wrapperSupplier.splice.asInstanceOf[Supplier[Wrapper[Any]]],
               null,
               null,
               paramName.splice,
@@ -200,8 +202,8 @@ object EntityReflectionMacros {
         reify {
           val prop = new VersionPropertyType(
             entityClass.splice,
-            propertyClass.splice,
-            nakedClass.splice.asInstanceOf[Class[Number]],
+            propertyClassTag.splice.runtimeClass,
+            nakedClassTag.splice.runtimeClass.asInstanceOf[Class[Number]],
             wrapperSupplier.splice.asInstanceOf[Supplier[Wrapper[Number]]],
             null,
             null,
@@ -209,7 +211,7 @@ object EntityReflectionMacros {
             columnName.splice,
             namingType.splice,
             columnQuote.splice
-          )
+            )
           collections.splice.put(paramName.splice, prop)
           prop
         }
@@ -217,9 +219,9 @@ object EntityReflectionMacros {
         reify {
           val prop = new DefaultPropertyType(
             entityClass.splice,
-            propertyClass.splice,
-            nakedClass.splice,
-            wrapperSupplier.splice,
+            propertyClassTag.splice.runtimeClass,
+            nakedClassTag.splice.runtimeClass.asInstanceOf[Class[Any]],
+            wrapperSupplier.splice.asInstanceOf[Supplier[Wrapper[Any]]],
             null,
             null,
             paramName.splice,
@@ -237,9 +239,7 @@ object EntityReflectionMacros {
   }
 
   def generatePropertyType[T, E, N](
-    propertyClass: Class[T],
     entityClass: Class[E],
-    nakedClass: Class[N],
     paramName: String,
     namingType: NamingType,
     isId: Boolean,
@@ -253,19 +253,22 @@ object EntityReflectionMacros {
     columnUpdatable: Boolean,
     columnQuote: Boolean,
     collections: EntityCollections[E]
+  )(
+    implicit propertyClassTag: ClassTag[T],
+    nakedClassTag: ClassTag[N],
   ): Object = macro generatePropertyTypeImpl[T, E, N]
 
   def readPropertyImpl[T: c.WeakTypeTag, E: c.WeakTypeTag](c: blackbox.Context)(
     entityClass: c.Expr[Class[E]],
     args:  c.Expr[java.util.Map[String, Property[E, _]]],
-    propertyName: c.Expr[String],
-    propertyClass:  c.Expr[Class[T]]): c.Expr[T] = {
+    propertyName: c.Expr[String])(
+    propertyClassTag:  c.Expr[ClassTag[T]]): c.Expr[T] = {
     import c.universe._
     val wtt = weakTypeOf[T]
     if(wtt.companion <:< typeOf[EmbeddableType[_]]) {
-      val embeddable = ReflectionUtil.getCompanion[EmbeddableType[_]](c)(propertyClass)
       reify {
-        embeddable.splice.newEmbeddable[E](propertyName.splice, args.splice).asInstanceOf[T]
+        val embeddable = ReflectionUtil.getEmbeddableCompanion(propertyClassTag.splice)
+        embeddable.newEmbeddable[E](propertyName.splice, args.splice).asInstanceOf[T]
       }
     } else {
       reify {
@@ -277,8 +280,8 @@ object EntityReflectionMacros {
   def readProperty[T, E](
     entityClass: Class[E],
     args: java.util.Map[String, Property[E, _]],
-    propertyName: String,
-    propertyClass: Class[T]): T = macro readPropertyImpl[T, E]
+    propertyName: String)(
+    implicit propertyClassTag: ClassTag[T]): T = macro readPropertyImpl[T, E]
 
 }
 

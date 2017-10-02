@@ -17,7 +17,7 @@ lazy val root = (project in file(".")).settings(
   javacOptions ++= List("-encoding", "utf8"),
   metaMacroSettings,
   libraryDependencies ++= Seq(
-    "org.seasar.doma" % "doma" % "2.16.1",
+    "org.seasar.doma" % "doma" % "2.17.0",
     "org.scala-lang.modules" %% "scala-java8-compat" % "0.8.0",
     "org.scalameta" %% "scalameta" % "1.8.0",
     "org.scala-lang" % "scala-reflect" % scalaVersion.value,

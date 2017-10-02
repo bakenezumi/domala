@@ -13,10 +13,8 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
     val __list = new java.util.ArrayList[EntityPropertyType[DummyEntity, _]]
     val __map =
       new java.util.HashMap[String, EntityPropertyType[DummyEntity, _]]
-    val propertyType = EntityReflectionMacros.generatePropertyType(
-      classOf[String],
+    val propertyType = EntityReflectionMacros.generatePropertyType[String, DummyEntity, String](
       classOf[DummyEntity],
-      classOf[String],
       "basic",
       NamingType.NONE,
       false,
@@ -45,10 +43,8 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
     val __map =
       new java.util.HashMap[String, EntityPropertyType[DummyEntity, _]]
     val __idGenerator = new org.seasar.doma.jdbc.id.BuiltinIdentityIdGenerator()
-    val propertyType = EntityReflectionMacros.generatePropertyType(
-      classOf[Int],
+    val propertyType = EntityReflectionMacros.generatePropertyType[Int, DummyEntity, Integer](
       classOf[DummyEntity],
-      classOf[Integer],
       "id",
       NamingType.NONE,
       true,
@@ -74,10 +70,8 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
     val __list = new java.util.ArrayList[EntityPropertyType[DummyEntity, _]]
     val __map =
       new java.util.HashMap[String, EntityPropertyType[DummyEntity, _]]
-    val propertyType = EntityReflectionMacros.generatePropertyType(
-      classOf[Int],
+    val propertyType = EntityReflectionMacros.generatePropertyType[Int, DummyEntity, Integer](
       classOf[DummyEntity],
-      classOf[Integer],
       "version",
       NamingType.NONE,
       false,
@@ -103,10 +97,8 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
     val __list = new java.util.ArrayList[EntityPropertyType[DummyEntity, _]]
     val __map =
       new java.util.HashMap[String, EntityPropertyType[DummyEntity, _]]
-    val propertyType = EntityReflectionMacros.generatePropertyType(
-      classOf[DummyDomain],
+    val propertyType = EntityReflectionMacros.generatePropertyType[DummyDomain, DummyEntity, DummyDomain](
       classOf[DummyEntity],
-      classOf[DummyDomain],
       "domain",
       NamingType.NONE,
       false,

@@ -13,25 +13,26 @@ import org.seasar.doma.jdbc.query.AbstractSelectQuery
 import org.seasar.doma.message.Message
 
 import scala.language.experimental.macros
+import scala.reflect.ClassTag
 import scala.reflect.macros.blackbox
 
 object DaoReflectionMacros {
 
-  def getStreamHandlerImpl[T: c.WeakTypeTag, R: c.WeakTypeTag](c: blackbox.Context)(param: c.Expr[Class[T]], f: c.Expr[Stream[T] => R], daoName: c.Expr[String], methodName: c.Expr[String]): c.Expr[AbstractStreamHandler[T, R]] = {
+  def getStreamHandlerImpl[T: c.WeakTypeTag, R: c.WeakTypeTag](c: blackbox.Context)(f: c.Expr[Stream[T] => R], daoName: c.Expr[String], methodName: c.Expr[String])(classTag: c.Expr[ClassTag[T]]): c.Expr[AbstractStreamHandler[T, R]] = {
     import c.universe._
     val tpe = weakTypeOf[T]
     if (tpe.companion <:< typeOf[AbstractEntityType[_]]) {
-      val entity = ReflectionUtil.getCompanion[AbstractEntityType[T]](c)(param)
       reify {
         import scala.compat.java8.StreamConverters._
-        new EntityStreamHandler(entity.splice,
+        val entity = ReflectionUtil.getEntityCompanion(classTag.splice)
+        new EntityStreamHandler(entity,
           (p: java.util.stream.Stream[T]) => f.splice.apply(p.toScala[Stream]))
       }
     } else if (tpe.companion <:< typeOf[AbstractDomainType[_, _]]){
-      val domain = ReflectionUtil.getCompanion[AbstractDomainType[_, T]](c)(param)
       reify {
         import scala.compat.java8.StreamConverters._
-        new DomainStreamHandler(domain.splice,
+        val domain =  ReflectionUtil.getHolderCompanion(classTag.splice)
+        new DomainStreamHandler(domain,
           (p: java.util.stream.Stream[T]) => f.splice.apply(p.toScala[Stream]))
       }
     } else {
@@ -40,20 +41,20 @@ object DaoReflectionMacros {
       c.abort(c.enclosingPosition, domala.message.Message.DOMALA4245.getMessage(tpe.typeSymbol.name, daoNameText, methodNameText))
     }
   }
-  def getStreamHandler[T, R](param: Class[T], f: Stream[T] => R, daoName: String, methodName: String): AbstractStreamHandler[T, R] = macro getStreamHandlerImpl[T, R]
+  def getStreamHandler[T, R](f: Stream[T] => R, daoName: String, methodName: String)(implicit classTag: ClassTag[T]): AbstractStreamHandler[T, R] = macro getStreamHandlerImpl[T, R]
 
-  def getResultListHandlerImpl[T: c.WeakTypeTag](c: blackbox.Context)(param: c.Expr[Class[T]], daoName: c.Expr[String], methodName: c.Expr[String]): c.Expr[AbstractResultListHandler[T]] = {
+  def getResultListHandlerImpl[T: c.WeakTypeTag](c: blackbox.Context)(daoName: c.Expr[String], methodName: c.Expr[String])(classTag: c.Expr[ClassTag[T]]): c.Expr[AbstractResultListHandler[T]] = {
     import c.universe._
     val tpe = weakTypeOf[T]
     if (tpe.companion <:< typeOf[AbstractEntityType[_]]) {
-      val entity = ReflectionUtil.getCompanion[AbstractEntityType[T]](c)(param)
       reify {
-        new EntityResultListHandler(entity.splice)
+        val entity = ReflectionUtil.getEntityCompanion(classTag.splice)
+        new EntityResultListHandler(entity)
       }
     } else if (tpe.companion <:< typeOf[AbstractDomainType[_, _]]){
-      val domain = ReflectionUtil.getCompanion[AbstractDomainType[_, T]](c)(param)
       reify {
-        new DomainResultListHandler(domain.splice)
+        val domain =  ReflectionUtil.getHolderCompanion(classTag.splice)
+        new DomainResultListHandler(domain)
       }
     } else {
       val Literal(Constant(daoNameText: String)) = daoName.tree
@@ -61,20 +62,20 @@ object DaoReflectionMacros {
       c.abort(c.enclosingPosition, domala.message.Message.DOMALA4007.getMessage(tpe.typeSymbol.name, daoNameText, methodNameText))
     }
   }
-  def getResultListHandler[T](param: Class[T], daoName: String, methodName: String): AbstractResultListHandler[T] = macro getResultListHandlerImpl[T]
+  def getResultListHandler[T](daoName: String, methodName: String)(implicit classTag: ClassTag[T]): AbstractResultListHandler[T] = macro getResultListHandlerImpl[T]
 
-  def getOptionalSingleResultHandlerImpl[T: c.WeakTypeTag](c: blackbox.Context)(param: c.Expr[Class[T]], daoName: c.Expr[String], methodName: c.Expr[String]): c.Expr[AbstractSingleResultHandler[Optional[T]]] = {
+  def getOptionalSingleResultHandlerImpl[T: c.WeakTypeTag](c: blackbox.Context)(daoName: c.Expr[String], methodName: c.Expr[String])(classTag: c.Expr[ClassTag[T]]): c.Expr[AbstractSingleResultHandler[Optional[T]]] = {
     import c.universe._
     val tpe = weakTypeOf[T]
     if (tpe.companion <:< typeOf[AbstractEntityType[_]]) {
-      val entity = ReflectionUtil.getCompanion[AbstractEntityType[T]](c)(param)
       reify {
-        new OptionalEntitySingleResultHandler(entity.splice)
+        val entity = ReflectionUtil.getEntityCompanion(classTag.splice)
+        new OptionalEntitySingleResultHandler(entity)
       }
     } else if (tpe.companion <:< typeOf[AbstractDomainType[_, _]]){
-      val domain = ReflectionUtil.getCompanion[AbstractDomainType[_, T]](c)(param)
       reify {
-        new OptionalDomainSingleResultHandler(domain.splice)
+        val domain =  ReflectionUtil.getHolderCompanion(classTag.splice)
+        new OptionalDomainSingleResultHandler(domain)
       }
     } else {
       val Literal(Constant(daoNameText: String)) = daoName.tree
@@ -82,20 +83,20 @@ object DaoReflectionMacros {
       c.abort(c.enclosingPosition, domala.message.Message.DOMALA4235.getMessage(tpe.typeSymbol.name, daoNameText, methodNameText))
     }
   }
-  def getOptionalSingleResultHandler[T](param: Class[T], daoName: String, methodName: String): AbstractSingleResultHandler[Optional[T]] = macro getOptionalSingleResultHandlerImpl[T]
+  def getOptionalSingleResultHandler[T](daoName: String, methodName: String)(implicit classTag: ClassTag[T]): AbstractSingleResultHandler[Optional[T]] = macro getOptionalSingleResultHandlerImpl[T]
 
-  def getSingleResultHandlerImpl[T: c.WeakTypeTag](c: blackbox.Context)(param: c.Expr[Class[T]], daoName: c.Expr[String], methodName: c.Expr[String]): c.Expr[AbstractSingleResultHandler[T]] = {
+  def getSingleResultHandlerImpl[T: c.WeakTypeTag](c: blackbox.Context)(daoName: c.Expr[String], methodName: c.Expr[String])(classTag: c.Expr[ClassTag[T]]): c.Expr[AbstractSingleResultHandler[T]] = {
     import c.universe._
     val tpe = weakTypeOf[T]
     if (tpe.companion <:< typeOf[AbstractEntityType[_]]) {
-      val entity = ReflectionUtil.getCompanion[AbstractEntityType[T]](c)(param)
       reify {
-        new EntitySingleResultHandler(entity.splice)
+        val entity = ReflectionUtil.getEntityCompanion(classTag.splice)
+        new EntitySingleResultHandler(entity)
       }
     } else if (tpe.companion <:< typeOf[AbstractDomainType[_, _]]){
-      val domain = ReflectionUtil.getCompanion[AbstractDomainType[_, T]](c)(param)
       reify {
-        new DomainSingleResultHandler(domain.splice)
+        val domain =  ReflectionUtil.getHolderCompanion(classTag.splice)
+        new DomainSingleResultHandler(domain)
       }
     } else {
       val Literal(Constant(daoNameText: String)) = daoName.tree
@@ -103,24 +104,19 @@ object DaoReflectionMacros {
       c.abort(c.enclosingPosition, Message.DOMA4008.getMessage(tpe.typeSymbol.name, daoNameText, methodNameText))
     }
   }
-  def getSingleResultHandler[T](param: Class[T], daoName: String, methodName: String): ResultSetHandler[T] = macro getSingleResultHandlerImpl[T]
+  def getSingleResultHandler[T](daoName: String, methodName: String)(implicit classTag: ClassTag[T]): ResultSetHandler[T] = macro getSingleResultHandlerImpl[T]
 
-  def setEntityTypeImpl[T: c.WeakTypeTag](c: blackbox.Context)(query: c.Expr[AbstractSelectQuery], param: c.Expr[Class[T]]): c.Expr[Unit] = {
+  def setEntityTypeImpl[T: c.WeakTypeTag](c: blackbox.Context)(query: c.Expr[AbstractSelectQuery])(classTag: c.Expr[ClassTag[T]]): c.Expr[Unit] = {
     import c.universe._
     val tpe = weakTypeOf[T]
     if (tpe.companion <:< typeOf[AbstractEntityType[_]]) {
-      val entity = ReflectionUtil.getCompanion[AbstractEntityType[T]](c)(param)
       reify {
-        query.splice.setEntityType(entity.splice)
+        val entity = ReflectionUtil.getEntityCompanion(classTag.splice)
+        query.splice.setEntityType(entity)
       }
     } else reify ((): Unit) // No operation
   }
-  def setEntityType[T](query: AbstractSelectQuery, param: Class[T]): Unit = macro setEntityTypeImpl[T]
-
-  def EntityAndEntityTypeInternal[E](param: DaoParam[E]): EntityAndEntityType[E] = {
-    val entity = Class.forName(param.clazz.getName + "$").getField("MODULE$").get(null).asInstanceOf[AbstractEntityType[E]]
-    EntityAndEntityType(param.name, param.value, entity)
-  }
+  def setEntityType[T](query: AbstractSelectQuery)(implicit classTag: ClassTag[T]): Unit = macro setEntityTypeImpl[T]
 
   def getEntityAndEntityTypeImpl[T: c.WeakTypeTag](c: blackbox.Context)(traitName: c.Expr[String], methodName: c.Expr[String], resultClass: c.Expr[Class[T]], params: c.Expr[DaoParam[_]]*): c.Expr[Option[EntityAndEntityType[Any]]] = {
     import c.universe._
@@ -136,7 +132,8 @@ object DaoReflectionMacros {
     }.collectFirst {
       case Some(param) =>
         reify {
-          Some(EntityAndEntityTypeInternal(param.splice).asInstanceOf[EntityAndEntityType[Any]])
+          val entity = Class.forName(param.splice.clazz.getName + "$").getField("MODULE$").get(null).asInstanceOf[AbstractEntityType[Any]]
+          Some(EntityAndEntityType(param.splice.name, param.splice.value, entity))
         }
     }.getOrElse(
       if(weakTypeOf[T] =:= weakTypeOf[Int]) reify(None)

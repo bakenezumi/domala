@@ -9,55 +9,55 @@ import org.seasar.doma.internal.jdbc.command._
 class DaoReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
   
   test("getSingleResultHandler for Entity") {
-    assert(DaoReflectionMacros.getSingleResultHandler(classOf[DummyEntity], "DaoRefrectionMacrosTestSuite", "get Handler for Entity").isInstanceOf[EntitySingleResultHandler[_]])
+    assert(DaoReflectionMacros.getSingleResultHandler[DummyEntity]("DaoRefrectionMacrosTestSuite", "get Handler for Entity").isInstanceOf[EntitySingleResultHandler[_]])
   }
 
   test("getSingleResultHandler for Domain") {
-    assert(DaoReflectionMacros.getSingleResultHandler(classOf[DummyDomain], "DaoRefrectionMacrosTestSuite", "get Handler for Domain").isInstanceOf[DomainSingleResultHandler[_, _]])
+    assert(DaoReflectionMacros.getSingleResultHandler[DummyDomain]("DaoRefrectionMacrosTestSuite", "get Handler for Domain").isInstanceOf[DomainSingleResultHandler[_, _]])
   }
 
-  test("getSingleResultHandler for Other") {
+  test("getSingleResultHandlerd for Other") {
     //コンパイルエラー
-    //DaoRefrectionMacros.getSingleResultHandler(classOf[String], "DaoRefrectionMacrosTestSuite", "type error")
+    //DaoReflectionMacros.getSingleResultHandler[String]("DaoRefrectionMacrosTestSuite", "type error")
   }
 
   test("getOptionalSingleResultHandler for Entity") {
-    assert(DaoReflectionMacros.getOptionalSingleResultHandler(classOf[DummyEntity], "DaoRefrectionMacrosTestSuite", "get Handler for Entity").isInstanceOf[OptionalEntitySingleResultHandler[_]])
+    assert(DaoReflectionMacros.getOptionalSingleResultHandler[DummyEntity]("DaoRefrectionMacrosTestSuite", "get Handler for Entity").isInstanceOf[OptionalEntitySingleResultHandler[_]])
   }
 
   test("getOptinalSingleResultHandler for Domain") {
-    assert(DaoReflectionMacros.getOptionalSingleResultHandler(classOf[DummyDomain], "DaoRefrectionMacrosTestSuite", "get Handler for Domain").isInstanceOf[OptionalDomainSingleResultHandler[_, _]])
+    assert(DaoReflectionMacros.getOptionalSingleResultHandler[DummyDomain]("DaoRefrectionMacrosTestSuite", "get Handler for Domain").isInstanceOf[OptionalDomainSingleResultHandler[_, _]])
   }
 
   test("getOptinalSingleResultHandler for Other") {
     //コンパイルエラー
-    //DaoRefrectionMacros.getOptionalSingleResultHandler(classOf[String], "DaoRefrectionMacrosTestSuite", "type error")
+    //DaoReflectionMacros.getOptionalSingleResultHandler[String]( "DaoRefrectionMacrosTestSuite", "type error")
   }
 
   test("getResultListHandler for Entity") {
-    assert(DaoReflectionMacros.getResultListHandler(classOf[DummyEntity], "DaoRefrectionMacrosTestSuite", "get Handler for Entity").isInstanceOf[EntityResultListHandler[_]])
+    assert(DaoReflectionMacros.getResultListHandler[DummyEntity]("DaoRefrectionMacrosTestSuite", "get Handler for Entity").isInstanceOf[EntityResultListHandler[_]])
   }
 
   test("getResultListHandler for Domain") {
-    assert(DaoReflectionMacros.getResultListHandler(classOf[DummyDomain], "DaoRefrectionMacrosTestSuite", "get Handler for Domain").isInstanceOf[DomainResultListHandler[_, _]])
+    assert(DaoReflectionMacros.getResultListHandler[DummyDomain]("DaoRefrectionMacrosTestSuite", "get Handler for Domain").isInstanceOf[DomainResultListHandler[_, _]])
   }
 
   test("getResultListHandler for Other") {
     //コンパイルエラー
-    //DaoRefrectionMacros.getResultListHandler(classOf[String], "DaoRefrectionMacrosTestSuite", "getResultListHandler")
+    //DaoReflectionMacros.getResultListHandler[String]("DaoRefrectionMacrosTestSuite", "getResultListHandler")
   }
 
   test("getStreamHandler for Entity") {
-    assert(DaoReflectionMacros.getStreamHandler(classOf[DummyEntity], (p: Stream[DummyEntity]) => p.toString, "DaoRefrectionMacrosTestSuite", "get Handler for Entity").isInstanceOf[EntityStreamHandler[_, _]])
+    assert(DaoReflectionMacros.getStreamHandler((p: Stream[DummyEntity]) => p.toString, "DaoRefrectionMacrosTestSuite", "get Handler for Entity").isInstanceOf[EntityStreamHandler[_, _]])
   }
 
   test("getStreamHandler for Domain") {
-    assert(DaoReflectionMacros.getStreamHandler(classOf[DummyDomain], (p: Stream[DummyDomain]) => p.toString, "DaoRefrectionMacrosTestSuite", "get Handler for Entity").isInstanceOf[DomainStreamHandler[_, _, _]])
+    assert(DaoReflectionMacros.getStreamHandler((p: Stream[DummyDomain]) => p.toString, "DaoRefrectionMacrosTestSuite", "get Handler for Entity").isInstanceOf[DomainStreamHandler[_, _, _]])
   }
 
   test("getStreamHandler for Other") {
     //コンパイルエラー
-    //assert(DaoRefrectionMacros.getStreamHandler(classOf[String], (p: Stream[String]) => p.toString, "DaoRefrectionMacrosTestSuite", "get Handler for Entity").isInstanceOf[DomainStreamHandler[_, _, _]])
+    //assert(DaoReflectionMacros.getStreamHandler((p: Stream[String]) => p.toString, "DaoRefrectionMacrosTestSuite", "get Handler for Entity").isInstanceOf[DomainStreamHandler[_, _, _]])
   }
 
   test("getEntityAndEntityType has entity") {

@@ -86,9 +86,9 @@ object SelectGenerator {
           case DomaType.EntityOrHolderOrEmbeddable(_) =>
             // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
             (
-              q"domala.internal.macros.reflect.DaoReflectionMacros.getStreamHandler(classOf[$internalTpe], $functionParamTerm, ${trtName.syntax}, ${defDecl.name.syntax})",
+              q"domala.internal.macros.reflect.DaoReflectionMacros.getStreamHandler($functionParamTerm, ${trtName.syntax}, ${defDecl.name.syntax})",
               q"__command.execute()",
-              Seq(q"domala.internal.macros.reflect.DaoReflectionMacros.setEntityType(__query, classOf[$internalTpe])")
+              Seq(q"domala.internal.macros.reflect.DaoReflectionMacros.setEntityType[$internalTpe](__query)")
             )
           case _ => abort(_def.pos, org.seasar.doma.message.Message.DOMA4008.getMessage(defDecl.tpe, trtName.syntax, defDecl.name.syntax))
         }
@@ -106,9 +106,9 @@ object SelectGenerator {
         case DomaType.Option(DomaType.EntityOrHolderOrEmbeddable(elementType), _) =>
           // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
           (
-            q"domala.internal.macros.reflect.DaoReflectionMacros.getOptionalSingleResultHandler(classOf[$elementType], ${trtName.syntax}, ${defDecl.name.syntax})",
+            q"domala.internal.macros.reflect.DaoReflectionMacros.getOptionalSingleResultHandler[$elementType](${trtName.syntax}, ${defDecl.name.syntax})",
             q"__command.execute().asScala",
-            Seq(q"domala.internal.macros.reflect.DaoReflectionMacros.setEntityType(__query, classOf[$elementType])")
+            Seq(q"domala.internal.macros.reflect.DaoReflectionMacros.setEntityType[$elementType](__query)")
           )
         case DomaType.Option(_, elementTpe) => abort(_def.pos, domala.message.Message.DOMALA4235.getMessage(elementTpe, trtName.syntax, defDecl.name.syntax))
 
@@ -126,9 +126,9 @@ object SelectGenerator {
         case DomaType.Seq(DomaType.EntityOrHolderOrEmbeddable(internalTpe), _) =>
           (
             // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
-            q"domala.internal.macros.reflect.DaoReflectionMacros.getResultListHandler(classOf[$internalTpe], ${trtName.syntax}, ${defDecl.name.syntax})",
+            q"domala.internal.macros.reflect.DaoReflectionMacros.getResultListHandler[$internalTpe](${trtName.syntax}, ${defDecl.name.syntax})",
             q"__command.execute().asScala",
-            Seq(q"domala.internal.macros.reflect.DaoReflectionMacros.setEntityType(__query, classOf[$internalTpe])")
+            Seq(q"domala.internal.macros.reflect.DaoReflectionMacros.setEntityType[$internalTpe](__query)")
           )
 
         case DomaType.Map => (
@@ -147,9 +147,9 @@ object SelectGenerator {
         case DomaType.EntityOrHolderOrEmbeddable(tpe) =>
           // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
           (
-            q"domala.internal.macros.reflect.DaoReflectionMacros.getSingleResultHandler(classOf[$tpe], ${trtName.syntax}, ${defDecl.name.syntax})",
+            q"domala.internal.macros.reflect.DaoReflectionMacros.getSingleResultHandler[$tpe](${trtName.syntax}, ${defDecl.name.syntax})",
             q"__command.execute().asInstanceOf[$tpe]",
-            Seq(q"domala.internal.macros.reflect.DaoReflectionMacros.setEntityType(__query, classOf[$tpe])")
+            Seq(q"domala.internal.macros.reflect.DaoReflectionMacros.setEntityType[$tpe](__query)")
           )
 
         case _ => abort(_def.pos, org.seasar.doma.message.Message.DOMA4008.getMessage(defDecl.tpe, trtName.syntax, defDecl.name.syntax))

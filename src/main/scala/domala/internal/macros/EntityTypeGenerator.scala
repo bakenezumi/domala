@@ -150,10 +150,8 @@ object EntityTypeGenerator {
       }
 
       q"""
-      val $propertyName = domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyType(
-        classOf[$tpe],
+      val $propertyName = domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyType[$tpe, $clsName, $nakedTpe](
         classOf[$clsName],
-        classOf[$nakedTpe],
         ${name.syntax},
         __namingType,
         ${if(isId) q"true" else q"false"},
@@ -310,9 +308,12 @@ object EntityTypeGenerator {
     override def getGeneratedIdPropertyType: org.seasar.doma.jdbc.entity.GeneratedIdPropertyType[_ >: $clsName, $clsName, _, _] = ${generateGeneratedIdPropertyType(clsName, ctor)}
 
     override def getVersionPropertyType: org.seasar.doma.jdbc.entity.VersionPropertyType[_ >: $clsName, $clsName, _, _] = ${generateVersionPropertyType(clsName, ctor)}
+
+    override def getTenantIdPropertyType: org.seasar.doma.jdbc.entity.TenantIdPropertyType[_ >: $clsName, $clsName, _, _] = null
+
     """.stats ++ {
         val params = ctor.paramss.flatten.map { p =>
-          q"domala.internal.macros.reflect.EntityReflectionMacros.readProperty(classOf[$clsName], __args, ${p.name.syntax}, classOf[${toType(p.decltpe.get)}])"
+          q"domala.internal.macros.reflect.EntityReflectionMacros.readProperty[${toType(p.decltpe.get)}, $clsName](classOf[$clsName], __args, ${p.name.syntax})"
         }
         Seq(
           q"""
