@@ -2,7 +2,12 @@ package domala.internal.macros.reflect
 
 import java.util.function.Supplier
 
-import domala.jdbc.entity.{AssignedIdPropertyType, DefaultPropertyType, GeneratedIdPropertyType, VersionPropertyType}
+import domala.jdbc.entity.{
+  AssignedIdPropertyType,
+  DefaultPropertyType,
+  GeneratedIdPropertyType,
+  VersionPropertyType
+}
 import domala.jdbc.holder.AbstractHolderDesc
 import org.seasar.doma.jdbc.entity._
 import org.seasar.doma.jdbc.id.IdGenerator
@@ -18,35 +23,37 @@ object EntityReflectionMacros {
     val r = ".*classOf\\[(.*)\\].*".r
     str match {
       case r(x) => x
-      case _ => str
+      case _    => str
     }
   }
   def extractionQuotedString(str: String): String = {
     val r = """.*"(.*)".*""".r
     str match {
       case r(x) => x
-      case _ => str
+      case _    => str
     }
   }
 
-  def generatePropertyTypeImpl[T: c.WeakTypeTag, E: c.WeakTypeTag, N: c.WeakTypeTag](c: blackbox.Context)(
-    entityClass: c.Expr[Class[E]],
-    paramName: c.Expr[String],
-    namingType: c.Expr[NamingType],
-    isId: c.Expr[Boolean],
-    isIdGenerate: c.Expr[Boolean],
-    idGenerator: c.Expr[IdGenerator],
-    isVersion: c.Expr[Boolean],
-    isBasic: c.Expr[Boolean],
-    wrapperSupplier: c.Expr[Supplier[Wrapper[N]]],
-    columnName: c.Expr[String],
-    columnInsertable: c.Expr[Boolean],
-    columnUpdatable: c.Expr[Boolean],
-    columnQuote: c.Expr[Boolean],
-    collections: c.Expr[EntityCollections[E]]
+  def generatePropertyTypeImpl[T: c.WeakTypeTag,
+                               E: c.WeakTypeTag,
+                               N: c.WeakTypeTag](c: blackbox.Context)(
+      entityClass: c.Expr[Class[E]],
+      paramName: c.Expr[String],
+      namingType: c.Expr[NamingType],
+      isId: c.Expr[Boolean],
+      isIdGenerate: c.Expr[Boolean],
+      idGenerator: c.Expr[IdGenerator],
+      isVersion: c.Expr[Boolean],
+      isBasic: c.Expr[Boolean],
+      wrapperSupplier: c.Expr[Supplier[Wrapper[N]]],
+      columnName: c.Expr[String],
+      columnInsertable: c.Expr[Boolean],
+      columnUpdatable: c.Expr[Boolean],
+      columnQuote: c.Expr[Boolean],
+      collections: c.Expr[EntityCollections[E]]
   )(
-    propertyClassTag: c.Expr[ClassTag[T]],
-    nakedClassTag: c.Expr[ClassTag[N]]
+      propertyClassTag: c.Expr[ClassTag[T]],
+      nakedClassTag: c.Expr[ClassTag[N]]
   ): c.Expr[Object] = {
     import c.universe._
     val Literal(Constant(isBasicActual: Boolean)) = isBasic.tree
@@ -56,33 +63,55 @@ object EntityReflectionMacros {
     val tpe = weakTypeOf[T]
     val nakedTpe = weakTypeOf[N]
     if (tpe.companion <:< typeOf[EmbeddableType[_]]) {
-      if(isIdActual) {
-        c.abort(c.enclosingPosition, org.seasar.doma.message.Message.DOMA4302.getMessage(extractionClassString(entityClass.toString), extractionQuotedString(paramName.toString())))
+      if (isIdActual) {
+        c.abort(
+          c.enclosingPosition,
+          org.seasar.doma.message.Message.DOMA4302.getMessage(
+            extractionClassString(entityClass.toString),
+            extractionQuotedString(paramName.toString()))
+        )
       }
-      if(isIdGenerateActual) {
-        c.abort(c.enclosingPosition, org.seasar.doma.message.Message.DOMA4303.getMessage(extractionClassString(entityClass.toString), extractionQuotedString(paramName.toString())))
+      if (isIdGenerateActual) {
+        c.abort(
+          c.enclosingPosition,
+          org.seasar.doma.message.Message.DOMA4303.getMessage(
+            extractionClassString(entityClass.toString),
+            extractionQuotedString(paramName.toString()))
+        )
       }
-      if(isVersionActual) {
-        c.abort(c.enclosingPosition, org.seasar.doma.message.Message.DOMA4304.getMessage(extractionClassString(entityClass.toString), extractionQuotedString(paramName.toString())))
+      if (isVersionActual) {
+        c.abort(
+          c.enclosingPosition,
+          org.seasar.doma.message.Message.DOMA4304.getMessage(
+            extractionClassString(entityClass.toString),
+            extractionQuotedString(paramName.toString()))
+        )
       }
       reify {
-        val embeddable = ReflectionUtil.getEmbeddableCompanion(propertyClassTag.splice)
+        val embeddable =
+          ReflectionUtil.getEmbeddableCompanion(propertyClassTag.splice)
         val prop = new EmbeddedPropertyType[E, T](
           paramName.splice,
           entityClass.splice,
-          embeddable.getEmbeddablePropertyTypes(
-            paramName.splice,
-            entityClass.splice,
-            namingType.splice))
+          embeddable.getEmbeddablePropertyTypes(paramName.splice,
+                                                entityClass.splice,
+                                                namingType.splice))
         collections.splice.putAll(prop)
         prop
       }
-    } else if(nakedTpe.companion <:< typeOf[AbstractHolderDesc[_, _]]) {
-      val domain = reify(ReflectionUtil.getHolderCompanion(nakedClassTag.splice))
-      if(isIdActual) {
+    } else if (nakedTpe.companion <:< typeOf[AbstractHolderDesc[_, _]]) {
+      val domain = reify(
+        ReflectionUtil.getHolderCompanion(nakedClassTag.splice))
+      if (isIdActual) {
         if (isIdGenerateActual) {
-          if(!(nakedTpe.companion <:< typeOf[AbstractHolderDesc[_ <: Number, _]])) {
-            c.abort(c.enclosingPosition, org.seasar.doma.message.Message.DOMA4095.getMessage(extractionClassString(entityClass.toString), extractionQuotedString(paramName.toString())))
+          if (!(nakedTpe.companion <:< typeOf[
+                AbstractHolderDesc[_ <: Number, _]])) {
+            c.abort(
+              c.enclosingPosition,
+              org.seasar.doma.message.Message.DOMA4095.getMessage(
+                extractionClassString(entityClass.toString),
+                extractionQuotedString(paramName.toString()))
+            )
           }
           reify {
             val prop = GeneratedIdPropertyType.ofDomain(
@@ -115,9 +144,15 @@ object EntityReflectionMacros {
             prop
           }
         }
-      } else if(isVersionActual) {
-        if(!(nakedTpe.companion <:< typeOf[AbstractHolderDesc[_ <: Number, _]])) {
-          c.abort(c.enclosingPosition, org.seasar.doma.message.Message.DOMA4093.getMessage(extractionClassString(entityClass.toString), extractionQuotedString(paramName.toString())))
+      } else if (isVersionActual) {
+        if (!(nakedTpe.companion <:< typeOf[
+              AbstractHolderDesc[_ <: Number, _]])) {
+          c.abort(
+            c.enclosingPosition,
+            org.seasar.doma.message.Message.DOMA4093.getMessage(
+              extractionClassString(entityClass.toString),
+              extractionQuotedString(paramName.toString()))
+          )
         }
         reify {
           val prop = VersionPropertyType.ofDomain(
@@ -150,13 +185,24 @@ object EntityReflectionMacros {
         }
       }
     } else {
-      if(!isBasicActual) {
-        c.abort(c.enclosingPosition, domala.message.Message.DOMALA4096.getMessage(extractionClassString(propertyClassTag.toString()), extractionClassString(entityClass.toString), extractionQuotedString(paramName.toString())))
+      if (!isBasicActual) {
+        c.abort(
+          c.enclosingPosition,
+          domala.message.Message.DOMALA4096.getMessage(
+            extractionClassString(propertyClassTag.toString()),
+            extractionClassString(entityClass.toString),
+            extractionQuotedString(paramName.toString()))
+        )
       }
-      if(isIdActual) {
-        if(isIdGenerateActual) {
-          if(!(nakedTpe <:< typeOf[Number])) {
-            c.abort(c.enclosingPosition, org.seasar.doma.message.Message.DOMA4095.getMessage(extractionClassString(entityClass.toString), extractionQuotedString(paramName.toString())))
+      if (isIdActual) {
+        if (isIdGenerateActual) {
+          if (!(nakedTpe <:< typeOf[Number])) {
+            c.abort(
+              c.enclosingPosition,
+              org.seasar.doma.message.Message.DOMA4095.getMessage(
+                extractionClassString(entityClass.toString),
+                extractionQuotedString(paramName.toString()))
+            )
           }
           reify {
             val prop = new domala.jdbc.entity.GeneratedIdPropertyType(
@@ -195,9 +241,14 @@ object EntityReflectionMacros {
             prop
           }
         }
-      } else if(isVersionActual) {
-        if(!(nakedTpe <:< typeOf[Number])) {
-          c.abort(c.enclosingPosition, org.seasar.doma.message.Message.DOMA4093.getMessage(extractionClassString(entityClass.toString), extractionQuotedString(paramName.toString())))
+      } else if (isVersionActual) {
+        if (!(nakedTpe <:< typeOf[Number])) {
+          c.abort(
+            c.enclosingPosition,
+            org.seasar.doma.message.Message.DOMA4093.getMessage(
+              extractionClassString(entityClass.toString),
+              extractionQuotedString(paramName.toString()))
+          )
         }
         reify {
           val prop = new VersionPropertyType(
@@ -211,7 +262,7 @@ object EntityReflectionMacros {
             columnName.splice,
             namingType.splice,
             columnQuote.splice
-            )
+          )
           collections.splice.put(paramName.splice, prop)
           prop
         }
@@ -239,56 +290,61 @@ object EntityReflectionMacros {
   }
 
   def generatePropertyType[T, E, N](
-    entityClass: Class[E],
-    paramName: String,
-    namingType: NamingType,
-    isId: Boolean,
-    isIdGenerate: Boolean,
-    idGenerator: IdGenerator,
-    isVersion: Boolean,
-    isBasic: Boolean,
-    wrapperSupplier: Supplier[Wrapper[N]],
-    columnName: String,
-    columnInsertable: Boolean,
-    columnUpdatable: Boolean,
-    columnQuote: Boolean,
-    collections: EntityCollections[E]
+      entityClass: Class[E],
+      paramName: String,
+      namingType: NamingType,
+      isId: Boolean,
+      isIdGenerate: Boolean,
+      idGenerator: IdGenerator,
+      isVersion: Boolean,
+      isBasic: Boolean,
+      wrapperSupplier: Supplier[Wrapper[N]],
+      columnName: String,
+      columnInsertable: Boolean,
+      columnUpdatable: Boolean,
+      columnQuote: Boolean,
+      collections: EntityCollections[E]
   )(
-    implicit propertyClassTag: ClassTag[T],
-    nakedClassTag: ClassTag[N],
+      implicit propertyClassTag: ClassTag[T],
+      nakedClassTag: ClassTag[N],
   ): Object = macro generatePropertyTypeImpl[T, E, N]
 
   def readPropertyImpl[T: c.WeakTypeTag, E: c.WeakTypeTag](c: blackbox.Context)(
-    entityClass: c.Expr[Class[E]],
-    args:  c.Expr[java.util.Map[String, Property[E, _]]],
-    propertyName: c.Expr[String])(
-    propertyClassTag:  c.Expr[ClassTag[T]]): c.Expr[T] = {
+      entityClass: c.Expr[Class[E]],
+      args: c.Expr[java.util.Map[String, Property[E, _]]],
+      propertyName: c.Expr[String])(
+      propertyClassTag: c.Expr[ClassTag[T]]): c.Expr[T] = {
     import c.universe._
     val wtt = weakTypeOf[T]
-    if(wtt.companion <:< typeOf[EmbeddableType[_]]) {
+    if (wtt.companion <:< typeOf[EmbeddableType[_]]) {
       reify {
-        val embeddable = ReflectionUtil.getEmbeddableCompanion(propertyClassTag.splice)
-        embeddable.newEmbeddable[E](propertyName.splice, args.splice).asInstanceOf[T]
+        val embeddable =
+          ReflectionUtil.getEmbeddableCompanion(propertyClassTag.splice)
+        embeddable
+          .newEmbeddable[E](propertyName.splice, args.splice)
+          .asInstanceOf[T]
       }
     } else {
       reify {
-        (if (args.splice.get(propertyName.splice) != null) args.splice.get(propertyName.splice).get else null).asInstanceOf[T]
+        (if (args.splice.get(propertyName.splice) != null)
+           args.splice.get(propertyName.splice).get
+         else null).asInstanceOf[T]
       }
     }
   }
 
   def readProperty[T, E](
-    entityClass: Class[E],
-    args: java.util.Map[String, Property[E, _]],
-    propertyName: String)(
-    implicit propertyClassTag: ClassTag[T]): T = macro readPropertyImpl[T, E]
+      entityClass: Class[E],
+      args: java.util.Map[String, Property[E, _]],
+      propertyName: String)(implicit propertyClassTag: ClassTag[T]): T =
+    macro readPropertyImpl[T, E]
 
 }
 
 case class EntityCollections[E](
-  list: java.util.List[EntityPropertyType[E, _]] = null,
-  map: java.util.Map[String, EntityPropertyType[E, _]] = null,
-  idList: java.util.List[EntityPropertyType[E, _]]= null
+    list: java.util.List[EntityPropertyType[E, _]] = null,
+    map: java.util.Map[String, EntityPropertyType[E, _]] = null,
+    idList: java.util.List[EntityPropertyType[E, _]] = null
 ) {
 
   def putId(propertyType: EntityPropertyType[E, _]): Unit = {
@@ -296,7 +352,8 @@ case class EntityCollections[E](
     idList.add(propertyType)
   }
 
-  def put(propertyName: String, propertyType: EntityPropertyType[E, _]): Unit = {
+  def put(propertyName: String,
+          propertyType: EntityPropertyType[E, _]): Unit = {
     if (list == null) return
     list.add(propertyType)
     map.put(propertyName, propertyType)

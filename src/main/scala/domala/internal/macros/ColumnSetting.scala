@@ -17,10 +17,15 @@ object ColumnSetting {
     val blank = q""" "" """
     column match {
       case Some(args) =>
-        val name = args.collectFirst { case arg"name = $x" => x }.getOrElse(blank)
-        val insertable = args.collectFirst { case arg"insertable = $x" => x }.getOrElse(q"true")
-        val updatable = args.collectFirst { case arg"updatable = $x" => x }.getOrElse(q"true")
-        val quote = args.collectFirst { case arg"quote = $x" => x }.getOrElse(q"false")
+        val name =
+          args.collectFirst { case arg"name = $x" => x }.getOrElse(blank)
+        val insertable = args
+          .collectFirst { case arg"insertable = $x" => x }
+          .getOrElse(q"true")
+        val updatable =
+          args.collectFirst { case arg"updatable = $x" => x }.getOrElse(q"true")
+        val quote =
+          args.collectFirst { case arg"quote = $x" => x }.getOrElse(q"false")
         ColumnSetting(name, insertable, updatable, quote)
       case None => ColumnSetting(blank, q"true", q"true", q"false")
     }

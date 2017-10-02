@@ -15,17 +15,18 @@ object AutoModifyQueryGenerator {
     }
   }
 
-  def generate(defDecl: QueryDefDecl,
-               commonSetting: DaoMethodCommonSetting,
-               paramName: Term.Name,
-               paramType: Type.Name,
-               internalMethodName: Term.Name,
-               query: Term.Apply,
-               otherQuerySettings: Seq[Stat],
-               command: Term.Apply): Defn.Def = {
+  def generate(
+    defDecl: QueryDefDecl,
+    commonSetting: DaoMethodCommonSetting,
+    paramName: Term.Name,
+    paramType: Type.Name,
+    internalMethodName: Term.Name,
+    query: Term.Apply,
+    otherQuerySettings: Seq[Stat],
+    command: Term.Apply): Defn.Def = {
 
     val (isReturnResult, entityType) = DaoMacroHelper.getResultType(defDecl)
-    val result = if(isReturnResult) {
+    val result = if (isReturnResult) {
       q"new domala.jdbc.Result[$entityType](__count, __query.getEntity)"
     } else {
       q"__count"

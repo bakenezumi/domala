@@ -8,7 +8,10 @@ import scala.reflect.ClassTag
 object ReflectionUtil {
 
   def getCompanion[T](classTag: ClassTag[T]): Any = {
-    Class.forName(classTag.runtimeClass.getName + "$").getField("MODULE$").get(null)
+    Class
+      .forName(classTag.runtimeClass.getName + "$")
+      .getField("MODULE$")
+      .get(null)
 //    import scala.reflect.runtime.{currentMirror => cm}
 //    val classSymbol = cm.classSymbol(classTag.runtimeClass)
 //    val moduleSymbol = classSymbol.companion.asModule
@@ -20,7 +23,8 @@ object ReflectionUtil {
     getCompanion(classTag).asInstanceOf[AbstractEntityType[T]]
   }
 
-  def getHolderCompanion[T](classTag: ClassTag[T]): AbstractHolderDesc[Any, T] = {
+  def getHolderCompanion[T](
+      classTag: ClassTag[T]): AbstractHolderDesc[Any, T] = {
     getCompanion(classTag).asInstanceOf[AbstractHolderDesc[Any, T]]
   }
 

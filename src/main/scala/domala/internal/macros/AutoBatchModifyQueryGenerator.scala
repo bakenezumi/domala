@@ -7,28 +7,30 @@ object AutoBatchModifyQueryGenerator {
   def extractParameter(defDecl: QueryDefDecl): (Term.Name, Type.Name) = {
     if (defDecl.paramss.flatten.length != 1)
       abort(defDecl._def.pos,
-        org.seasar.doma.message.Message.DOMA4002
-          .getMessage(defDecl.trtName.value, defDecl.name.value))
+            org.seasar.doma.message.Message.DOMA4002
+              .getMessage(defDecl.trtName.value, defDecl.name.value))
     defDecl.paramss.flatten.head match {
-      case param"$paramName: ${Some(paramTpe)}" => paramTpe match {
-        // TODO: _ <: Seqでないとコンパイルエラーにすべき
-        case t"Seq[$internalTpe]" => (Term.Name(paramName.value), Type.Name(internalTpe.toString))
-      }
+      case param"$paramName: ${Some(paramTpe)}" =>
+        paramTpe match {
+          // TODO: _ <: Seqでないとコンパイルエラーにすべき
+          case t"Seq[$internalTpe]" =>
+            (Term.Name(paramName.value), Type.Name(internalTpe.toString))
+        }
     }
   }
 
-  def generate(
-    defDecl: QueryDefDecl,
-    commonSetting: DaoMethodCommonBatchSetting,
-    paramName: Term.Name,
-    paramType: Type.Name,
-    internalMethodName: Term.Name,
-    query: Term.Apply,
-    otherQuerySettings: Seq[Stat],
-    command: Term.Apply): Defn.Def = {
+  def generate(defDecl: QueryDefDecl,
+               commonSetting: DaoMethodCommonBatchSetting,
+               paramName: Term.Name,
+               paramType: Type.Name,
+               internalMethodName: Term.Name,
+               query: Term.Apply,
+               otherQuerySettings: Seq[Stat],
+               command: Term.Apply): Defn.Def = {
 
-    val (isReturnBatchResult, entityType) = DaoMacroHelper.getBatchResultType(defDecl)
-    val result = if(isReturnBatchResult) {
+    val (isReturnBatchResult, entityType) =
+      DaoMacroHelper.getBatchResultType(defDecl)
+    val result = if (isReturnBatchResult) {
       q"new domala.jdbc.BatchResult[$entityType](__count, __query.getEntities.asScala)"
     } else {
       q"__count"

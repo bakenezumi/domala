@@ -14,12 +14,14 @@ object CaseClassMacroHelper {
   // for IntelliJ IDEA
   def generateUnapply(cls: Defn.Class): Stat = {
     val params = cls.ctor.paramss.head.map(_.copy(mods = Nil))
-    if(params.size > 1) {
-      val typeTuple = Type.Tuple(params.map(p => Type.Name(p.decltpe.get.toString)))
+    if (params.size > 1) {
+      val typeTuple =
+        Type.Tuple(params.map(p => Type.Name(p.decltpe.get.toString)))
       val unapplyBody = params.map(p => q"x.${Term.Name(p.name.syntax)}")
       q"def unapply(x: ${cls.name}): Option[$typeTuple] = Some((..$unapplyBody))"
     } else {
-      q"def unapply(x: ${cls.name}): Option[${Type.Name(params.head.decltpe.get.toString)}] = Some(x.${Term.Name(params.head.name.syntax)})"
+      q"def unapply(x: ${cls.name}): Option[${Type.Name(
+        params.head.decltpe.get.toString)}] = Some(x.${Term.Name(params.head.name.syntax)})"
     }
   }
 
