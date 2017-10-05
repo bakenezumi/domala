@@ -3,7 +3,6 @@ package domala.jdbc.query
 import java.lang.reflect.Method
 import java.sql.Statement
 
-import org.seasar.doma.internal.jdbc.sql.SqlParser
 import org.seasar.doma.internal.util.AssertionUtil.assertNotNull
 import org.seasar.doma.jdbc.{Config, SqlKind}
 import org.seasar.doma.internal.jdbc.entity.AbstractPostInsertContext
@@ -11,15 +10,13 @@ import org.seasar.doma.internal.jdbc.entity.AbstractPreInsertContext
 import org.seasar.doma.jdbc.entity.EntityType
 import org.seasar.doma.jdbc.query.InsertQuery
 
-class SqlAnnotationInsertQuery[E](sql: String)(entityAndEntityType: Option[EntityAndEntityType[E]] = None) extends SqlAnnotationModifyQuery(SqlKind.INSERT) with InsertQuery {
-  // TODO: キャッシュ
-  setSqlNode(new SqlParser(sql).parse())
+class SqlAnnotationInsertQuery[E](sqlString: String)(entityAndEntityType: Option[EntityAndEntityType[E]] = None) extends SqlAnnotationModifyQuery(SqlKind.INSERT, sqlString) with InsertQuery {
 
   val entityHandler: Option[EntityHandler] = entityAndEntityType.map(e => new this.EntityHandler(e.name, e.entity, e.entityType))
 
   override def prepare(): Unit = {
     super.prepare()
-    assertNotNull(method, sql)
+    assertNotNull(method, sqlString)
     preInsert()
     prepareOptions()
     prepareSql()

@@ -1,7 +1,7 @@
 Domala: Doma for Scala
 ======================
 
-Domala is a database access framework for Scala. This wraps [Doma2](https://github.com/domaframework/doma).
+Domala is a database access library for Scala. This wraps [Doma2](https://github.com/domaframework/doma).
 
 - Domala uses [scala meta](http://scalameta.org/paradise/) to generate code and validate sql mappings at **compile time**.
 

@@ -9,9 +9,10 @@ object BatchDeleteGenerator {
     _def: Decl.Def,
     internalMethodName: Term.Name,
     args: Seq[Term.Arg]): Defn.Def = {
-    val commonSetting = DaoMacroHelper.readCommonBatchSetting(args,
-                                                              trtName.syntax,
-                                                              _def.name.syntax)
+    val commonSetting = DaoMacroHelper.readCommonBatchSetting(
+      args,
+      trtName.syntax,
+      _def.name.syntax)
     val ignoreVersion = args
       .collectFirst { case arg"ignoreVersion = $x" => x }
       .getOrElse(q"false")
@@ -39,5 +40,5 @@ object BatchDeleteGenerator {
       query,
       otherQuerySettings,
       command)
-  }d
+  }
 }

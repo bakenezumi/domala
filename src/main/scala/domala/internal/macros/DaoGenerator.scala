@@ -50,14 +50,12 @@ object DaoGenerator {
       {
         val paramClasses = _def.paramss.flatten.map(p => {
           p.decltpe.get match {
-            case t"$container[..$inner]" => {
+            case t"$container[..$inner]" =>
               val placeHolder = inner.map(_ => t"_")
               q"classOf[${Type.Name(container.toString)}[..$placeHolder]]"
-            }
-            case t"$_ => $_" => {
+            case t"$_ => $_" =>
               q"classOf[scala.Function1[_, _]]"
-            }
-            case _ => q"classOf[${Type.Name(p.decltpe.get.toString)}]"
+            case _ => q"classOf[${TypeHelper.toType(p.decltpe.get)}]"
           }
         })
         q"""private val ${Pat.Var.Term(internalMethodName)} =

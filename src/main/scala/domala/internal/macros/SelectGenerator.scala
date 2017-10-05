@@ -240,14 +240,26 @@ object SelectGenerator {
           t"${Type.Name(container.toString)}[..$placeHolder]"
         case t"Stream[$p] => $r" =>
           t"java.util.function.Function[_, _]"
-        case _ => t"${Type.Name(p.decltpe.get.toString)}"
+        case _ => TypeHelper.toType(p.decltpe.get)
       }
       q"""__query.addParameter(${p.name.syntax}, classOf[$paramTpe], ${Term
         .Name(p.name.syntax): Term.Arg})"""
     }
 
+    val daoParamTypes = defDecl.paramss.flatten.filter(p => p.decltpe.get match {
+      case t"Stream[$_] => $_" => false
+      case _ => true
+    }).map { p =>
+      val pType: Type = p.decltpe.get match {
+        case tpe => TypeHelper.toType(tpe)
+      }
+      q"domala.internal.macros.DaoParamClass.apply(${p.name.syntax}, classOf[$pType])"
+    }
+
+    //domala.internal.macros.reflect.DaoReflectionMacros.validSql(${trtName.syntax}, ${defDecl.name.syntax}, true, false, ${commonSetting.sql}, ..$daoParamTypes)
     q"""
     override def ${defDecl.name}= {
+      domala.internal.macros.reflect.DaoReflectionMacros.validSql(${trtName.syntax}, ${defDecl.name.syntax}, true, false, ${commonSetting.sql}, ..$daoParamTypes)
       entering(${trtName.syntax}, ${defDecl.name.syntax} ..$enteringParam)
       try {
         val __query = new domala.jdbc.query.SqlAnnotationSelectQuery(${commonSetting.sql})

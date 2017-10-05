@@ -169,6 +169,19 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
       dao.populateUpdate2(entity, 2)
     }
   }
+
+  test("function parameter") {
+    Required {
+      assert(
+        dao.functionSelect("2").contains(
+          Person(Some(2),
+            Name("ALLEN"),
+            Some(20),
+            Address("Kyoto", "Karasuma"),
+            Some(1),
+            Some(0))))
+    }
+  }
 }
 
 @Dao(config = ExprTestConfig)
@@ -197,8 +210,8 @@ select * from person
   @Select("""
 select * from person
 where
-/*%if id.isDefined() */
-id = /*id.get()*/0
+/*%if id.isDefined */
+id = /*id.get*/0
 /*%end*/
   """)
   def ifSelect(id: Option[Int]): Seq[Person]
@@ -206,11 +219,11 @@ id = /*id.get()*/0
   @Select("""
 select * from person
 where
-/*%if id.isDefined() */
-  id = /*id.get()*/0
-/*%elseif departmentId.isDefined() */
+/*%if id.isDefined */
+  id = /*id.get*/0
+/*%elseif departmentId.isDefined */
   and
-  department_id = /*departmentId.get()*/0
+  department_id = /*departmentId.get */0
 /*%else */
   and
   department_id is null
@@ -221,7 +234,7 @@ where
   @Select("""
 select * from person
 where
-/*%for name : names */
+/*%for name: names */
 name like /* name + "%" */'hoge%'
   /*%if name_has_next */
 /*# "or" */
@@ -246,9 +259,15 @@ update person set /*%populate*/id = id where id = /* id */0
   def populateUpdate(entity: Person, id: Int): jdbc.Result[Person]
 
   // TODO: Entityのパラメータ判定変更
-    @Update("""
-  update person set /*%populate*/id = id where id = /* id */0
-    """)
-    def populateUpdate2(entity: Person, id: Int): Int
+  @Update("""
+update person set /*%populate*/id = id where id = /* id */0
+  """)
+  def populateUpdate2(entity: Person, id: Int): Int
 
+  @Select("""
+select * from person
+where
+id = /* f.apply(id) */0
+  """)
+  def functionSelect(id: String, f: String => Int = s => s.toInt) : Option[Person]
 }

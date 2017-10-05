@@ -2,19 +2,19 @@ package domala.jdbc.query
 
 
 import org.seasar.doma.internal.expr.{ExpressionEvaluator, Value}
-import org.seasar.doma.internal.jdbc.sql.{NodePreparedSqlBuilder, SqlContext}
+import org.seasar.doma.internal.jdbc.sql.{NodePreparedSqlBuilder, SqlContext, SqlParser}
 import org.seasar.doma.internal.jdbc.sql.node.{ExpandNode, PopulateNode}
 import org.seasar.doma.internal.util.AssertionUtil
 import org.seasar.doma.jdbc._
 import org.seasar.doma.jdbc.query.{AbstractQuery, ModifyQuery}
 
-class SqlAnnotationModifyQuery(protected val kind: SqlKind) extends AbstractQuery with ModifyQuery {
+class SqlAnnotationModifyQuery(protected val kind: SqlKind, sqlString: String) extends AbstractQuery with ModifyQuery {
 
-  protected var sqlNode: SqlNode = null
+  protected val sqlNode: SqlNode = new SqlParser(sqlString).parse()
   protected val parameters: java.util.Map[String, Value] = new java.util.LinkedHashMap[String, Value]()
-  protected var sql: PreparedSql = null
+  protected var sql: PreparedSql = _
   protected var optimisticLockCheckRequired: Boolean = false
-  protected var sqlLogType: SqlLogType = null
+  protected var sqlLogType: SqlLogType = _
 
   AssertionUtil.assertNotNull(kind, "")
 
@@ -33,10 +33,6 @@ class SqlAnnotationModifyQuery(protected val kind: SqlKind) extends AbstractQuer
   protected def populateValues(node: PopulateNode, context: SqlContext): Unit = throw new UnsupportedOperationException
 
   override def complete(): Unit = ()
-
-  def setSqlNode(sqlNode: SqlNode): Unit = {
-    this.sqlNode = sqlNode
-  }
 
   def addParameter(name: String, `type`: Class[_], value: Any): Unit = {
     AssertionUtil.assertNotNull(name, `type`)

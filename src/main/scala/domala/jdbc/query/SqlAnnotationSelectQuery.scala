@@ -1,11 +1,10 @@
 package domala.jdbc.query
 
 import org.seasar.doma.internal.jdbc.sql.SqlParser
-import org.seasar.doma.internal.util.AssertionUtil
 
 import scala.collection.JavaConverters._
 
-class SqlAnnotationSelectQuery(sql: String) extends org.seasar.doma.jdbc.query.SqlSelectQuery {
+class SqlAnnotationSelectQuery(sql: String) extends SqlSelectQuery {
   // TODO: キャッシュ
   setSqlNode(new SqlParser(sql).parse())
 
@@ -18,4 +17,5 @@ class SqlAnnotationSelectQuery(sql: String) extends org.seasar.doma.jdbc.query.S
       case _ => super.addParameter(name, `type`, value)
     }
   }
+
 }

@@ -2,10 +2,11 @@ package domala.internal.macros.reflect
 
 import java.util.Optional
 
-import domala.internal.macros.DaoParam
+import domala.internal.macros.{DaoParam, DaoParamClass}
 import domala.jdbc.Result
 import domala.jdbc.query.EntityAndEntityType
 import org.seasar.doma.internal.jdbc.command._
+import org.seasar.doma.internal.jdbc.sql.SqlParser
 import org.seasar.doma.jdbc.command.ResultSetHandler
 import org.seasar.doma.jdbc.domain.AbstractDomainType
 import org.seasar.doma.jdbc.entity.AbstractEntityType
@@ -157,8 +158,7 @@ object DaoReflectionMacros {
       traitName: c.Expr[String],
       methodName: c.Expr[String],
       resultClass: c.Expr[Class[T]],
-      params: c.Expr[DaoParam[_]]*)
-    : c.Expr[Option[EntityAndEntityType[Any]]] = {
+      params: c.Expr[DaoParam[_]]*): c.Expr[Option[EntityAndEntityType[Any]]] = {
     import c.universe._
     params
       .map {
@@ -207,4 +207,27 @@ object DaoReflectionMacros {
       params: (DaoParam[_])*): Option[EntityAndEntityType[Any]] =
     macro getEntityAndEntityTypeImpl[T]
 
+  def validSqlImpl(c: blackbox.Context)(
+    trtName: c.Expr[String],
+    defName: c.Expr[String],
+    expandable: c.Expr[Boolean],
+    populatable: c.Expr[Boolean],
+    sql: c.Expr[String],
+    params: c.Expr[DaoParamClass[_]]*): c.Expr[Unit] = {
+    import c.universe._
+    val Literal(Constant(trtNameLiteral: String)) = trtName.tree
+    val Literal(Constant(defNameLiteral: String)) = defName.tree
+    val Literal(Constant(expandableLiteral: Boolean)) = expandable.tree
+    val Literal(Constant(populatableLiteral: Boolean)) = populatable.tree
+    val Literal(Constant(sqlLiteral: String)) = sql.tree
+    import scala.language.existentials
+    val paramTypes = new ReflectionHelper[c.type](c).paramTypes(params)
+    val sqlNode = new SqlParser(sqlLiteral).parse()
+    val sqlValidator = new SqlValidator[c.type](c)(trtNameLiteral, defNameLiteral, expandableLiteral, populatableLiteral, paramTypes)
+    sqlValidator.validate(sqlNode)
+
+    //c.abort(c.enclosingPosition, trtNameLiteral + defNameStringLiteral + sqlNode.getChildren.toString)
+    reify(())
+  }
+  def validSql(trtName: String, defName: String, expandable: Boolean, populatable: Boolean, sql: String, params: (DaoParamClass[_])*): Unit = macro validSqlImpl
 }

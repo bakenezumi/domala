@@ -15,6 +15,10 @@ object AutoBatchModifyQueryGenerator {
           // TODO: _ <: Seqでないとコンパイルエラーにすべき
           case t"Seq[$internalTpe]" =>
             (Term.Name(paramName.value), Type.Name(internalTpe.toString))
+          case _ =>
+            abort(defDecl._def.pos,
+              org.seasar.doma.message.Message.DOMA4042
+                .getMessage(defDecl.trtName.value, defDecl.name.value))
         }
     }
   }

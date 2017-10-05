@@ -42,7 +42,7 @@ object SqlModifyQueryGenerator {
     val (isReturnResult, entityType) = DaoMacroHelper.getResultType(defDecl)
 
     val daoParams = defDecl.paramss.flatten.map { p =>
-      q"domala.internal.macros.DaoParam.apply(${p.name.syntax}, ${Term.Name(p.name.syntax)}, classOf[${Type.Name(p.decltpe.get.syntax)}])"
+      q"domala.internal.macros.DaoParam.apply(${p.name.syntax}, ${Term.Name(p.name.syntax)}, classOf[${TypeHelper.toType(p.decltpe.get)}])"
     }
 
     val entityAndEntityType = q"""
