@@ -55,12 +55,12 @@ class SqlValidator[C <: blackbox.Context](val c: C)(
   }
 
   protected def isScalar(typeDeclaration: TypeDeclaration[C]): Boolean = {
-    val tpe = typeDeclaration.getType
+    val tpe: C#Type = typeDeclaration.tpe
     TypeUtil.isBasic(c)(tpe) || TypeUtil.isDomain(c)(tpe)
   }
 
   protected def isScalarIterable(typeDeclaration: TypeDeclaration[C]): Boolean = {
-    val tpe = typeDeclaration.getType
+    val tpe: C#Type = typeDeclaration.tpe
     if(TypeUtil.isIterable(c)(tpe)) {
       TypeUtil.isBasic(c)(tpe.typeArgs.asInstanceOf[List[C#Type]].head) || TypeUtil.isDomain(c)(tpe.typeArgs.asInstanceOf[List[C#Type]].head)
     } else {
@@ -106,7 +106,7 @@ class SqlValidator[C <: blackbox.Context](val c: C)(
     val identifier = node.getIdentifier
     val expression = node.getExpression
     val typeDeclaration = validateExpressionVariable(location, expression)
-    val tpe = typeDeclaration.getType
+    val tpe: C#Type = typeDeclaration.tpe
     if (!(tpe <:< typeOf[Iterable[_]])) {
       val sql = getSql(location)
       c.abort(c.enclosingPosition, Message.DOMALA4149.getMessage(trtName, defName, sql, Integer.valueOf(location.getLineNumber), Integer.valueOf(location.getPosition), expression, typeDeclaration.getBinaryName))
@@ -116,13 +116,13 @@ class SqlValidator[C <: blackbox.Context](val c: C)(
       val sql = getSql(location)
       c.abort(c.enclosingPosition, Message.DOMALA4150.getMessage(trtName, defName, sql, Integer.valueOf(location.getLineNumber), Integer.valueOf(location.getPosition), expression, typeDeclaration.getBinaryName))
     }
-    val originalIdentifierType = expressionValidator.removeParameterType(identifier)
+    val originalIdentifierType: C#Type = expressionValidator.removeParameterType(identifier)
     expressionValidator.putParameterType(identifier, typeArgs.asInstanceOf[List[C#Type]].head)
     val hasNextVariable = identifier + ForBlockNode.HAS_NEXT_SUFFIX
-    val originalHasNextType = expressionValidator.removeParameterType(hasNextVariable)
+    val originalHasNextType: C#Type = expressionValidator.removeParameterType(hasNextVariable)
     expressionValidator.putParameterType(hasNextVariable, typeOf[Boolean])
     val indexVariable = identifier + ForBlockNode.INDEX_SUFFIX
-    val originalIndexType = expressionValidator.removeParameterType(indexVariable)
+    val originalIndexType: C#Type = expressionValidator.removeParameterType(indexVariable)
     expressionValidator.putParameterType(indexVariable, typeOf[Int])
     visitNode(node, p)
     if (originalIdentifierType == null) expressionValidator.removeParameterType(identifier)

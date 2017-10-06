@@ -189,7 +189,7 @@ class ExpressionValidator[C <: blackbox.Context](c: C)(
     val typeDeclaration = node.getTargetObjectNode.accept(this, p)
     val parameterTypeDeclarations = new ParameterCollector().collect(node.getParametersNode)
     val methodName = node.getMethodName
-    val methodDeclarations: mutable.Seq[MethodDeclaration[C]] = typeDeclaration.getMethodDeclarations(methodName, parameterTypeDeclarations)
+    val methodDeclarations: Seq[MethodDeclaration[C]] = typeDeclaration.getMethodDeclarations(methodName, parameterTypeDeclarations)
     if (methodDeclarations.isEmpty) {
       val location = node.getLocation
       val methodSignature = createMethodSignature(methodName, parameterTypeDeclarations)
@@ -265,7 +265,7 @@ class ExpressionValidator[C <: blackbox.Context](c: C)(
     buf.append("(")
     if (parameterTypeDeclarations.nonEmpty) {
       for (declaration <- parameterTypeDeclarations) {
-        buf.append(declaration.getType)
+        buf.append(declaration.tpe)
         buf.append(", ")
       }
       buf.setLength(buf.length - 2)

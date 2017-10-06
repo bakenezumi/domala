@@ -7,7 +7,7 @@ import org.seasar.doma.internal.util.AssertionUtil.{assertNotNull, assertTrue}
 
 import scala.collection.mutable
 
-class TypeDeclaration[C <: blackbox.Context](val c: C)(
+class TypeDeclaration[C <: blackbox.Context](c: C)(
   val tpe: C#Type
 ) {
   import c.universe._
@@ -57,16 +57,16 @@ class TypeDeclaration[C <: blackbox.Context](val c: C)(
   }
 
 
-  def getMethodDeclarations(name: String, parameterTypeDeclarations: mutable.Buffer[TypeDeclaration[C]]): mutable.Buffer[MethodDeclaration[C]] = getMethodDeclarationsInternal(name, parameterTypeDeclarations, false)
-  def getStaticMethodDeclarations(name: String, parameterTypeDeclarations: mutable.Buffer[TypeDeclaration[C]]): mutable.Buffer[MethodDeclaration[C]] = getMethodDeclarationsInternal(name, parameterTypeDeclarations, true)
+  def getMethodDeclarations(name: String, parameterTypeDeclarations: Seq[TypeDeclaration[C]]): Seq[MethodDeclaration[C]] = getMethodDeclarationsInternal(name, parameterTypeDeclarations, false)
+  def getStaticMethodDeclarations(name: String, parameterTypeDeclarations: Seq[TypeDeclaration[C]]): Seq[MethodDeclaration[C]] = getMethodDeclarationsInternal(name, parameterTypeDeclarations, true)
 
 
-  protected def getMethodDeclarationsInternal(name: String, parameterTypeDeclarations: mutable.Buffer[TypeDeclaration[C]], statik: Boolean): mutable.Buffer[MethodDeclaration[C]] = {
+  protected def getMethodDeclarationsInternal(name: String, parameterTypeDeclarations: Seq[TypeDeclaration[C]], statik: Boolean): Seq[MethodDeclaration[C]] = {
     val candidates = getCandidateMethodDeclarations(name, parameterTypeDeclarations, statik)
     candidates
   }
 
-  protected def getCandidateMethodDeclarations(name: String, parameterTypeDeclarations: mutable.Buffer[TypeDeclaration[C]], statik: Boolean): mutable.Buffer[MethodDeclaration[C]] = {
+  protected def getCandidateMethodDeclarations(name: String, parameterTypeDeclarations: Seq[TypeDeclaration[C]], statik: Boolean): Seq[MethodDeclaration[C]] = {
     val results = mutable.Buffer[MethodDeclaration[C]]()
 
     for ((binaryName, typeParameterDeclarations) <- typeParameterDeclarationsMap) {
@@ -102,7 +102,7 @@ class TypeDeclaration[C <: blackbox.Context](val c: C)(
     c.abort(c.enclosingPosition, name)
   }
 
-  def getCandidateFieldDeclaration(name: String, statik: Boolean): mutable.Buffer[FieldDeclaration[C]] = {
+  def getCandidateFieldDeclaration(name: String, statik: Boolean): Seq[FieldDeclaration[C]] = {
     val results = mutable.Buffer[FieldDeclaration[C]]()
     for ((typeQualifiedName, typeParameterDeclarations) <- typeParameterDeclarationsMap) {
       val typeElement = ElementUtil.getTypeElement[C](c)(typeQualifiedName)
@@ -120,7 +120,8 @@ class TypeDeclaration[C <: blackbox.Context](val c: C)(
 
   protected def resolveTypeParameter(formalType: C#Type, typeParameterDeclarations: Seq[TypeParameterDeclaration[C]]): C#Type = {
     for (typeParameterDecl <- typeParameterDeclarations) {
-      if (formalType.toString == typeParameterDecl.formalType.name.toString) return typeParameterDecl.actualType
+      // TODO: unchecked since it is eliminated by erasure
+      if (formalType.toString == typeParameterDecl.formalTypeName) return typeParameterDecl.actualType
     }
     formalType
   }

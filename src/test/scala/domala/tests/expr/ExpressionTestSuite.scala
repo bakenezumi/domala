@@ -258,7 +258,6 @@ update person set /*%populate*/id = id where id = /* id */0
   """)
   def populateUpdate(entity: Person, id: Int): jdbc.Result[Person]
 
-  // TODO: Entityのパラメータ判定変更
   @Update("""
 update person set /*%populate*/id = id where id = /* id */0
   """)
