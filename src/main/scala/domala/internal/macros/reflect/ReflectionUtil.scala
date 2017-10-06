@@ -9,7 +9,7 @@ object ReflectionUtil {
 
   def getCompanion[T](classTag: ClassTag[T]): Any = {
     Class
-      .forName(classTag.runtimeClass.getName + "$")
+      .forName(classTag.runtimeClass.getName + "$", false, classTag.runtimeClass.getClassLoader)
       .getField("MODULE$")
       .get(null)
 //    import scala.reflect.runtime.{currentMirror => cm}
