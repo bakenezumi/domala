@@ -14,6 +14,7 @@ lazy val root = (project in file(".")).settings(
     version      := "0.1.0-beta.1"
   )),
   name := "domala",
+  organization := "com.github.domala",
   javacOptions ++= List("-encoding", "utf8"),
   metaMacroSettings,
   libraryDependencies ++= Seq(
@@ -37,3 +38,31 @@ lazy val sample = (project in file("sample")).settings(
   ),
   metaMacroSettings
 ) dependsOn root aggregate root
+
+licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt"))
+homepage := Some(url("https://github.com/bakenezumi"))
+
+publishMavenStyle := true
+publishArtifact in Test := false
+publishTo := Some(
+  if (isSnapshot.value)
+    Opts.resolver.sonatypeSnapshots
+  else
+    Opts.resolver.sonatypeStaging
+)
+
+scmInfo := Some(
+  ScmInfo(
+    url("https://github.com/bakenezumi/domala"),
+    "scm:git@github.com:/bakenezumi/domala.git"
+  )
+)
+
+developers := List(
+  Developer(
+    id    = "bakenezumi",
+    name  = "Nobuhiko Hosonishi",
+    email = "hosonioshi@gmail.com",
+    url   = url("https://github.com/bakenezumi")
+  )
+)
