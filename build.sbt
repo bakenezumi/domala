@@ -11,7 +11,7 @@ lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(
 lazy val root = (project in file(".")).settings(
   inThisBuild(List(
     scalaVersion := "2.12.3",
-    version      := "0.1.0-SNAPSHOT"
+    version      := "0.1.0-beta.1"
   )),
   name := "domala",
   javacOptions ++= List("-encoding", "utf8"),
@@ -29,7 +29,7 @@ lazy val root = (project in file(".")).settings(
 lazy val sample = (project in file("sample")).settings(
   inThisBuild(List(
     scalaVersion := "2.12.3",
-    version      := "0.1.0-SNAPSHOT"
+    version      := "0.1.0-beta.1"
   )),
   libraryDependencies ++= Seq(
     "com.h2database" % "h2" % "1.4.193",

@@ -306,8 +306,8 @@ object EntityReflectionMacros {
       collections: EntityCollections[E]
   )(
       implicit propertyClassTag: ClassTag[T],
-      nakedClassTag: ClassTag[N],
-  ): Object = macro generatePropertyTypeImpl[T, E, N]
+      nakedClassTag: ClassTag[N]
+  ): Object =  macro generatePropertyTypeImpl[T, E, N]
 
   def readPropertyImpl[T: c.WeakTypeTag, E: c.WeakTypeTag](c: blackbox.Context)(
       entityClass: c.Expr[Class[E]],
@@ -336,8 +336,7 @@ object EntityReflectionMacros {
   def readProperty[T, E](
       entityClass: Class[E],
       args: java.util.Map[String, Property[E, _]],
-      propertyName: String)(implicit propertyClassTag: ClassTag[T]): T =
-    macro readPropertyImpl[T, E]
+      propertyName: String)(implicit propertyClassTag: ClassTag[T]): T = macro readPropertyImpl[T, E]
 
 }
 

@@ -22,7 +22,7 @@ class TypeDeclaration[C <: blackbox.Context](c: C)(
     c.typeOf[Int].toString -> 30,
     c.typeOf[Integer].toString -> 30,
     c.typeOf[Short].toString -> 20,
-    c.typeOf[Byte].toString -> 10,
+    c.typeOf[Byte].toString -> 10
   )
 
   val numberPriority: Option[Int] = {
