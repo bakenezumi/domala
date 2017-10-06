@@ -16,12 +16,16 @@ object DaoGenerator {
         generateDef(trt.name, t._1, t._2)
       }
     )
-
+    val defaultImpl =
+      if(config == null)
+        q"()"
+      else
+        q"def impl = new Internal(${Term.Name(config.syntax)})"
     val obj =
     q"""
     object ${Term.Name(trt.name.syntax)} {
-      def impl = new Internal( ${Term.Name(config.syntax)})
-      def impl(config: org.seasar.doma.jdbc.Config): ${Type.Name(trt.name.syntax)} = new Internal(config)
+      $defaultImpl
+      def impl(implicit config: org.seasar.doma.jdbc.Config): ${Type.Name(trt.name.syntax)} = new Internal(config)
 
       class Internal(config: org.seasar.doma.jdbc.Config) extends org.seasar.doma.internal.jdbc.dao.AbstractDao(config)
       with ${Ctor.Ref.Name(trt.name.syntax)} {
