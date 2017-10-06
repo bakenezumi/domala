@@ -3,7 +3,9 @@ Domala: Doma for Scala
 
 Domala is a database access library for Scala. This wraps [Doma2](https://github.com/domaframework/doma).
 
-- Domala uses [scala meta](http://scalameta.org/paradise/) to generate code and validate sql mappings at **compile time**.
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.domala/domala_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.domala/domala_2.12)
+
+- Domala uses [scalameta](http://scalameta.org/paradise/) to generate code and validate sql mappings at **compile time**.
 
 - Select statements are write by yourself. It is automatically mapped to `Option[`*`Entity`*`]`, `Seq[`*`Entity`*`]`, `Stream[`*`Entity`*`]`, `Seq[Map[String, Any]]`, and more.
 
@@ -103,6 +105,10 @@ Required {
 sbt
 >sample/run
 ```
+
+### Play integretion sample
+
+[domala-play-samle](https://github.com/bakenezumi/domala-play-sample)
 
 License
 --------
