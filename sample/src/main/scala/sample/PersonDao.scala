@@ -3,7 +3,7 @@ package sample
 import domala._
 import domala.jdbc.Result
 
-@Dao(config = SampleConfig)
+@Dao
 trait PersonDao {
   @Script(sql = """
 create table department(

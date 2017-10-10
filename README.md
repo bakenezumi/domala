@@ -59,7 +59,7 @@ case class Address(city: String, street: String)
 #### Dao
 
 ```scala
-@Dao(config = SampleConfig)
+@Dao
 trait PersonDao {
 
   @Select(sql = """
