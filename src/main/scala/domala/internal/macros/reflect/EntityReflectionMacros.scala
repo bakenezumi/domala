@@ -9,6 +9,7 @@ import domala.jdbc.entity.{
   VersionPropertyType
 }
 import domala.jdbc.holder.AbstractHolderDesc
+import domala.message.Message
 import org.seasar.doma.jdbc.entity._
 import org.seasar.doma.jdbc.id.IdGenerator
 import org.seasar.doma.wrapper.Wrapper
@@ -66,7 +67,7 @@ object EntityReflectionMacros {
       if (isIdActual) {
         c.abort(
           c.enclosingPosition,
-          org.seasar.doma.message.Message.DOMA4302.getMessage(
+          Message.DOMALA4302.getMessage(
             extractionClassString(entityClass.toString),
             extractionQuotedString(paramName.toString()))
         )
@@ -74,7 +75,7 @@ object EntityReflectionMacros {
       if (isIdGenerateActual) {
         c.abort(
           c.enclosingPosition,
-          org.seasar.doma.message.Message.DOMA4303.getMessage(
+          Message.DOMALA4303.getMessage(
             extractionClassString(entityClass.toString),
             extractionQuotedString(paramName.toString()))
         )
@@ -82,7 +83,7 @@ object EntityReflectionMacros {
       if (isVersionActual) {
         c.abort(
           c.enclosingPosition,
-          org.seasar.doma.message.Message.DOMA4304.getMessage(
+          Message.DOMALA4304.getMessage(
             extractionClassString(entityClass.toString),
             extractionQuotedString(paramName.toString()))
         )
@@ -108,7 +109,7 @@ object EntityReflectionMacros {
                 AbstractHolderDesc[_ <: Number, _]])) {
             c.abort(
               c.enclosingPosition,
-              org.seasar.doma.message.Message.DOMA4095.getMessage(
+              Message.DOMALA4095.getMessage(
                 extractionClassString(entityClass.toString),
                 extractionQuotedString(paramName.toString()))
             )
@@ -149,7 +150,7 @@ object EntityReflectionMacros {
               AbstractHolderDesc[_ <: Number, _]])) {
           c.abort(
             c.enclosingPosition,
-            org.seasar.doma.message.Message.DOMA4093.getMessage(
+            Message.DOMALA4093.getMessage(
               extractionClassString(entityClass.toString),
               extractionQuotedString(paramName.toString()))
           )
@@ -188,7 +189,7 @@ object EntityReflectionMacros {
       if (!isBasicActual) {
         c.abort(
           c.enclosingPosition,
-          domala.message.Message.DOMALA4096.getMessage(
+          Message.DOMALA4096.getMessage(
             extractionClassString(propertyClassTag.toString()),
             extractionClassString(entityClass.toString),
             extractionQuotedString(paramName.toString()))
@@ -199,7 +200,7 @@ object EntityReflectionMacros {
           if (!(nakedTpe <:< typeOf[Number])) {
             c.abort(
               c.enclosingPosition,
-              org.seasar.doma.message.Message.DOMA4095.getMessage(
+              Message.DOMALA4095.getMessage(
                 extractionClassString(entityClass.toString),
                 extractionQuotedString(paramName.toString()))
             )
@@ -245,7 +246,7 @@ object EntityReflectionMacros {
         if (!(nakedTpe <:< typeOf[Number])) {
           c.abort(
             c.enclosingPosition,
-            org.seasar.doma.message.Message.DOMA4093.getMessage(
+            Message.DOMALA4093.getMessage(
               extractionClassString(entityClass.toString),
               extractionQuotedString(paramName.toString()))
           )

@@ -177,7 +177,7 @@ class SqlValidator[C <: blackbox.Context](val c: C)(
     var sql = location.getSql
     if (sql != null && sql.length > SQL_MAX_LENGTH) {
       sql = sql.substring(0, SQL_MAX_LENGTH)
-      sql += org.seasar.doma.message.Message.DOMA4185.getSimpleMessage(Integer.valueOf(SQL_MAX_LENGTH))
+      sql += Message.DOMALA4185.getSimpleMessage(Integer.valueOf(SQL_MAX_LENGTH))
     }
     sql
   }

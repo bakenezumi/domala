@@ -1,5 +1,6 @@
 package domala.internal.macros
 
+import domala.message.Message
 import scala.collection.immutable.Seq
 import scala.meta._
 
@@ -7,7 +8,7 @@ object AutoBatchModifyQueryGenerator {
   def extractParameter(defDecl: QueryDefDecl): (Term.Name, Type.Name) = {
     if (defDecl.paramss.flatten.length != 1)
       abort(defDecl._def.pos,
-            org.seasar.doma.message.Message.DOMA4002
+            Message.DOMALA4002
               .getMessage(defDecl.trtName.value, defDecl.name.value))
     defDecl.paramss.flatten.head match {
       case param"$paramName: ${Some(paramTpe)}" =>
@@ -17,7 +18,7 @@ object AutoBatchModifyQueryGenerator {
             (Term.Name(paramName.value), Type.Name(internalTpe.toString))
           case _ =>
             abort(defDecl._def.pos,
-              org.seasar.doma.message.Message.DOMA4042
+              Message.DOMALA4042
                 .getMessage(defDecl.trtName.value, defDecl.name.value))
         }
     }

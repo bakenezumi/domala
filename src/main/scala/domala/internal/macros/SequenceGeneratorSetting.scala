@@ -17,7 +17,7 @@ object SequenceGeneratorSetting {
         val allocationSize = args.collectFirst { case arg"allocationSize = $x" => x }.getOrElse(q"1")
         val implementer = args.collectFirst { case arg"implementer = $x" => x }.getOrElse(q"classOf[org.seasar.doma.jdbc.id.BuiltinSequenceIdGenerator]")
         SequenceGeneratorSetting(catalog, schema, sequence, initialValue, allocationSize, implementer)
-      case _ => abort(org.seasar.doma.message.Message.DOMA4034.getMessage(className, propertyName))
+      case _ => abort(domala.message.Message.DOMALA4034.getMessage(className, propertyName))
     }
   }
 }

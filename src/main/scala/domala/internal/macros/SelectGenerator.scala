@@ -1,5 +1,6 @@
 package domala.internal.macros
 
+import domala.message.Message
 import scala.collection.immutable.Seq
 import scala.meta._
 
@@ -55,7 +56,7 @@ object SelectGenerator {
       defDecl.name.syntax)
     if (commonSetting.sql.syntax == """""""")
       abort(_def.pos,
-            domala.message.Message.DOMALA4020
+            Message.DOMALA4020
               .getMessage(trtName.syntax, defDecl.name.syntax))
     val selectSetting = readSelectSetting(args)
 
@@ -72,11 +73,11 @@ object SelectGenerator {
             }
             if (functionParams.isEmpty) {
               abort(_def.pos,
-                    org.seasar.doma.message.Message.DOMA4247
+                    Message.DOMALA4247
                       .getMessage(trtName.syntax, defDecl.name.syntax))
             } else if (functionParams.length > 1) {
               abort(_def.pos,
-                    org.seasar.doma.message.Message.DOMA4249
+                    Message.DOMALA4249
                       .getMessage(trtName.syntax, defDecl.name.syntax))
             }
             val functionParam = Term.Name(functionParams.head.name.toString)
@@ -101,11 +102,11 @@ object SelectGenerator {
             }
           }
           .getOrElse(abort(_def.pos,
-                           domala.message.Message.DOMALA4244
+                           Message.DOMALA4244
                              .getMessage(trtName.syntax, defDecl.name.syntax)))
         if (retTpe.toString().trim != defDecl.tpe.toString().trim) {
           abort(_def.pos,
-                org.seasar.doma.message.Message.DOMA4246.getMessage(
+                Message.DOMALA4246.getMessage(
                   defDecl.tpe,
                   retTpe,
                   trtName.syntax,
@@ -139,7 +140,7 @@ object SelectGenerator {
           case _ =>
             abort(
               _def.pos,
-              org.seasar.doma.message.Message.DOMA4008
+              Message.DOMALA4008
                 .getMessage(defDecl.tpe, trtName.syntax, defDecl.name.syntax))
         }
       } else
@@ -167,7 +168,7 @@ object SelectGenerator {
           case DomaType.Option(_, elementTpe) =>
             abort(
               _def.pos,
-              domala.message.Message.DOMALA4235
+              Message.DOMALA4235
                 .getMessage(elementTpe, trtName.syntax, defDecl.name.syntax))
 
           case DomaType.Seq(DomaType.Map, _) =>
@@ -218,7 +219,7 @@ object SelectGenerator {
           case _ =>
             abort(
               _def.pos,
-              org.seasar.doma.message.Message.DOMA4008
+              Message.DOMALA4008
                 .getMessage(defDecl.tpe, trtName.syntax, defDecl.name.syntax))
         }
     val command =
@@ -256,7 +257,6 @@ object SelectGenerator {
       q"domala.internal.macros.DaoParamClass.apply(${p.name.syntax}, classOf[$pType])"
     }
 
-    //domala.internal.macros.reflect.DaoReflectionMacros.validSql(${trtName.syntax}, ${defDecl.name.syntax}, true, false, ${commonSetting.sql}, ..$daoParamTypes)
     q"""
     override def ${defDecl.name}= {
       domala.internal.macros.reflect.DaoReflectionMacros.validSql(${trtName.syntax}, ${defDecl.name.syntax}, true, false, ${commonSetting.sql}, ..$daoParamTypes)

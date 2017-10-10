@@ -226,7 +226,6 @@ object DaoReflectionMacros {
     val sqlValidator = new SqlValidator[c.type](c)(trtNameLiteral, defNameLiteral, expandableLiteral, populatableLiteral, paramTypes)
     sqlValidator.validate(sqlNode)
 
-    //c.abort(c.enclosingPosition, trtNameLiteral + defNameStringLiteral + sqlNode.getChildren.toString)
     reify(())
   }
   def validSql(trtName: String, defName: String, expandable: Boolean, populatable: Boolean, sql: String, params: (DaoParamClass[_])*): Unit = macro validSqlImpl

@@ -81,7 +81,7 @@ object DaoGenerator {
           case mod"@BatchDelete" => BatchDeleteGenerator.generate(trtName, _def, internalMethodName, Nil)
           case mod"@BatchDelete(..$modParams)" => BatchDeleteGenerator.generate(trtName, _def, internalMethodName, modParams)
         }.getOrElse(
-          abort(_def.pos, org.seasar.doma.message.Message.DOMA4005.getMessage(trtName.syntax, _def.name.syntax))
+          abort(_def.pos, domala.message.Message.DOMALA4005.getMessage(trtName.syntax, _def.name.syntax))
         ).copy(
           tparams = _def.tparams,
           paramss = _def.paramss,

@@ -1,6 +1,7 @@
 package domala.internal.macros
 
 import domala.internal.macros.TypeHelper.toType
+import domala.message.Message
 
 import scala.collection.immutable.Seq
 import scala.meta._
@@ -74,12 +75,12 @@ object EntityTypeGenerator {
         case mod"@GeneratedValue(strategy = $strategy)" => strategy
       })
       if(strategies.size > 1) {
-        abort(org.seasar.doma.message.Message.DOMA4037.getMessage(clsName.syntax, idMods.head.name.syntax))
+        abort(Message.DOMALA4037.getMessage(clsName.syntax, idMods.head.name.syntax))
       } else if(strategies.isEmpty) { // Id only
         Seq(q"private val __idGenerator = null")
       } else {
         if(idMods.size > 1) {
-          abort(org.seasar.doma.message.Message.DOMA4036.getMessage(clsName.syntax))
+          abort(Message.DOMALA4036.getMessage(clsName.syntax))
         }
         strategies.head match {
           case q"GenerationType.IDENTITY" => Seq(q"private val __idGenerator = new org.seasar.doma.jdbc.id.BuiltinIdentityIdGenerator()")
@@ -115,7 +116,7 @@ object EntityTypeGenerator {
     if (ctor.paramss.flatten.flatMap(_.mods).count {
       case mod"@Version" | mod"@domala.Version" => true
       case _ => false
-    } > 1) abort(org.seasar.doma.message.Message.DOMA4024.getMessage(clsName.syntax))
+    } > 1) abort(Message.DOMALA4024.getMessage(clsName.syntax))
 
     ctor.paramss.flatten.map { p =>
       val Term.Param(mods, name, Some(decltpe), default) = p
@@ -128,7 +129,7 @@ object EntityTypeGenerator {
         case DomaType.Option(DomaType.Basic(_, convertedType, wrapperSupplier), _) => (true, convertedType, wrapperSupplier)
         case DomaType.EntityOrHolderOrEmbeddable(otherType) => (false, otherType, q"null")
         case DomaType.Option(DomaType.EntityOrHolderOrEmbeddable(otherType), _) => (false, otherType,  q"null")
-        case _ => abort(domala.message.Message.DOMALA4096.getMessage(decltpe.syntax, clsName.syntax, name.syntax))
+        case _ => abort(Message.DOMALA4096.getMessage(decltpe.syntax, clsName.syntax, name.syntax))
       }
 
       val isId = mods.exists {
