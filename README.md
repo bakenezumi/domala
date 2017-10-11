@@ -108,7 +108,7 @@ sbt
 
 ### Play integretion sample
 
-[domala-play-samle](https://github.com/bakenezumi/domala-play-sample)
+[domala-play-sample](https://github.com/bakenezumi/domala-play-sample)
 
 License
 --------
