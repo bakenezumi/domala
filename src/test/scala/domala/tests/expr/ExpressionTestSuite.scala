@@ -244,8 +244,8 @@ select * from person
   @Select("""
 select * from person
 where
-/*%if id.isDefined */
-id = /*id.get*/0
+/*%if id != null */
+id = /*id*/0
 /*%end*/
   """)
   def ifSelect(id: Option[Int]): Seq[Person]
@@ -253,11 +253,11 @@ id = /*id.get*/0
   @Select("""
 select * from person
 where
-/*%if id.isDefined */
-  id = /*id.get*/0
-/*%elseif departmentId.isDefined */
+/*%if id != null*/
+  id = /*id*/0
+/*%elseif departmentId != null */
   and
-  department_id = /*departmentId.get */0
+  department_id = /*departmentId */0
 /*%else */
   and
   department_id is null

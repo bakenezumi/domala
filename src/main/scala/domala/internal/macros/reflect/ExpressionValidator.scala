@@ -281,6 +281,7 @@ class ExpressionValidator[C <: blackbox.Context](c: C)(
     val fieldName = node.getFieldName
     val fieldDeclaration = typeDeclaration.getFieldDeclaration(fieldName)
     if (fieldDeclaration != null) {
+      c.abort(c.enclosingPosition, "qqqqq" + fieldDeclaration.getTypeDeclaration.tpe)
       val fieldTypeDeclaration = fieldDeclaration.getTypeDeclaration
       if (fieldTypeDeclaration != null) return convertIfOptional(fieldTypeDeclaration)
     }
@@ -325,14 +326,14 @@ class ExpressionValidator[C <: blackbox.Context](c: C)(
       c.abort(c.enclosingPosition, Message.DOMALA4067.getMessage(variableName, Integer.valueOf(location.getPosition)))
     }
     validatedParameterNames.add(variableName)
-    TypeDeclaration.newTypeDeclaration(c)(tpe.get)
+    // TODO: feed back
+    // TypeDeclaration.newTypeDeclaration(c)(tpe.get)
+    convertIfOptional(TypeDeclaration.newTypeDeclaration(c)(tpe.get))
   }
 
   protected def convertIfOptional(typeDeclaration: TypeDeclaration[C]): TypeDeclaration[C] = {
     import c.universe._
-    // TODO:
     if (typeDeclaration.tpe <:< typeOf[java.util.Optional[_]] || typeDeclaration.tpe <:< typeOf[Option[_]]) {
-    //if (typeDeclaration.tpe <:< typeOf[java.util.Optional[_]]) {
       val typeParameterDeclaration = typeDeclaration.getTypeParameterDeclarations.headOption.getOrElse(c.abort(c.enclosingPosition, typeDeclaration.toString))
       return TypeDeclaration.newTypeDeclaration[C](c)(typeParameterDeclaration.actualType)
     }

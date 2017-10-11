@@ -53,8 +53,7 @@ class ExpressionEvaluator(variableValues: java.util.Map[String, Value] =
     value match {
       case optional: Optional[_] =>
         genericType match {
-          case _: ParameterizedType =>
-            val parameterizedType = genericType.asInstanceOf[ParameterizedType]
+          case parameterizedType: ParameterizedType =>
             val typeArguments = parameterizedType.getActualTypeArguments
             if (typeArguments.nonEmpty && typeArguments(0).isInstanceOf[Class[_]]) {
               val elementValue = if(optional.isPresent) optional.get() else null
@@ -73,8 +72,7 @@ class ExpressionEvaluator(variableValues: java.util.Map[String, Value] =
         return new EvaluationResult(nullable, classOf[Double])
       case option: Option[_] =>
         genericType match {
-          case _: ParameterizedType =>
-            val parameterizedType = genericType.asInstanceOf[ParameterizedType]
+          case parameterizedType: ParameterizedType =>
             val typeArguments = parameterizedType.getActualTypeArguments
             if (typeArguments.nonEmpty && typeArguments(0).isInstanceOf[Class[_]]) {
               val elementValue = option.getOrElse(null)

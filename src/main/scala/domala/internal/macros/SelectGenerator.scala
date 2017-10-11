@@ -236,15 +236,19 @@ object SelectGenerator {
 
     val addParameters = defDecl.paramss.flatten.map { p =>
       val paramTpe = p.decltpe.get match {
+        case t"Option[$inner]" => inner
         case t"$container[..$inner]" =>
           val placeHolder = inner.map(_ => t"_")
           t"${Type.Name(container.toString)}[..$placeHolder]"
-        case t"Stream[$p] => $r" =>
+        case t"Stream[$_] => $r" =>
           t"java.util.function.Function[_, _]"
         case _ => TypeHelper.toType(p.decltpe.get)
       }
-      q"""__query.addParameter(${p.name.syntax}, classOf[$paramTpe], ${Term
-        .Name(p.name.syntax): Term.Arg})"""
+      val param = p.decltpe.get match {
+        case t"Option[$_]" => q"${Term.Name(p.name.syntax)}.orNull": Term.Arg
+        case _ => Term.Name(p.name.syntax): Term.Arg
+      }
+      q"""__query.addParameter(${p.name.syntax}, classOf[$paramTpe], $param)"""
     }
 
     val daoParamTypes = defDecl.paramss.flatten.filter(p => p.decltpe.get match {
