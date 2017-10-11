@@ -197,9 +197,9 @@ from person
   @Insert(sql = """
 insert into person(id, name, age, city, street, department_id, version)
 values(
-  /* entity.id.get() */0,
-  /* entity.name.value */'hoge',
-  /* entity.age.get() */0,
+  /* entity.id */0,
+  /* entity.name */'hoge',
+  /* entity.age */0,
   /* entity2.address.city */'hoge',
   /* entity2.address.street */'hoge',
   /* 2 */0,
@@ -209,14 +209,14 @@ values(
 
   @Update(sql = """
 update person set
-  name = /* entity.name.value */'hoge',
-  age = /* entity.age.get() */0,
+  name = /* entity.name */'hoge',
+  age = /* entity.age */0,
   city = /* entity2.address.city */'hoge',
   street = /* entity2.address.street */'hoge',
   department_id = /* 2 */0,
   version = version + 1
 where
-  id = /* entity.id.get() */0 and
+  id = /* entity.id */0 and
   version = /* version */0
   """)
   def updateSql(entity: Person, entity2: Person, version: Int): Result[Person]
@@ -224,7 +224,7 @@ where
   @Delete(sql = """
 delete from person
 where
-  id = /* entity.id.get() */0 and
+  id = /* entity.id */0 and
   version = /* version */0
   """)
   def deleteSql(entity: Person, version: Int): Int

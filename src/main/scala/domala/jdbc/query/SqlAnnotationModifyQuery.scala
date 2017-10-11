@@ -1,8 +1,9 @@
 package domala.jdbc.query
 
-
-import org.seasar.doma.internal.expr.{ExpressionEvaluator, Value}
-import org.seasar.doma.internal.jdbc.sql.{NodePreparedSqlBuilder, SqlContext, SqlParser}
+import domala.internal.expr.ExpressionEvaluator
+import domala.internal.jdbc.sql.NodePreparedSqlBuilder
+import org.seasar.doma.internal.expr.Value
+import org.seasar.doma.internal.jdbc.sql.{SqlContext, SqlParser}
 import org.seasar.doma.internal.jdbc.sql.node.{ExpandNode, PopulateNode}
 import org.seasar.doma.internal.util.AssertionUtil
 import org.seasar.doma.jdbc._
@@ -24,7 +25,7 @@ class SqlAnnotationModifyQuery(protected val kind: SqlKind, sqlString: String) e
 
   protected def prepareSql(): Unit = {
     val evaluator = new ExpressionEvaluator(this.parameters, this.config.getDialect.getExpressionFunctions, this.config.getClassHelper)
-    val sqlBuilder = new NodePreparedSqlBuilder(this.config, this.kind, null.asInstanceOf[String], evaluator, this.sqlLogType, this.expandColumns _, this.populateValues _)
+    val sqlBuilder = new NodePreparedSqlBuilder(this.config, this.kind, evaluator, this.sqlLogType, this.expandColumns _, this.populateValues _)
     this.sql = sqlBuilder.build(this.sqlNode, this.comment _)
   }
 

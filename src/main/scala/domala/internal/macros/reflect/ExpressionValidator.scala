@@ -156,7 +156,7 @@ class ExpressionValidator[C <: blackbox.Context](c: C)(
 
   override def visitLiteralNode(node: LiteralNode, p: Void): TypeDeclaration[C] = {
     val tpe =
-      if (node.getValueClass eq classOf[Void]) c.typeOf[Null]
+      if (node.getValueClass eq classOf[Void]) typeOf[Null]
       else {
         val clazz = node.getValueClass
         if (clazz.isPrimitive)  {
@@ -169,6 +169,7 @@ class ExpressionValidator[C <: blackbox.Context](c: C)(
             case "float" => typeOf[Float]
             case "double" => typeOf[Double]
             case "boolean" => typeOf[Boolean]
+            case "void" => typeOf[Null]
             case _ => c.abort(c.enclosingPosition, clazz.toString)
           }
         }
@@ -329,7 +330,9 @@ class ExpressionValidator[C <: blackbox.Context](c: C)(
 
   protected def convertIfOptional(typeDeclaration: TypeDeclaration[C]): TypeDeclaration[C] = {
     import c.universe._
-    if (typeDeclaration.tpe <:< typeOf[java.util.Optional[_]] ) {
+    // TODO:
+    if (typeDeclaration.tpe <:< typeOf[java.util.Optional[_]] || typeDeclaration.tpe <:< typeOf[Option[_]]) {
+    //if (typeDeclaration.tpe <:< typeOf[java.util.Optional[_]]) {
       val typeParameterDeclaration = typeDeclaration.getTypeParameterDeclarations.headOption.getOrElse(c.abort(c.enclosingPosition, typeDeclaration.toString))
       return TypeDeclaration.newTypeDeclaration[C](c)(typeParameterDeclaration.actualType)
     }

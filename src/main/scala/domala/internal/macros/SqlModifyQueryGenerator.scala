@@ -5,12 +5,15 @@ import scala.meta._
 
 object SqlModifyQueryGenerator {
 
-  def generate(defDecl: QueryDefDecl,
-               commonSetting: DaoMethodCommonSetting,
-               internalMethodName: Term.Name,
-               query: Term => Term.New,
-               otherQuerySettings: Seq[Stat],
-               command: Term.Apply): Defn.Def = {
+  def generate(
+    defDecl: QueryDefDecl,
+    commonSetting: DaoMethodCommonSetting,
+    internalMethodName: Term.Name,
+    query: Term => Term.New,
+    otherQuerySettings: Seq[Stat],
+    command: Term.Apply,
+    populatable: Term
+  ): Defn.Def = {
     val params = defDecl.paramss.flatten
 
     val enteringParam = params.map(p =>
@@ -54,8 +57,16 @@ object SqlModifyQueryGenerator {
       q"__count"
     }
 
+    val daoParamTypes = defDecl.paramss.flatten.map { p =>
+      val pType: Type = p.decltpe.get match {
+        case tpe => TypeHelper.toType(tpe)
+      }
+      q"domala.internal.macros.DaoParamClass.apply(${p.name.syntax}, classOf[$pType])"
+    }
+
     q"""
     override def ${defDecl.name} = {
+      domala.internal.macros.reflect.DaoReflectionMacros.validSql(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, false, $populatable, ${commonSetting.sql}, ..$daoParamTypes)
       entering(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, ..$enteringParam)
       try {
         val __query = ${query(entityAndEntityType)}

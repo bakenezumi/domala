@@ -24,7 +24,8 @@ object DeleteGenerator {
         internalMethodName,
         query,
         otherQuerySettings,
-        command)
+        command,
+        q"false")
     } else {
       val ignoreVersion = args
         .collectFirst { case arg"ignoreVersion = $x" => x }

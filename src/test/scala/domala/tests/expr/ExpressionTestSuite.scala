@@ -182,6 +182,40 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
             Some(0))))
     }
   }
+
+  test("entity parameter") {
+    val entity1 = Person(Some(1), null, None, null, None, None)
+    val entity2 = Person(None, Name("ALLEN"), None, null, None, None)
+    val entity3 = Person(None, null, None, Address(null, "Karasuma"), None, None)
+
+    Required {
+      assert(
+        dao.entityParameterSelect(entity1).contains(
+          Person(Some(1),
+            Name("SMITH"),
+            Some(10),
+            Address("Tokyo", "Yaesu"),
+            Some(2),
+            Some(0))))
+      assert(
+        dao.entityParameterSelect(entity2).contains(
+          Person(Some(2),
+            Name("ALLEN"),
+            Some(20),
+            Address("Kyoto", "Karasuma"),
+            Some(1),
+            Some(0))))
+      assert(
+        dao.entityParameterSelect(entity3).contains(
+          Person(Some(2),
+            Name("ALLEN"),
+            Some(20),
+            Address("Kyoto", "Karasuma"),
+            Some(1),
+            Some(0))))
+    }
+  }
+
 }
 
 @Dao(config = ExprTestConfig)
@@ -269,4 +303,37 @@ where
 id = /* f.apply(id) */0
   """)
   def functionSelect(id: String, f: String => Int = s => s.toInt) : Option[Person]
+
+  @Select("""
+select * from person
+where
+/*%if entity.id != null */
+  id = /*entity.id*/0
+/*%end*/
+/*%if entity.name != null */
+  and
+  name = /*entity.name*/0
+/*%end*/
+/*%if entity.age != null */
+  and
+  age = /*entity.age*/0
+/*%end*/
+/*%if entity.address != null && entity.address.city != null */
+  and
+  address = /*entity.address.city*/0
+/*%end*/
+/*%if entity.address != null && entity.address.street != null */
+  and
+  street = /*entity.address.street*/0
+/*%end*/
+/*%if entity.departmentId != null */
+  and
+  department_id = /*entity.departmentId*/0
+/*%end*/
+/*%if entity.version != null */
+  and
+  version = /*entity.version*/0
+/*%end*/
+  """)
+  def entityParameterSelect(entity: Person) : Option[Person]
 }
