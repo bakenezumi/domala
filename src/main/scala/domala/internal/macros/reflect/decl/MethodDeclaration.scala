@@ -20,11 +20,10 @@ class MethodDeclaration[C <: blackbox.Context](val c: C)(
   def isStatic: Boolean = methodSymbos.isStatic
 
   protected def resolveTypeParameter(formalType: C#Type): C#Type = {
-    for (typeParameterDecl <- typeParameterDeclarations) {
+    typeParameterDeclarations.collectFirst{
       // TODO: unchecked since it is eliminated by erasure
-      if (formalType.toString == typeParameterDecl.formalTypeName) return typeParameterDecl.actualType
-    }
-    formalType
+      case typeParameterDecl if formalType.toString == typeParameterDecl.formalTypeName => typeParameterDecl.actualType
+    }.getOrElse(formalType)
   }
 
 }

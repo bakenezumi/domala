@@ -281,7 +281,6 @@ class ExpressionValidator[C <: blackbox.Context](c: C)(
     val fieldName = node.getFieldName
     val fieldDeclaration = typeDeclaration.getFieldDeclaration(fieldName)
     if (fieldDeclaration != null) {
-      c.abort(c.enclosingPosition, "qqqqq" + fieldDeclaration.getTypeDeclaration.tpe)
       val fieldTypeDeclaration = fieldDeclaration.getTypeDeclaration
       if (fieldTypeDeclaration != null) return convertIfOptional(fieldTypeDeclaration)
     }

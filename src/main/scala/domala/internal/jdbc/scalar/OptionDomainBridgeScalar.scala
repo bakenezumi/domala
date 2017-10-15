@@ -29,10 +29,9 @@ class OptionDomainBridgeScalar[BASIC, DOMAIN](optionalScalar: Scalar[BASIC, Opti
     if (option == null) {
       optionalScalar.set(Optional.of[DOMAIN](null.asInstanceOf[DOMAIN]))
     } else {
-      optionalScalar.set(option match {
-        case None => Optional.empty()
-        case Some(value) => Optional.of(value)
-      })
+      optionalScalar.set(option.map(value => Optional.of(value))
+        .getOrElse(Optional.empty())
+      )
     }
   }
 
