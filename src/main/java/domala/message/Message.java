@@ -34,6 +34,7 @@ public enum Message implements MessageResource {
     // macros
     DOMALA4001("戻り値の型は更新件数を示すIntでなければいけません。 at {0}.{1}"),
     DOMALA4002(org.seasar.doma.message.Message.DOMA4002.getMessagePattern()),
+    DOMALA4003(org.seasar.doma.message.Message.DOMA4003.getMessagePattern()),
     DOMALA4005(org.seasar.doma.message.Message.DOMA4005.getMessagePattern()),
     DOMALA4007("戻り値のSeqに対する実型引数の型[{0}]はサポートされていません。 at {1}.{2}"),
     DOMALA4008(org.seasar.doma.message.Message.DOMA4008.getMessagePattern()),

@@ -225,8 +225,25 @@ object DaoReflectionMacros {
     val sqlNode = new SqlParser(sqlLiteral).parse()
     val sqlValidator = new SqlValidator[c.type](c)(trtNameLiteral, defNameLiteral, expandableLiteral, populatableLiteral, paramTypes)
     sqlValidator.validate(sqlNode)
-
     reify(())
   }
   def validSql(trtName: String, defName: String, expandable: Boolean, populatable: Boolean, sql: String, params: (DaoParamClass[_])*): Unit = macro validSqlImpl
+
+  def validParamImpl[T: c.WeakTypeTag](c: blackbox.Context)(
+    trtName: c.Expr[String],
+    defName: c.Expr[String],
+    paramClass: c.Expr[Class[T]]): c.Expr[Unit] = {
+    import c.universe._
+    val tpe = weakTypeOf[T]
+    if (tpe.companion <:< typeOf[AbstractEntityType[_]]) {
+      reify(())
+    } else {
+      c.abort(c.enclosingPosition,
+        domala.message.Message.DOMALA4003
+          .getMessage(trtName.tree.toString().tail.init,
+            defName.tree.toString().tail.init))
+
+    }
+  }
+  def validParam[T](trtName: String, defName: String, paramClass: Class[T]): Unit = macro validParamImpl[T]
 }
