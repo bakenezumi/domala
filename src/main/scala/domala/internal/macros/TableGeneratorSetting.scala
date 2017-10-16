@@ -3,13 +3,10 @@ package domala.internal.macros
 import scala.meta._
 
 object TableGeneratorSetting {
-  def read(mods: Seq[Mod], className: String, propertyName: String): TableGeneratorSetting = {
-    val tableGenerator = mods.collect {
-      case mod"@TableGenerator(..$args)" => args
-    }.headOption
+  def read(mods: Seq[Mod], className: String): Option[TableGeneratorSetting] = {
     val blank = q""" "" """
-    tableGenerator match {
-      case Some(args) =>
+    mods.collect {
+      case mod"@TableGenerator(..$args)" =>
         val catalog = args.collectFirst { case arg"catalog = $x" => x }.getOrElse(blank)
         val schema = args.collectFirst { case arg"schema = $x" => x }.getOrElse(blank)
         val table = args.collectFirst { case arg"table = $x" => x }.getOrElse(q""""ID_GENERATOR"""")
@@ -20,8 +17,7 @@ object TableGeneratorSetting {
         val allocationSize = args.collectFirst { case arg"allocationSize = $x" => x }.getOrElse(q"1")
         val implementer = args.collectFirst { case arg"implementer = $x" => x }.getOrElse(q"classOf[org.seasar.doma.jdbc.id.BuiltinSequenceIdGenerator]")
         TableGeneratorSetting(catalog, schema, table, pkColumnName, valueColumnName, pkColumnValue, initialValue, allocationSize, implementer)
-      case _ => abort(domala.message.Message.DOMALA4035.getMessage(className, propertyName))
-    }
+    }.headOption
   }
 }
 

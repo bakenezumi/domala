@@ -1,5 +1,8 @@
 package domala.internal.macros
 
+import domala.message.Message
+import org.seasar.doma.internal.apt.meta.MetaConstants
+
 import scala.collection.immutable.Seq
 import scala.meta._
 
@@ -49,6 +52,11 @@ object DaoGenerator {
   private def from(n: Int): Stream[Int] = n #:: from(n + 1)
 
   protected def generateDef(trtName: Type.Name, _def: Decl.Def, idx: Int): Seq[Defn] = {
+    _def.paramss.flatten.foreach{p =>
+      if(p.name.syntax.startsWith(MetaConstants.RESERVED_NAME_PREFIX)) {
+        abort(Message.DOMALA4025.getMessage(MetaConstants.RESERVED_NAME_PREFIX, trtName.syntax, _def.name.syntax))
+      }
+    }
     val internalMethodName = Term.Name(s"__method$idx")
     List(
       {

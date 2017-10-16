@@ -1,5 +1,8 @@
 import Dependencies._
 
+lazy val _scalaVersion = "2.12.3"
+lazy val _version = "0.1.0-beta.3"
+
 lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(
   resolvers += Resolver.sonatypeRepo("releases"),
   resolvers += Resolver.bintrayRepo("scalameta", "maven"),
@@ -10,8 +13,8 @@ lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(
 
 lazy val root = (project in file(".")).settings(
   inThisBuild(List(
-    scalaVersion := "2.12.3",
-    version      := "0.1.0-beta.3"
+    scalaVersion := _scalaVersion,
+    version      := _version
   )),
   name := "domala",
   organization := "com.github.domala",
@@ -20,22 +23,29 @@ lazy val root = (project in file(".")).settings(
   libraryDependencies ++= Seq(
     "org.seasar.doma" % "doma" % "2.17.0",
     "org.scala-lang.modules" %% "scala-java8-compat" % "0.8.0",
-    "org.scalameta" %% "scalameta" % "1.8.0" % Provided,
+    "org.scalameta" %% "scalameta" % "1.8.0",
     "org.scala-lang" % "scala-reflect" % scalaVersion.value,
     "com.h2database" % "h2" % "1.4.193" % Test,
     scalaTest % Test
   )
 )
 
-lazy val sample = (project in file("sample")).settings(
+lazy val sample = (project in file("sample")).settings (
   inThisBuild(List(
-    scalaVersion := "2.12.3",
-    version      := "0.1.0-beta.3"
+    scalaVersion := _scalaVersion,
+    version      := _version
   )),
   libraryDependencies ++= Seq(
     "com.h2database" % "h2" % "1.4.193",
     scalaTest % Test
-  ),
+  )
+) dependsOn sampleRepository aggregate sampleRepository
+
+lazy val sampleRepository = (project in file("sample-repository")).settings(
+  inThisBuild(List(
+    scalaVersion := _scalaVersion,
+    version      := _version
+  )),
   metaMacroSettings
 ) dependsOn root aggregate root
 

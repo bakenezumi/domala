@@ -21,7 +21,7 @@ class Entity(listener: Class[_ <: EntityListener[_ <: Any]] = classOf[NullEntity
         )
       }
       case cls: Defn.Class => (cls, EntityTypeGenerator.generate(cls, params))
-      case _ => abort("@Entity most annotate a class")
+      case _ => abort(domala.message.Message.DOMALA4015.getMessage())
     }
     //logger.debug(newCompanion)
     Term.Block(Seq(

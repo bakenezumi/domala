@@ -56,7 +56,7 @@ from
     department d
     on (p.department_id = d.id)
 where
-    p.id = /*id*/0  
+    p.id = /*id*/0
   """)
   def selectWithDepartmentById(id: Int): Option[PersonDepartment]
 

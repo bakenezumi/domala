@@ -14,7 +14,7 @@ class Dao(config: Config = null) extends scala.annotation.StaticAnnotation {
     }.orNull
     defn match {
       case trt: Defn.Trait => DaoGenerator.generate(trt, config)
-      case _ => abort("@Dao most annotate a trait")
+      case _ => abort(domala.message.Message.DOMALA4014.getMessage())
     }
   }
 }

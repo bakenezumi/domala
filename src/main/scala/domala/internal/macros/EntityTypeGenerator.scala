@@ -2,6 +2,7 @@ package domala.internal.macros
 
 import domala.internal.macros.TypeHelper.toType
 import domala.message.Message
+import org.seasar.doma.internal.apt.meta.MetaConstants
 
 import scala.collection.immutable.Seq
 import scala.meta._
@@ -68,11 +69,17 @@ object EntityTypeGenerator {
     val params = ctor.paramss.flatten
     val idMods = params.filter(p => p.mods.exists {
       case  mod"@Id" | mod"@domala.Id" => true
-      case _ => false
+      case _ =>  p.mods.exists {
+        // TODO: IntelliJでエラーが出るためコメント
+        //case  mod"@GeneratedValue($_)" => abort(Message.DOMALA4033.getMessage(clsName.syntax, p.name.syntax))
+        //case _ => false
+        _ => false
+      }
     })
     if (idMods.nonEmpty) { // has Id annotation
       val strategies = ctor.paramss.flatten.flatMap(_.mods.collect {
         case mod"@GeneratedValue(strategy = $strategy)" => strategy
+        case mod"@GeneratedValue($strategy)" => strategy
       })
       if(strategies.size > 1) {
         abort(Message.DOMALA4037.getMessage(clsName.syntax, idMods.head.name.syntax))
@@ -85,7 +92,9 @@ object EntityTypeGenerator {
         strategies.head match {
           case q"GenerationType.IDENTITY" => Seq(q"private val __idGenerator = new org.seasar.doma.jdbc.id.BuiltinIdentityIdGenerator()")
           case q"GenerationType.SEQUENCE" =>
-            val sequenceGeneratorSetting = SequenceGeneratorSetting.read(idMods.head.mods, clsName.syntax, idMods.head.name.syntax)
+            val sequenceGeneratorSettingOption = SequenceGeneratorSetting.read(idMods.head.mods, clsName.syntax)
+            val sequenceGeneratorSetting = sequenceGeneratorSettingOption
+              .getOrElse(abort(domala.message.Message.DOMALA4034.getMessage(clsName.syntax, idMods.head.name.syntax)))
             q"""
             private val __idGenerator = new org.seasar.doma.jdbc.id.BuiltinSequenceIdGenerator()
             __idGenerator.setQualifiedSequenceName(${sequenceGeneratorSetting.sequence})
@@ -94,7 +103,9 @@ object EntityTypeGenerator {
             __idGenerator.initialize()
             """.stats
           case q"GenerationType.TABLE" =>
-            val tableGeneratorSetting = TableGeneratorSetting.read(idMods.head.mods, clsName.syntax, idMods.head.name.syntax)
+            val tableGeneratorSettingOption = TableGeneratorSetting.read(idMods.head.mods, clsName.syntax)
+            val tableGeneratorSetting = tableGeneratorSettingOption
+              .getOrElse(abort(domala.message.Message.DOMALA4035.getMessage(clsName.syntax, idMods.head.name.syntax)))
             q"""
             private val __idGenerator = new org.seasar.doma.jdbc.id.BuiltinTableIdGenerator()
             __idGenerator.setQualifiedTableName(${tableGeneratorSetting.table})
@@ -122,6 +133,9 @@ object EntityTypeGenerator {
       val Term.Param(mods, name, Some(decltpe), default) = p
       val columnSetting = ColumnSetting.read(mods)
       val tpe = Type.Name(decltpe.toString)
+      if(name.syntax.startsWith(MetaConstants.RESERVED_NAME_PREFIX)) {
+        abort(Message.DOMALA4025.getMessage(MetaConstants.RESERVED_NAME_PREFIX, clsName.syntax, name.syntax))
+      }
       val propertyName = Pat.Var.Term(Term.Name("$" + name.syntax))
 
       val (isBasic, nakedTpe, newWrapperExpr) = TypeHelper.convertToEntityDomaType(decltpe) match {
@@ -142,8 +156,8 @@ object EntityTypeGenerator {
          case _ => false
        }
 
-      // TODO: IntelliJでなぜかエラー（アノテーションが読めてない模様）
-      // if(isIdGenerate && !isId) abort(org.seasar.doma.message.Message.DOMA4033.getMessage(clsName.syntax, name.syntax))
+      // TODO: IntelliJでなぜかエラーが出るためコメント（アノテーションが読めてない模様）
+      // if(isIdGenerate && !isId) abort(Message.DOMALA4033.getMessage(clsName.syntax, name.syntax))
 
       val isVersion = mods.exists {
         case mod"@Version" | mod"@domala.Version" => true
