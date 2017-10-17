@@ -19,6 +19,9 @@ case class EntitySetting(
 object EntityTypeGenerator {
 
   def generate(cls: Defn.Class, args: Seq[Term.Arg]): Defn.Object = {
+    if(cls.tparams.nonEmpty)
+      abort(Message.DOMALA4051.getMessage(cls.name.syntax))
+
     val entitySetting = EntitySetting(
       args.collectFirst { case arg"listener = classOf[$x]" => x }.getOrElse(t"org.seasar.doma.jdbc.entity.NullEntityListener[${cls.name}]"),
       args.collectFirst { case arg"naming = $x" => Term.Name(x.syntax) }.getOrElse(q"null")

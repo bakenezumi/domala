@@ -25,12 +25,12 @@ object BatchInsertGenerator {
       case _                   => Nil
     }
     val defDecl = QueryDefDecl.of(trtName, _def)
-    val (paramName, paramTpe) =
+    val (paramName, paramTpe, internalTpe) =
       AutoBatchModifyQueryGenerator.extractParameter(defDecl)
 
     val query =
       q"getQueryImplementors.createAutoBatchInsertQuery($internalMethodName, ${Term
-        .Name(paramTpe.syntax)})"
+        .Name(internalTpe.syntax)})"
     val command =
       q"getCommandImplementors.createBatchInsertCommand($internalMethodName, __query)"
     val otherQuerySettings = Seq[Stat](
@@ -42,6 +42,7 @@ object BatchInsertGenerator {
       commonSetting,
       paramName,
       paramTpe,
+      internalTpe,
       internalMethodName,
       query,
       otherQuerySettings,

@@ -32,11 +32,11 @@ object BatchUpdateGenerator {
       .collectFirst { case arg"suppressOptimisticLockException = $x" => x }
       .getOrElse(q"false")
     val defDecl = QueryDefDecl.of(trtName, _def)
-    val (paramName, paramTpe) =
+    val (paramName, paramTpe, internalTpe) =
       AutoBatchModifyQueryGenerator.extractParameter(defDecl)
     val query =
       q"getQueryImplementors.createAutoBatchUpdateQuery($internalMethodName, ${Term
-        .Name(paramTpe.syntax)})"
+        .Name(internalTpe.syntax)})"
     val command =
       q"getCommandImplementors.createBatchUpdateCommand($internalMethodName, __query)"
     val otherQuerySettings = Seq[Stat](
@@ -50,6 +50,7 @@ object BatchUpdateGenerator {
       commonSetting,
       paramName,
       paramTpe,
+      internalTpe,
       internalMethodName,
       query,
       otherQuerySettings,

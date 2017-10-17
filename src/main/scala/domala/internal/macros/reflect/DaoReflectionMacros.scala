@@ -229,7 +229,7 @@ object DaoReflectionMacros {
   }
   def validSql(trtName: String, defName: String, expandable: Boolean, populatable: Boolean, sql: String, params: (DaoParamClass[_])*): Unit = macro validSqlImpl
 
-  def validParamImpl[T: c.WeakTypeTag](c: blackbox.Context)(
+  def validAutoModifyParamImpl[T: c.WeakTypeTag](c: blackbox.Context)(
     trtName: c.Expr[String],
     defName: c.Expr[String],
     paramClass: c.Expr[Class[T]]): c.Expr[Unit] = {
@@ -242,8 +242,33 @@ object DaoReflectionMacros {
         domala.message.Message.DOMALA4003
           .getMessage(trtName.tree.toString().tail.init,
             defName.tree.toString().tail.init))
-
     }
   }
-  def validParam[T](trtName: String, defName: String, paramClass: Class[T]): Unit = macro validParamImpl[T]
+  def validAutoModifyParam[T](trtName: String, defName: String, paramClass: Class[T]): Unit = macro validAutoModifyParamImpl[T]
+
+  def validAutoBatchModifyParamImpl[C: c.WeakTypeTag, T: c.WeakTypeTag](c: blackbox.Context)(
+    trtName: c.Expr[String],
+    defName: c.Expr[String],
+    paramClass: c.Expr[Class[C]],
+    internalClass: c.Expr[Class[T]]): c.Expr[Unit] = {
+    import c.universe._
+    val containerTpe = weakTypeOf[C]
+    if (containerTpe <:< typeOf[Iterable[_]]) {
+      val tpe = weakTypeOf[T]
+      if (tpe.companion <:< typeOf[AbstractEntityType[_]]) {
+        reify(())
+      } else {
+        c.abort(c.enclosingPosition,
+          domala.message.Message.DOMALA4043
+            .getMessage(trtName.tree.toString().tail.init,
+              defName.tree.toString().tail.init))
+      }
+    } else {
+      c.abort(c.enclosingPosition,
+        domala.message.Message.DOMALA4042
+          .getMessage(trtName.tree.toString().tail.init,
+            defName.tree.toString().tail.init))
+    }
+  }
+  def validAutoBatchModifyParam[C, T](trtName: String, defName: String, paramClass: Class[C], internalClass: Class[T]): Unit = macro validAutoBatchModifyParamImpl[C, T]
 }

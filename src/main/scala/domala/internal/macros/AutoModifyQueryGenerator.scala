@@ -35,7 +35,7 @@ object AutoModifyQueryGenerator {
 
     q"""
     override def ${defDecl.name} = {
-      domala.internal.macros.reflect.DaoReflectionMacros.validParam(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, classOf[$paramType])
+      domala.internal.macros.reflect.DaoReflectionMacros.validAutoModifyParam(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, classOf[$paramType])
       entering(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, $paramName)
       try {
         if ($paramName == null) {

@@ -54,7 +54,7 @@ object DaoMacroHelper {
 
   private def hasEntitySeqParameter(defDecl: QueryDefDecl, resultEntityType: Type, paramTypes: Seq[Term.Param]): Boolean = {
     paramTypes.map(_.decltpe.get).exists {
-      case t"Seq[$entity]" if entity.syntax == resultEntityType.syntax => true
+      case t"$_[$entity]" if entity.syntax == resultEntityType.syntax => true
       case _ => abort(domala.message.Message.DOMALA4223.getMessage(defDecl.trtName.syntax, defDecl.name.syntax))
     }
   }

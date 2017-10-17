@@ -186,13 +186,13 @@ from person
   def delete(person: Person): Int
 
   @BatchInsert
-  def batchInsert(persons: Seq[Person]): BatchResult[Person]
+  def batchInsert(persons: Iterable[Person]): BatchResult[Person]
 
   @BatchUpdate
-  def batchUpdate(persons: Seq[Person]): BatchResult[Person]
+  def batchUpdate(persons: Iterable[Person]): BatchResult[Person]
 
   @BatchDelete
-  def batchDelete(persons: Seq[Person]): Array[Int]
+  def batchDelete(persons: Iterable[Person]): Array[Int]
 
   @Insert(sql = """
 insert into person(id, name, age, city, street, department_id, version)

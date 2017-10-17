@@ -51,7 +51,9 @@ public enum Message implements MessageResource {
     DOMALA4036(org.seasar.doma.message.Message.DOMA4036.getMessagePattern()),
     DOMALA4037(org.seasar.doma.message.Message.DOMA4037.getMessagePattern()),
     DOMALA4040("戻り値の型は更新件数を示すArray[Int]でなければいけません。 at {0}.{1}"),
-    DOMALA4042(org.seasar.doma.message.Message.DOMA4042.getMessagePattern()),
+    DOMALA4042("パラーメータの型はscala.collection.Iterableのサブタイプでなければいけません。 at {0}.{1}"),
+    DOMALA4043("scala.collection.Iterableのサブタイプに対する実型引数はエンティティクラスでなければいけません。 at {0}.{1}"),
+    DOMALA4051(org.seasar.doma.message.Message.DOMA4051.getMessagePattern()),
     DOMALA4067(org.seasar.doma.message.Message.DOMA4067.getMessagePattern()),
     DOMALA4069("[{0}.{1}]のSQLの解析に失敗しました。原因は次のものです。{2}"),
     DOMALA4071(org.seasar.doma.message.Message.DOMA4071.getMessagePattern()),
@@ -98,8 +100,8 @@ public enum Message implements MessageResource {
     DOMALA4304(org.seasar.doma.message.Message.DOMA4304.getMessagePattern()),
 
     // macros(domala original)
-    DOMALA6001("@Domainを注釈するcase classのパラメータは1つでなければなりません。"),
-    DOMALA6002("@Domainを注釈するcase classのパラメータ名は`value`でなければいけません。"),
+    DOMALA6001("@Holderを注釈するcase classのパラメータは1つでなければなりません。"),
+    DOMALA6002("@Holderを注釈するcase classのパラメータ名は`value`でなければいけません。"),
     DOMALA6003("式[{0}]（[{1}]番目の文字付近）staticメソッドの呼び出しはサポートされていません。"),
     DOMALA6004("式[{0}]（[{1}]番目の文字付近）staticフィールドへのアクセスはサポートされていません。"),;
 

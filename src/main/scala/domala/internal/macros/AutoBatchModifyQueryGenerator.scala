@@ -5,7 +5,7 @@ import scala.collection.immutable.Seq
 import scala.meta._
 
 object AutoBatchModifyQueryGenerator {
-  def extractParameter(defDecl: QueryDefDecl): (Term.Name, Type.Name) = {
+  def extractParameter(defDecl: QueryDefDecl): (Term.Name, Type.Name, Type.Name) = {
     if (defDecl.paramss.flatten.length != 1)
       abort(defDecl._def.pos,
             Message.DOMALA4002
@@ -14,8 +14,8 @@ object AutoBatchModifyQueryGenerator {
       case param"$paramName: ${Some(paramTpe)}" =>
         paramTpe match {
           // TODO: _ <: Seqでないとコンパイルエラーにすべき
-          case t"Seq[$internalTpe]" =>
-            (Term.Name(paramName.value), Type.Name(internalTpe.toString))
+          case t"$tpe[$internalTpe]" =>
+            (Term.Name(paramName.value), Type.Name(t"$tpe[$internalTpe]".syntax), Type.Name(internalTpe.syntax))
           case _ =>
             abort(defDecl._def.pos,
               Message.DOMALA4042
@@ -28,6 +28,7 @@ object AutoBatchModifyQueryGenerator {
                commonSetting: DaoMethodCommonBatchSetting,
                paramName: Term.Name,
                paramType: Type.Name,
+               internalType: Type.Name,
                internalMethodName: Term.Name,
                query: Term.Apply,
                otherQuerySettings: Seq[Stat],
@@ -43,7 +44,7 @@ object AutoBatchModifyQueryGenerator {
 
     q"""
     override def ${defDecl.name} = {
-      domala.internal.macros.reflect.DaoReflectionMacros.validParam(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, classOf[$paramType])
+      domala.internal.macros.reflect.DaoReflectionMacros.validAutoBatchModifyParam(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, classOf[$paramType], classOf[$internalType])
       entering(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, $paramName)
       try {
         if ($paramName == null) {
