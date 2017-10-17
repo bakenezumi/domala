@@ -5,7 +5,7 @@ import domala.jdbc.{BatchResult, Config, Result}
 import domala.tests.TestConfig
 import org.scalatest.{BeforeAndAfter, FunSuite}
 
-class IdTestSuite extends FunSuite with BeforeAndAfter{
+class IdTestSuite extends FunSuite with BeforeAndAfter {
   implicit val config: Config = TestConfig
 
   val dao: IdDao = IdDao.impl

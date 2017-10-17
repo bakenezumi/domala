@@ -1,5 +1,6 @@
 package domala.internal.macros
 
+import domala.GenerationType
 import domala.internal.macros.TypeHelper.toType
 import domala.message.Message
 import org.seasar.doma.internal.apt.meta.MetaConstants
@@ -67,65 +68,84 @@ object EntityTypeGenerator {
 
   protected def generateIdGeneratorFields(clsName: Type.Name, ctor: Ctor.Primary): Seq[Stat] = {
     val params = ctor.paramss.flatten
-    val idMods = params.filter(p => p.mods.exists {
-      case  mod"@Id" | mod"@domala.Id" => true
-      case _ =>  p.mods.exists {
-        // TODO: IntelliJでエラーが出るためコメント
-        //case  mod"@GeneratedValue($_)" => abort(Message.DOMALA4033.getMessage(clsName.syntax, p.name.syntax))
-        //case _ => false
-        _ => false
-      }
+    val idParams = params.filter(p => p.mods.exists {
+      case mod"@Id" | mod"@domala.Id" | mod"@Id()" | mod"@domala.Id()" => true
+      case _ => false
     })
-    if (idMods.nonEmpty) { // has Id annotation
-      val strategies = ctor.paramss.flatten.flatMap(_.mods.collect {
-        case mod"@GeneratedValue(strategy = $strategy)" => strategy
-        case mod"@GeneratedValue($strategy)" => strategy
-      })
-      if(strategies.size > 1) {
-        abort(Message.DOMALA4037.getMessage(clsName.syntax, idMods.head.name.syntax))
-      } else if(strategies.isEmpty) { // Id only
-        Seq(q"private val __idGenerator = null")
-      } else {
-        if(idMods.size > 1) {
-          abort(Message.DOMALA4036.getMessage(clsName.syntax))
-        }
-        strategies.head match {
-          case q"GenerationType.IDENTITY" => Seq(q"private val __idGenerator = new org.seasar.doma.jdbc.id.BuiltinIdentityIdGenerator()")
-          case q"GenerationType.SEQUENCE" =>
-            val sequenceGeneratorSettingOption = SequenceGeneratorSetting.read(idMods.head.mods, clsName.syntax)
-            val sequenceGeneratorSetting = sequenceGeneratorSettingOption
-              .getOrElse(abort(domala.message.Message.DOMALA4034.getMessage(clsName.syntax, idMods.head.name.syntax)))
-            q"""
-            private val __idGenerator = new org.seasar.doma.jdbc.id.BuiltinSequenceIdGenerator()
-            __idGenerator.setQualifiedSequenceName(${sequenceGeneratorSetting.sequence})
-            __idGenerator.setInitialValue(${sequenceGeneratorSetting.initialValue})
-            __idGenerator.setAllocationSize(${sequenceGeneratorSetting.allocationSize})
-            __idGenerator.initialize()
-            """.stats
-          case q"GenerationType.TABLE" =>
-            val tableGeneratorSettingOption = TableGeneratorSetting.read(idMods.head.mods, clsName.syntax)
-            val tableGeneratorSetting = tableGeneratorSettingOption
-              .getOrElse(abort(domala.message.Message.DOMALA4035.getMessage(clsName.syntax, idMods.head.name.syntax)))
-            q"""
-            private val __idGenerator = new org.seasar.doma.jdbc.id.BuiltinTableIdGenerator()
-            __idGenerator.setQualifiedTableName(${tableGeneratorSetting.table})
-            __idGenerator.setInitialValue(${tableGeneratorSetting.initialValue})
-            __idGenerator.setAllocationSize(${tableGeneratorSetting.allocationSize})
-            __idGenerator.setPkColumnName(${tableGeneratorSetting.pkColumnName})
-            __idGenerator.setPkColumnValue(${tableGeneratorSetting.pkColumnValue})
-            __idGenerator.setValueColumnName(${tableGeneratorSetting.valueColumnName})
-            __idGenerator.initialize()
-            """.stats
-        }
-      }
-    } else { // no Id
-      Seq(q"private val __idGenerator = null")
+    val generatedValueParams = params.filter(p => p.mods.exists {
+      case mod"@GeneratedValue($_)" => true
+      case _ => false
+    })
+    if(generatedValueParams.length > 1) {
+      abort(Message.DOMALA4037.getMessage(clsName.syntax, idParams.head.name.syntax))
     }
+    if(generatedValueParams.length == 1) {
+      if(idParams.size > 1) {
+        abort(Message.DOMALA4036.getMessage(clsName.syntax))
+      }
+      if(idParams.isEmpty || idParams.head.name.syntax != generatedValueParams.head.name.syntax) {
+        abort(Message.DOMALA4033.getMessage(clsName.syntax, generatedValueParams.head.name.syntax))
+      }
+    }
+    val strategy = generatedValueParams.flatMap(_.mods).collectFirst {
+      case mod"@GeneratedValue(strategy = $strategy)" => strategy
+      case mod"@GeneratedValue($strategy)" => strategy
+    }.map {
+      case q"GenerationType.IDENTITY" => GenerationType.IDENTITY
+      case q"GenerationType.SEQUENCE" => GenerationType.SEQUENCE
+      case q"GenerationType.TABLE" => GenerationType.TABLE
+    }
+
+    params.foreach(p => p.mods.collect {
+      case mod"@SequenceGenerator(..$_)" =>
+        if(strategy.isEmpty || p.name.syntax != generatedValueParams.head.name.syntax || {
+          strategy match {
+          case Some(GenerationType.SEQUENCE) => false
+          case _ => true
+          }})
+          abort(Message.DOMALA4030.getMessage(clsName.syntax, p.name.syntax + ":" + strategy))
+      case mod"@TableGenerator(..$_)" =>
+        if(generatedValueParams.isEmpty || p.name.syntax != generatedValueParams.head.name.syntax || {
+          strategy match {
+            case  Some(GenerationType.TABLE) => false
+            case _ => true
+          }})
+          abort(Message.DOMALA4031.getMessage(clsName.syntax, p.name.syntax))
+    })
+
+    strategy.map {
+      case GenerationType.IDENTITY => Seq(q"private val __idGenerator = new org.seasar.doma.jdbc.id.BuiltinIdentityIdGenerator()")
+      case GenerationType.SEQUENCE =>
+        val sequenceGeneratorSetting = SequenceGeneratorSetting.read(idParams.head.mods, clsName.syntax)
+          .getOrElse(abort(domala.message.Message.DOMALA4034.getMessage(clsName.syntax, idParams.head.name.syntax)))
+        q"""
+          private val __idGenerator = new org.seasar.doma.jdbc.id.BuiltinSequenceIdGenerator()
+          __idGenerator.setQualifiedSequenceName(${sequenceGeneratorSetting.sequence})
+          __idGenerator.setInitialValue(${sequenceGeneratorSetting.initialValue})
+          __idGenerator.setAllocationSize(${sequenceGeneratorSetting.allocationSize})
+          __idGenerator.initialize()
+          """.stats
+      case GenerationType.TABLE =>
+        val tableGeneratorSetting = TableGeneratorSetting.read(idParams.head.mods, clsName.syntax)
+          .getOrElse(abort(domala.message.Message.DOMALA4035.getMessage(clsName.syntax, idParams.head.name.syntax)))
+        q"""
+          private val __idGenerator = new org.seasar.doma.jdbc.id.BuiltinTableIdGenerator()
+          __idGenerator.setQualifiedTableName(${tableGeneratorSetting.table})
+          __idGenerator.setInitialValue(${tableGeneratorSetting.initialValue})
+          __idGenerator.setAllocationSize(${tableGeneratorSetting.allocationSize})
+          __idGenerator.setPkColumnName(${tableGeneratorSetting.pkColumnName})
+          __idGenerator.setPkColumnValue(${tableGeneratorSetting.pkColumnValue})
+          __idGenerator.setValueColumnName(${tableGeneratorSetting.valueColumnName})
+          __idGenerator.initialize()
+          """.stats
+      }.getOrElse(
+        Seq(q"private val __idGenerator = null")
+      )
   }
 
   protected def generatePropertyTypeFields(clsName: Type.Name, ctor: Ctor.Primary): Seq[Defn.Val] = {
     if (ctor.paramss.flatten.flatMap(_.mods).count {
-      case mod"@Version" | mod"@domala.Version" => true
+      case mod"@Version" | mod"@domala.Version" | mod"@Version()" | mod"@domala.Version()"=> true
       case _ => false
     } > 1) abort(Message.DOMALA4024.getMessage(clsName.syntax))
 
@@ -147,20 +167,17 @@ object EntityTypeGenerator {
       }
 
       val isId = mods.exists {
-        case mod"@Id" | mod"@domala.Id" => true
+        case mod"@Id" | mod"@domala.Id" | mod"@Id()" | mod"@domala.Id()"=> true
         case _ => false
       }
 
-       val isIdGenerate = mods.exists {
-         case mod"@GeneratedValue($_)" => true
-         case _ => false
-       }
-
-      // TODO: IntelliJでなぜかエラーが出るためコメント（アノテーションが読めてない模様）
-      // if(isIdGenerate && !isId) abort(Message.DOMALA4033.getMessage(clsName.syntax, name.syntax))
+      val isIdGenerate = mods.exists {
+        case mod"@GeneratedValue($_)" => true
+        case _ => false
+      }
 
       val isVersion = mods.exists {
-        case mod"@Version" | mod"@domala.Version" => true
+        case mod"@Version" | mod"@domala.Version" | mod"@Version()" | mod"@domala.Version()" => true
         case _ => false
       }
 

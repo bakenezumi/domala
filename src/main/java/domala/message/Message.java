@@ -43,6 +43,8 @@ public enum Message implements MessageResource {
     DOMALA4020("[{0}.{1}]のSQLが空です。"),
     DOMALA4024(org.seasar.doma.message.Message.DOMA4024.getMessagePattern()),
     DOMALA4025(org.seasar.doma.message.Message.DOMA4025.getMessagePattern()),
+    DOMALA4030(org.seasar.doma.message.Message.DOMA4030.getMessagePattern()),
+    DOMALA4031(org.seasar.doma.message.Message.DOMA4031.getMessagePattern()),
     DOMALA4033(org.seasar.doma.message.Message.DOMA4033.getMessagePattern()),
     DOMALA4034(org.seasar.doma.message.Message.DOMA4034.getMessagePattern()),
     DOMALA4035(org.seasar.doma.message.Message.DOMA4035.getMessagePattern()),
