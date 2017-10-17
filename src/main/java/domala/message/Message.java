@@ -54,6 +54,7 @@ public enum Message implements MessageResource {
     DOMALA4042("パラーメータの型はscala.collection.Iterableのサブタイプでなければいけません。 at {0}.{1}"),
     DOMALA4043("scala.collection.Iterableのサブタイプに対する実型引数はエンティティクラスでなければいけません。 at {0}.{1}"),
     DOMALA4051(org.seasar.doma.message.Message.DOMA4051.getMessagePattern()),
+    DOMALA4053(org.seasar.doma.message.Message.DOMA4053.getMessagePattern()),
     DOMALA4067(org.seasar.doma.message.Message.DOMA4067.getMessagePattern()),
     DOMALA4069("[{0}.{1}]のSQLの解析に失敗しました。原因は次のものです。{2}"),
     DOMALA4071(org.seasar.doma.message.Message.DOMA4071.getMessagePattern()),

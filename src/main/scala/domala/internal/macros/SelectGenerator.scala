@@ -85,8 +85,24 @@ object SelectGenerator {
           }, true)
         case _ => abort(_def.pos, "error")
       }
+    val setOptions = {
+      val optionParameters = defDecl.paramss.flatten.filter { p =>
+        p.decltpe.get match {
+          case t"SelectOptions" => true
+          case _                => false
+        }
+      }
+      if(optionParameters.length > 1) {
+        abort(Message.DOMALA4053.getMessage(trtName.syntax, defDecl.name.syntax))
+      } else if(optionParameters.isEmpty) {
+        Nil
+      } else {
+        Seq(q"__query.setOptions(${Term.Name(optionParameters.head.name.syntax)})")
+      }
 
-    val (handler, result, setEntity) =
+    }
+
+    val (handler, result, setEntityType) =
       if (isStream) {
         val (functionParamTerm, internalTpe, retTpe) = defDecl.paramss.flatten
           .find { p =>
@@ -253,6 +269,7 @@ object SelectGenerator {
 
     val daoParamTypes = defDecl.paramss.flatten.filter(p => p.decltpe.get match {
       case t"Stream[$_] => $_" => false
+      case t"SelectOptions" => false
       case _ => true
     }).map { p =>
       val pType: Type = p.decltpe.get match {
@@ -270,7 +287,8 @@ object SelectGenerator {
         ..$checkParameter
         __query.setMethod($internalMethodName)
         __query.setConfig(__config)
-        ..$setEntity
+        ..$setOptions
+        ..$setEntityType
         ..$addParameters
         __query.setCallerClassName(${trtName.syntax})
         __query.setCallerMethodName(${defDecl.name.syntax})

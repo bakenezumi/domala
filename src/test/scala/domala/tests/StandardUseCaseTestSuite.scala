@@ -2,7 +2,7 @@ package domala.tests
 
 import org.scalatest._
 import domala.Required
-import domala.jdbc.Config
+import domala.jdbc.{Config, SelectOptions}
 
 class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
   implicit val config: Config = TestConfig
@@ -371,6 +371,39 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
         0
       )
       assert(dao.selectById(1).isEmpty)
+    }
+  }
+
+  test("select by options") {
+    val options = SelectOptions.get
+    Required {
+      assert(
+        dao.selectAllOption(options) === Seq(
+          Person(Some(1),
+            Name("SMITH"),
+            Some(10),
+            Address("Tokyo", "Yaesu"),
+            Some(2),
+            Some(0)),
+          Person(Some(2),
+            Name("ALLEN"),
+            Some(20),
+            Address("Kyoto", "Karasuma"),
+            Some(1),
+            Some(0))
+        ))
+      assert(options.getCount == -1)
+      options.limit(1).count()
+      assert(
+        dao.selectAllOption(options) === Seq(
+          Person(Some(1),
+            Name("SMITH"),
+            Some(10),
+            Address("Tokyo", "Yaesu"),
+            Some(2),
+            Some(0))
+        ))
+      assert(options.getCount == 2)
     }
   }
 }

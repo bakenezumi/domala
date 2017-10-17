@@ -1,7 +1,7 @@
 package domala.tests
 
 import domala._
-import domala.jdbc.{BatchResult, Result}
+import domala.jdbc.{BatchResult, Result, SelectOptions}
 
 @Dao
 trait PersonDao {
@@ -228,5 +228,11 @@ where
   version = /* version */0
   """)
   def deleteSql(entity: Person, version: Int): Int
+
+  @Select(sql = """
+select *
+from person
+  """)
+  def selectAllOption(options: SelectOptions): Seq[Person]
 
 }
