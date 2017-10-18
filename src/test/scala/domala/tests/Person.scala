@@ -8,7 +8,7 @@ case class Person(
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   id: Option[Int] = None,
   @Column(updatable = false)
-  name: Name,
+  name: Option[Name],
   age: Option[Int],
   address: Address,
   departmentId: Option[Int],

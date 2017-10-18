@@ -10,7 +10,7 @@ object DaoMacroHelper {
   def readCommonSetting(args: Seq[Term.Arg], traitName: String, methodName: String): DaoMethodCommonSetting = {
     val (hasSql, sql) =  args.collectFirst{
       case arg"sql = $x" => x
-      case arg"$x" => x.syntax.parse[Term.Arg].get
+      case arg"$x" if x.syntax.startsWith("\"") => x.syntax.parse[Term.Arg].get
     }.map { x =>
       try {
         new SqlParser(x.syntax).parse()
@@ -76,4 +76,13 @@ object DaoMacroHelper {
     }
   }
 
+  def validateEntityPropertyNames(defDecl: QueryDefDecl, paramTpe: Type.Name, includedPropertyNames: Seq[Term.Arg], excludedPropertyNames: Seq[Term.Arg]): Seq[Term.Apply] = {
+    val validateInclude = if(includedPropertyNames.nonEmpty) {
+      Seq(q"domala.internal.macros.reflect.DaoReflectionMacros.validateInclude(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, classOf[$paramTpe], ..$includedPropertyNames)")
+    } else Nil
+    val validateExclude = if(excludedPropertyNames.nonEmpty) {
+      Seq(q"domala.internal.macros.reflect.DaoReflectionMacros.validateExclude(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, classOf[$paramTpe], ..$excludedPropertyNames)")
+    } else Nil
+    validateInclude ++ validateExclude
+  }
 }

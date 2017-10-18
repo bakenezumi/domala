@@ -2,12 +2,8 @@ package domala.internal.macros.reflect
 
 import java.util.function.Supplier
 
-import domala.jdbc.entity.{
-  AssignedIdPropertyType,
-  DefaultPropertyType,
-  GeneratedIdPropertyType,
-  VersionPropertyType
-}
+import domala.internal.macros.reflect.util.ReflectionUtil
+import domala.jdbc.entity.{AssignedIdPropertyType, DefaultPropertyType, GeneratedIdPropertyType, VersionPropertyType}
 import domala.jdbc.holder.AbstractHolderDesc
 import domala.message.Message
 import org.seasar.doma.jdbc.entity._

@@ -1,4 +1,4 @@
-package domala.internal.macros.reflect
+package domala.internal.macros.reflect.util
 
 import domala.jdbc.holder.AbstractHolderDesc
 import org.seasar.doma.jdbc.entity.{AbstractEntityType, EmbeddableType}

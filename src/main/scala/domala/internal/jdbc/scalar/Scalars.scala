@@ -46,16 +46,12 @@ object Scalars {
       val supplier = () => new StringWrapper(value.asInstanceOf[String])
       return createBasicScalarSupplier(supplier, optional, primitive)
     }
-    if (valueClass eq classOf[Integer]) {
+    if ((valueClass eq classOf[Int]) || (valueClass eq classOf[Integer])) {
       val supplier = () => new IntegerWrapper(value.asInstanceOf[Integer])
       return createBasicScalarSupplier(supplier, optional, primitive)
     }
-    if (valueClass eq classOf[Int]) {
-      val supplier = () => new IntegerWrapper(value.asInstanceOf[Integer])
-      return createBasicScalarSupplier(supplier, optional, primitive)
-    }
-    if (valueClass eq classOf[Long]) {
-      val supplier = () => new LongWrapper(value.asInstanceOf[Long])
+    if ((valueClass eq classOf[Long]) || (valueClass eq classOf[java.lang.Long])) {
+      val supplier = () => new LongWrapper(value.asInstanceOf[java.lang.Long])
       return createBasicScalarSupplier(supplier, optional, primitive)
     }
     if (valueClass eq classOf[java.math.BigDecimal]) {
@@ -91,8 +87,8 @@ object Scalars {
       val supplier = () => new TimeWrapper(value.asInstanceOf[Time])
       return createBasicScalarSupplier(supplier, optional, primitive)
     }
-    if (valueClass eq classOf[Boolean]) {
-      val supplier = () => new BooleanWrapper(value.asInstanceOf[Boolean])
+    if ((valueClass eq classOf[Boolean]) || (valueClass eq classOf[java.lang.Boolean])) {
+      val supplier = () => new BooleanWrapper(value.asInstanceOf[java.lang.Boolean])
       return createBasicScalarSupplier(supplier, optional, primitive)
     }
     if (valueClass eq classOf[java.sql.Array]) {
@@ -107,32 +103,32 @@ object Scalars {
       val supplier = () => new BlobWrapper(value.asInstanceOf[Blob])
       return createBasicScalarSupplier(supplier, optional, primitive)
     }
-    if (valueClass eq classOf[Array[Byte]]) {
+    if ((valueClass eq classOf[Array[Byte]]) || (valueClass eq classOf[Array[java.lang.Byte]])) {
       val supplier = () => new BytesWrapper(value.asInstanceOf[Array[Byte]])
       return createBasicScalarSupplier(supplier, optional, primitive)
     }
-    if (valueClass eq classOf[Byte]) {
-      val supplier = () => new ByteWrapper(value.asInstanceOf[Byte])
+    if ((valueClass eq classOf[Byte]) || (valueClass eq classOf[java.lang.Byte])) {
+      val supplier = () => new ByteWrapper(value.asInstanceOf[java.lang.Byte])
       return createBasicScalarSupplier(supplier, optional, primitive)
     }
     if (valueClass eq classOf[Clob]) {
       val supplier = () => new ClobWrapper(value.asInstanceOf[Clob])
       return createBasicScalarSupplier(supplier, optional, primitive)
     }
-    if (valueClass eq classOf[Double]) {
-      val supplier = () => new DoubleWrapper(value.asInstanceOf[Double])
+    if ((valueClass eq classOf[Double]) || (valueClass eq classOf[java.lang.Double])) {
+      val supplier = () => new DoubleWrapper(value.asInstanceOf[java.lang.Double])
       return createBasicScalarSupplier(supplier, optional, primitive)
     }
-    if (valueClass eq classOf[Float]) {
-      val supplier = () => new FloatWrapper(value.asInstanceOf[Float])
+    if ((valueClass eq classOf[Float]) || (valueClass eq classOf[java.lang.Float])) {
+      val supplier = () => new FloatWrapper(value.asInstanceOf[java.lang.Float])
       return createBasicScalarSupplier(supplier, optional, primitive)
     }
     if (valueClass eq classOf[NClob]) {
       val supplier = () => new NClobWrapper(value.asInstanceOf[NClob])
       return createBasicScalarSupplier(supplier, optional, primitive)
     }
-    if (valueClass eq classOf[Short]) {
-      val supplier = () => new ShortWrapper(value.asInstanceOf[Short])
+    if ((valueClass eq classOf[Short]) || (valueClass eq classOf[java.lang.Short])) {
+      val supplier = () => new ShortWrapper(value.asInstanceOf[java.lang.Short])
       return createBasicScalarSupplier(supplier, optional, primitive)
     }
     if (valueClass eq classOf[SQLXML]) {

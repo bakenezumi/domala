@@ -55,11 +55,15 @@ public enum Message implements MessageResource {
     DOMALA4043("scala.collection.Iterableのサブタイプに対する実型引数はエンティティクラスでなければいけません。 at {0}.{1}"),
     DOMALA4051(org.seasar.doma.message.Message.DOMA4051.getMessagePattern()),
     DOMALA4053(org.seasar.doma.message.Message.DOMA4053.getMessagePattern()),
+    // TODO: ストアド系未実装 DOMA4059 ～ DOMA4066
     DOMALA4067(org.seasar.doma.message.Message.DOMA4067.getMessagePattern()),
     DOMALA4069("[{0}.{1}]のSQLの解析に失敗しました。原因は次のものです。{2}"),
     DOMALA4071(org.seasar.doma.message.Message.DOMA4071.getMessagePattern()),
     DOMALA4072(org.seasar.doma.message.Message.DOMA4072.getMessagePattern()),
     DOMALA4073(org.seasar.doma.message.Message.DOMA4073.getMessagePattern()),
+    // TODO: ファクトリ系未実装 DOMA4076, DOMA4078
+    DOMALA4084(org.seasar.doma.message.Message.DOMA4084.getMessagePattern()), // TODO: WIP
+    DOMALA4085(org.seasar.doma.message.Message.DOMA4085.getMessagePattern()), // TODO: WIP
     DOMALA4092("[{0}.{1}]のSQLの妥当検査に失敗しました（[{3}]行目[{4}]番目の文字付近）。詳細は次のものです。{5} SQL[{2}]。"),
     DOMALA4093(org.seasar.doma.message.Message.DOMA4093.getMessagePattern()),
     DOMALA4095(org.seasar.doma.message.Message.DOMA4095.getMessagePattern()),

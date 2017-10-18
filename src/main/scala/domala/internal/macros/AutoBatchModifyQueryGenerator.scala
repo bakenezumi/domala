@@ -44,7 +44,7 @@ object AutoBatchModifyQueryGenerator {
 
     q"""
     override def ${defDecl.name} = {
-      domala.internal.macros.reflect.DaoReflectionMacros.validAutoBatchModifyParam(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, classOf[$paramType], classOf[$internalType])
+      domala.internal.macros.reflect.DaoReflectionMacros.validateAutoBatchModifyParam(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, classOf[$paramType], classOf[$internalType])
       entering(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, $paramName)
       try {
         if ($paramName == null) {

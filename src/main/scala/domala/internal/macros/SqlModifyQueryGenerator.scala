@@ -66,7 +66,7 @@ object SqlModifyQueryGenerator {
 
     q"""
     override def ${defDecl.name} = {
-      domala.internal.macros.reflect.DaoReflectionMacros.validSql(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, false, $populatable, ${commonSetting.sql}, ..$daoParamTypes)
+      domala.internal.macros.reflect.DaoReflectionMacros.validateSql(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, false, $populatable, ${commonSetting.sql}, ..$daoParamTypes)
       entering(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, ..$enteringParam)
       try {
         val __query = ${query(entityAndEntityType)}

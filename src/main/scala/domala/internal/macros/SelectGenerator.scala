@@ -280,7 +280,7 @@ object SelectGenerator {
 
     q"""
     override def ${defDecl.name}= {
-      domala.internal.macros.reflect.DaoReflectionMacros.validSql(${trtName.syntax}, ${defDecl.name.syntax}, true, false, ${commonSetting.sql}, ..$daoParamTypes)
+      domala.internal.macros.reflect.DaoReflectionMacros.validateSql(${trtName.syntax}, ${defDecl.name.syntax}, true, false, ${commonSetting.sql}, ..$daoParamTypes)
       entering(${trtName.syntax}, ${defDecl.name.syntax} ..$enteringParam)
       try {
         val __query = new domala.jdbc.query.SqlAnnotationSelectQuery(${commonSetting.sql})

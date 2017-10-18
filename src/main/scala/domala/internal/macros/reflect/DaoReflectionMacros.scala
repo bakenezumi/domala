@@ -2,6 +2,7 @@ package domala.internal.macros.reflect
 
 import java.util.Optional
 
+import domala.internal.macros.reflect.util.ReflectionUtil
 import domala.internal.macros.{DaoParam, DaoParamClass}
 import domala.jdbc.Result
 import domala.jdbc.query.EntityAndEntityType
@@ -207,7 +208,7 @@ object DaoReflectionMacros {
       params: (DaoParam[_])*): Option[EntityAndEntityType[Any]] =
     macro getEntityAndEntityTypeImpl[T]
 
-  def validSqlImpl(c: blackbox.Context)(
+  def validateSqlImpl(c: blackbox.Context)(
     trtName: c.Expr[String],
     defName: c.Expr[String],
     expandable: c.Expr[Boolean],
@@ -227,9 +228,9 @@ object DaoReflectionMacros {
     sqlValidator.validate(sqlNode)
     reify(())
   }
-  def validSql(trtName: String, defName: String, expandable: Boolean, populatable: Boolean, sql: String, params: (DaoParamClass[_])*): Unit = macro validSqlImpl
+  def validateSql(trtName: String, defName: String, expandable: Boolean, populatable: Boolean, sql: String, params: (DaoParamClass[_])*): Unit = macro validateSqlImpl
 
-  def validAutoModifyParamImpl[T: c.WeakTypeTag](c: blackbox.Context)(
+  def validateAutoModifyParamImpl[T: c.WeakTypeTag](c: blackbox.Context)(
     trtName: c.Expr[String],
     defName: c.Expr[String],
     paramClass: c.Expr[Class[T]]): c.Expr[Unit] = {
@@ -244,9 +245,9 @@ object DaoReflectionMacros {
             defName.tree.toString().tail.init))
     }
   }
-  def validAutoModifyParam[T](trtName: String, defName: String, paramClass: Class[T]): Unit = macro validAutoModifyParamImpl[T]
+  def validateAutoModifyParam[T](trtName: String, defName: String, paramClass: Class[T]): Unit = macro validateAutoModifyParamImpl[T]
 
-  def validAutoBatchModifyParamImpl[C: c.WeakTypeTag, T: c.WeakTypeTag](c: blackbox.Context)(
+  def validateAutoBatchModifyParamImpl[C: c.WeakTypeTag, T: c.WeakTypeTag](c: blackbox.Context)(
     trtName: c.Expr[String],
     defName: c.Expr[String],
     paramClass: c.Expr[Class[C]],
@@ -270,5 +271,50 @@ object DaoReflectionMacros {
             defName.tree.toString().tail.init))
     }
   }
-  def validAutoBatchModifyParam[C, T](trtName: String, defName: String, paramClass: Class[C], internalClass: Class[T]): Unit = macro validAutoBatchModifyParamImpl[C, T]
+  def validateAutoBatchModifyParam[C, T](trtName: String, defName: String, paramClass: Class[C], internalClass: Class[T]): Unit = macro validateAutoBatchModifyParamImpl[C, T]
+
+  private def validatePropertyName[T: c.WeakTypeTag](c: blackbox.Context)(tpe: c.universe.Type, namess: Seq[List[String]], errorMessage: domala.message.Message): c.Expr[Unit] = {
+    import c.universe._
+    val terms = tpe.members.filter(_.isTerm)
+    namess.foreach { names =>
+      if(names.isEmpty) c.abort(c.enclosingPosition, namess.toString)
+      val term = terms.find(_.name.toString == names.head)
+      if(term.isEmpty)
+        c.abort(c.enclosingPosition,
+          errorMessage.getMessage(names.head, tpe.toString))
+      else if(names.length > 1) {
+        validatePropertyName(c)(term.get.typeSignature, Seq(names.tail), errorMessage)
+      }
+    }
+    reify(())
+  }
+
+  def validateIncludeImpl[T: c.WeakTypeTag](c: blackbox.Context)(
+    trtName: c.Expr[String],
+    defName: c.Expr[String],
+    paramClass: c.Expr[Class[T]],
+    includes: c.Expr[String]*): c.Expr[Unit] = {
+    import c.universe._
+    val includeNames = includes.map { name =>
+      val Literal(Constant(nameLiteral: String)) = name.tree
+      nameLiteral.split('.').toList
+    }
+    validatePropertyName(c)(weakTypeOf[T], includeNames, domala.message.Message.DOMALA4084)
+  }
+  def validateInclude[T](trtName: String, defName: String, paramClass: Class[T], includes: String*): Unit = macro validateIncludeImpl[T]
+
+  def validateExcludeImpl[T: c.WeakTypeTag](c: blackbox.Context)(
+    trtName: c.Expr[String],
+    defName: c.Expr[String],
+    paramClass: c.Expr[Class[T]],
+    excludes: c.Expr[String]*): c.Expr[Unit] = {
+    import c.universe._
+    val excludeNames = excludes.map { name =>
+      val Literal(Constant(nameLiteral: String)) = name.tree
+      nameLiteral.split('.').toList
+    }
+    validatePropertyName(c)(weakTypeOf[T], excludeNames, domala.message.Message.DOMALA4085)
+  }
+  def validateExclude[T](trtName: String, defName: String, paramClass: Class[T], excludes: String*): Unit = macro validateExcludeImpl[T]
+
 }
