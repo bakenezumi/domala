@@ -49,10 +49,10 @@ object EntityTypeGenerator {
   protected def validateFieldAnnotation(clsName: Type.Name, ctor: Ctor.Primary): Unit = {
     ctor.paramss.flatten.foreach { p =>
       p.mods.collect {
-        case mod"@Id" | mod"@Id()"=> "@Id"
-        case mod"@TenantId" | mod"@TenantId()" => "@TenantId"
-        case mod"@Transient" | mod"@Transient()" => "@Transient"
-        case mod"@Version" | mod"@Version()" => "@Version"
+        case mod"@Id" | mod"@Id()" | mod"@domala.Id" | mod"@domala.Id()"=> "@Id"
+        case mod"@TenantId" | mod"@TenantId()" | mod"@domala.TenantId" | mod"@domala.TenantId()" => "@TenantId"
+        case mod"@Transient" | mod"@Transient()" | mod"@domala.Transient" | mod"@domala.Transient()" => "@Transient"
+        case mod"@Version" | mod"@Version()" | mod"@domala.Version" | mod"@domala.Version()" => "@Version"
       } match {
         case x :: y :: _ => abort(Message.DOMALA4086.getMessage(x, y, clsName.syntax, p.name.syntax))
         case _ => ()
@@ -193,10 +193,16 @@ object EntityTypeGenerator {
         case _ => false
       }
 
+      val isTenantId = false
+
       val isVersion = mods.exists {
         case mod"@Version" | mod"@domala.Version" | mod"@Version()" | mod"@domala.Version()" => true
         case _ => false
       }
+      if(columnSetting.insertable.syntax == "false" && (isId || isVersion || isTenantId))
+        abort(Message.DOMALA4088.getMessage(clsName.syntax, name.syntax))
+      if(columnSetting.updatable.syntax == "false" && (isId || isVersion || isTenantId))
+        abort(Message.DOMALA4089.getMessage(clsName.syntax, name.syntax))
 
       q"""
       val $propertyName = domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyType[$tpe, $clsName, $nakedTpe](

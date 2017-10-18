@@ -17,8 +17,12 @@ object ColumnSetting {
     val blank = q""" "" """
     column match {
       case Some(args) =>
-        val name =
-          args.collectFirst { case arg"name = $x" => x }.getOrElse(blank)
+        val name = {
+          if(args.nonEmpty && args.head.syntax.startsWith("\""))
+            args.head
+          else
+            args.collectFirst { case arg"name = $x" => x }.getOrElse(blank)
+        }
         val insertable = args
           .collectFirst { case arg"insertable = $x" => x }
           .getOrElse(q"true")

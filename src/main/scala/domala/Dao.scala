@@ -8,7 +8,7 @@ import scala.meta._
 class Dao(config: Config = null) extends scala.annotation.StaticAnnotation {
   inline def apply(defn: Any): Any = meta {
     val q"new $_(..$params)" = this
-    val config = params.collectFirst{
+    val config = params.collectFirst {
       case arg"config = $x" => x
       case arg"$x" => x.syntax.parse[Term.Arg].get
     }.orNull

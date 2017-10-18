@@ -5,11 +5,12 @@ import java.util._
 import org.seasar.doma.expr.ExpressionFunctions
 import org.seasar.doma.internal.expr.{EvaluationResult, ExpressionException, NullExpressionFunctions, Value}
 import org.seasar.doma.message.Message
-import org.seasar.doma.internal.expr.node.{ExpressionNode, FieldOperatorNode}
+import org.seasar.doma.internal.expr.node.FieldOperatorNode
 import org.seasar.doma.jdbc.ClassHelper
-import org.seasar.doma.internal.util.{AssertionUtil, GenericsUtil}
+import org.seasar.doma.internal.util.GenericsUtil
 import java.lang.reflect.{GenericDeclaration, ParameterizedType, TypeVariable}
 
+// createEvaluationResultにてOptionのunwrapを行うために拡張
 class ExpressionEvaluator(variableValues: java.util.Map[String, Value] =
                             Collections.emptyMap[String, Value],
                           expressionFunctions: ExpressionFunctions =

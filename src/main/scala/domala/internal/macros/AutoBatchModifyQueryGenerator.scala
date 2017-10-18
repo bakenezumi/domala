@@ -13,7 +13,6 @@ object AutoBatchModifyQueryGenerator {
     defDecl.paramss.flatten.head match {
       case param"$paramName: ${Some(paramTpe)}" =>
         paramTpe match {
-          // TODO: _ <: Seqでないとコンパイルエラーにすべき
           case t"$tpe[$internalTpe]" =>
             (Term.Name(paramName.value), Type.Name(t"$tpe[$internalTpe]".syntax), Type.Name(internalTpe.syntax))
           case _ =>

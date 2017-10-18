@@ -10,6 +10,7 @@ import domala.internal.jdbc.scalar.Scalars
 import org.seasar.doma.internal.jdbc.scalar.{Scalar, ScalarException}
 import org.seasar.doma.message.Message
 
+//独自のExpressionEvaluator, Scalarsを利用するため拡張
 class NodePreparedSqlBuilder(
     config: Config,
     kind: SqlKind,

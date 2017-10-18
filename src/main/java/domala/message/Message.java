@@ -66,7 +66,10 @@ public enum Message implements MessageResource {
     DOMALA4085(org.seasar.doma.message.Message.DOMA4085.getMessagePattern()),
     DOMALA4086(org.seasar.doma.message.Message.DOMA4086.getMessagePattern()),
     DOMALA4087(org.seasar.doma.message.Message.DOMA4087.getMessagePattern()),
-
+    DOMALA4088(org.seasar.doma.message.Message.DOMA4088.getMessagePattern()),
+    DOMALA4089(org.seasar.doma.message.Message.DOMA4089.getMessagePattern()),
+    //DOMALA4090
+    //DOMALA4091
     DOMALA4092("[{0}.{1}]のSQLの妥当検査に失敗しました（[{3}]行目[{4}]番目の文字付近）。詳細は次のものです。{5} SQL[{2}]。"),
     DOMALA4093(org.seasar.doma.message.Message.DOMA4093.getMessagePattern()),
     DOMALA4095(org.seasar.doma.message.Message.DOMA4095.getMessagePattern()),

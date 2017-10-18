@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+// 独自のExpressionEvaluator, NodePreparedSqlBuilderを利用するために拡張。
+// 親のフィールド(sql)を変更する必要があるためJavaで実装。
 public class SqlSelectQuery extends org.seasar.doma.jdbc.query.SqlSelectQuery {
 
     protected void buildSqlDomala(BiFunction<ExpressionEvaluator, Function<ExpandNode, List<String>>, PreparedSql> sqlBuilder) {
