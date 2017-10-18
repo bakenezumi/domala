@@ -3,8 +3,9 @@ package domala.internal.macros
 import scala.collection.immutable.Seq
 import scala.meta._
 
-object BatchUpdateGenerator {
-  def generate(
+object BatchUpdateGenerator extends DaoMethodGenerator {
+  override def anotationName: String = "@BatchUpdate"
+  override def generate(
     trtName: Type.Name,
     _def: Decl.Def,
     internalMethodName: Term.Name,

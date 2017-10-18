@@ -21,7 +21,7 @@ object EntityTypeGenerator {
   def generate(cls: Defn.Class, args: Seq[Term.Arg]): Defn.Object = {
     if(cls.tparams.nonEmpty)
       abort(Message.DOMALA4051.getMessage(cls.name.syntax))
-
+    validateFieldAnnotation(cls.name, cls.ctor)
     val entitySetting = EntitySetting(
       args.collectFirst { case arg"listener = classOf[$x]" => x }.getOrElse(t"org.seasar.doma.jdbc.entity.NullEntityListener[${cls.name}]"),
       args.collectFirst { case arg"naming = $x" => Term.Name(x.syntax) }.getOrElse(q"null")
@@ -44,6 +44,20 @@ object EntityTypeGenerator {
       ..${fields ++ constructor ++ methods}
     }
     """
+  }
+
+  protected def validateFieldAnnotation(clsName: Type.Name, ctor: Ctor.Primary): Unit = {
+    ctor.paramss.flatten.foreach { p =>
+      p.mods.collect {
+        case mod"@Id" | mod"@Id()"=> "@Id"
+        case mod"@TenantId" | mod"@TenantId()" => "@TenantId"
+        case mod"@Transient" | mod"@Transient()" => "@Transient"
+        case mod"@Version" | mod"@Version()" => "@Version"
+      } match {
+        case x :: y :: _ => abort(Message.DOMALA4086.getMessage(x, y, clsName.syntax, p.name.syntax))
+        case _ => ()
+      }
+    }
   }
 
   protected def generateFields(clsName: Type.Name, ctor: Ctor.Primary, entitySetting: EntitySetting): Seq[Stat] = {

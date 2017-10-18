@@ -73,24 +73,27 @@ object DaoGenerator {
         q"""private val ${Pat.Var.Term(internalMethodName)} =
             org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[$trtName], ${_def.name.syntax}..$paramClasses)"""
       }, {
-        _def.mods.collectFirst {
-          case mod"@Script(sql = $sql)" => ScriptGenerator.generate(trtName, _def, internalMethodName, sql)
-          case mod"@Select(..$modParams)" => SelectGenerator.generate(trtName, _def, internalMethodName, modParams)
-          case mod"@Insert" => InsertGenerator.generate(trtName, _def, internalMethodName, Nil)
-          case mod"@Insert(..$modParams)" => InsertGenerator.generate(trtName, _def, internalMethodName, modParams)
-          case mod"@Update" => UpdateGenerator.generate(trtName, _def, internalMethodName, Nil)
-          case mod"@Update(..$modParams)" => UpdateGenerator.generate(trtName, _def, internalMethodName, modParams)
-          case mod"@Delete" => DeleteGenerator.generate(trtName, _def, internalMethodName, Nil)
-          case mod"@Delete(..$modParams)" => DeleteGenerator.generate(trtName, _def, internalMethodName, modParams)
-          case mod"@BatchInsert" => BatchInsertGenerator.generate(trtName, _def, internalMethodName, Nil)
-          case mod"@BatchInsert(..$modParams)" => BatchInsertGenerator.generate(trtName, _def, internalMethodName, modParams)
-          case mod"@BatchUpdate" => BatchUpdateGenerator.generate(trtName, _def, internalMethodName, Nil)
-          case mod"@BatchUpdate(..$modParams)" => BatchUpdateGenerator.generate(trtName, _def, internalMethodName, modParams)
-          case mod"@BatchDelete" => BatchDeleteGenerator.generate(trtName, _def, internalMethodName, Nil)
-          case mod"@BatchDelete(..$modParams)" => BatchDeleteGenerator.generate(trtName, _def, internalMethodName, modParams)
-        }.getOrElse(
-          abort(_def.pos, domala.message.Message.DOMALA4005.getMessage(trtName.syntax, _def.name.syntax))
-        ).copy(
+        val defImpl = _def.mods.collect {
+          case mod"@Script(..$modParams)" => (ScriptGenerator, modParams)
+          case mod"@Select(..$modParams)" => (SelectGenerator, modParams)
+          case mod"@Insert" => (InsertGenerator, Nil)
+          case mod"@Insert(..$modParams)" => (InsertGenerator, modParams)
+          case mod"@Update" => (UpdateGenerator, Nil)
+          case mod"@Update(..$modParams)" => (UpdateGenerator, modParams)
+          case mod"@Delete" => (DeleteGenerator, Nil)
+          case mod"@Delete(..$modParams)" => (DeleteGenerator, modParams)
+          case mod"@BatchInsert" => (BatchInsertGenerator, Nil)
+          case mod"@BatchInsert(..$modParams)" => (BatchInsertGenerator, modParams)
+          case mod"@BatchUpdate" => (BatchUpdateGenerator, Nil)
+          case mod"@BatchUpdate(..$modParams)" => (BatchUpdateGenerator, modParams)
+          case mod"@BatchDelete" => (BatchDeleteGenerator, Nil)
+          case mod"@BatchDelete(..$modParams)" => (BatchDeleteGenerator, modParams)
+        } match {
+          case Nil => abort(_def.pos, domala.message.Message.DOMALA4005.getMessage(trtName.syntax, _def.name.syntax))
+          case (generator, modParams) :: Nil => generator.generate(trtName, _def, internalMethodName, modParams)
+          case x => abort(_def.pos,domala.message.Message.DOMALA4087.getMessage(x.head._1.anotationName, x(1)._1.anotationName, trtName.syntax, _def.name.syntax))
+        }
+        defImpl.copy(
           tparams = _def.tparams,
           paramss = _def.paramss,
           decltpe = Some(_def.decltpe)

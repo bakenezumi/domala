@@ -1,22 +1,26 @@
 package domala.internal.macros
 
+import scala.collection.immutable.Seq
 import scala.meta._
 
-object ScriptGenerator {
-  def generate(trtName: Type.Name, _def: Decl.Def, internalMethodName: Term.Name, sql: Term.Arg): Defn.Def = {
+object ScriptGenerator extends DaoMethodGenerator {
+  override def anotationName: String = "@Script"
+  override def generate(trtName: Type.Name, _def: Decl.Def, internalMethodName: Term.Name, args: Seq[Term.Arg]): Defn.Def = {
     val Decl.Def(mods, name, tparams, paramss, tpe) = _def
-    val trtNameStr = trtName.syntax
-    val nameStr = name.syntax
+    val commonSetting = DaoMacroHelper.readCommonSetting(
+      args,
+      trtName.syntax,
+      _def.name.syntax)
 
     q"""
     override def $name = {
-      entering($trtNameStr, $nameStr)
+      entering(${trtName.syntax}, ${name.syntax})
       try {
-        val __query = new domala.jdbc.query.SqlAnnotationScriptQuery($sql)
+        val __query = new domala.jdbc.query.SqlAnnotationScriptQuery(${commonSetting.sql})
         __query.setMethod($internalMethodName)
         __query.setConfig(__config)
-        __query.setCallerClassName($trtNameStr)
-        __query.setCallerMethodName($nameStr)
+        __query.setCallerClassName(${trtName.syntax})
+        __query.setCallerMethodName(${name.syntax})
         __query.setBlockDelimiter("")
         __query.setHaltOnError(true)
         __query.setSqlLogType(org.seasar.doma.jdbc.SqlLogType.FORMATTED)
@@ -24,10 +28,10 @@ object ScriptGenerator {
         val __command = new domala.jdbc.command.ScriptCommand(__query)
         __command.execute()
         __query.complete()
-        exiting($trtNameStr, $nameStr, null)
+        exiting(${trtName.syntax}, ${name.syntax}, null)
       } catch {
         case __e: java.lang.RuntimeException => {
-          throwing($trtNameStr, $nameStr, __e)
+          throwing(${trtName.syntax}, ${name.syntax}, __e)
           throw __e
         }
       }

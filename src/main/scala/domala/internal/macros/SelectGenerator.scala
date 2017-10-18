@@ -14,7 +14,8 @@ case class SelectSetting(
     mapKeyNaming: Term.Arg
 )
 
-object SelectGenerator {
+object SelectGenerator extends DaoMethodGenerator {
+  override def anotationName: String = "@Select"
   def readSelectSetting(args: Seq[Term.Arg]): SelectSetting = {
     val fetchSize =
       args.collectFirst { case arg"fetchSize = $x" => x }.getOrElse(q"-1")
@@ -44,7 +45,7 @@ object SelectGenerator {
       mapKeyNaming)
   }
 
-  def generate(
+  override def generate(
     trtName: Type.Name,
     _def: Decl.Def,
     internalMethodName: Term.Name,
