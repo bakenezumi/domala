@@ -107,11 +107,11 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
   test("select stream with one param") {
     Required {
       assert(dao.selectByIdStream(1) { stream =>
-        stream.head.address
-      } == Address("Tokyo", "Yaesu"))
+        stream.headOption.map(_.address)
+      }.contains(Address("Tokyo", "Yaesu")))
       assert(dao.selectByIdStream(5) { stream =>
-        if (stream.isEmpty) null else fail()
-      } == null)
+        stream.headOption.map(_.address)
+      }.isEmpty)
     }
   }
 
@@ -128,7 +128,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       assert(dao.selectByIdMap(1) ==
         Map("ID" -> 1, "NAME" -> "SMITH", "AGE" -> 10, "CITY" -> "Tokyo", "STREET" -> "Yaesu", "DEPARTMENT_ID" -> 2, "VERSION" -> 0))
-      assert(dao.selectByIdMap(5) == null)
+      assert(dao.selectByIdMap(5) == Map.empty)
     }
   }
 

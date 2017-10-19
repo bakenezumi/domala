@@ -107,7 +107,7 @@ from person
 where
     id = /*id*/0
   """, strategy = SelectType.STREAM)
-  def selectByIdStream(id: Int)(f: Stream[Person] => Address): Address
+  def selectByIdStream(id: Int)(f: Stream[Person] => Option[Address]): Option[Address]
 
   @Select(sql = """
 select *

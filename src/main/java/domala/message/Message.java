@@ -55,7 +55,7 @@ public enum Message implements MessageResource {
     DOMALA4043("scala.collection.Iterableのサブタイプに対する実型引数はエンティティクラスでなければいけません。 at {0}.{1}"),
     DOMALA4051(org.seasar.doma.message.Message.DOMA4051.getMessagePattern()),
     DOMALA4053(org.seasar.doma.message.Message.DOMA4053.getMessagePattern()),
-    // TODO: ストアド系未実装 DOMA4059 ～ DOMA4066
+    // TODO: ストアド系未実装 DOMA4059 - DOMA4066
     DOMALA4067(org.seasar.doma.message.Message.DOMA4067.getMessagePattern()),
     DOMALA4069("[{0}.{1}]のSQLの解析に失敗しました。原因は次のものです。{2}"),
     DOMALA4071(org.seasar.doma.message.Message.DOMA4071.getMessagePattern()),
@@ -73,32 +73,54 @@ public enum Message implements MessageResource {
     DOMALA4092("[{0}.{1}]のSQLの妥当検査に失敗しました（[{3}]行目[{4}]番目の文字付近）。詳細は次のものです。{5} SQL[{2}]。"),
     DOMALA4093(org.seasar.doma.message.Message.DOMA4093.getMessagePattern()),
     DOMALA4095(org.seasar.doma.message.Message.DOMA4095.getMessagePattern()),
-    // TODO: @ExternalDomainは未対応
+    // @ExternalDomainは未対応
     //DOMALA4096("クラス[{0}]は、永続対象の型としてサポートされていません。 at {1}.{2}。@ExternalDomainでマッピングすることを意図している場合、登録や設定が不足している可能性があります。@DomainConvertersを注釈したクラスと注釈処理のオプション（domala.domain.converters）を見直してください。"),
     DOMALA4096("クラス[{0}]は、永続対象の型としてサポートされていません。 at {1}.{2}。"),
-    DOMALA4122("[{0}.{1}]のSQLの妥当検査に失敗しました。メソッドのパラメータ[{2}]がSQLで参照されていません。"),
+    // TODO: ファクトリ系未実装 DOMA4097 - DOMA4101
+    DOMALA4102(org.seasar.doma.message.Message.DOMA4102.getMessagePattern()),
+    DOMALA4105("クラス以外には注釈できません。 at {0}"),
+    // TODO: ストアド系未実装 DOMA4108
+    DOMALA4109("戻り値であるSeqのサブタイプ[{0}]には実型引数が必須です。 at {1}.{2}"),
+    // TODO: ストアド系未実装 DOMA4111
+    // TODO: ストアド系未実装 DOMA4112
+    DOMALA4113(org.seasar.doma.message.Message.DOMA4113.getMessagePattern()),
     DOMALA4114(org.seasar.doma.message.Message.DOMA4114.getMessagePattern()),
+    // 式内のConstructor未実装 DOMA4115
     DOMALA4116(org.seasar.doma.message.Message.DOMA4116.getMessagePattern()),
     DOMALA4117(org.seasar.doma.message.Message.DOMA4117.getMessagePattern()),
     DOMALA4118(org.seasar.doma.message.Message.DOMA4118.getMessagePattern()),
     DOMALA4119(org.seasar.doma.message.Message.DOMA4119.getMessagePattern()),
     DOMALA4120(org.seasar.doma.message.Message.DOMA4120.getMessagePattern()),
     DOMALA4121(org.seasar.doma.message.Message.DOMA4121.getMessagePattern()),
+    DOMALA4122("[{0}.{1}]のSQLの妥当検査に失敗しました。メソッドのパラメータ[{2}]がSQLで参照されていません。"),
+
+    // OriginalStates未実装 DOMA4125
     DOMALA4126(org.seasar.doma.message.Message.DOMA4126.getMessagePattern()),
+    // 式内のConstructor未実装 DOMA4127
+    // @HolderのfactoryMethod未実装 DOMA4132
+    // OriginalStates未実装 DOMA4135
+    // 式内のConstructor未実装 DOMA4138
     DOMALA4139(org.seasar.doma.message.Message.DOMA4139.getMessagePattern()),
     DOMALA4140("[{0}.{1}]のSQLの妥当検査に失敗しました（[{3}]行目[{4}]番目の文字付近）。/*%if ...*/の式[{5}]が型[{6}]として評価されましたが、Boolean型でなければいけません。SQL[{2}]"),
     DOMALA4141("[{0}.{1}]のSQLの妥当検査に失敗しました（[{3}]行目[{4}]番目の文字付近）。/*%elseif ...*/の式[{5}]が型[{6}]として評価されましたが、Boolean型でなければいけません。SQL[{2}]"),
+
     DOMALA4145(org.seasar.doma.message.Message.DOMA4145.getMessagePattern()),
     DOMALA4146(org.seasar.doma.message.Message.DOMA4146.getMessagePattern()),
     DOMALA4147(org.seasar.doma.message.Message.DOMA4147.getMessagePattern()),
-    DOMALA4149("[{0}.{1}]のSQLの妥当検査に失敗しました（[{3}]行目[{4}]番目の文字付近）。/*%for ...*/の式[{5}]が型[{6}]として評価されましたが、java.lang.Iterable型でなければいけません。SQL[{2}]"),
+    // 式内のstaticフィールド参照未対応 DOMA4148
+    DOMALA4149("[{0}.{1}]のSQLの妥当検査に失敗しました（[{3}]行目[{4}]番目の文字付近）。/*%for ...*/の式[{5}]が型[{6}]として評価されましたが、scala.collection.Iterable型でなければいけません。SQL[{2}]"),
     DOMALA4150("[{0}.{1}]のSQLの妥当検査に失敗しました（[{3}]行目[{4}]番目の文字付近）。/*%for ...*/の式[{5}]の型[{6}]の実型引数が不明です。SQL[{2}]"),
-    DOMALA4153("[{0}.{1}]のSQLの妥当検査に失敗しました（[{3}]行目[{4}]番目の文字付近）。バインド変数もしくはリテラル変数[{5}]に対応するパラメータの型は基本型もしくはドメインクラスでなければいけません。しかし、実際の型は[{6}]です。型を間違えていませんか？もしくはフィールドアクセスやメソッド呼び出しの記述を忘れていませんか？SQL[{2}]"),
-    DOMALA4161("[{0}.{1}]のSQLの妥当検査に失敗しました（[{3}]行目[{4}]番目の文字付近）。括弧の前に位置するバインド変数もしくはリテラル変数[{5}]に対応するパラメータの型は基本型もしくはドメインクラスを要素としたjava.lang.Iterableのサブタイプでなければいけません。しかし、実際の型は[{6}]です。型を間違えていませんか？もしくはフィールドアクセスやメソッド呼び出しの記述を忘れていませんか？。SQL[{2}]"),
+    DOMALA4153("[{0}.{1}]のSQLの妥当検査に失敗しました（[{3}]行目[{4}]番目の文字付近）。バインド変数もしくはリテラル変数[{5}]に対応するパラメータの型は基本型もしくはホルダークラスでなければいけません。しかし、実際の型は[{6}]です。型を間違えていませんか？もしくはフィールドアクセスやメソッド呼び出しの記述を忘れていませんか？SQL[{2}]"),
+    // 抽象型Entity未実装 DOMA4154-4157
+
+    DOMALA4160("scala.collection.Iterableのサブタイプをワイルカード型にしてはいけません。 at {0}.{1}"),
+    DOMALA4161("[{0}.{1}]のSQLの妥当検査に失敗しました（[{3}]行目[{4}]番目の文字付近）。括弧の前に位置するバインド変数もしくはリテラル変数[{5}]に対応するパラメータの型は基本型もしくはホルダークラスを要素としたscala.collection.Iterableのサブタイプでなければいけません。しかし、実際の型は[{6}]です。型を間違えていませんか？もしくはフィールドアクセスやメソッド呼び出しの記述を忘れていませんか？。SQL[{2}]"),
+
+    
     DOMALA4185(org.seasar.doma.message.Message.DOMA4185.getMessagePattern()),
     DOMALA4222("エンティティクラスを@Insertや@Updateや@Deleteが注釈されたメソッドのパラメータとする場合、戻り値はdomala.jdbc.Result<E>でなければいけません。型パラメータ E の実型引数にはパラメータと同じエンティティクラスを指定してください。 at {0}.{1}"),
     DOMALA4223("エンティティクラスを@BatchInsertや@BatchUpdateや@BatchDeleteが注釈されたメソッドのパラメータとする場合、戻り値はdomala.jdbc.BatchResult<E>でなければいけません。型パラメータEの実型引数にはパラメータと同じエンティティクラスを指定してください。 at {0}.{1}"),
-    DOMALA4235("Optionに対する実型引数の型[{0}]はサポートされていません。サポートされている型は次のものです。基本型、ドメインクラス、エンティティクラス。  at {1}.{2}"),
+    DOMALA4235("Optionに対する実型引数の型[{0}]はサポートされていません。サポートされている型は次のものです。基本型、ホルダークラス、エンティティクラス。  at {1}.{2}"),
     DOMALA4244("Functionの1番目の実型引数の型は、Streamでなければいけません。 at {0}.{1}"),
     DOMALA4245("Streamの実型引数の型[{0}]はサポートされていません。 at {1}.{2}"),
     DOMALA4246(org.seasar.doma.message.Message.DOMA4246.getMessagePattern()),

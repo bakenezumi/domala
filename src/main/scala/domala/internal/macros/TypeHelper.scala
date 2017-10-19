@@ -6,7 +6,9 @@ object TypeHelper {
 
   def convertToDomaType(tpe: Type.Arg): DomaType = {
     tpe match {
-      case t"Map[String, $_]" => DomaType.Map
+      case t"Map[String, Object]" => DomaType.Map
+      case t"Map[String, Any]" => DomaType.Map
+      case t"Map[String, AnyRef]" => DomaType.Map
       case t"Map[$_,$_]" => DomaType.UnSupport
       case t"Seq[$elementTpe]" => DomaType.Seq(convertToDomaType(elementTpe), elementTpe)
       case t"Option[$elementTpe]" => DomaType.Option(convertToDomaType(elementTpe), elementTpe)

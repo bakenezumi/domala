@@ -7,19 +7,6 @@ import org.scalatest.{BeforeAndAfter, FunSuite}
 import org.seasar.doma.internal.jdbc.command._
 
 class DaoReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
-  
-  test("getSingleResultHandler for Entity") {
-    assert(DaoReflectionMacros.getSingleResultHandler[DummyEntity]("DaoRefrectionMacrosTestSuite", "get Handler for Entity").isInstanceOf[EntitySingleResultHandler[_]])
-  }
-
-  test("getSingleResultHandler for Domain") {
-    assert(DaoReflectionMacros.getSingleResultHandler[DummyDomain]("DaoRefrectionMacrosTestSuite", "get Handler for Domain").isInstanceOf[DomainSingleResultHandler[_, _]])
-  }
-
-  test("getSingleResultHandlerd for Other") {
-    //コンパイルエラー
-    //DaoReflectionMacros.getSingleResultHandler[String]("DaoRefrectionMacrosTestSuite", "type error")
-  }
 
   test("getOptionalSingleResultHandler for Entity") {
     assert(DaoReflectionMacros.getOptionalSingleResultHandler[DummyEntity]("DaoRefrectionMacrosTestSuite", "get Handler for Entity").isInstanceOf[OptionalEntitySingleResultHandler[_]])
