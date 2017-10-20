@@ -40,6 +40,15 @@ where id = /*id*/0
 
   @Select(sql = """
 select *
+from person where
+/*%if name != null */
+  name like /* @prefix(name) */'%' escape '$'
+/*%end*/
+  """)
+  def selectByName(name: String): Seq[Person]
+
+  @Select(sql = """
+select *
 from person
   """)
   def selectAll(): Seq[Person]

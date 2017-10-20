@@ -13,17 +13,18 @@ Domala is a database access library for Scala. This wraps [Doma2](https://github
 
 ### Example
 
-#### Config
+#### Holder
 
 ```scala
-object SampleConfig extends Config(
-  dataSource = new LocalTransactionDataSource(
-    "jdbc:h2:mem:sample;DB_CLOSE_DELAY=-1", "sa", null),
-  dialect = new H2Dialect,
-  naming = Naming.SNAKE_LOWER_CASE
-) {
-  Class.forName("org.h2.Driver")
-}
+@Holder
+case class Name(value: String)
+```
+
+#### Embeddable
+
+```scala
+@Embeddable
+case class Address(city: String, street: String)
 ```
 
 #### Entity
@@ -42,20 +43,6 @@ case class Person(
 )
 ```
 
-#### Holder
-
-```scala
-@Holder
-case class Name(value: String)
-```
-
-#### Embeddable
-
-```scala
-@Embeddable
-case class Address(city: String, street: String)
-```
-
 #### Dao
 
 ```scala
@@ -69,11 +56,33 @@ where id = /*id*/0
   """)
   def selectById(id: Int): Option[Person]
 
+  @Select(sql = """
+select *
+from person where
+/*%if name != null */
+  name like /* @prefix(name) */'%' escape '$'
+/*%end*/
+  """)
+  def selectByName(name: String): Seq[Person]
+
   @Insert
   def insert(person: Person): Result[Person]
 
   @Update
   def update(person: Person): Result[Person]
+}
+```
+
+#### Config
+
+```scala
+object SampleConfig extends Config(
+  dataSource = new LocalTransactionDataSource(
+    "jdbc:h2:mem:sample;DB_CLOSE_DELAY=-1", "sa", null),
+  dialect = new H2Dialect,
+  naming = Naming.SNAKE_LOWER_CASE
+) {
+  Class.forName("org.h2.Driver")
 }
 ```
 
