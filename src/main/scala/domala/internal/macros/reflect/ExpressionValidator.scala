@@ -237,15 +237,24 @@ class ExpressionValidator[C <: blackbox.Context](c: C)(
   }
 
   override def visitFunctionOperatorNode(node: FunctionOperatorNode, p: Void): TypeDeclaration[C] = {
-    val typeDeclaration = getExpressionFunctionsDeclaration(node)
-    val parameterTypeDeclarations = new ParameterCollector().collect(node.getParametersNode)
     val methodName = node.getMethodName
-    val methodDeclarations = typeDeclaration.getMethodDeclarations(methodName, parameterTypeDeclarations)
-    // Domala add
-    if (methodDeclarations.isEmpty) {
-      val tpe = parameterTypeMap.get(methodName)
-      if(tpe.nonEmpty) {
-        val typeDeclaration = TypeDeclaration.newTypeDeclaration(c)(tpe.get)
+    val parameterTypeDeclarations = new ParameterCollector().collect(node.getParametersNode)
+    if(node.getExpression.startsWith("@")) {
+      val typeDeclaration = getExpressionFunctionsDeclaration(node)
+      val methodDeclarations = typeDeclaration.getMethodDeclarations(methodName, parameterTypeDeclarations)
+      if (methodDeclarations.isEmpty) {
+        val location = node.getLocation
+        val methodSignature = createMethodSignature(methodName, parameterTypeDeclarations)
+        c.abort(c.enclosingPosition, Message.DOMALA4072.getMessage(location.getExpression, Integer.valueOf(location.getPosition), methodSignature))
+      }
+      if (methodDeclarations.size == 1) {
+        val methodDeclaration = methodDeclarations.head
+        val returnTypeDeclaration = methodDeclaration.getReturnTypeDeclaration
+        if (returnTypeDeclaration != null) return returnTypeDeclaration
+      }
+    } else {
+      parameterTypeMap.get(methodName).foreach { tpe =>
+        val typeDeclaration = TypeDeclaration.newTypeDeclaration(c)(tpe)
         val methodDeclarations = typeDeclaration.getMethodDeclarations("apply", parameterTypeDeclarations)
         if (methodDeclarations.size == 1) {
           val methodDeclaration = methodDeclarations.head
@@ -256,16 +265,10 @@ class ExpressionValidator[C <: blackbox.Context](c: C)(
           }
         }
       }
-      val location = node.getLocation
-      val methodSignature = createMethodSignature(methodName, parameterTypeDeclarations)
-      c.abort(c.enclosingPosition, Message.DOMALA4072.getMessage(location.getExpression, Integer.valueOf(location.getPosition), methodSignature))
     }
-    if (methodDeclarations.size == 1) {
-      val methodDeclaration = methodDeclarations.head
-      val returnTypeDeclaration = methodDeclaration.getReturnTypeDeclaration
-      if (returnTypeDeclaration != null) return returnTypeDeclaration
-    }
-    throw new AptIllegalStateException(methodName)
+    val location = node.getLocation
+    val methodSignature = createMethodSignature(methodName, parameterTypeDeclarations)
+    c.abort(c.enclosingPosition, Message.DOMALA4072.getMessage(location.getExpression, Integer.valueOf(location.getPosition), methodSignature))
   }
 
   // TODO exprFunctions

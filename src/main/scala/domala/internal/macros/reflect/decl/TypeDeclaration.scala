@@ -83,25 +83,19 @@ class TypeDeclaration[C <: blackbox.Context](c: C)(
       parameterTypeDeclarations: Seq[TypeDeclaration[C]],
       statik: Boolean): Seq[MethodDeclaration[C]] = {
     val results = mutable.Buffer[MethodDeclaration[C]]()
-
     for ((binaryName, typeParameterDeclarations) <- typeParameterDeclarationsMap) {
       val typeElement = ElementUtil.getTypeElement[C](c)(binaryName)
       typeElement.foreach(e =>
         for (method: MethodSymbol <- e.members.collect {
                case m: MethodSymbol
                    if m.isPublic && m.name.toString == name && !(m.returnType =:= c
-                     .typeOf[Unit]) =>
-                 m
+                     .typeOf[Unit]) => m
              }) {
           val parameters = method.paramLists.flatten.map(_.typeSignature)
           if (parameters.size == parameterTypeDeclarations.size) {
-            if (parameterTypeDeclarations
-                  .map(_.getType)
-                  .zip(parameters.map(p =>
-                    resolveTypeParameter(p, typeParameterDeclarations)))
-                  .forall { t =>
-                    t._1 <:< t._2
-                  }) {
+            if (parameterTypeDeclarations.map(_.getType)
+                  .zip(parameters.map(p => resolveTypeParameter(p, typeParameterDeclarations)))
+                  .forall(t => t._1 <:< t._2 )) {
               val methodDeclaration =
                 new MethodDeclaration(c)(method, typeParameterDeclarations)
               results += methodDeclaration

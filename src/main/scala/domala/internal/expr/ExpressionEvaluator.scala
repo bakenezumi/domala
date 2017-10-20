@@ -7,7 +7,7 @@ import org.seasar.doma.internal.expr.{EvaluationResult, ExpressionException, Nul
 import org.seasar.doma.message.Message
 import org.seasar.doma.internal.expr.node._
 import org.seasar.doma.jdbc.ClassHelper
-import org.seasar.doma.internal.util.{GenericsUtil, MethodUtil}
+import org.seasar.doma.internal.util.{ClassUtil, GenericsUtil, MethodUtil}
 import java.lang.reflect.{GenericDeclaration, Method, ParameterizedType, TypeVariable}
 
 // createEvaluationResultにてOptionのunwrapを行うために拡張
@@ -98,22 +98,43 @@ class ExpressionEvaluator(variableValues: java.util.Map[String, Value] =
   }
 
   override def visitFunctionOperatorNode(node: FunctionOperatorNode, p: Void): EvaluationResult = {
-    val targetClass = expressionFunctions.getClass
     val collector = new ParameterCollector()
     val collection = collector.collect(node.getParametersNode)
     val location = node.getLocation
-    val method = findMethod(node.getMethodName, expressionFunctions, targetClass, collection.getParamTypes)
-    if (method == null) {
-      //Domala add
+    if(node.getExpression.startsWith("@")) {
+      val targetClass = expressionFunctions.getClass
+      val method = findMethod(node.getMethodName, expressionFunctions, targetClass, collection.getParamTypes)
+      if (method == null) {
+        val signature = MethodUtil.createSignature(node.getMethodName, collection.getParamTypes)
+        throw new ExpressionException(Message.DOMA3028, location.getExpression, Integer.valueOf(location.getPosition), signature)
+      }
+      invokeMethod(node.getLocation, method, expressionFunctions, targetClass, collection.getParamTypes, collection.getParams)
+    } else { // Domala add
       val value = variableValues.get(node.getMethodName)
       if (value != null) {
         val method = findMethod("apply", value.getValue, value.getType, collection.getParamTypes)
-        if(method != null) return invokeMethod(location, method, value.getValue, value.getType, collection.getParamTypes, collection.getParams)
+        if (method != null)
+          return invokeMethod(location, method, value.getValue, value.getType, collection.getParamTypes, collection.getParams)
       }
       val signature = MethodUtil.createSignature(node.getMethodName, collection.getParamTypes)
       throw new ExpressionException(Message.DOMA3028, location.getExpression, Integer.valueOf(location.getPosition), signature)
     }
-    invokeMethod(node.getLocation, method, expressionFunctions, targetClass, collection.getParamTypes, collection.getParams)
+  }
+
+  override protected def calculateHierarchyDifference(paramType: Class[_], argType: Class[_], initDifference: Int): Int = {
+    var difference = initDifference
+    if (paramType == classOf[Any] && argType.isInterface) return Integer.MAX_VALUE
+    var tpe = argType
+    while ( {tpe != null}) {
+      if (paramType == tpe || paramType == ClassUtil.toBoxedPrimitiveTypeIfPossible(tpe)) return difference
+      difference += 1
+      if (paramType.isInterface) for (interfaceClass <- tpe.getInterfaces) {
+        val result = calculateHierarchyDifference(paramType, interfaceClass, difference)
+        if (result != -1) return result
+      }
+      tpe = tpe.getSuperclass
+    }
+    -1
   }
 
   protected class ParameterCollector extends ExpressionNodeVisitor[Void, java.util.List[EvaluationResult]] {
@@ -154,10 +175,7 @@ class ExpressionEvaluator(variableValues: java.util.Map[String, Value] =
     }
 
     override def visitCommaOperatorNode(node: CommaOperatorNode, p: java.util.List[EvaluationResult]): Void = {
-      import scala.collection.JavaConversions._
-      for (expressionNode <- node.getNodes) {
-        expressionNode.accept(this, p)
-      }
+      node.getNodes.forEach(expressionNode => expressionNode.accept(this, p))
       null
     }
 

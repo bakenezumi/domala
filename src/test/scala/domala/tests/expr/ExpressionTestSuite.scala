@@ -183,6 +183,19 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  test("embedded function parameter") {
+    Required {
+      assert(
+        dao.embeddedFunctionSelect(Name("S")) == Seq(
+          Person(Some(1),
+            Some(Name("SMITH")),
+            Some(10),
+            Address("Tokyo", "Yaesu"),
+            Some(2),
+            Some(0))))
+    }
+  }
+
   test("entity parameter") {
     val entity1 = Person(Some(1), null, None, null, None, None)
     val entity2 = Person(None, Some(Name("ALLEN")), None, null, None, None)
@@ -303,6 +316,13 @@ where
 id = /* f(id) - 1 */0
   """)
   def functionSelect(id: String, f: String => Int = s => s.toInt) : Option[Person]
+
+  @Select("""
+select * from person
+where
+name like /* @prefix(name.value) */'a%' escape '$'
+  """)
+  def embeddedFunctionSelect(name: Name) : Seq[Person]
 
   @Select("""
 select * from person

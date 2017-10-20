@@ -22,6 +22,7 @@ class FunctionTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
   val person1 = Person(Some(1), Some(Name("SMITH")), Some(10), Address("Tokyo", "Yaesu"), Some(2), Some(0))
+  val person2 = Person(Some(2), Some(Name("ALLEN")), Some(20), Address("Kyoto", "Karasuma"), Some(1), Some(0))
 
   test("2 parameter") {
     Required {
@@ -30,6 +31,15 @@ class FunctionTestSuite extends FunSuite with BeforeAndAfter {
       )
     }
   }
+
+  test("default parameter") {
+    Required {
+      assert(
+        dao.defaultParameterFunctionSelect(1).contains(person2)
+      )
+    }
+  }
+
 }
 
 @Dao
@@ -40,6 +50,13 @@ select * from person
 where
 id = /* f(x, y) - 4 */0
   """)
-  def twoParameterFunctionSelect(x: String, y: String, f: (String, String) => Int) : Option[Person]
+  def twoParameterFunctionSelect(x: String, y: String, f: (String, String) => Int): Option[Person]
+
+  @Select("""
+select * from person
+where
+id = /* twice(x) */0
+  """)
+  def defaultParameterFunctionSelect(x: Integer, twice: Integer => Int = _ * 2): Option[Person]
 
 }

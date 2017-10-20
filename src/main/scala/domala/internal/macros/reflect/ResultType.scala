@@ -2,6 +2,7 @@ package domala.internal.macros.reflect
 
 import domala.internal.macros.reflect.util.TypeUtil._
 
+import scala.language.existentials
 import scala.reflect.macros.blackbox
 
 sealed trait ResultType

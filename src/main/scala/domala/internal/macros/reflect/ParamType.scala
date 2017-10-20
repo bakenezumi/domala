@@ -1,5 +1,6 @@
 package domala.internal.macros.reflect
 
+import scala.language.existentials
 import domala.internal.macros.reflect.util.TypeUtil._
 
 import scala.reflect.macros.blackbox
