@@ -300,7 +300,7 @@ update person set /*%populate*/id = id where id = /* id */0
   @Select("""
 select * from person
 where
-id = /* f.apply(id) - 1 */0
+id = /* f(id) - 1 */0
   """)
   def functionSelect(id: String, f: String => Int = s => s.toInt) : Option[Person]
 

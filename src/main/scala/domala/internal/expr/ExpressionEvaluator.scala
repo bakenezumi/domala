@@ -5,10 +5,10 @@ import java.util._
 import org.seasar.doma.expr.ExpressionFunctions
 import org.seasar.doma.internal.expr.{EvaluationResult, ExpressionException, NullExpressionFunctions, Value}
 import org.seasar.doma.message.Message
-import org.seasar.doma.internal.expr.node.FieldOperatorNode
+import org.seasar.doma.internal.expr.node._
 import org.seasar.doma.jdbc.ClassHelper
-import org.seasar.doma.internal.util.GenericsUtil
-import java.lang.reflect.{GenericDeclaration, ParameterizedType, TypeVariable}
+import org.seasar.doma.internal.util.{GenericsUtil, MethodUtil}
+import java.lang.reflect.{GenericDeclaration, Method, ParameterizedType, TypeVariable}
 
 // createEvaluationResultにてOptionのunwrapを行うために拡張
 class ExpressionEvaluator(variableValues: java.util.Map[String, Value] =
@@ -20,6 +20,10 @@ class ExpressionEvaluator(variableValues: java.util.Map[String, Value] =
       variableValues,
       expressionFunctions,
       classHelper) {
+
+  def this(expressionFunctions: ExpressionFunctions, classHelper: ClassHelper) = {
+    this(Collections.emptyMap[String, Value], expressionFunctions, classHelper)
+  }
 
   override def visitFieldOperatorNode(node: FieldOperatorNode,
                                       p: Void): EvaluationResult = {
@@ -93,4 +97,160 @@ class ExpressionEvaluator(variableValues: java.util.Map[String, Value] =
       new EvaluationResult(value, value.getClass)
   }
 
+  override def visitFunctionOperatorNode(node: FunctionOperatorNode, p: Void): EvaluationResult = {
+    val targetClass = expressionFunctions.getClass
+    val collector = new ParameterCollector()
+    val collection = collector.collect(node.getParametersNode)
+    val location = node.getLocation
+    val method = findMethod(node.getMethodName, expressionFunctions, targetClass, collection.getParamTypes)
+    if (method == null) {
+      //Domala add
+      val value = variableValues.get(node.getMethodName)
+      if (value != null) {
+        val method = findMethod("apply", value.getValue, value.getType, collection.getParamTypes)
+        if(method != null) return invokeMethod(location, method, value.getValue, value.getType, collection.getParamTypes, collection.getParams)
+      }
+      val signature = MethodUtil.createSignature(node.getMethodName, collection.getParamTypes)
+      throw new ExpressionException(Message.DOMA3028, location.getExpression, Integer.valueOf(location.getPosition), signature)
+    }
+    invokeMethod(node.getLocation, method, expressionFunctions, targetClass, collection.getParamTypes, collection.getParams)
+  }
+
+  protected class ParameterCollector extends ExpressionNodeVisitor[Void, java.util.List[EvaluationResult]] {
+    def collect(node: ExpressionNode): org.seasar.doma.internal.expr.ExpressionEvaluator.ParameterCollection = {
+      val evaluationResults = new java.util.ArrayList[EvaluationResult]
+      node.accept(this, evaluationResults)
+      new org.seasar.doma.internal.expr.ExpressionEvaluator.ParameterCollection(evaluationResults)
+    }
+
+    override def visitEqOperatorNode(node: EqOperatorNode, p: java.util.List[EvaluationResult]): Void = {
+      evaluate(node, p)
+      null
+    }
+
+    override def visitNeOperatorNode(node: NeOperatorNode, p: java.util.List[EvaluationResult]): Void = {
+      evaluate(node, p)
+      null
+    }
+
+    override def visitGeOperatorNode(node: GeOperatorNode, p: java.util.List[EvaluationResult]): Void = {
+      evaluate(node, p)
+      null
+    }
+
+    override def visitGtOperatorNode(node: GtOperatorNode, p: java.util.List[EvaluationResult]): Void = {
+      evaluate(node, p)
+      null
+    }
+
+    override def visitLeOperatorNode(node: LeOperatorNode, p: java.util.List[EvaluationResult]): Void = {
+      evaluate(node, p)
+      null
+    }
+
+    override def visitLtOperatorNode(node: LtOperatorNode, p: java.util.List[EvaluationResult]): Void = {
+      evaluate(node, p)
+      null
+    }
+
+    override def visitCommaOperatorNode(node: CommaOperatorNode, p: java.util.List[EvaluationResult]): Void = {
+      import scala.collection.JavaConversions._
+      for (expressionNode <- node.getNodes) {
+        expressionNode.accept(this, p)
+      }
+      null
+    }
+
+    override def visitLiteralNode(node: LiteralNode, p: java.util.List[EvaluationResult]): Void = {
+      evaluate(node, p)
+      null
+    }
+
+    override def visitVariableNode(node: VariableNode, p: java.util.List[EvaluationResult]): Void = {
+      evaluate(node, p)
+      null
+    }
+
+    override def visitOrOperatorNode(node: OrOperatorNode, p: java.util.List[EvaluationResult]): Void = {
+      evaluate(node, p)
+      null
+    }
+
+    override def visitAndOperatorNode(node: AndOperatorNode, p: java.util.List[EvaluationResult]): Void = {
+      evaluate(node, p)
+      null
+    }
+
+    override def visitNotOperatorNode(node: NotOperatorNode, p: java.util.List[EvaluationResult]): Void = {
+      evaluate(node, p)
+      null
+    }
+
+    override def visitAddOperatorNode(node: AddOperatorNode, p: java.util.List[EvaluationResult]): Void = {
+      evaluate(node, p)
+      null
+    }
+
+    override def visitSubtractOperatorNode(node: SubtractOperatorNode, p: java.util.List[EvaluationResult]): Void = {
+      evaluate(node, p)
+      null
+    }
+
+    override def visitMultiplyOperatorNode(node: MultiplyOperatorNode, p: java.util.List[EvaluationResult]): Void = {
+      evaluate(node, p)
+      null
+    }
+
+    override def visitDivideOperatorNode(node: DivideOperatorNode, p: java.util.List[EvaluationResult]): Void = {
+      evaluate(node, p)
+      null
+    }
+
+    override def visitModOperatorNode(node: ModOperatorNode, p: java.util.List[EvaluationResult]): Void = {
+      evaluate(node, p)
+      null
+    }
+
+    override def visitNewOperatorNode(node: NewOperatorNode, p: java.util.List[EvaluationResult]): Void = {
+      evaluate(node, p)
+      null
+    }
+
+    override def visitMethodOperatorNode(node: MethodOperatorNode, p: java.util.List[EvaluationResult]): Void = {
+      evaluate(node, p)
+      null
+    }
+
+    override def visitStaticMethodOperatorNode(node: StaticMethodOperatorNode, p: java.util.List[EvaluationResult]): Void = {
+      evaluate(node, p)
+      null
+    }
+
+    override def visitFunctionOperatorNode(node: FunctionOperatorNode, p: java.util.List[EvaluationResult]): Void = {
+      evaluate(node, p)
+      null
+    }
+
+    override def visitFieldOperatorNode(node: FieldOperatorNode, p: java.util.List[EvaluationResult]): Void = {
+      evaluate(node, p)
+      null
+    }
+
+    override def visitStaticFieldOperatorNode(node: StaticFieldOperatorNode, p: java.util.List[EvaluationResult]): Void = {
+      evaluate(node, p)
+      null
+    }
+
+    override def visitParensNode(node: ParensNode, p: java.util.List[EvaluationResult]): Void = {
+      node.getNode.accept(this, p)
+      null
+    }
+
+    override def visitEmptyNode(node: EmptyNode, p: java.util.List[EvaluationResult]): Void = null
+
+    protected def evaluate(node: ExpressionNode, p: java.util.List[EvaluationResult]): Unit = {
+      val evaluationResult = evaluateInternal(node)
+      p.add(evaluationResult)
+    }
+  }
 }

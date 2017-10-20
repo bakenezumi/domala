@@ -165,7 +165,7 @@ class SqlValidator[C <: blackbox.Context](val c: C)(
   }
 
   protected def parseExpression(location: SqlLocation, expression: String): ExpressionNode = try {
-    val parser = new ExpressionParser(expression)
+    val parser = new domala.internal.expr.ExpressionParser(expression)
     parser.parse()
   } catch {
     case e: ExpressionException =>

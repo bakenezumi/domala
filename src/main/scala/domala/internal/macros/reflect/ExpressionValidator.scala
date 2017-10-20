@@ -23,7 +23,6 @@ class ExpressionValidator[C <: blackbox.Context](c: C)(
   val parameterTypeMap: mutable.Map[String, ReflectionHelper[C]#ParamType] = mutable.Map[String,  ReflectionHelper[C]#ParamType](originalParamTypeMap.toSeq: _*)
   val unknownTypeDeclaration: TypeDeclaration[C] = TypeDeclaration.newUnknownTypeDeclaration[C](c)
 
-
   def removeParameterType(parameterName: String): ReflectionHelper[C]#ParamType = parameterTypeMap.remove(parameterName).orNull
 
   def putParameterType(parameterName: String, parameterType: ReflectionHelper[C]#ParamType): Unit = {
@@ -61,7 +60,6 @@ class ExpressionValidator[C <: blackbox.Context](c: C)(
       c.abort(c.enclosingPosition, Message.DOMALA4116.getMessage(location.getExpression, Integer.valueOf(location.getPosition), node.getExpression, node.getLeftNode.toString, left.getBinaryName, node.getRightNode.toString, right.getBinaryName))
     }
   }
-
 
   protected def handleNullUnavailableComparisonOperation(node: ComparisonOperatorNode, p: Void): TypeDeclaration[C] = {
     val left = node.getLeftNode.accept(this, p)
@@ -243,7 +241,21 @@ class ExpressionValidator[C <: blackbox.Context](c: C)(
     val parameterTypeDeclarations = new ParameterCollector().collect(node.getParametersNode)
     val methodName = node.getMethodName
     val methodDeclarations = typeDeclaration.getMethodDeclarations(methodName, parameterTypeDeclarations)
+    // Domala add
     if (methodDeclarations.isEmpty) {
+      val tpe = parameterTypeMap.get(methodName)
+      if(tpe.nonEmpty) {
+        val typeDeclaration = TypeDeclaration.newTypeDeclaration(c)(tpe.get)
+        val methodDeclarations = typeDeclaration.getMethodDeclarations("apply", parameterTypeDeclarations)
+        if (methodDeclarations.size == 1) {
+          val methodDeclaration = methodDeclarations.head
+          val returnTypeDeclaration = methodDeclaration.getReturnTypeDeclaration
+          if (returnTypeDeclaration != null) {
+            validatedParameterNames.add(methodName)
+            return convertIfOptional(returnTypeDeclaration)
+          }
+        }
+      }
       val location = node.getLocation
       val methodSignature = createMethodSignature(methodName, parameterTypeDeclarations)
       c.abort(c.enclosingPosition, Message.DOMALA4072.getMessage(location.getExpression, Integer.valueOf(location.getPosition), methodSignature))
