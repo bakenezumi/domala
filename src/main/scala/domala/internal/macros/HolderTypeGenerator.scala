@@ -18,12 +18,19 @@ object HolderTypeGenerator {
       case _ => abort(cls.pos, Message.DOMALA4102.getMessage(valueParam.decltpe.get.toString(), cls.name.syntax, valueParam.name.syntax))
     }
 
-    val methods = makeMethods(cls.name, cls.ctor, basicTpe)
+    val erasedHolderType =
+      if(cls.tparams.nonEmpty) {
+        val tparams = cls.tparams.map(_ => t"_")
+        t"${cls.name}[..$tparams]"
+      } else {
+        t"${cls.name}"
+      }
+    val methods = makeMethods(cls.name, cls.ctor, basicTpe, erasedHolderType)
 
     q"""
-    object ${Term.Name(cls.name.syntax)} extends
+    object ${Term.Name(cls.name.syntax) } extends
       domala.jdbc.holder.AbstractHolderDesc[
-        $basicTpe, ${cls.name}](
+        $basicTpe, $erasedHolderType](
         $wrapperSupplier: java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$basicTpe]]) {
       def getSingletonInternal() = this
       override def wrapper: java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$basicTpe]] = $wrapperSupplier
@@ -33,13 +40,13 @@ object HolderTypeGenerator {
     """
   }
 
-  protected def makeMethods(clsName: Type.Name, ctor: Ctor.Primary, basicTpe: Type): Seq[Stat] = {
+  protected def makeMethods(clsName: Type.Name, ctor: Ctor.Primary, basicTpe: Type, erasedHolderType: Type): Seq[Stat] = {
     q"""
-    override protected def newDomain(value: $basicTpe): $clsName = {
+    override protected def newDomain(value: $basicTpe): $erasedHolderType = {
       if (value == null) null else ${Term.Name(clsName.toString)}(value)
     }
 
-    override protected def getBasicValue(domain: $clsName): $basicTpe = {
+    override protected def getBasicValue(domain: $erasedHolderType): $basicTpe = {
       if (domain == null) null else domain.value
     }
 
@@ -48,7 +55,7 @@ object HolderTypeGenerator {
     }
 
     override def getDomainClass() = {
-      classOf[$clsName]
+      classOf[$erasedHolderType]
     }
     """.stats
   }

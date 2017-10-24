@@ -21,8 +21,8 @@ class FunctionTestSuite extends FunSuite with BeforeAndAfter {
       personDao.drop()
     }
   }
-  val person1 = Person(Some(1), Some(Name("SMITH")), Some(10), Address("Tokyo", "Yaesu"), Some(2), Some(0))
-  val person2 = Person(Some(2), Some(Name("ALLEN")), Some(20), Address("Kyoto", "Karasuma"), Some(1), Some(0))
+  val person1 = Person(Some(ID(1)), Some(Name("SMITH")), Some(10), Address("Tokyo", "Yaesu"), Some(2), Some(0))
+  val person2 = Person(Some(ID(2)), Some(Name("ALLEN")), Some(20), Address("Kyoto", "Karasuma"), Some(1), Some(0))
 
   test("2 parameter") {
     Required {

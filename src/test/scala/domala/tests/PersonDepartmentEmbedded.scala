@@ -9,8 +9,3 @@ case class PersonDepartmentEmbedded(
   department: Department
 )
 
-@Embeddable
-case class Department(
-  departmentId: Int,
-  departmentName: String
-)

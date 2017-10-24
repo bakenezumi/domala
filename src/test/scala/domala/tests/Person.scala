@@ -6,7 +6,7 @@ import domala._
 case class Person(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  id: Option[Int] = None,
+  id: Option[ID[Person]] = None,
   @Column(updatable = false)
   name: Option[Name],
   age: Option[Int],

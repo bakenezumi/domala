@@ -25,7 +25,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       assert(
         dao.selectById(1) === Some(
-          Person(Some(1),
+          Person(Some(ID(1)),
                  Some(Name("SMITH")),
                  Some(10),
                  Address("Tokyo", "Yaesu"),
@@ -45,18 +45,20 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       assert(
         dao.selectAll === Seq(
-          Person(Some(1),
-                 Some(Name("SMITH")),
-                 Some(10),
-                 Address("Tokyo", "Yaesu"),
-                 Some(2),
-                 Some(0)),
-          Person(Some(2),
-                 Some(Name("ALLEN")),
-                 Some(20),
-                 Address("Kyoto", "Karasuma"),
-                 Some(1),
-                 Some(0))
+          Person(
+            Some(ID(1)),
+            Some(Name("SMITH")),
+            Some(10),
+            Address("Tokyo", "Yaesu"),
+            Some(2),
+            Some(0)),
+          Person(
+            Some(ID(2)),
+            Some(Name("ALLEN")),
+            Some(20),
+            Address("Kyoto", "Karasuma"),
+            Some(1),
+            Some(0))
         ))
     }
   }
@@ -65,7 +67,8 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       assert(
         dao.selectByIdNullable(1) ===
-          Person(Some(1),
+          Person(
+            Some(ID(1)),
             Some(Name("SMITH")),
             Some(10),
             Address("Tokyo", "Yaesu"),
@@ -92,7 +95,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       assert(
         dao.selectWithDepartmentEmbeddedById(1) ===
-          Some(PersonDepartmentEmbedded(1, "SMITH", Department(2, "SALES"))))
+          Some(PersonDepartmentEmbedded(1, "SMITH", Department(ID(2), "SALES"))))
     }
   }
 
@@ -194,7 +197,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
       assert(
         dao.selectById(3) === Some(
           Person(
-            Some(3),
+            Some(ID(3)),
             Some(Name("aaa")),
             Some(5),
             Address("bbb", "ccc"),
@@ -207,7 +210,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       dao.update(
         Person(
-          id = Some(1),
+          id = Some(ID(1)),
           name = Some(Name("aaa")),
           age = Some(5),
           address = Address("bbb", "ccc"),
@@ -215,7 +218,8 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
           version = Some(0)))
       assert(
         dao.selectById(1) === Some(
-          Person(Some(1),
+          Person(
+            Some(ID(1)),
             Some(Name("SMITH")), // @Column(updatable = false)
             Some(5),
             Address("bbb", "ccc"),
@@ -248,7 +252,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
       assert(
         dao.selectById(3) === Some(
           Person(
-            Some(3),
+            Some(ID(3)),
             Some(Name("aaa")),
             Some(5),
             Address("bbb", "ccc"),
@@ -257,7 +261,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
       assert(
         dao.selectById(4) === Some(
           Person(
-            Some(4),
+            Some(ID(4)),
             Some(Name("ddd")),
             Some(10),
             Address("eee", "fff"),
@@ -272,14 +276,14 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
       assert(
         dao.selectAll === Seq(
           Person(
-            Some(1),
+            Some(ID(1)),
             Some(Name("SMITH")),
             Some(11),
             Address("Tokyo", "Yaesu"),
             Some(2),
             Some(1)),
           Person(
-            Some(2),
+            Some(ID(2)),
             Some(Name("ALLEN")),
             Some(21),
             Address("Kyoto", "Karasuma"),
@@ -301,14 +305,14 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       dao.insertSql(
         Person(
-          Some(3),
+          Some(ID(3)),
           Some(Name("aaa")),
           Some(5),
           Address("bbb", "ccc"),
           Some(1),
           Some(1)),
         Person(
-          Some(3),
+          Some(ID(3)),
           Some(Name("ddd")),
           Some(10),
           Address("eee", "fff"),
@@ -319,7 +323,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
       assert(dao.selectCount === 3)
       assert(
         dao.selectById(3).contains(Person(
-          Some(3),
+          Some(ID(3)),
           Some(Name("aaa")),
           Some(5),
           Address("eee", "fff"),
@@ -332,14 +336,14 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       dao.updateSql(
         Person(
-          Some(1),
+          Some(ID(1)),
           Some(Name("aaa")),
           Some(5),
           Address("bbb", "ccc"),
           Some(1),
           Some(1)),
         Person(
-          Some(3),
+          Some(ID(3)),
           Some(Name("ddd")),
           Some(10),
           Address("eee", "fff"),
@@ -349,7 +353,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
       )
       assert(
         dao.selectById(1).contains(Person(
-          Some(1),
+          Some(ID(1)),
           Some(Name("aaa")),
           Some(5),
           Address("eee", "fff"),
@@ -362,7 +366,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       dao.deleteSql(
         Person(
-          Some(1),
+          Some(ID(1)),
           Some(Name("aaa")),
           Some(5),
           Address("bbb", "ccc"),
@@ -379,13 +383,15 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       assert(
         dao.selectAllOption(options) === Seq(
-          Person(Some(1),
+          Person(
+            Some(ID(1)),
             Some(Name("SMITH")),
             Some(10),
             Address("Tokyo", "Yaesu"),
             Some(2),
             Some(0)),
-          Person(Some(2),
+          Person(
+            Some(ID(2)),
             Some(Name("ALLEN")),
             Some(20),
             Address("Kyoto", "Karasuma"),
@@ -396,7 +402,8 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
       options.limit(1).count()
       assert(
         dao.selectAllOption(options) === Seq(
-          Person(Some(1),
+          Person(
+            Some(ID(1)),
             Some(Name("SMITH")),
             Some(10),
             Address("Tokyo", "Yaesu"),

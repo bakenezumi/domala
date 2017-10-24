@@ -24,7 +24,8 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
   test("Iterable parameter") {
     Required {
       assert(dao.inSelect(List(1, 3, 5)) == Seq(
-        Person(Some(1),
+        Person(
+          Some(ID(1)),
           Some(Name("SMITH")),
           Some(10),
           Address("Tokyo", "Yaesu"),
@@ -38,7 +39,8 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       assert(
         dao.literalSelect(1).contains(
-        Person(Some(1),
+        Person(
+          Some(ID(1)),
           Some(Name("SMITH")),
           Some(10),
           Address("Tokyo", "Yaesu"),
@@ -51,13 +53,15 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       assert(
           dao.embeddedSelect("order by id desc") == Seq(
-          Person(Some(2),
+          Person(
+            Some(ID(2)),
             Some(Name("ALLEN")),
             Some(20),
             Address("Kyoto", "Karasuma"),
             Some(1),
             Some(0)),
-          Person(Some(1),
+          Person(
+            Some(ID(1)),
             Some(Name("SMITH")),
             Some(10),
             Address("Tokyo", "Yaesu"),
@@ -71,7 +75,8 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
     Required{
       assert(
         dao.ifSelect(Some(2)) == Seq(
-          Person(Some(2),
+          Person(
+            Some(ID(2)),
             Some(Name("ALLEN")),
             Some(20),
             Address("Kyoto", "Karasuma"),
@@ -80,13 +85,15 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
         ))
       assert(
         dao.ifSelect(None) == Seq(
-          Person(Some(1),
+          Person(
+            Some(ID(1)),
             Some(Name("SMITH")),
             Some(10),
             Address("Tokyo", "Yaesu"),
             Some(2),
             Some(0)),
-          Person(Some(2),
+          Person(
+            Some(ID(2)),
             Some(Name("ALLEN")),
             Some(20),
             Address("Kyoto", "Karasuma"),
@@ -100,7 +107,7 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
     Required{
       assert(
         dao.elseSelect(Some(2), Some(2)) == Seq(
-          Person(Some(2),
+          Person(Some(ID(2)),
             Some(Name("ALLEN")),
             Some(20),
             Address("Kyoto", "Karasuma"),
@@ -109,7 +116,7 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
         ))
       assert(
         dao.elseSelect(None, Some(2)) == Seq(
-          Person(Some(1),
+          Person(Some(ID(1)),
             Some(Name("SMITH")),
             Some(10),
             Address("Tokyo", "Yaesu"),
@@ -124,7 +131,7 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
   test("for expression") {
     Required {
       assert(dao.forSelect(List("BB", "AL")) == Seq(
-        Person(Some(2),
+        Person(Some(ID(2)),
           Some(Name("ALLEN")),
           Some(20),
           Address("Kyoto", "Karasuma"),
@@ -146,7 +153,7 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       val entity =
         Person(
-          Some(3),
+          Some(ID(3)),
           Some(Name("AAA")),
           Some(3),
           Address("BBB", "CCC"),
@@ -160,7 +167,7 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       val entity =
         Person(
-          Some(3),
+          Some(ID(3)),
           Some(Name("AAA")),
           Some(3),
           Address("BBB", "CCC"),
@@ -174,7 +181,7 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       assert(
         dao.functionSelect("2").contains(
-          Person(Some(1),
+          Person(Some(ID(1)),
             Some(Name("SMITH")),
             Some(10),
             Address("Tokyo", "Yaesu"),
@@ -187,7 +194,7 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       assert(
         dao.embeddedFunctionSelect(Name("S")) == Seq(
-          Person(Some(1),
+          Person(Some(ID(1)),
             Some(Name("SMITH")),
             Some(10),
             Address("Tokyo", "Yaesu"),
@@ -197,14 +204,15 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
   }
 
   test("entity parameter") {
-    val entity1 = Person(Some(1), null, None, null, None, None)
+    val entity1 = Person(Some(ID(1)), null, None, null, None, None)
     val entity2 = Person(None, Some(Name("ALLEN")), None, null, None, None)
     val entity3 = Person(None, null, None, Address(null, "Karasuma"), None, None)
 
     Required {
       assert(
         dao.entityParameterSelect(entity1).contains(
-          Person(Some(1),
+          Person(
+            Some(ID(1)),
             Some(Name("SMITH")),
             Some(10),
             Address("Tokyo", "Yaesu"),
@@ -212,7 +220,8 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
             Some(0))))
       assert(
         dao.entityParameterSelect(entity2).contains(
-          Person(Some(2),
+          Person(
+            Some(ID(2)),
             Some(Name("ALLEN")),
             Some(20),
             Address("Kyoto", "Karasuma"),
@@ -220,7 +229,7 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
             Some(0))))
       assert(
         dao.entityParameterSelect(entity3).contains(
-          Person(Some(2),
+          Person(Some(ID(2)),
             Some(Name("ALLEN")),
             Some(20),
             Address("Kyoto", "Karasuma"),
