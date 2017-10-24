@@ -8,7 +8,7 @@ import org.seasar.doma.message.Message
 import org.seasar.doma.internal.expr.node._
 import org.seasar.doma.jdbc.ClassHelper
 import org.seasar.doma.internal.util.{ClassUtil, GenericsUtil, MethodUtil}
-import java.lang.reflect.{GenericDeclaration, Method, ParameterizedType, TypeVariable}
+import java.lang.reflect.{GenericDeclaration, ParameterizedType, TypeVariable}
 
 // createEvaluationResultにてOptionのunwrapを行うために拡張
 class ExpressionEvaluator(variableValues: java.util.Map[String, Value] =
@@ -80,12 +80,14 @@ class ExpressionEvaluator(variableValues: java.util.Map[String, Value] =
           case parameterizedType: ParameterizedType =>
             val typeArguments = parameterizedType.getActualTypeArguments
             if (typeArguments.nonEmpty) {
-              if (typeArguments(0).isInstanceOf[Class[_]]) {
-                val elementValue = option.getOrElse(null)
-                return new EvaluationResult(elementValue, typeArguments(0).asInstanceOf[Class[_]])
-              } else if (typeArguments(0).isInstanceOf[ParameterizedType] && typeArguments(0).asInstanceOf[ParameterizedType].getRawType.isInstanceOf[Class[_]]) {
-                  val elementValue = option.getOrElse(null)
-                  return new EvaluationResult(elementValue, typeArguments(0).asInstanceOf[ParameterizedType].getRawType.asInstanceOf[Class[_]])
+              typeArguments(0) match {
+                case valueClass: Class[_] =>
+                  val elementValue: Any = option.orNull
+                  return new EvaluationResult(elementValue, valueClass)
+                case parameterizedType: ParameterizedType if parameterizedType.getRawType.isInstanceOf[Class[_]] =>
+                  val  elementValue: Any = option.orNull
+                  return new EvaluationResult(elementValue, parameterizedType.getRawType.asInstanceOf[Class[_]])
+                case _ => ()
               }
             }
           case _ => ()
