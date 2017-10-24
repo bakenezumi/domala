@@ -4,7 +4,7 @@ import scala.collection.immutable.Seq
 import scala.meta._
 
 object BatchUpdateGenerator extends DaoMethodGenerator {
-  override def anotationName: String = "@BatchUpdate"
+  override def annotationName: String = "@BatchUpdate"
   override def generate(
     trtName: Type.Name,
     _def: Decl.Def,

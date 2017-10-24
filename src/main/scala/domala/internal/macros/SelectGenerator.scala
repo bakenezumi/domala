@@ -15,7 +15,7 @@ case class SelectSetting(
 )
 
 object SelectGenerator extends DaoMethodGenerator {
-  override def anotationName: String = "@Select"
+  override def annotationName: String = "@Select"
   def readSelectSetting(args: Seq[Term.Arg]): SelectSetting = {
     val fetchSize =
       args.collectFirst { case arg"fetchSize = $x" => x }.getOrElse(q"-1")

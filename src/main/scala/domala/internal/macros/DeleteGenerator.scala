@@ -4,7 +4,7 @@ import scala.collection.immutable.Seq
 import scala.meta._
 
 object DeleteGenerator extends DaoMethodGenerator {
-  override def anotationName: String = "@Delete"
+  override def annotationName: String = "@Delete"
   override def generate(
     trtName: Type.Name,
     _def: Decl.Def,

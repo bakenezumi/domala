@@ -4,7 +4,7 @@ import scala.collection.immutable.Seq
 import scala.meta._
 
 object ScriptGenerator extends DaoMethodGenerator {
-  override def anotationName: String = "@Script"
+  override def annotationName: String = "@Script"
   override def generate(trtName: Type.Name, _def: Decl.Def, internalMethodName: Term.Name, args: Seq[Term.Arg]): Defn.Def = {
     val Decl.Def(mods, name, tparams, paramss, tpe) = _def
     val commonSetting = DaoMacroHelper.readCommonSetting(

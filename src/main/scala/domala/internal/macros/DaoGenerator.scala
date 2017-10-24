@@ -91,7 +91,7 @@ object DaoGenerator {
         } match {
           case Nil => abort(_def.pos, domala.message.Message.DOMALA4005.getMessage(trtName.syntax, _def.name.syntax))
           case (generator, modParams) :: Nil => generator.generate(trtName, _def, internalMethodName, modParams)
-          case x => abort(_def.pos,domala.message.Message.DOMALA4087.getMessage(x.head._1.anotationName, x(1)._1.anotationName, trtName.syntax, _def.name.syntax))
+          case x => abort(_def.pos,domala.message.Message.DOMALA4087.getMessage(x.head._1.annotationName, x(1)._1.annotationName, trtName.syntax, _def.name.syntax))
         }
         defImpl.copy(
           tparams = _def.tparams,

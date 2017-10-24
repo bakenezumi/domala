@@ -4,7 +4,7 @@ import scala.collection.immutable.Seq
 import scala.meta._
 
 object BatchDeleteGenerator extends DaoMethodGenerator {
-  override def anotationName: String = "@BatchDelete"
+  override def annotationName: String = "@BatchDelete"
   override def generate(
     trtName: Type.Name,
     _def: Decl.Def,
