@@ -1,10 +1,12 @@
 package domala.internal.macros
 
+import domala.Script
+
 import scala.collection.immutable.Seq
 import scala.meta._
 
 object ScriptGenerator extends DaoMethodGenerator {
-  override def annotationName: String = "@Script"
+  override def annotationClass: Class[Script] = classOf[Script]
   override def generate(trtName: Type.Name, _def: Decl.Def, internalMethodName: Term.Name, args: Seq[Term.Arg]): Defn.Def = {
     val Decl.Def(mods, name, tparams, paramss, tpe) = _def
     val commonSetting = DaoMacroHelper.readCommonSetting(

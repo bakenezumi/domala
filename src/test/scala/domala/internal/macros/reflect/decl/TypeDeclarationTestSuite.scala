@@ -25,4 +25,3 @@ class TypeDeclarationTestSuite extends FunSuite with BeforeAndAfter {
   }
 
 }
-

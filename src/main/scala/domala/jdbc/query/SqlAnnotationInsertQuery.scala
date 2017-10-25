@@ -19,11 +19,16 @@ class SqlAnnotationInsertQuery[E](sqlString: String)(entityAndEntityType: Option
     assertNotNull(method, sqlString)
     preInsert()
     prepareOptions()
+    prepareExecutable()
     prepareSql()
   }
 
   protected def preInsert(): Unit = {
     entityHandler.foreach(_.preInsert())
+  }
+
+  protected def prepareExecutable(): Unit = {
+    setExecutable()
   }
 
   def getEntity: E = entityHandler.map(_.entity).getOrElse(null.asInstanceOf[E])

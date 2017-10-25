@@ -5,16 +5,15 @@ import java.util.Optional
 
 import domala.internal.macros.reflect.util.{ReflectionUtil, TypeUtil}
 import domala.internal.macros.{DaoParam, DaoParamClass}
-import domala.jdbc.Result
+import domala.jdbc.{BatchResult, Result}
 import domala.jdbc.query.EntityAndEntityType
 import domala.message.Message
 import org.seasar.doma.internal.jdbc.command._
 import org.seasar.doma.internal.jdbc.sql.SqlParser
 import org.seasar.doma.jdbc.CommandImplementors
-import org.seasar.doma.jdbc.entity.AbstractEntityType
+import org.seasar.doma.jdbc.entity.{AbstractEntityType, EntityType}
 import org.seasar.doma.jdbc.query.AbstractSelectQuery
 
-import scala.collection.mutable.ArrayBuffer
 import scala.language.experimental.macros
 import scala.reflect.ClassTag
 import scala.reflect.macros.blackbox
@@ -218,6 +217,39 @@ object DaoReflectionMacros {
       params: (DaoParam[_])*): Option[EntityAndEntityType[Any]] =
     macro getEntityAndEntityTypeImpl[T]
 
+  def getBatchEntityTypeImpl[T: c.WeakTypeTag](c: blackbox.Context)(
+    traitName: c.Expr[String],
+    methodName: c.Expr[String],
+    resultClass: c.Expr[Class[T]],
+    param: c.Expr[DaoParam[_]]): c.Expr[Option[EntityType[Any]]] = {
+    import c.universe._
+    if (TypeUtil.isEntity(c)(param.actualType.typeArgs.head)) {
+      if (weakTypeOf[T] =:= weakTypeOf[Int]) reify(None)
+      else if (weakTypeOf[T] <:< weakTypeOf[BatchResult[_]]) {
+        if (weakTypeOf[T].typeArgs.head =:= param.actualType.typeArgs.head)
+          reify {
+            val entity = Class
+              .forName(param.splice.clazz.getName + "$")
+              .getField("MODULE$")
+              .get(null)
+              .asInstanceOf[AbstractEntityType[Any]]
+            Some(entity)
+          }
+        else reify(None)
+      } else
+        c.abort(c.enclosingPosition,
+          Message.DOMALA4223
+            .getMessage(traitName.tree.toString().tail.init,
+              methodName.tree.toString().tail.init))
+    } else reify(None)
+  }
+  def getBatchEntityType[T](
+    traitName: String,
+    methodName: String,
+    resultClass: Class[T],
+    param: (DaoParam[_])): Option[EntityType[Any]] =
+  macro getBatchEntityTypeImpl[T]
+
   def validateParameterAndSqlImpl(c: blackbox.Context)(
     trtName: c.Expr[String],
     defName: c.Expr[String],
@@ -248,6 +280,45 @@ object DaoReflectionMacros {
     reify(())
   }
   def validateParameterAndSql(trtName: String, defName: String, expandable: Boolean, populatable: Boolean, sql: String, params: (DaoParamClass[_])*): Unit = macro validateParameterAndSqlImpl
+
+  def validateBatchParameterAndSqlImpl(c: blackbox.Context)(
+    trtName: c.Expr[String],
+    defName: c.Expr[String],
+    expandable: c.Expr[Boolean],
+    populatable: c.Expr[Boolean],
+    sql: c.Expr[String],
+    param: c.Expr[DaoParamClass[_]],
+    suppress: c.Expr[String]*): c.Expr[Unit] = {
+    import c.universe._
+    val Literal(Constant(trtNameLiteral: String)) = trtName.tree
+    val Literal(Constant(defNameLiteral: String)) = defName.tree
+    val Literal(Constant(expandableLiteral: Boolean)) = expandable.tree
+    val Literal(Constant(populatableLiteral: Boolean)) = populatable.tree
+    val Literal(Constant(sqlLiteral: String)) = sql.tree
+    val suppressLiterals = suppress.map { sup =>
+      val Literal(Constant(ret: String)) = sup.tree
+      val pos = ret.lastIndexOf(".")
+      if(pos > 0) ret.substring(pos + 1)
+      else ""
+    }
+    import scala.language.existentials
+    val paramTypes = new ReflectionHelper[c.type](c).paramTypes(Seq(param))
+    paramTypes.foreach {
+      case (_, tpe) =>
+        ParamType.convert(c)(tpe) match {
+          case ParamType.Iterable(_, ParamType.Other(_, t)) if t =:= typeOf[Any] =>
+            c.abort(c.enclosingPosition, Message.DOMALA4160.getMessage(trtNameLiteral, defNameLiteral))
+          case _ => ()
+        }
+
+    }
+    val sqlNode = new SqlParser(sqlLiteral).parse()
+    val sqlValidator = new BatchSqlValidator[c.type](c)(trtNameLiteral, defNameLiteral, expandableLiteral, populatableLiteral, paramTypes, suppressLiterals)
+    sqlValidator.validate(sqlNode)
+    reify(())
+  }
+  def validateBatchParameterAndSql(trtName: String, defName: String, expandable: Boolean, populatable: Boolean, sql: String, param: DaoParamClass[_], suppress: String*): Unit = macro validateBatchParameterAndSqlImpl
+
 
   def validateAutoModifyParamImpl[T: c.WeakTypeTag](c: blackbox.Context)(
     trtName: c.Expr[String],

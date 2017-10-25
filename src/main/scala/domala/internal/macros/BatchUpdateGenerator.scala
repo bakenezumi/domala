@@ -1,10 +1,12 @@
 package domala.internal.macros
 
+import org.seasar.doma.BatchUpdate
+
 import scala.collection.immutable.Seq
 import scala.meta._
 
 object BatchUpdateGenerator extends DaoMethodGenerator {
-  override def annotationName: String = "@BatchUpdate"
+  override def annotationClass: Class[BatchUpdate] = classOf[BatchUpdate]
   override def generate(
     trtName: Type.Name,
     _def: Decl.Def,
@@ -25,7 +27,7 @@ object BatchUpdateGenerator extends DaoMethodGenerator {
       case Some(x: Term.Apply) => x.args
       case _                   => Nil
     }
-    val excludePropertyNames = exclude match {
+    val excludedPropertyNames = exclude match {
       case Some(x: Term.Apply) => x.args
       case _                   => Nil
     }
@@ -43,7 +45,7 @@ object BatchUpdateGenerator extends DaoMethodGenerator {
     val otherQuerySettings = Seq[Stat](
       q"__query.setVersionIgnored($ignoreVersion)",
       q"__query.setIncludedPropertyNames(..$includedPropertyNames)",
-      q"__query.setExcludedPropertyNames(..$excludePropertyNames)",
+      q"__query.setExcludedPropertyNames(..$excludedPropertyNames)",
       q"__query.setOptimisticLockExceptionSuppressed($suppressOptimisticLockException)"
     )
     AutoBatchModifyQueryGenerator.generate(

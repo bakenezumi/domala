@@ -22,8 +22,6 @@ class SqlAnnotationUpdateQuery[E](
 
   var targetPropertyTypes: java.util.List[EntityPropertyType[E, _]] = _
   val entityHandler: Option[EntityHandler] = entityAndEntityType.map(e => new this.EntityHandler(e.name, e.entity, e.entityType))
-  var executable = false
-  var sqlExecutionSkipCause = SqlExecutionSkipCause.STATE_UNCHANGED
 
   override def prepare(): Unit = {
     super.prepare()
@@ -45,8 +43,7 @@ class SqlAnnotationUpdateQuery[E](
 
   protected def prepareExecutable(): Unit = {
     if (entityHandler.isEmpty || entityHandler.get.hasTargetPropertyTypes) {
-      executable = true
-      sqlExecutionSkipCause = null
+      setExecutable()
     }
   }
 
@@ -65,10 +62,6 @@ class SqlAnnotationUpdateQuery[E](
   override def complete(): Unit = {
     entityHandler.foreach(_.postUpdate())
   }
-
-  override def isExecutable: Boolean = executable
-
-  override def getSqlExecutionSkipCause: SqlExecutionSkipCause = sqlExecutionSkipCause
 
   protected class EntityHandler(name: String, var entity: E, entityType: EntityType[E]) {
     assertNotNull(name, entity, entityType)

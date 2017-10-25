@@ -235,4 +235,30 @@ from person
   """)
   def selectAllOption(options: SelectOptions): Seq[Person]
 
+  @BatchInsert("""
+insert into person(id, name, age, city, street, department_id, version)
+values(
+  /* persons.id */0,
+  /* persons.name */'hoge',
+  /* persons.age */0,
+  /* persons.address.city */'hoge',
+  /* persons.address.street */'hoge',
+  /* 2 */0,
+  /* persons.version */0)
+  """, batchSize = 100)
+  def batchInsertSql(persons: Seq[Person]): BatchResult[Person]
+
+  @BatchUpdate("""
+update person set
+  name = /* persons.name */'hoge',
+  age = /* persons.age */0,
+  city = /* persons.address.city */'hoge',
+  street = /* persons.address.street */'hoge',
+  department_id = /* 2 */0,
+  version = version + 1
+where
+  id = /* persons.id */0 and
+  version = /* persons.version */0
+  """, batchSize = 100)
+  def batchUpdateSql(persons: Seq[Person]): BatchResult[Person]
 }

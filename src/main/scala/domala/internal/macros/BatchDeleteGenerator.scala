@@ -1,10 +1,12 @@
 package domala.internal.macros
 
+import domala.BatchDelete
+
 import scala.collection.immutable.Seq
 import scala.meta._
 
 object BatchDeleteGenerator extends DaoMethodGenerator {
-  override def annotationName: String = "@BatchDelete"
+  override def annotationClass: Class[BatchDelete] = classOf[BatchDelete]
   override def generate(
     trtName: Type.Name,
     _def: Decl.Def,

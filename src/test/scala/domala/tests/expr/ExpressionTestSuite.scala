@@ -204,9 +204,9 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
   }
 
   test("entity parameter") {
-    val entity1 = Person(Some(ID(1)), null, None, null, None, None)
-    val entity2 = Person(None, Some(Name("ALLEN")), None, null, None, None)
-    val entity3 = Person(None, null, None, Address(null, "Karasuma"), None, None)
+    val entity1 = Some(Person(Some(ID(1)), null, None, null, None, None))
+    val entity2 = Some(Person(None, Some(Name("ALLEN")), None, null, None, None))
+    val entity3 = Some(Person(None, null, None, Address(null, "Karasuma"), None, None))
 
     Required {
       assert(
@@ -364,5 +364,5 @@ where
   version = /*entity.version*/0
 /*%end*/
   """)
-  def entityParameterSelect(entity: Person) : Option[Person]
+  def entityParameterSelect(entity: Option[Person]) : Option[Person]
 }

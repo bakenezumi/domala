@@ -23,6 +23,7 @@ class SqlAnnotationDeleteQuery[E](
     preDelete()
     prepareOptions()
     prepareOptimisticLock()
+    prepareExecutable()
     prepareSql()
   }
 
@@ -31,6 +32,10 @@ class SqlAnnotationDeleteQuery[E](
   }
 
   protected def prepareOptimisticLock(): Unit = entityHandler.foreach(_.prepareOptimisticLock())
+
+  protected def prepareExecutable(): Unit = {
+    setExecutable()
+  }
 
   def getEntity: E = entityHandler.map(_.entity).getOrElse(null.asInstanceOf[E])
 

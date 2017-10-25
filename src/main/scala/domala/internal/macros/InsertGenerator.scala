@@ -1,10 +1,12 @@
 package domala.internal.macros
 
+import domala.Insert
+
 import scala.collection.immutable.Seq
 import scala.meta._
 
 object InsertGenerator extends DaoMethodGenerator {
-  override def annotationName: String = "@Insert"
+  override def annotationClass: Class[Insert] = classOf[Insert]
   override def generate(trtName: Type.Name, _def: Decl.Def, internalMethodName: Term.Name, args: Seq[Term.Arg]): Defn.Def = {
     val defDecl = QueryDefDecl.of(trtName, _def)
     val commonSetting = DaoMacroHelper.readCommonSetting(args, trtName.syntax, _def.name.syntax)

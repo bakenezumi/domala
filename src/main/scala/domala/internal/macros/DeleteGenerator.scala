@@ -1,10 +1,12 @@
 package domala.internal.macros
 
+import domala.Delete
+
 import scala.collection.immutable.Seq
 import scala.meta._
 
 object DeleteGenerator extends DaoMethodGenerator {
-  override def annotationName: String = "@Delete"
+  override def annotationClass: Class[Delete] = classOf[Delete]
   override def generate(
     trtName: Type.Name,
     _def: Decl.Def,

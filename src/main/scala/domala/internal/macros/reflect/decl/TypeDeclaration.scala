@@ -125,7 +125,7 @@ class TypeDeclaration[C <: blackbox.Context](c: C)(
     val results = mutable.Buffer[FieldDeclaration[C]]()
     for ((typeQualifiedName, typeParameterDeclarations) <- typeParameterDeclarationsMap) {
       val typeElement = ElementUtil.getTypeElement[C](c)(typeQualifiedName)
-      typeElement.foreach(e =>
+      typeElement.foreach { e =>
         for (field: TermSymbol <- e.members.collect {
                case f: TermSymbol
                    if !(statik && !f.isStatic) && f.name.toString == name && !f.isMethod =>
@@ -134,7 +134,7 @@ class TypeDeclaration[C <: blackbox.Context](c: C)(
           val fieldDeclaration =
             new FieldDeclaration(c)(field, typeParameterDeclarations)
           results += fieldDeclaration
-      })
+      }}
     }
     results
   }

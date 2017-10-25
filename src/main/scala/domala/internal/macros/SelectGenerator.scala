@@ -1,6 +1,8 @@
 package domala.internal.macros
 
+import domala.Select
 import domala.message.Message
+
 import scala.collection.immutable.Seq
 import scala.meta._
 
@@ -15,7 +17,7 @@ case class SelectSetting(
 )
 
 object SelectGenerator extends DaoMethodGenerator {
-  override def annotationName: String = "@Select"
+  override def annotationClass: Class[Select] = classOf[Select]
   def readSelectSetting(args: Seq[Term.Arg]): SelectSetting = {
     val fetchSize =
       args.collectFirst { case arg"fetchSize = $x" => x }.getOrElse(q"-1")
