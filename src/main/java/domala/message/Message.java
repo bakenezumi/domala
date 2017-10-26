@@ -122,17 +122,20 @@ public enum Message implements MessageResource {
     DOMALA4169(org.seasar.doma.message.Message.DOMA4169.getMessagePattern()),
     DOMALA4170(org.seasar.doma.message.Message.DOMA4170.getMessagePattern()),
     DOMALA4171(org.seasar.doma.message.Message.DOMA4171.getMessagePattern()),
-
+    DOMALA4172("戻り値の型はUnitでなければいけません。 at {0}.{1}"),
+    DOMALA4173(org.seasar.doma.message.Message.DOMA4173.getMessagePattern()),
     /** SQLファイルに埋め込み変数コメントが含まれていることを示す警告メッセージ */
     DOMALA4181("[{0}.{1}]のSQLに埋め込み変数コメントが含まれています。バッチの中で実行されるSQLは一定であるため、埋め込み変数コメントにより動的なSQLを発行しようとしても意図したSQLにならない可能性があります。この警告を抑制するには、メソッドに@Suppress(messages = Seq(Message.DOMALA4181))と注釈してください。"),
     /** SQLファイルに条件コメントが含まれていることを示す警告メッセージ */
     DOMALA4182("[{0}.{1}]のSQLに条件コメントが含まれています。バッチの中で実行されるSQLは一定であるため、条件コメントにより動的なSQLを発行しようとしても意図したSQLにならない可能性があります。この警告を抑制するには、メソッドに@Suppress(messages = Seq(Message.DOMALA4182))と注釈してください。"),
     /** SQLファイルに繰り返しコメントが含まれていることを示す警告メッセージ */
     DOMALA4183("[{0}.{1}]のSQLに繰り返しコメントが含まれています。バッチの中で実行されるSQLは一定であるため、繰り返しコメントにより動的なSQLを発行しようとしても意図したSQLにならない可能性があります。この警告を抑制するには、メソッドに@Suppress(messages = Seq(Message.DOMALA4183))と注釈してください。"),
-
-
-
+    // DOMALA4184 列挙型Holderは未対応
     DOMALA4185(org.seasar.doma.message.Message.DOMA4185.getMessagePattern()),
+    // TODO: ストアド系未実装 DOMA4186
+    // DOMA4188 Daoの継承は未対応
+    // DOMA4189, DOMA4190 カスタム関数は未対応
+    // @ExternalDomainは未対応 DOMA4191 - DOMA4201
     DOMALA4222("エンティティクラスを@Insertや@Updateや@Deleteが注釈されたメソッドのパラメータとする場合、戻り値はdomala.jdbc.Result<E>でなければいけません。型パラメータ E の実型引数にはパラメータと同じエンティティクラスを指定してください。 at {0}.{1}"),
     DOMALA4223("エンティティクラスを@BatchInsertや@BatchUpdateや@BatchDeleteが注釈されたメソッドのパラメータとする場合、戻り値はdomala.jdbc.BatchResult<E>でなければいけません。型パラメータEの実型引数にはパラメータと同じエンティティクラスを指定してください。 at {0}.{1}"),
     DOMALA4235("Optionに対する実型引数の型[{0}]はサポートされていません。サポートされている型は次のものです。基本型、ホルダークラス、エンティティクラス。  at {1}.{2}"),
