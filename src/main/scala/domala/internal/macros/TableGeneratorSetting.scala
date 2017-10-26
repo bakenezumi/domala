@@ -15,7 +15,7 @@ object TableGeneratorSetting {
         val pkColumnValue = args.collectFirst { case arg"pkColumnValue = $x" => x }.get
         val initialValue = args.collectFirst { case arg"initialValue = $x" => x }.getOrElse(q"1")
         val allocationSize = args.collectFirst { case arg"allocationSize = $x" => x }.getOrElse(q"1")
-        val implementer = args.collectFirst { case arg"implementer = $x" => x }.getOrElse(q"classOf[org.seasar.doma.jdbc.id.BuiltinSequenceIdGenerator]")
+        val implementer = args.collectFirst { case arg"implementer = classOf[$x]" => x }.getOrElse(t"org.seasar.doma.jdbc.id.BuiltinTableIdGenerator")
         TableGeneratorSetting(catalog, schema, table, pkColumnName, valueColumnName, pkColumnValue, initialValue, allocationSize, implementer)
     }.headOption
   }
@@ -30,5 +30,5 @@ case class TableGeneratorSetting(
   pkColumnValue: Term.Arg,
   initialValue: Term.Arg,
   allocationSize: Term.Arg,
-  implementer: Term.Arg
+  implementer: Type
 )

@@ -35,7 +35,7 @@ class EntityListenerTestSuite extends FunSuite with BeforeAndAfter {
   }
 }
 
-@Entity(listener = classOf[MyListener])
+@Entity(classOf[MyListener])
 case class Listened(
   @domala.Id @GeneratedValue(strategy = GenerationType.IDENTITY)
   id: Option[Int] = None,

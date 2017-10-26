@@ -23,7 +23,10 @@ object EntityTypeGenerator {
       abort(Message.DOMALA4051.getMessage(cls.name.syntax))
     validateFieldAnnotation(cls.name, cls.ctor)
     val entitySetting = EntitySetting(
-      args.collectFirst { case arg"listener = classOf[$x]" => x }.getOrElse(t"org.seasar.doma.jdbc.entity.NullEntityListener[${cls.name}]"),
+      args.collectFirst {
+        case arg"listener = classOf[$x]" => x
+        case arg"classOf[$x]" => x
+      }.getOrElse(t"org.seasar.doma.jdbc.entity.NullEntityListener[${cls.name}]"),
       args.collectFirst { case arg"naming = $x" => Term.Name(x.syntax) }.getOrElse(q"null")
     )
     val tableSetting = TableSetting.read(cls.mods)
@@ -35,6 +38,7 @@ object EntityTypeGenerator {
     object ${Term.Name(cls.name.syntax)} extends org.seasar.doma.jdbc.entity.AbstractEntityType[${cls.name}] {
 
       object ListenerHolder {
+        domala.internal.macros.reflect.EntityReflectionMacros.validateListener(classOf[${entitySetting.listener}])
         val listener =
           new ${entitySetting.listener.syntax.parse[Ctor.Call].get}()
       }
@@ -136,7 +140,8 @@ object EntityTypeGenerator {
         val sequenceGeneratorSetting = SequenceGeneratorSetting.read(idParams.head.mods, clsName.syntax)
           .getOrElse(abort(domala.message.Message.DOMALA4034.getMessage(clsName.syntax, idParams.head.name.syntax)))
         q"""
-          private val __idGenerator = new org.seasar.doma.jdbc.id.BuiltinSequenceIdGenerator()
+          domala.internal.macros.reflect.EntityReflectionMacros.validateSequenceIdGenerator(classOf[${sequenceGeneratorSetting.implementer}])
+          private val __idGenerator = new ${sequenceGeneratorSetting.implementer.syntax.parse[Ctor.Call].get}()
           __idGenerator.setQualifiedSequenceName(${sequenceGeneratorSetting.sequence})
           __idGenerator.setInitialValue(${sequenceGeneratorSetting.initialValue})
           __idGenerator.setAllocationSize(${sequenceGeneratorSetting.allocationSize})
@@ -146,7 +151,8 @@ object EntityTypeGenerator {
         val tableGeneratorSetting = TableGeneratorSetting.read(idParams.head.mods, clsName.syntax)
           .getOrElse(abort(domala.message.Message.DOMALA4035.getMessage(clsName.syntax, idParams.head.name.syntax)))
         q"""
-          private val __idGenerator = new org.seasar.doma.jdbc.id.BuiltinTableIdGenerator()
+          domala.internal.macros.reflect.EntityReflectionMacros.validateTableIdGenerator(classOf[${tableGeneratorSetting.implementer}])
+          private val __idGenerator = new ${tableGeneratorSetting.implementer.syntax.parse[Ctor.Call].get}()
           __idGenerator.setQualifiedTableName(${tableGeneratorSetting.table})
           __idGenerator.setInitialValue(${tableGeneratorSetting.initialValue})
           __idGenerator.setAllocationSize(${tableGeneratorSetting.allocationSize})

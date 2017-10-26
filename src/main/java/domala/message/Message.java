@@ -115,6 +115,13 @@ public enum Message implements MessageResource {
 
     DOMALA4160("scala.collection.Iterableのサブタイプをワイルカード型にしてはいけません。 at {0}.{1}"),
     DOMALA4161("[{0}.{1}]のSQLの妥当検査に失敗しました（[{3}]行目[{4}]番目の文字付近）。括弧の前に位置するバインド変数もしくはリテラル変数[{5}]に対応するパラメータの型は基本型もしくはホルダークラスを要素としたscala.collection.Iterableのサブタイプでなければいけません。しかし、実際の型は[{6}]です。型を間違えていませんか？もしくはフィールドアクセスやメソッド呼び出しの記述を忘れていませんか？。SQL[{2}]"),
+    // DOMALA4163, DOMALA4164 抽象型Configは未チェック
+    DOMALA4166(org.seasar.doma.message.Message.DOMA4166.getMessagePattern()),
+    DOMALA4167(org.seasar.doma.message.Message.DOMA4167.getMessagePattern()),
+    DOMALA4168(org.seasar.doma.message.Message.DOMA4168.getMessagePattern()),
+    DOMALA4169(org.seasar.doma.message.Message.DOMA4169.getMessagePattern()),
+    DOMALA4170(org.seasar.doma.message.Message.DOMA4170.getMessagePattern()),
+    DOMALA4171(org.seasar.doma.message.Message.DOMA4171.getMessagePattern()),
 
     /** SQLファイルに埋め込み変数コメントが含まれていることを示す警告メッセージ */
     DOMALA4181("[{0}.{1}]のSQLに埋め込み変数コメントが含まれています。バッチの中で実行されるSQLは一定であるため、埋め込み変数コメントにより動的なSQLを発行しようとしても意図したSQLにならない可能性があります。この警告を抑制するには、メソッドに@Suppress(messages = Seq(Message.DOMALA4181))と注釈してください。"),

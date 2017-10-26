@@ -7,7 +7,7 @@ import domala.jdbc.entity.{AssignedIdPropertyType, DefaultPropertyType, Generate
 import domala.jdbc.holder.AbstractHolderDesc
 import domala.message.Message
 import org.seasar.doma.jdbc.entity._
-import org.seasar.doma.jdbc.id.IdGenerator
+import org.seasar.doma.jdbc.id.{IdGenerator, SequenceIdGenerator, TableIdGenerator}
 import org.seasar.doma.wrapper.Wrapper
 
 import scala.language.experimental.macros
@@ -334,6 +334,61 @@ object EntityReflectionMacros {
       entityClass: Class[E],
       args: java.util.Map[String, Property[E, _]],
       propertyName: String)(implicit propertyClassTag: ClassTag[T]): T = macro readPropertyImpl[T, E]
+
+
+  def validateListenerImpl[T: c.WeakTypeTag](c: blackbox.Context)(listenerClass: c.Expr[Class[T]]): c.Expr[Unit] = {
+    import c.universe._
+    val tpe = weakTypeOf[T]
+    if(tpe.typeSymbol.isAbstract)
+      c.abort(
+        c.enclosingPosition,
+        Message.DOMALA4166.getMessage(
+          extractionClassString(tpe.toString)))
+    val ctor = tpe.typeSymbol.asClass.primaryConstructor
+    if(!ctor.isPublic || ctor.asMethod.paramLists.flatten.nonEmpty)
+      c.abort(
+        c.enclosingPosition,
+        Message.DOMALA4167.getMessage(
+          extractionClassString(tpe.toString)))
+    reify(())
+  }
+  def validateListener[T <: EntityListener[_]](listenerClass: Class[T]): Unit = macro validateListenerImpl[T]
+
+  def validateTableIdGeneratorImpl[T: c.WeakTypeTag](c: blackbox.Context)(listenerClass: c.Expr[Class[T]]): c.Expr[Unit] = {
+    import c.universe._
+    val tpe = weakTypeOf[T]
+    if(tpe.typeSymbol.isAbstract)
+      c.abort(
+        c.enclosingPosition,
+        Message.DOMALA4168.getMessage(
+          extractionClassString(tpe.toString)))
+    val ctor = tpe.typeSymbol.asClass.primaryConstructor
+    if(!ctor.isPublic || ctor.asMethod.paramLists.flatten.nonEmpty)
+      c.abort(
+        c.enclosingPosition,
+        Message.DOMALA4169.getMessage(
+          extractionClassString(tpe.toString)))
+    reify(())
+  }
+  def validateTableIdGenerator[T <: TableIdGenerator](listenerClass: Class[T]): Unit = macro validateTableIdGeneratorImpl[T]
+
+  def validateSequenceIdGeneratorImpl[T: c.WeakTypeTag](c: blackbox.Context)(listenerClass: c.Expr[Class[T]]): c.Expr[Unit] = {
+    import c.universe._
+    val tpe = weakTypeOf[T]
+    if(tpe.typeSymbol.isAbstract)
+      c.abort(
+        c.enclosingPosition,
+        Message.DOMALA4170.getMessage(
+          extractionClassString(tpe.toString)))
+    val ctor = tpe.typeSymbol.asClass.primaryConstructor
+    if(!ctor.isPublic || ctor.asMethod.paramLists.flatten.nonEmpty)
+      c.abort(
+        c.enclosingPosition,
+        Message.DOMALA4171.getMessage(
+          extractionClassString(tpe.toString)))
+    reify(())
+  }
+  def validateSequenceIdGenerator[T <: SequenceIdGenerator](listenerClass: Class[T]): Unit = macro validateSequenceIdGeneratorImpl[T]
 
 }
 

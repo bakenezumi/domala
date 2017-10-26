@@ -12,7 +12,7 @@ object SequenceGeneratorSetting {
         val sequence = args.collectFirst { case arg"sequence = $x" => x }.get
         val initialValue = args.collectFirst { case arg"initialValue = $x" => x }.getOrElse(q"1")
         val allocationSize = args.collectFirst { case arg"allocationSize = $x" => x }.getOrElse(q"1")
-        val implementer = args.collectFirst { case arg"implementer = $x" => x }.getOrElse(q"classOf[org.seasar.doma.jdbc.id.BuiltinSequenceIdGenerator]")
+        val implementer = args.collectFirst { case arg"implementer = classOf[$x]" => x }.getOrElse(t"org.seasar.doma.jdbc.id.BuiltinSequenceIdGenerator")
         SequenceGeneratorSetting(catalog, schema, sequence, initialValue, allocationSize, implementer)
     }.headOption
   }
@@ -24,5 +24,5 @@ case class SequenceGeneratorSetting(
   sequence: Term.Arg,
   initialValue: Term.Arg,
   allocationSize: Term.Arg,
-  implementer: Term.Arg
+  implementer: Type
 )
