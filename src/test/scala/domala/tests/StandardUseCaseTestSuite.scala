@@ -491,4 +491,12 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
       )
     }
   }
+
+  test("batch delete by Sql") {
+    Required {
+      dao.batchDeleteSql(dao.selectAll())
+      assert(dao.selectCount() == 0)
+    }
+  }
+
 }
