@@ -21,7 +21,6 @@ class MethodDeclaration[C <: blackbox.Context](val c: C)(
 
   protected def resolveTypeParameter(formalType: C#Type): C#Type = {
     typeParameterDeclarations.collectFirst{
-      // TODO: unchecked since it is eliminated by erasure
       case typeParameterDecl if formalType.toString == typeParameterDecl.formalTypeName => typeParameterDecl.actualType
     }.getOrElse(formalType)
   }

@@ -97,7 +97,7 @@ object EntityReflectionMacros {
         prop
       }
     } else if (nakedTpe.companion <:< typeOf[AbstractHolderDesc[_, _]]) {
-      val domain = reify(
+      val holder = reify(
         ReflectionUtil.getHolderCompanion(nakedClassTag.splice))
       if (isIdActual) {
         if (isIdGenerateActual) {
@@ -111,10 +111,10 @@ object EntityReflectionMacros {
             )
           }
           reify {
-            val prop = GeneratedIdPropertyType.ofDomain(
+            val prop = GeneratedIdPropertyType.ofHolder(
               entityClass.splice,
               propertyClassTag.splice.runtimeClass,
-              domain.splice.asInstanceOf[AbstractHolderDesc[Number, _]],
+              holder.splice.asInstanceOf[AbstractHolderDesc[Number, _]],
               paramName.splice,
               columnName.splice,
               namingType.splice,
@@ -127,10 +127,10 @@ object EntityReflectionMacros {
           }
         } else {
           reify {
-            val prop = AssignedIdPropertyType.ofDomain(
+            val prop = AssignedIdPropertyType.ofHolder(
               entityClass.splice,
               propertyClassTag.splice.runtimeClass,
-              domain.splice,
+              holder.splice,
               paramName.splice,
               columnName.splice,
               namingType.splice,
@@ -152,10 +152,10 @@ object EntityReflectionMacros {
           )
         }
         reify {
-          val prop = VersionPropertyType.ofDomain(
+          val prop = VersionPropertyType.ofHolder(
             entityClass.splice,
             propertyClassTag.splice.runtimeClass,
-            domain.splice.asInstanceOf[AbstractHolderDesc[Number, _]],
+            holder.splice.asInstanceOf[AbstractHolderDesc[Number, _]],
             paramName.splice,
             columnName.splice,
             namingType.splice,
@@ -166,10 +166,10 @@ object EntityReflectionMacros {
         }
       } else {
         reify {
-          val prop = DefaultPropertyType.ofDomain(
+          val prop = DefaultPropertyType.ofHolder(
             entityClass.splice,
             propertyClassTag.splice.runtimeClass,
-            domain.splice,
+            holder.splice,
             paramName.splice,
             columnName.splice,
             namingType.splice,
@@ -336,7 +336,7 @@ object EntityReflectionMacros {
       propertyName: String)(implicit propertyClassTag: ClassTag[T]): T = macro readPropertyImpl[T, E]
 
 
-  def validateListenerImpl[T: c.WeakTypeTag](c: blackbox.Context)(listenerClass: c.Expr[Class[T]]): c.Expr[Unit] = {
+  def validateListenerImpl[E: c.WeakTypeTag, T: c.WeakTypeTag](c: blackbox.Context)(entityClass: c.Expr[Class[E]], listenerClass: c.Expr[Class[T]]): c.Expr[Unit] = {
     import c.universe._
     val tpe = weakTypeOf[T]
     if(tpe.typeSymbol.isAbstract)
@@ -350,9 +350,19 @@ object EntityReflectionMacros {
         c.enclosingPosition,
         Message.DOMALA4167.getMessage(
           extractionClassString(tpe.toString)))
+    val entityType =  tpe.baseType(typeOf[EntityListener[_]].typeSymbol.asClass).typeArgs.head
+    // TODO: 互換性がある場合は通す
+    if(!(weakTypeOf[E] =:= entityType))
+      c.abort(
+        c.enclosingPosition,
+        Message.DOMALA4229.getMessage(
+          typeOf[EntityListener[_]].typeSymbol.typeSignature.typeParams.head.name,
+          entityType.toString,
+          weakTypeOf[E].toString
+      ))
     reify(())
   }
-  def validateListener[T <: EntityListener[_]](listenerClass: Class[T]): Unit = macro validateListenerImpl[T]
+  def validateListener[E, T <: EntityListener[_]](entityClass: Class[E], listenerClass: Class[T]): Unit = macro validateListenerImpl[E, T]
 
   def validateTableIdGeneratorImpl[T: c.WeakTypeTag](c: blackbox.Context)(listenerClass: c.Expr[Class[T]]): c.Expr[Unit] = {
     import c.universe._

@@ -142,7 +142,6 @@ class TypeDeclaration[C <: blackbox.Context](c: C)(
       formalType: C#Type,
       typeParameterDeclarations: Seq[TypeParameterDeclaration[C]]): C#Type = {
     typeParameterDeclarations.collectFirst {
-      // TODO: unchecked since it is eliminated by erasure
       case typeParameterDecl if formalType.toString == typeParameterDecl.formalTypeName => typeParameterDecl.actualType
     }.getOrElse(formalType)
   }

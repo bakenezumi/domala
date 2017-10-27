@@ -50,6 +50,7 @@ public enum Message implements MessageResource {
     DOMALA4035(org.seasar.doma.message.Message.DOMA4035.getMessagePattern()),
     DOMALA4036(org.seasar.doma.message.Message.DOMA4036.getMessagePattern()),
     DOMALA4037(org.seasar.doma.message.Message.DOMA4037.getMessagePattern()),
+    // TODO: DOMALA4038 EntityListenerの型パラメータ検査
     DOMALA4040("戻り値の型は更新件数を示すArray[Int]でなければいけません。 at {0}.{1}"),
     DOMALA4042("パラーメータの型はscala.collection.Iterableのサブタイプでなければいけません。 at {0}.{1}"),
     DOMALA4043("scala.collection.Iterableのサブタイプに対する実型引数はエンティティクラスでなければいけません。 at {0}.{1}"),
@@ -133,22 +134,48 @@ public enum Message implements MessageResource {
     // DOMALA4184 列挙型Holderは未対応
     DOMALA4185(org.seasar.doma.message.Message.DOMA4185.getMessagePattern()),
     // TODO: ストアド系未実装 DOMA4186
-    // DOMA4188 Daoの継承は未対応
-    // DOMA4189, DOMA4190 カスタム関数は未対応
+    // TODO: DOMA4188 Daoの継承は未対応
+    // カスタム関数は未対応 DOMA4189, DOMA4190
     // @ExternalDomainは未対応 DOMA4191 - DOMA4201
+    // TODO: DOMALA4202 EntityListenerの型パラメータ検査
+    // @ExternalDomainは未対応 DOMA4203
+    DOMALA4205(org.seasar.doma.message.Message.DOMA4205.getMessagePattern()),
+    DOMALA4207(org.seasar.doma.message.Message.DOMA4207.getMessagePattern()),
+    DOMALA4209(org.seasar.doma.message.Message.DOMA4209.getMessagePattern()),
+    // パラメータのワイルドカード検査メッセージはDOMALA4209に統合 DOMA4211 -DOMA4218
     DOMALA4222("エンティティクラスを@Insertや@Updateや@Deleteが注釈されたメソッドのパラメータとする場合、戻り値はdomala.jdbc.Result<E>でなければいけません。型パラメータ E の実型引数にはパラメータと同じエンティティクラスを指定してください。 at {0}.{1}"),
     DOMALA4223("エンティティクラスを@BatchInsertや@BatchUpdateや@BatchDeleteが注釈されたメソッドのパラメータとする場合、戻り値はdomala.jdbc.BatchResult<E>でなければいけません。型パラメータEの実型引数にはパラメータと同じエンティティクラスを指定してください。 at {0}.{1}"),
+    // OriginalStates未実装 DOMA4224
+    DOMALA4225("エンティティクラスの永続対象フィールドにはvar修飾子を使用できません。 at {0}.{1}"),
+    // 未検査 DOMA4226
+    DOMALA4229(org.seasar.doma.message.Message.DOMA4229.getMessagePattern()),
+    // Entityの継承未実装 DOMA4227 - DOMA4231
+    // エンティティのワイルドカード検査メッセージはDOMALA4205に統合 DOMA4232 - DOMA4233
+    // 抽象型Entity未実装 DOMA4234
     DOMALA4235("Optionに対する実型引数の型[{0}]はサポートされていません。サポートされている型は次のものです。基本型、ホルダークラス、エンティティクラス。  at {1}.{2}"),
+    // パラメータのワイルドカード検査メッセージはDOMALA4209に統合 DOMA4236 - DOMA4242
+    DOMALA4243(org.seasar.doma.message.Message.DOMA4209.getMessagePattern()),
     DOMALA4244("Functionの1番目の実型引数の型は、Streamでなければいけません。 at {0}.{1}"),
     DOMALA4245("Streamの実型引数の型[{0}]はサポートされていません。 at {1}.{2}"),
     DOMALA4246(org.seasar.doma.message.Message.DOMA4246.getMessagePattern()),
     DOMALA4247(org.seasar.doma.message.Message.DOMA4247.getMessagePattern()),
     DOMALA4249(org.seasar.doma.message.Message.DOMA4249.getMessagePattern()),
+    // 抽象型Entity未実装 DOMA4250
+    // acceptNull非対応 DOMA4251
+    // acceptNull非対応 DOMA4251
+    // 未検査 DOMA4252
+    // @SingletonConfig非対応（object推奨） DOMA4253 - DOMA4256
     DOMALA4257("[{0}.{1}]のSQLの妥当検査に失敗しました（[{3}]行目[{4}]番目の文字付近）。/*%expand ...*/の式が使用されていますが、カラムの自動展開ができません。メソッドに@Selectが注釈され、結果セットのレコードがエンティティクラスにマッピングされていることを確認してください。SQL[{2}]"),
+    // SelectStrategyType.COLLECT 非対応 DOMA4258 - DOMA4266
+    // TODO: 戻り値Stream未対応 DOMA4267
+    // trait Holder未対応 DOMA4268
     DOMALA4270("[{0}.{1}]のSQLの妥当検査に失敗しました（[{3}]行目[{4}]番目の文字付近）。/*%populate */の式が使用されていますが、SET句の自動生成ができません。メソッドに@Updateまたは@BatchUpdateが注釈され、第一引数がエンティティクラスにマッピングされていることを確認してください。SQL[{2}]"),
+    // TODO: 戻り値Stream未対応 DOMA4271 - DOMA4274
+
     DOMALA4302(org.seasar.doma.message.Message.DOMA4302.getMessagePattern()),
     DOMALA4303(org.seasar.doma.message.Message.DOMA4303.getMessagePattern()),
     DOMALA4304(org.seasar.doma.message.Message.DOMA4304.getMessagePattern()),
+    // lombokには非対応 DOMA4418 - DOMA4432
 
     // macros(domala original)
     DOMALA6001("@Holderを注釈するcase classのパラメータは1つでなければなりません。"),

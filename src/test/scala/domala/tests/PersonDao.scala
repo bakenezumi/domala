@@ -53,6 +53,7 @@ from person
   @Select(sql = """
 select *
 from person
+order by id
   """)
   def selectAll(): Seq[Person]
 
@@ -112,6 +113,7 @@ where
   @Select(sql = """
 select *
 from person
+order by id
   """)
   def selectAllSeqMap(): Seq[Map[String, Any]]
 
@@ -134,6 +136,7 @@ where
   @Select(sql = """
 select *
 from person
+order by id
   """, strategy = SelectType.STREAM)
   def selectAllStreamMap(f: Stream[Map[String, Any]] => Int): Int
 
@@ -156,12 +159,14 @@ where
   @Select(sql = """
 select name
 from person
+order by id
   """)
   def selectNames: Seq[Name]
 
   @Select(sql = """
 select name
 from person
+order by id
   """, strategy = SelectType.STREAM)
   def selectNameStream(f: Stream[Name] => Int): Int
 
@@ -232,6 +237,7 @@ where
   @Select(sql = """
 select *
 from person
+order by id
   """)
   def selectAllOption(options: SelectOptions): Seq[Person]
 

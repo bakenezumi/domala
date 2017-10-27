@@ -1,8 +1,7 @@
 package domala.tests.entity
 
-
 import domala._
-import domala.jdbc.{Config, Result}
+import domala.jdbc.{BatchResult, Config, Result}
 import domala.tests.TestConfig
 import org.scalatest.{BeforeAndAfter, FunSuite}
 
@@ -38,6 +37,31 @@ class HolderTestSuite extends FunSuite with BeforeAndAfter {
       ))
     }
   }
+
+  test("select Holder result") {
+    Required {
+      val newEntities = Seq(
+        Holders(id = None, name = Name("AAA"), optionName = Some(Name("BBB")), weight1 = Some(Weight(1)), weight2 = Weight(1000), nested = Holders.Inner("DDD"), version = None),
+        Holders(id = None, name = Name("EEE"), optionName = Some(Name("FFF")), weight1 = Some(Weight(2)), weight2 = Weight(2000), nested = Holders.Inner("GGG"), version = None)
+      )
+      dao.insertList(newEntities)
+      val w = dao.selectSumKg
+      assert(w == Weight(3))
+    }
+  }
+
+  test("select Holder parameter") {
+    Required {
+      val newEntities = Seq(
+        Holders(id = None, name = Name("AAA"), optionName = Some(Name("BBB")), weight1 = Some(Weight(1)), weight2 = Weight(1000), nested = Holders.Inner("DDD"), version = None),
+        Holders(id = None, name = Name("EEE"), optionName = Some(Name("FFF")), weight1 = Some(Weight(2)), weight2 = Weight(2000), nested = Holders.Inner("GGG"), version = None),
+        Holders(id = None, name = Name("HHH"), optionName = Some(Name("III")), weight1 = Some(Weight(3)), weight2 = Weight(3000), nested = Holders.Inner("JJJ"), version = None)
+      )
+      dao.insertList(newEntities)
+      assert(dao.selectHeavierTHan(Weight(1)) == Seq(Name("EEE"), Name("HHH")))
+    }
+  }
+
 }
 
 @Entity
@@ -58,7 +82,6 @@ object Holders {
   @Holder
   case class Inner(value: String)
 }
-
 
 @Holder
 case class Id(value: Int)
@@ -99,13 +122,26 @@ drop table holders
   def drop()
 
   @Select(sql="""
-select * from holders
+select * from holders order by id
   """)
   def selectAll: Seq[Holders]
+
+  @Select(sql="""
+select sum(weight1) from holders
+  """)
+  def selectSumKg: Weight[Kg]
+
+  @Select(sql="""
+select name from holders where weight1 > /* weight */0 order by name
+  """)
+  def selectHeavierTHan(weight: Weight[Kg]): Seq[Name]
 
   @Insert
   def insert(entity: Holders): Result[Holders]
 
   @Update
   def update(entity: Holders): Result[Holders]
+
+  @BatchInsert
+  def insertList(entity: Seq[Holders]): BatchResult[Holders]
 }

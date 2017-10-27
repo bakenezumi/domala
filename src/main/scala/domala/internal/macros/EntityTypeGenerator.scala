@@ -38,7 +38,7 @@ object EntityTypeGenerator {
     object ${Term.Name(cls.name.syntax)} extends org.seasar.doma.jdbc.entity.AbstractEntityType[${cls.name}] {
 
       object ListenerHolder {
-        domala.internal.macros.reflect.EntityReflectionMacros.validateListener(classOf[${entitySetting.listener}])
+        domala.internal.macros.reflect.EntityReflectionMacros.validateListener(classOf[${cls.name}], classOf[${entitySetting.listener}])
         val listener =
           new ${entitySetting.listener.syntax.parse[Ctor.Call].get}()
       }
@@ -188,6 +188,12 @@ object EntityTypeGenerator {
         case DomaType.Option(DomaType.EntityOrHolderOrEmbeddable(otherType), _) => (false, otherType,  q"null")
         case _ => abort(Message.DOMALA4096.getMessage(decltpe.syntax, clsName.syntax, name.syntax))
       }
+
+      if(TypeHelper.isWildcardType(nakedTpe)) abort(Message.DOMALA4205.getMessage(nakedTpe.syntax, clsName.syntax, name.syntax))
+      if(mods.exists {
+        case Mod.VarParam() => true
+        case _ => false
+      }) abort(Message.DOMALA4225.getMessage(clsName.syntax, name.syntax))
 
       val isId = mods.exists {
         case mod"@Id" | mod"@domala.Id" | mod"@Id()" | mod"@domala.Id()"=> true

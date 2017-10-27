@@ -123,4 +123,6 @@ object TypeHelper {
     case Type.Arg.ByName(tpe) => tpe
     case tpe: Type => tpe
   }
+
+  def isWildcardType(arg: Type.Arg): Boolean = arg.syntax.contains("[_")
 }

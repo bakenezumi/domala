@@ -58,10 +58,10 @@ object SelectGenerator extends DaoMethodGenerator {
       trtName.syntax,
       defDecl.name.syntax)
     if (commonSetting.sql.syntax == """""""")
-      abort(_def.pos,
-            Message.DOMALA4020
-              .getMessage(trtName.syntax, defDecl.name.syntax))
+      abort(Message.DOMALA4020.getMessage(trtName.syntax, defDecl.name.syntax))
     val selectSetting = readSelectSetting(args)
+    if(TypeHelper.isWildcardType(defDecl.tpe))
+      abort(Message.DOMALA4207.getMessage(defDecl.tpe, trtName.syntax, defDecl.name.syntax))
 
     val (checkParameter: Seq[Stat], isStream: Boolean) =
       selectSetting.strategy match {
@@ -120,7 +120,10 @@ object SelectGenerator extends DaoMethodGenerator {
           .find { p =>
             p.decltpe.get match {
               case t"Stream[$_] => $_" => true
-              case _                   => false
+              case x if TypeHelper.isWildcardType(x) =>
+                abort(Message.DOMALA4243
+                  .getMessage(x.syntax, trtName.syntax, defDecl.name.syntax))
+              case _  => false
             }
           }
           .map { p =>
@@ -129,12 +132,10 @@ object SelectGenerator extends DaoMethodGenerator {
                 (Term.Name(p.name.syntax), internalTpe, retTpe)
             }
           }
-          .getOrElse(abort(_def.pos,
-                           Message.DOMALA4244
+          .getOrElse(abort(Message.DOMALA4244
                              .getMessage(trtName.syntax, defDecl.name.syntax)))
         if (retTpe.toString().trim != defDecl.tpe.toString().trim) {
-          abort(_def.pos,
-                Message.DOMALA4246.getMessage(
+          abort(Message.DOMALA4246.getMessage(
                   defDecl.tpe,
                   retTpe,
                   trtName.syntax,
@@ -261,8 +262,9 @@ object SelectGenerator extends DaoMethodGenerator {
                 .getMessage(defDecl.tpe, trtName.syntax, defDecl.name.syntax))
         }
 
-    val enteringParam = defDecl.paramss.flatten.map(p =>
-      arg"${Term.Name(p.name.toString)}.asInstanceOf[Object]")
+    val enteringParam = defDecl.paramss.flatten.map { p =>
+      arg"${Term.Name(p.name.toString)}.asInstanceOf[Object]"
+    }
 
     val addParameters = defDecl.paramss.flatten.map { p =>
       val paramTpe = p.decltpe.get match {

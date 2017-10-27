@@ -12,13 +12,13 @@ import org.seasar.doma.jdbc.tx.{LocalTransactionDataSource, LocalTransactionMana
 
 class Config(dataSource: DataSource, dialect: Dialect, naming: Naming = Naming.NONE) extends org.seasar.doma.jdbc.Config {
 
-  getSqlFileRepository.clearCache
+  getSqlFileRepository.clearCache()
 
-  val ds = dataSource match {
+  private val ds: LocalTransactionDataSource = dataSource match {
     case ltds: LocalTransactionDataSource => ltds
     case _ => new LocalTransactionDataSource(dataSource)
   }
-  val transactionManager = new LocalTransactionManager(ds.getLocalTransaction(getJdbcLogger))
+  private val transactionManager = new LocalTransactionManager(ds.getLocalTransaction(getJdbcLogger))
 
   override def getDataSource: DataSource = ds
   override def getDialect: Dialect = dialect

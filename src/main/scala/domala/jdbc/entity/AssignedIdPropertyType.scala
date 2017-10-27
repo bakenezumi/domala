@@ -9,44 +9,44 @@ import org.seasar.doma.jdbc.entity.EntityPropertyType
 import org.seasar.doma.jdbc.entity.NamingType
 import org.seasar.doma.wrapper.Wrapper
 
-class AssignedIdPropertyType[PARENT, ENTITY <: PARENT, BASIC, DOMAIN] (
+class AssignedIdPropertyType[PARENT, ENTITY <: PARENT, BASIC, HOLDER] (
   entityClass: Class[ENTITY],
   entityPropertyClass: Class[_],
   basicClass: Class[BASIC],
   wrapperSupplier: Supplier[Wrapper[BASIC]],
   parentEntityPropertyType: EntityPropertyType[PARENT, BASIC],
-  domainType: DomainType[BASIC, DOMAIN],
+  holderType: DomainType[BASIC, HOLDER],
   name: String,
   columnName: String,
   namingType: NamingType,
   quoteRequired: Boolean
-) extends org.seasar.doma.jdbc.entity.AssignedIdPropertyType[PARENT, ENTITY, BASIC, DOMAIN] (
+) extends org.seasar.doma.jdbc.entity.AssignedIdPropertyType[PARENT, ENTITY, BASIC, HOLDER] (
   entityClass,
   entityPropertyClass,
   basicClass,
   wrapperSupplier,
   parentEntityPropertyType,
-  domainType,
+  holderType,
   name,
   columnName,
   namingType,
   quoteRequired) {
 
- override def createProperty: entity.DefaultProperty[_, ENTITY, BASIC] = DefaultPropertyType.createPropertySupplier[ENTITY, BASIC, DOMAIN](field, entityPropertyClass, wrapperSupplier, domainType)()
+ override def createProperty: entity.DefaultProperty[_, ENTITY, BASIC] = DefaultPropertyType.createPropertySupplier[ENTITY, BASIC, HOLDER](field, entityPropertyClass, wrapperSupplier, holderType)()
 
 }
 
 object AssignedIdPropertyType {
-  def ofDomain[ENTITY, BASIC, DOMAIN](
+  def ofHolder[ENTITY, BASIC, HOLDER](
     entityClass: Class[ENTITY],
     entityPropertyClass: Class[_],
-    domainType: AbstractHolderDesc[BASIC, DOMAIN],
+    domainType: AbstractHolderDesc[BASIC, HOLDER],
     name: String,
     columnName: String,
     namingType: NamingType,
     quoteRequired: Boolean
-  ): AssignedIdPropertyType[ENTITY, ENTITY, BASIC, DOMAIN] = {
-    new AssignedIdPropertyType[ENTITY, ENTITY, BASIC, DOMAIN](
+  ): AssignedIdPropertyType[ENTITY, ENTITY, BASIC, HOLDER] = {
+    new AssignedIdPropertyType[ENTITY, ENTITY, BASIC, HOLDER](
       entityClass,
       entityPropertyClass,
       domainType.getBasicClass.asInstanceOf[Class[BASIC]],

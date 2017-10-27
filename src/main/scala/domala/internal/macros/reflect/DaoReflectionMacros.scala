@@ -138,11 +138,12 @@ object DaoReflectionMacros {
             c.abort(c.enclosingPosition,
             Message.DOMALA4113.getMessage(tpe.toString, daoNameText, methodNameText))
           case _ =>
-            // TODO:
+            // TODO: 処理できる可能性はまだあるが現在未検査
             c.abort(c.enclosingPosition,
               Message.DOMALA4008.getMessage(tpe.toString, daoNameText, methodNameText))
         }
       case _ =>
+        // TODO: 処理できる可能性はまだあるが現在未検査
         c.abort(c.enclosingPosition,
           Message.DOMALA4008.getMessage(tpe.toString, daoNameText, methodNameText))
     }

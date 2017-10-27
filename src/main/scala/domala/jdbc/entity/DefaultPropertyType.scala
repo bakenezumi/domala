@@ -24,13 +24,13 @@ import domala.internal.jdbc.scalar.{OptionBasicScalar, OptionDomainBridgeScalar}
 import domala.jdbc.entity
 import domala.jdbc.holder.AbstractHolderDesc
 
-class DefaultPropertyType[PARENT, ENTITY <: PARENT, BASIC, DOMAIN](
+class DefaultPropertyType[PARENT, ENTITY <: PARENT, BASIC, HOLDER](
   entityClass: Class[ENTITY],
   entityPropertyClass: Class[_],
   basicClassClass: Class[BASIC],
   wrapperSupplier: Supplier[Wrapper[BASIC]],
   parentEntityPropertyType: EntityPropertyType[PARENT, BASIC],
-  domainType: DomainType[BASIC, DOMAIN],
+  holderType: DomainType[BASIC, HOLDER],
   name: String,
   columnName: String,
   namingType: NamingType,
@@ -41,13 +41,13 @@ class DefaultPropertyType[PARENT, ENTITY <: PARENT, BASIC, DOMAIN](
   PARENT,
   ENTITY,
   BASIC,
-  DOMAIN](
+  HOLDER](
   entityClass,
   entityPropertyClass,
   basicClassClass,
   wrapperSupplier,
   parentEntityPropertyType,
-  domainType,
+  holderType,
   name,
   columnName,
   namingType,
@@ -57,36 +57,36 @@ class DefaultPropertyType[PARENT, ENTITY <: PARENT, BASIC, DOMAIN](
 ) {
 
   override def createProperty: entity.DefaultProperty[_, ENTITY, BASIC] =
-    DefaultPropertyType.createPropertySupplier[ENTITY, BASIC, DOMAIN](
+    DefaultPropertyType.createPropertySupplier[ENTITY, BASIC, HOLDER](
       field,
       entityPropertyClass,
       wrapperSupplier,
-      domainType)()
+      holderType)()
 
 }
 
 object DefaultPropertyType {
-  def createPropertySupplier[ENTITY, BASIC, DOMAIN](
+  def createPropertySupplier[ENTITY, BASIC, HOLDER](
       field: PropertyField[ENTITY],
       entityPropertyClass: Class[_],
       wrapperSupplier: Supplier[Wrapper[BASIC]],
-      domainType: DomainType[BASIC, DOMAIN]
+      holderType: DomainType[BASIC, HOLDER]
   ): () => DefaultProperty[_, ENTITY, BASIC] =
     () =>
-      if (domainType != null) {
+      if (holderType != null) {
         entityPropertyClass match {
           case x if x == classOf[Optional[_]] =>
-            new DefaultProperty[Optional[DOMAIN], ENTITY, BASIC](
+            new DefaultProperty[Optional[HOLDER], ENTITY, BASIC](
               field,
-              domainType.createOptionalScalar())
+              holderType.createOptionalScalar())
           case x if x == classOf[Option[_]] =>
-            new DefaultProperty[Option[DOMAIN], ENTITY, BASIC](
+            new DefaultProperty[Option[HOLDER], ENTITY, BASIC](
               field,
-              new OptionDomainBridgeScalar(domainType.createOptionalScalar()))
+              new OptionDomainBridgeScalar(holderType.createOptionalScalar()))
           case _ =>
-            new DefaultProperty[DOMAIN, ENTITY, BASIC](
+            new DefaultProperty[HOLDER, ENTITY, BASIC](
               field,
-              domainType.createScalar())
+              holderType.createScalar())
         }
       } else {
         entityPropertyClass match {
@@ -119,24 +119,24 @@ object DefaultPropertyType {
         }
     }
 
-  def ofDomain[ENTITY, BASIC, DOMAIN](
+  def ofHolder[ENTITY, BASIC, HOLDER](
     entityClass: Class[ENTITY],
     entityPropertyClass: Class[_],
-    domainType: AbstractHolderDesc[BASIC, DOMAIN],
+    holderType: AbstractHolderDesc[BASIC, HOLDER],
     name: String,
     columnName: String,
     namingType: NamingType,
     insertable: Boolean,
     updatable: Boolean,
     quoteRequired: Boolean
-  ): DefaultPropertyType[ENTITY, ENTITY, BASIC, DOMAIN] = {
-    new DefaultPropertyType[ENTITY, ENTITY, BASIC, DOMAIN](
+  ): DefaultPropertyType[ENTITY, ENTITY, BASIC, HOLDER] = {
+    new DefaultPropertyType[ENTITY, ENTITY, BASIC, HOLDER](
       entityClass,
       entityPropertyClass,
-      domainType.getBasicClass.asInstanceOf[Class[BASIC]],
-      domainType.wrapper,
+      holderType.getBasicClass.asInstanceOf[Class[BASIC]],
+      holderType.wrapper,
       null,
-      domainType,
+      holderType,
       name,
       columnName,
       namingType,

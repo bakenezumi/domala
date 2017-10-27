@@ -14,7 +14,7 @@ class EntityListenerTestSuite extends FunSuite with BeforeAndAfter {
   test("listener test") {
     Required {
       dao.create()
-      val result = dao.insert(Listened(name = "A")) //preInsert twice
+      val result = dao.insert(Listened(None, name = "A")) //preInsert twice
       assert(result.entity == Listened(Some(1),"AA"))
       dao.update (dao.select) //preUpdate thrice
       val entity = dao.select
@@ -31,8 +31,10 @@ class EntityListenerTestSuite extends FunSuite with BeforeAndAfter {
           ListenLog(Some(6),"postDelete",Some(1),"AAAAAA")
         )
       )
+      dao.drop()
     }
   }
+
 }
 
 @Entity(classOf[MyListener])
@@ -42,7 +44,7 @@ case class Listened(
   name: String,
 )
 
-@Dao(config = TestConfig)
+@Dao
 trait ListenedDao {
   @Script(sql = """
 create table listened(
@@ -59,21 +61,26 @@ create table listen_log(
   """)
   def create(): Unit
 
+  @Script("""
+drop table listen_log;
+drop table listened;
+  """)
+  def drop()
+
   @Insert
   def insert(entity: Listened): Result[Listened]
 
   @Update
   def update(entity: Listened): Result[Listened]
 
-  @Select(sql=
-  """
+  @Select(sql="""
 select * from listened
   """)
   def select: Listened
 
-
   @Delete
   def delete(entity: Listened): Result[Listened]
+
 }
 
 @Entity
@@ -85,7 +92,7 @@ case class ListenLog(
   entityName: String,
 )
 
-@Dao(config = TestConfig)
+@Dao
 trait ListenLogDao {
   @Insert
   def log(entity: ListenLog): Result[ListenLog]
@@ -98,37 +105,38 @@ select * from listen_log
 }
 
 class MyListener extends EntityListener[Listened] {
+  implicit val config: Config = TestConfig
   val dao: ListenLogDao = ListenLogDao.impl
 
   override def preInsert(entity: Listened, context: PreInsertContext[Listened]): Unit = {
-   val log = ListenLog(operation = "preInsert", entityId = entity.id, entityName = entity.name)
+   val log = ListenLog(None, operation = "preInsert", entityId = entity.id, entityName = entity.name)
     dao.log(log)
     context.setNewEntity(entity.copy(name = entity.name * 2))
   }
 
   override def preUpdate(entity: Listened, context: PreUpdateContext[Listened]): Unit = {
-    val log = ListenLog(operation = "preUpdate", entityId = entity.id, entityName = entity.name)
+    val log = ListenLog(None, operation = "preUpdate", entityId = entity.id, entityName = entity.name)
     dao.log(log)
     context.setNewEntity(entity.copy(name = entity.name * 3))
   }
 
   override def postDelete(entity: Listened, context: PostDeleteContext[Listened]): Unit = {
-    val log = ListenLog(operation = "postDelete", entityId = entity.id, entityName = entity.name)
+    val log = ListenLog(None, operation = "postDelete", entityId = entity.id, entityName = entity.name)
     dao.log(log)
   }
 
   override def postInsert(entity: Listened, context: PostInsertContext[Listened]): Unit = {
-    val log = ListenLog(operation = "postInsert", entityId = entity.id, entityName = entity.name)
+    val log = ListenLog(None, operation = "postInsert", entityId = entity.id, entityName = entity.name)
     dao.log(log)
   }
 
   override def postUpdate(entity: Listened, context: PostUpdateContext[Listened]): Unit = {
-    val log = ListenLog(operation = "postUpdate", entityId = entity.id, entityName = entity.name)
+    val log = ListenLog(None, operation = "postUpdate", entityId = entity.id, entityName = entity.name)
     dao.log(log)
   }
 
   override def preDelete(entity: Listened, context: PreDeleteContext[Listened]): Unit = {
-    val log = ListenLog(operation = "preDelete", entityId = entity.id, entityName = entity.name)
+    val log = ListenLog(None, operation = "preDelete", entityId = entity.id, entityName = entity.name)
     dao.log(log)
   }
 }

@@ -61,6 +61,8 @@ object DaoGenerator {
     List(
       {
         val paramClasses = _def.paramss.flatten.map(p => {
+          if(TypeHelper.isWildcardType(p.decltpe.get))
+            abort(Message.DOMALA4209.getMessage(p.decltpe.get.syntax, trtName.syntax, _def.name.syntax))
           p.decltpe.get match {
             case t"$container[..$inner]" =>
               val placeHolder = inner.map(_ => t"_")
@@ -90,7 +92,9 @@ object DaoGenerator {
           case mod"@BatchDelete(..$modParams)" => (BatchDeleteGenerator, modParams)
         } match {
           case Nil => abort(_def.pos, domala.message.Message.DOMALA4005.getMessage(trtName.syntax, _def.name.syntax))
-          case (generator, modParams) :: Nil => generator.generate(trtName, _def, internalMethodName, modParams)
+          case (generator, modParams) :: Nil => {
+            generator.generate(trtName, _def, internalMethodName, modParams)
+          }
           case x => abort(_def.pos,domala.message.Message.DOMALA4087.getMessage(x.head._1.annotationName, x(1)._1.annotationName, trtName.syntax, _def.name.syntax))
         }
         defImpl.copy(

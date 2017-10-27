@@ -27,8 +27,17 @@ class Entity(listener: Class[_ <: EntityListener[_ <: Any]] = classOf[NullEntity
     Term.Block(Seq(
       // 処理済みアノテーション除去
       cls.copy(
-        mods = cls.mods.collect { case m@mod"case" => m },
-        ctor = cls.ctor.copy(paramss = cls.ctor.paramss.map(x => x.map(_.copy(mods = Nil))))
+        mods = cls.mods.filter {
+          case mod"@Table(..$_)" => false
+          case _ => true
+        },
+        ctor = cls.ctor.copy(paramss = cls.ctor.paramss.map(ps => ps.map(p => p.copy(mods = p.mods.filter{
+          case mod"@Column(..$_)" => false
+          case mod"@GeneratedValue(..$_)" => false
+          case mod"@SequenceGenerator(..$_)" => false
+          case mod"@TableGenerator(..$_)" => false
+          case _ => true
+        }))))
       ),
       newCompanion
     ))

@@ -9,51 +9,51 @@ import org.seasar.doma.jdbc.entity.EntityPropertyType
 import org.seasar.doma.jdbc.entity.NamingType
 import org.seasar.doma.wrapper.Wrapper
 
-class VersionPropertyType[PARENT, ENTITY <: PARENT, BASIC <: Number, DOMAIN](
+class VersionPropertyType[PARENT, ENTITY <: PARENT, BASIC <: Number, HOLDER](
   entityClass: Class[ENTITY],
   entityPropertyClass: Class[_],
   basicClass: Class[BASIC],
   wrapperSupplier: Supplier[Wrapper[BASIC]],
   parentEntityPropertyType: EntityPropertyType[PARENT, BASIC],
-  domainType: DomainType[BASIC, DOMAIN],
+  holderType: DomainType[BASIC, HOLDER],
   name: String,
   columnName: String,
   namingType: NamingType,
   quoteRequired: Boolean
-) extends org.seasar.doma.jdbc.entity.VersionPropertyType[PARENT, ENTITY, BASIC, DOMAIN](
+) extends org.seasar.doma.jdbc.entity.VersionPropertyType[PARENT, ENTITY, BASIC, HOLDER](
   entityClass,
   entityPropertyClass,
   basicClass,
   wrapperSupplier,
   parentEntityPropertyType,
-  domainType,
+  holderType,
   name,
   columnName,
   namingType,
   quoteRequired
 ) {
 
-  override def createProperty: entity.DefaultProperty[_, ENTITY, BASIC] = DefaultPropertyType.createPropertySupplier[ENTITY, BASIC, DOMAIN](field, entityPropertyClass, wrapperSupplier, domainType)()
+  override def createProperty: entity.DefaultProperty[_, ENTITY, BASIC] = DefaultPropertyType.createPropertySupplier[ENTITY, BASIC, HOLDER](field, entityPropertyClass, wrapperSupplier, holderType)()
 
 }
 
 object VersionPropertyType {
-  def ofDomain[ENTITY, BASIC <: Number, DOMAIN](
+  def ofHolder[ENTITY, BASIC <: Number, HOLDER](
     entityClass: Class[ENTITY],
     entityPropertyClass: Class[_],
-    domainType: AbstractHolderDesc[BASIC, DOMAIN],
+    holderType: AbstractHolderDesc[BASIC, HOLDER],
     name: String,
     columnName: String,
     namingType: NamingType,
     quoteRequired: Boolean
-  ): VersionPropertyType[ENTITY, ENTITY, BASIC, DOMAIN] = {
-    new VersionPropertyType[ENTITY, ENTITY, BASIC, DOMAIN](
+  ): VersionPropertyType[ENTITY, ENTITY, BASIC, HOLDER] = {
+    new VersionPropertyType[ENTITY, ENTITY, BASIC, HOLDER](
       entityClass,
       entityPropertyClass,
-      domainType.getBasicClass.asInstanceOf[Class[BASIC]],
-      domainType.wrapper,
+      holderType.getBasicClass.asInstanceOf[Class[BASIC]],
+      holderType.wrapper,
       null,
-      domainType,
+      holderType,
       name,
       columnName,
       namingType,
