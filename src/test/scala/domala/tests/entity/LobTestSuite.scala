@@ -35,7 +35,7 @@ class LobTestSuite  extends FunSuite with BeforeAndAfter {
   test("insert Lob") {
     Required {
       val entity = Lob(1, new SerialBlob("abc".map(_.toByte).toArray), Some(new SerialBlob("def".map(_.toByte).toArray)),
-        new SerialClob("ghi".map(_.toChar).toArray), Some(new SerialClob("jkl".map(_.toChar).toArray)))
+        new SerialClob("ghi".toArray), Some(new SerialClob("jkl".toArray)))
       dao.insert(entity)
       val selected = dao.select(1)
       assert(new String(selected.basicBlob.getBytes(0, 4)) === "abc")

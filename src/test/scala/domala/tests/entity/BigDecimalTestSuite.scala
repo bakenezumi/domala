@@ -54,7 +54,7 @@ class BigDecimalTestSuite  extends FunSuite with BeforeAndAfter {
 }
 
 @Entity
-@Table(name = "bigdecimal")
+@Table(name = "big_decimal")
 case class BigDecimalEntity(
   id : Int,
   basic : BigDecimal,
@@ -62,7 +62,7 @@ case class BigDecimalEntity(
 )
 
 @Entity
-@Table(name = "bigdecimal")
+@Table(name = "big_decimal")
 case class JavaBigDecimalEntity(
   id : Int,
   basic : java.math.BigDecimal,
@@ -74,25 +74,25 @@ trait BigDecimalDao {
 
   @Script(sql =
     """
-create table bigdecimal(
+create table big_decimal(
   id int not null identity primary key,
   basic decimal,
   option decimal
 );
 
-insert into bigdecimal (id, basic, option) values(0, null, null);
+insert into big_decimal (id, basic, option) values(0, null, null);
     """)
   def create()
 
   @Script(sql =
     """
-drop table bigdecimal;
+drop table big_decimal;
     """)
   def drop()
 
   @Select(sql=
     """
-select * from bigdecimal where id = /* id */0
+select * from big_decimal where id = /* id */0
 """
   )
   def select(id: Int): BigDecimalEntity
@@ -103,7 +103,7 @@ select * from bigdecimal where id = /* id */0
 
   @Select(sql=
 """
-select * from bigdecimal where id = /* id */0
+select * from big_decimal where id = /* id */0
 """
   )
   def selectJava(id: Int): JavaBigDecimalEntity

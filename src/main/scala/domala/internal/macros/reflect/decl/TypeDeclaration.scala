@@ -7,6 +7,7 @@ import org.seasar.doma.internal.util.AssertionUtil.{assertNotNull, assertTrue}
 
 import scala.collection.mutable
 
+//noinspection NameBooleanParameters
 class TypeDeclaration[C <: blackbox.Context](c: C)(
     val tpe: C#Type
 ) {

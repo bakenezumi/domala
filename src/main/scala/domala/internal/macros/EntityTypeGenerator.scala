@@ -93,6 +93,7 @@ object EntityTypeGenerator {
       case mod"@Id" | mod"@domala.Id" | mod"@Id()" | mod"@domala.Id()" => true
       case _ => false
     })
+    //noinspection ScalaUnusedSymbol
     val generatedValueParams = params.filter(p => p.mods.exists {
       case mod"@GeneratedValue($_)" => true
       case _ => false
@@ -117,6 +118,7 @@ object EntityTypeGenerator {
       case q"GenerationType.TABLE" => GenerationType.TABLE
     }
 
+    //noinspection ScalaUnusedSymbol
     params.foreach(p => p.mods.collect {
       case mod"@SequenceGenerator(..$_)" =>
         if(strategy.isEmpty || p.name.syntax != generatedValueParams.head.name.syntax || {
@@ -173,7 +175,7 @@ object EntityTypeGenerator {
     } > 1) abort(Message.DOMALA4024.getMessage(clsName.syntax))
 
     ctor.paramss.flatten.map { p =>
-      val Term.Param(mods, name, Some(decltpe), default) = p
+      val Term.Param(mods, name, Some(decltpe), _) = p
       val columnSetting = ColumnSetting.read(mods)
       val tpe = Type.Name(decltpe.toString)
       if(name.syntax.startsWith(MetaConstants.RESERVED_NAME_PREFIX)) {
@@ -200,6 +202,7 @@ object EntityTypeGenerator {
         case _ => false
       }
 
+      //noinspection ScalaUnusedSymbol
       val isIdGenerate = mods.exists {
         case mod"@GeneratedValue($_)" => true
         case _ => false

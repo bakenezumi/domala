@@ -27,7 +27,7 @@ object SqlBatchModifyQueryGenerator {
       """
     })
 
-    val (isReturnResult, entityType) = DaoMacroHelper.getBatchResultType(defDecl)
+    val (isReturnResult, _) = DaoMacroHelper.getBatchResultType(defDecl)
 
     val daoParam =
       q"domala.internal.macros.DaoParam.apply(${paramName.syntax}, $paramName, classOf[$paramType])"
@@ -44,7 +44,7 @@ object SqlBatchModifyQueryGenerator {
     val daoParamType =
       q"domala.internal.macros.DaoParamClass.apply(${paramName.syntax}, classOf[$internalType])"
 
-
+    //noinspection ScalaUnusedSymbol
     val suppress = defDecl._def.mods.collectFirst {
       case mod"@Suppress(messages=$_(..$x))" => x.map(xx =>  arg"${xx.toString()}")
 //      case mod"@Suppress($x)" => arg"$x.map(_.name)"

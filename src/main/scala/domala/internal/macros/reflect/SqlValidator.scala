@@ -59,6 +59,7 @@ class SqlValidator[C <: blackbox.Context](val c: C)(
     TypeUtil.isBasic(c)(tpe) || TypeUtil.isHolder(c)(tpe)
   }
 
+  //noinspection ScalaRedundantCast
   protected def isScalarIterable(typeDeclaration: TypeDeclaration[C]): Boolean = {
     val tpe: C#Type = typeDeclaration.tpe
     if(TypeUtil.isIterable(c)(tpe)) {

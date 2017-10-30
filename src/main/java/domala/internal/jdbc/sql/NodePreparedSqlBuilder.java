@@ -93,12 +93,13 @@ import org.seasar.doma.wrapper.WrapperVisitor;
 
 /**
  * 独自のExpressionEvaluator, ExpressionParser, Scalarsを利用するため
- * org.seaser.doma.internal.jdbc.sql.NodePreparedSqlBuilderをcopy
+ * org.seasar.doma.internal.jdbc.sql.NodePreparedSqlBuilderをcopy
  * import以外は同一
  *
  * @author bakenezumi
  * 
  */
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class NodePreparedSqlBuilder implements
         SqlNodeVisitor<Void, NodePreparedSqlBuilder.Context> {
 
@@ -130,11 +131,8 @@ public class NodePreparedSqlBuilder implements
     public NodePreparedSqlBuilder(Config config, SqlKind kind, ExpressionEvaluator evaluator,
             SqlLogType sqlLogType) {
         this(config, kind, evaluator, sqlLogType,
-                new Function<ExpandNode, List<String>>() {
-                    @Override
-                    public List<String> apply(ExpandNode node) {
-                        throw new UnsupportedOperationException();
-                    }
+                node -> {
+                    throw new UnsupportedOperationException();
                 });
     }
 
@@ -143,11 +141,8 @@ public class NodePreparedSqlBuilder implements
             SqlLogType sqlLogType,
             Function<ExpandNode, List<String>> columnsExpander) {
         this(config, kind, evaluator, sqlLogType, columnsExpander,
-                new BiConsumer<PopulateNode, SqlContext>() {
-                    @Override
-                    public void accept(PopulateNode node, SqlContext context) {
-                        throw new UnsupportedOperationException();
-                    }
+                (node, context) -> {
+                    throw new UnsupportedOperationException();
                 });
     }
 
@@ -280,12 +275,12 @@ public class NodePreparedSqlBuilder implements
                         location.getLineNumber(), location.getPosition(),
                         node.getText());
             }
-            if (fragment.indexOf("--") > -1) {
+            if (fragment.contains("--")) {
                 throw new JdbcException(Message.DOMA2122, location.getSql(),
                         location.getLineNumber(), location.getPosition(),
                         node.getText());
             }
-            if (fragment.indexOf("/*") > -1) {
+            if (fragment.contains("/*")) {
                 throw new JdbcException(Message.DOMA2123, location.getSql(),
                         location.getLineNumber(), location.getPosition(),
                         node.getText());
@@ -805,7 +800,7 @@ public class NodePreparedSqlBuilder implements
 
         protected <BASIC, CONTAINER> void addBindValue(
                 Scalar<BASIC, CONTAINER> scalar) {
-            appendParameterInternal(new ScalarInParameter<BASIC, CONTAINER>(
+            appendParameterInternal(new ScalarInParameter<>(
                     scalar));
         }
 
@@ -831,6 +826,7 @@ public class NodePreparedSqlBuilder implements
             return parameters;
         }
 
+        @SuppressWarnings("SameParameterValue")
         void setAvailable(boolean available) {
             this.available = available;
         }

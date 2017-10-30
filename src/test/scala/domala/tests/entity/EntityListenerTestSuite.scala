@@ -7,6 +7,7 @@ import domala.tests.TestConfig
 import org.scalatest.{BeforeAndAfter, FunSuite}
 import org.seasar.doma.jdbc.entity._
 
+//noinspection SpellCheckingInspection
 class EntityListenerTestSuite extends FunSuite with BeforeAndAfter {
   implicit val config: Config = TestConfig
   val dao: ListenedDao = ListenedDao.impl

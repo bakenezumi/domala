@@ -10,10 +10,9 @@ class SqlAnnotationSelectQuery(sql: String) extends SqlSelectQuery {
 
   override def addParameter(name: String, `type`: Class[_], value: Any): Unit = {
     value match {
-      case x: Seq[_] => {
+      case x: Seq[_] =>
         val converted = x.asJava
         super.addParameter(name, converted.getClass, converted)
-      }
       case _ => super.addParameter(name, `type`, value)
     }
   }

@@ -46,7 +46,7 @@ class SqlDateTestSuite  extends FunSuite with BeforeAndAfter {
 }
 
 @Entity
-@Table(name = "sqldate")
+@Table(name = "sql_date")
 case class SqlDateEntity(
    id : Int,
    basicDate : Date,
@@ -63,7 +63,7 @@ trait SqlDateDao {
 
   @Script(sql =
     """
-create table sqldate(
+create table sql_date(
   id int not null identity primary key,
   basic_date date,
   option_date date,
@@ -73,19 +73,19 @@ create table sqldate(
   option_date_time timestamp
 );
 
-insert into sqldate (id, basic_date, option_date, basic_time, option_time, basic_date_time, option_date_time) values(0, null, null, null, null, null, null);
+insert into sql_date (id, basic_date, option_date, basic_time, option_time, basic_date_time, option_date_time) values(0, null, null, null, null, null, null);
     """)
   def create()
 
   @Script(sql =
     """
-drop table sqldate;
+drop table sql_date;
     """)
   def drop()
 
   @Select(sql=
     """
-select * from sqldate where id = /* id */0
+select * from sql_date where id = /* id */0
 """
   )
   def select(id: Int): SqlDateEntity

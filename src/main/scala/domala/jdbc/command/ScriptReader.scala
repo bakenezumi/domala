@@ -58,7 +58,7 @@ class ScriptReader(query: SqlAnnotationScriptQuery) {
     var tokenRequired = false
     var lineRequired = false
     var completed = false
-    var buf = new StringBuilder(300)
+    val buf = new StringBuilder(300)
     val wordList = new java.util.ArrayList[String]()
     val sqlBlockContext: ScriptBlockContext = query.getConfig.getDialect.createScriptBlockContext
     var lineChanged = false

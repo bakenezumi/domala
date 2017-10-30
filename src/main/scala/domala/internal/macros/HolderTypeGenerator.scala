@@ -14,7 +14,7 @@ object HolderTypeGenerator {
     val valueParam = cls.ctor.paramss.flatten.headOption.getOrElse(abort(cls.pos, Message.DOMALA6001.getMessage()))
     if (valueParam.name.syntax != "value") abort(cls.pos, Message.DOMALA6002.getMessage())
     val (basicTpe, wrapperSupplier) = TypeHelper.convertToDomaType(valueParam.decltpe.get) match {
-      case DomaType.Basic(_, convertedType, wrapperSupplier) => (convertedType, wrapperSupplier)
+      case DomaType.Basic(_, convertedType, function) => (convertedType, function)
       case _ => abort(cls.pos, Message.DOMALA4102.getMessage(valueParam.decltpe.get.toString(), cls.name.syntax, valueParam.name.syntax))
     }
 

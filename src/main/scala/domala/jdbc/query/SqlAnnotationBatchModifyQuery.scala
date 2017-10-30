@@ -14,7 +14,7 @@ import org.seasar.doma.jdbc.query.{AbstractQuery, BatchModifyQuery}
 
 abstract class SqlAnnotationBatchModifyQuery[ELEMENT](protected val elementClass: Class[ELEMENT], protected val kind: SqlKind, sqlString: String) extends AbstractQuery with BatchModifyQuery {
 
-  protected var EMPTY_STRINGS = new Array[String](0)
+  protected val EMPTY_STRINGS = new Array[String](0)
   protected var parameterName: String = _
   protected val sqlNode: SqlNode = new SqlParser(sqlString).parse()
   protected var optimisticLockCheckRequired: Boolean = false

@@ -46,7 +46,7 @@ class JavaDateTestSuite  extends FunSuite with BeforeAndAfter {
 }
 
 @Entity
-@Table(name = "javadate")
+@Table(name = "java_date")
 case class JavaDateEntity(
    id : Int,
    basicDate : LocalDate,
@@ -63,7 +63,7 @@ trait JavaDateDao {
 
   @Script(sql =
     """
-create table javadate(
+create table java_date(
   id int not null identity primary key,
   basic_date date,
   option_date date,
@@ -73,19 +73,19 @@ create table javadate(
   option_date_time timestamp
 );
 
-insert into javadate (id, basic_date, option_date, basic_time, option_time, basic_date_time, option_date_time) values(0, null, null, null, null, null, null);
+insert into java_date (id, basic_date, option_date, basic_time, option_time, basic_date_time, option_date_time) values(0, null, null, null, null, null, null);
     """)
   def create()
 
   @Script(sql =
     """
-drop table javadate;
+drop table java_date;
     """)
   def drop()
 
   @Select(sql=
     """
-select * from javadate where id = /* id */0
+select * from java_date where id = /* id */0
 """
   )
   def select(id: Int): JavaDateEntity

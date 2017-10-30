@@ -20,7 +20,7 @@ object EmbeddableTypeGenerator {
   protected def makeMethods(clsName: Type.Name, ctor: Ctor.Primary): Seq[Defn.Def] = {
     Seq({
       val params = ctor.paramss.flatten.map { p =>
-        val Term.Param(mods, name, Some(decltpe), default) = p
+        val Term.Param(mods, name, Some(decltpe), _) = p
         val tpe = Type.Name(decltpe.toString)
         val columnSetting = ColumnSetting.read(mods)
         val (isBasic, nakedTpe, newWrapperExpr) = TypeHelper.convertToEntityDomaType(decltpe) match {
@@ -56,7 +56,7 @@ object EmbeddableTypeGenerator {
       """
     }, {
       val params = ctor.paramss.flatten.map { p =>
-        val Term.Param(mods, name, Some(decltpe), default) = p
+        val Term.Param(_, name, Some(decltpe), _) = p
         val tpe = Type.Name(decltpe.toString)
         q"""
         { (if(__args.get(embeddedPropertyName + "." + ${name.syntax}) != null )

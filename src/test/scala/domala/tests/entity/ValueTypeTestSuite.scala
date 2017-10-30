@@ -25,14 +25,14 @@ class ValueTypeTestSuite  extends FunSuite with BeforeAndAfter {
 
   test("select basic value type") {
     Required {
-      assert(dao.selectBasic(0) === ValueTypeBasic(0, false, 0: Byte, 0: Short, 0, 0, 0.0f, 0.0))
+      assert(dao.selectBasic(0) === ValueTypeBasic(0, boolean = false, 0: Byte, 0: Short, 0, 0, 0.0f, 0.0))
     }
   }
 
   test("insert basic value type") {
     Required {
-      dao.insertBasic(ValueTypeBasic(1, true, 1: Byte, 1: Short, 1, 1, 1.0f, 1.0))
-      assert(dao.selectBasic(1) === ValueTypeBasic(1, true, 1: Byte, 1: Short, 1, 1, 1.0f, 1.0))
+      dao.insertBasic(ValueTypeBasic(1, boolean = true, 1: Byte, 1: Short, 1, 1, 1.0f, 1.0))
+      assert(dao.selectBasic(1) === ValueTypeBasic(1, boolean = true, 1: Byte, 1: Short, 1, 1, 1.0f, 1.0))
     }
   }
 

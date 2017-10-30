@@ -63,11 +63,12 @@ import org.seasar.doma.message.Message;
  * @author bakenezumi
  *
  */
+@SuppressWarnings("WeakerAccess")
 public class ExpressionParser extends org.seasar.doma.internal.expr.ExpressionParser{
 
-    protected final Deque<ExpressionNode> expressionNodes = new LinkedList<ExpressionNode>();
+    protected final Deque<ExpressionNode> expressionNodes = new LinkedList<>();
 
-    protected final Deque<OperatorNode> operatorNodes = new LinkedList<OperatorNode>();
+    protected final Deque<OperatorNode> operatorNodes = new LinkedList<>();
 
     protected final ExpressionReducer expressionReducer = new ExpressionReducer();
 

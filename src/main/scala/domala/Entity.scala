@@ -42,11 +42,12 @@ import scala.meta._
   * @see [[domala.Id Id]]
   * @see [[domala.Version Version]]
   */
+//noinspection ScalaUnusedSymbol
 class Entity(listener: Class[_ <: EntityListener[_ <: Any]] = classOf[NullEntityListener[_]], naming: NamingType = NamingType.NONE) extends scala.annotation.StaticAnnotation {
   inline def apply(defn: Any): Any = meta {
     val q"new $_(..$params)" = this
     val (cls, newCompanion) = defn match {
-      case Term.Block(Seq(cls: Defn.Class, companion: Defn.Object)) => {
+      case Term.Block(Seq(cls: Defn.Class, companion: Defn.Object)) =>
         val newCompanion = EntityTypeGenerator.generate(cls, params)
         (
           cls,
@@ -54,7 +55,6 @@ class Entity(listener: Class[_ <: EntityListener[_ <: Any]] = classOf[NullEntity
             stats = Some(newCompanion.templ.stats.getOrElse(Nil) ++ companion.templ.stats.getOrElse(Nil))
           ))
         )
-      }
       case cls: Defn.Class => (cls, EntityTypeGenerator.generate(cls, params))
       case _ => abort(domala.message.Message.DOMALA4015.getMessage())
     }

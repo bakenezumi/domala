@@ -71,6 +71,7 @@ object DaoGenerator {
     val internalMethodName = Term.Name(s"__method$idx")
     List(
       {
+        //noinspection ScalaUnusedSymbol
         val paramClasses: Seq[Term.ApplyType] = _def.paramss.flatten.map(p => {
           if(TypeHelper.isWildcardType(p.decltpe.get))
             abort(Message.DOMALA4209.getMessage(p.decltpe.get.syntax, trtName.syntax, _def.name.syntax))
@@ -82,7 +83,7 @@ object DaoGenerator {
               q"classOf[scala.Function1[_, _]]"
             case _ => q"classOf[${TypeHelper.toType(p.decltpe.get)}]"
           }
-        }) ++ _def.tparams.map(x => q"classOf[scala.reflect.ClassTag[_]]") // ClassTag型パラメータを付与した場合、実行時は実パラメータとなる
+        }) ++ _def.tparams.map(_ => q"classOf[scala.reflect.ClassTag[_]]") // ClassTag型パラメータを付与した場合、実行時は実パラメータとなる
         q"""private val ${Pat.Var.Term(internalMethodName)} =
             org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[$trtName], ${_def.name.syntax}..$paramClasses)"""
       }, {
@@ -103,9 +104,8 @@ object DaoGenerator {
           case mod"@BatchDelete(..$modParams)" => (BatchDeleteGenerator, modParams)
         } match {
           case Nil => abort(_def.pos, domala.message.Message.DOMALA4005.getMessage(trtName.syntax, _def.name.syntax))
-          case (generator, modParams) :: Nil => {
+          case (generator, modParams) :: Nil =>
             generator.generate(trtName, _def, internalMethodName, modParams)
-          }
           case x => abort(_def.pos,domala.message.Message.DOMALA4087.getMessage(x.head._1.annotationName, x(1)._1.annotationName, trtName.syntax, _def.name.syntax))
         }
         defImpl.copy(

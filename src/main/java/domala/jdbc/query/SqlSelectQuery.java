@@ -15,7 +15,7 @@ import java.util.function.Function;
 // 親のフィールド(sql)を変更する必要があるためJavaで実装。
 public class SqlSelectQuery extends org.seasar.doma.jdbc.query.SqlSelectQuery {
 
-    protected void buildSqlDomala(BiFunction<ExpressionEvaluator, Function<ExpandNode, List<String>>, PreparedSql> sqlBuilder) {
+    private void buildSqlDomala(BiFunction<ExpressionEvaluator, Function<ExpandNode, List<String>>, PreparedSql> sqlBuilder) {
         ExpressionEvaluator evaluator = new ExpressionEvaluator(this.parameters, this.config.getDialect().getExpressionFunctions(), this.config.getClassHelper());
         this.sql = sqlBuilder.apply(evaluator, this::expandColumns);
     }

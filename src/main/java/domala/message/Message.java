@@ -30,6 +30,7 @@ import org.seasar.doma.message.MessageResource;
  * @author bakenezumi
  *
  */
+@SuppressWarnings("WeakerAccess")
 public enum Message implements MessageResource {
     // macros
     DOMALA4001("戻り値の型は更新件数を示すIntでなければいけません。 at {0}.{1}"),

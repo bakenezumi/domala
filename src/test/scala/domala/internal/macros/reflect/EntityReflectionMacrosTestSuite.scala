@@ -6,6 +6,7 @@ import org.scalatest.{BeforeAndAfter, FunSuite}
 import org.seasar.doma.jdbc.entity.{EntityPropertyType, NamingType}
 import org.seasar.doma.wrapper.{IntegerWrapper, StringWrapper, Wrapper}
 
+//noinspection NameBooleanParameters
 class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
 
   test("generatePropertyType basic") {

@@ -21,7 +21,7 @@ import scala.meta._
 class Holder extends scala.annotation.StaticAnnotation {
   inline def apply(defn: Any): Any = meta {
     val (cls, newCompanion) = defn match {
-      case Term.Block(Seq(cls: Defn.Class, companion: Defn.Object)) => {
+      case Term.Block(Seq(cls: Defn.Class, companion: Defn.Object)) =>
         val newCompanion = HolderTypeGenerator.generate(cls)
         (
           cls,
@@ -29,7 +29,6 @@ class Holder extends scala.annotation.StaticAnnotation {
             stats = Some(newCompanion.templ.stats.getOrElse(Nil) ++ companion.templ.stats.getOrElse(Nil))
           ))
         )
-      }
       case cls: Defn.Class => (cls, HolderTypeGenerator.generate(cls))
       case _ => abort(domala.message.Message.DOMALA4105.getMessage())
     }

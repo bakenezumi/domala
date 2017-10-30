@@ -11,7 +11,7 @@ import org.seasar.doma.jdbc.query.{AbstractQuery, ModifyQuery}
 
 class SqlAnnotationModifyQuery(protected val kind: SqlKind, sqlString: String) extends AbstractQuery with ModifyQuery {
 
-  protected var EMPTY_STRINGS = new Array[String](0)
+  protected val EMPTY_STRINGS = new Array[String](0)
   protected val sqlNode: SqlNode = new SqlParser(sqlString).parse()
   protected val parameters: java.util.Map[String, Value] = new java.util.LinkedHashMap[String, Value]()
   protected var sql: PreparedSql = _

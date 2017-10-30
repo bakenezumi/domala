@@ -115,7 +115,7 @@ sbt
 >sample/run
 ```
 
-### Play integretion sample
+### Play integration sample
 
 [domala-play-sample](https://github.com/bakenezumi/domala-play-sample)
 

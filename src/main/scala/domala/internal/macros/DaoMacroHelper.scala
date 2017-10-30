@@ -52,6 +52,7 @@ object DaoMacroHelper {
     }
   }
 
+  //noinspection ScalaUnusedSymbol
   private def hasEntitySeqParameter(defDecl: QueryDefDecl, resultEntityType: Type, paramTypes: Seq[Term.Param]): Boolean = {
     paramTypes.map(_.decltpe.get).exists {
       case t"$_[$entity]" if entity.syntax == resultEntityType.syntax => true

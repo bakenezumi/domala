@@ -16,19 +16,16 @@
 package domala.internal.expr;
 
 import static org.seasar.doma.internal.expr.ExpressionTokenType.*;
-import static org.seasar.doma.internal.util.AssertionUtil.*;
-
-import java.nio.CharBuffer;
 
 import org.seasar.doma.internal.expr.ExpressionException;
-import org.seasar.doma.internal.expr.ExpressionTokenType;
 import org.seasar.doma.message.Message;
 
 /**
  * @author balemezumi
  * 
  */
-public class ExpressionTokenizer extends org.seasar.doma.internal.expr.ExpressionTokenizer{
+@SuppressWarnings("UnnecessaryReturnStatement")
+class ExpressionTokenizer extends org.seasar.doma.internal.expr.ExpressionTokenizer{
 
     public ExpressionTokenizer(String expression) {
         super(expression);

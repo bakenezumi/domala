@@ -3,12 +3,12 @@ package domala.jdbc.query
 import java.lang.reflect.Method
 
 import org.seasar.doma.internal.jdbc.entity.{AbstractPostUpdateContext, AbstractPreUpdateContext}
-import org.seasar.doma.internal.jdbc.sql.node.PopulateNode
 import org.seasar.doma.internal.jdbc.sql.SqlContext
+import org.seasar.doma.internal.jdbc.sql.node.PopulateNode
 import org.seasar.doma.internal.util.AssertionUtil.assertNotNull
-import org.seasar.doma.jdbc.{Config, SqlExecutionSkipCause, SqlKind}
 import org.seasar.doma.jdbc.entity.{EntityPropertyType, EntityType}
 import org.seasar.doma.jdbc.query.{UpdateQuery, UpdateQueryHelper}
+import org.seasar.doma.jdbc.{Config, SqlKind}
 
 
 class SqlAnnotationUpdateQuery[E](
@@ -20,6 +20,7 @@ class SqlAnnotationUpdateQuery[E](
   excludedPropertyNames: Array[String] = new Array[String](0))(
   entityAndEntityType: Option[EntityAndEntityType[E]] = None) extends SqlAnnotationModifyQuery(SqlKind.UPDATE, sqlString) with UpdateQuery {
 
+  //noinspection VarCouldBeVal
   var targetPropertyTypes: java.util.List[EntityPropertyType[E, _]] = _
   val entityHandler: Option[EntityHandler] = entityAndEntityType.map(e => new this.EntityHandler(e.name, e.entity, e.entityType))
 

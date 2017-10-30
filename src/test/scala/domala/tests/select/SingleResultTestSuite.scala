@@ -264,19 +264,19 @@ create table single_result(
   float real,
   double double,
   string varchar(10),
-  bigdecimal decimal,
+  big_decimal decimal,
   bigint decimal,
-  localdate date,
+  local_date date,
   localtime time,
-  localdatetime timestamp
+  local_date_time timestamp
 );
 
 insert into single_result (id, boolean, byte, short, int, long, float, double,
-string, bigdecimal, bigint, localdate, localtime, localdatetime)
+string, big_decimal, bigint, local_date, localtime, local_date_time)
 values(0, null, null, null, null, null, null, null,
   null, null, null, null, null, null);
 insert into single_result (id, boolean, byte, short, int, long, float, double,
-  string, bigdecimal, bigint, localdate, localtime, localdatetime)
+  string, big_decimal, bigint, local_date, localtime, local_date_time)
 values(1, true, 1, 1, 1, 1, 1.1, 1.1,
   'abc', 1234567890.123456789, 12345678901234567890, '2017-12-31', '11:59:59', '2017-12-31 11:59:59.999999999');
     """)
@@ -309,19 +309,19 @@ values(1, true, 1, 1, 1, 1, 1.1, 1.1,
   @Select(sql ="select string from single_result where id = /* id */0")
   def selectString(id: Int): String
 
-  @Select(sql ="select bigdecimal from single_result where id = /* id */0")
+  @Select(sql ="select big_decimal from single_result where id = /* id */0")
   def selectBigDecimal(id: Int): BigDecimal
 
   @Select(sql ="select bigint from single_result where id = /* id */0")
   def selectBigInt(id: Int): BigInt
 
-  @Select(sql ="select localdate from single_result where id = /* id */0")
+  @Select(sql ="select local_date from single_result where id = /* id */0")
   def selectLocalDate(id: Int): LocalDate
 
   @Select(sql ="select localtime from single_result where id = /* id */0")
   def selectLocalTime(id: Int): LocalTime
 
-  @Select(sql ="select localdatetime from single_result where id = /* id */0")
+  @Select(sql ="select local_date_time from single_result where id = /* id */0")
   def selectLocalDateTime(id: Int): LocalDateTime
 
   @Select(sql ="select boolean from single_result where id = /* id */0")
@@ -348,19 +348,19 @@ values(1, true, 1, 1, 1, 1, 1.1, 1.1,
   @Select(sql ="select string from single_result where id = /* id */0")
   def selectStringOption(id: Int): Option[String]
 
-  @Select(sql ="select bigdecimal from single_result where id = /* id */0")
+  @Select(sql ="select big_decimal from single_result where id = /* id */0")
   def selectBigDecimalOption(id: Int): Option[BigDecimal]
 
   @Select(sql ="select bigint from single_result where id = /* id */0")
   def selectBigIntOption(id: Int): Option[BigInt]
 
-  @Select(sql ="select localdate from single_result where id = /* id */0")
+  @Select(sql ="select local_date from single_result where id = /* id */0")
   def selectLocalDateOption(id: Int): Option[LocalDate]
 
   @Select(sql ="select localtime from single_result where id = /* id */0")
   def selectLocalTimeOption(id: Int): Option[LocalTime]
 
-  @Select(sql ="select localdatetime from single_result where id = /* id */0")
+  @Select(sql ="select local_date_time from single_result where id = /* id */0")
   def selectLocalDateTimeOption(id: Int): Option[LocalDateTime]
 
   @Select(sql ="select boolean from single_result where id = /* id */0")
@@ -387,19 +387,19 @@ values(1, true, 1, 1, 1, 1, 1.1, 1.1,
   @Select(sql ="select string from single_result where id = /* id */0")
   def selectStringSeq(id: Int): Seq[String]
 
-  @Select(sql ="select bigdecimal from single_result where id = /* id */0")
+  @Select(sql ="select big_decimal from single_result where id = /* id */0")
   def selectBigDecimalSeq(id: Int): Seq[BigDecimal]
 
   @Select(sql ="select bigint from single_result where id = /* id */0")
   def selectBigIntSeq(id: Int): Seq[BigInt]
 
-  @Select(sql ="select localdate from single_result where id = /* id */0")
+  @Select(sql ="select local_date from single_result where id = /* id */0")
   def selectLocalDateSeq(id: Int): Seq[LocalDate]
 
   @Select(sql ="select localtime from single_result where id = /* id */0")
   def selectLocalTimeSeq(id: Int): Seq[LocalTime]
 
-  @Select(sql ="select localdatetime from single_result where id = /* id */0")
+  @Select(sql ="select local_date_time from single_result where id = /* id */0")
   def selectLocalDateTimeSeq(id: Int): Seq[LocalDateTime]
 
   @Select(sql ="select boolean from single_result where id = /* id */0", strategy = SelectType.STREAM)
@@ -426,18 +426,18 @@ values(1, true, 1, 1, 1, 1, 1.1, 1.1,
   @Select(sql ="select string from single_result where id = /* id */0", strategy = SelectType.STREAM)
   def selectStringStream(id: Int)(f: Stream[String] => Seq[String]): Seq[String]
 
-  @Select(sql ="select bigdecimal from single_result where id = /* id */0", strategy = SelectType.STREAM)
+  @Select(sql ="select big_decimal from single_result where id = /* id */0", strategy = SelectType.STREAM)
   def selectBigDecimalStream(id: Int)(f: Stream[BigDecimal] => Seq[BigDecimal]): Seq[BigDecimal]
 
   @Select(sql ="select bigint from single_result where id = /* id */0", strategy = SelectType.STREAM)
   def selectBigIntStream(id: Int)(f: Stream[BigInt] => Seq[BigInt]): Seq[BigInt]
 
-  @Select(sql ="select localdate from single_result where id = /* id */0", strategy = SelectType.STREAM)
+  @Select(sql ="select local_date from single_result where id = /* id */0", strategy = SelectType.STREAM)
   def selectLocalDateStream(id: Int)(f: Stream[LocalDate] => Seq[LocalDate]): Seq[LocalDate]
 
   @Select(sql ="select localtime from single_result where id = /* id */0", strategy = SelectType.STREAM)
   def selectLocalTimeStream(id: Int)(f: Stream[LocalTime] => Seq[LocalTime]): Seq[LocalTime]
 
-  @Select(sql ="select localdatetime from single_result where id = /* id */0", strategy = SelectType.STREAM)
+  @Select(sql ="select local_date_time from single_result where id = /* id */0", strategy = SelectType.STREAM)
   def selectLocalDateTimeStream(id: Int)(f: Stream[LocalDateTime] => Seq[LocalDateTime]): Seq[LocalDateTime]
 }

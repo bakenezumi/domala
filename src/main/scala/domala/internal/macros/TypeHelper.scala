@@ -5,6 +5,7 @@ import scala.meta._
 object TypeHelper {
 
   def convertToDomaType(tpe: Type.Arg): DomaType = {
+    //noinspection ScalaUnusedSymbol
     tpe match {
       case t"Map[String, Object]" => DomaType.Map
       case t"Map[String, Any]" => DomaType.Map

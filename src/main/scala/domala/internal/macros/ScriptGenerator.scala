@@ -25,7 +25,7 @@ object ScriptGenerator extends DaoMethodGenerator {
       haltOnError)
   }
   override def generate(trtName: Type.Name, _def: Decl.Def, internalMethodName: Term.Name, args: Seq[Term.Arg]): Defn.Def = {
-    val Decl.Def(mods, name, tparams, paramss, tpe) = _def
+    val Decl.Def(_, name, _, paramss, tpe) = _def
     val commonSetting = DaoMacroHelper.readCommonSetting(
       args,
       trtName.syntax,

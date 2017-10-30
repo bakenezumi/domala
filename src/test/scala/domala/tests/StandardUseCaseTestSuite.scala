@@ -93,7 +93,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("join select to enbedded entity") {
+  test("join select to embedded entity") {
     Required {
       assert(
         dao.selectWithDepartmentEmbeddedById(1) ===

@@ -16,7 +16,7 @@ class NoConfigTestSuite extends FunSuite with BeforeAndAfter {
 @Dao
 trait NoConfigDao {
   @Script(sql = """
-create table noconfig(
+create table no_config(
     id int not null identity primary key,
     value varchar(20)
 );
@@ -24,7 +24,7 @@ create table noconfig(
   def create(): Unit
 
   @Script(sql = """
-drop table noconfig;
+drop table no_config;
   """)
   def drop(): Unit
 

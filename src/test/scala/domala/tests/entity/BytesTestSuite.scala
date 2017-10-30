@@ -33,7 +33,7 @@ class BytesTestSuite  extends FunSuite with BeforeAndAfter {
     Required {
       val entity = Bytes(1, "abc".map(_.toByte).toArray, Some("def".map(_.toByte).toArray))
       dao.insert(entity)
-      val selected = (dao.select(1))
+      val selected = dao.select(1)
       assert(new String(selected.basic) === "abc")
       assert(new String(selected.option.get) === "def")
     }

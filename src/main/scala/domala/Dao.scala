@@ -30,6 +30,7 @@ import scala.meta._
   * @see [[domala.Update Update]]
   */
 class Dao(config: Config = null) extends scala.annotation.StaticAnnotation {
+  //noinspection ScalaUnusedSymbol
   inline def apply(defn: Any): Any = meta {
     val q"new $_(..$params)" = this
     val config = params.collectFirst {

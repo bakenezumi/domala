@@ -68,6 +68,7 @@ object SelectGenerator extends DaoMethodGenerator {
         case q"SelectType.RETURN" | q"RETURN" => (Nil, false)
         case q"SelectType.STREAM" | q"STREAM" =>
           (Seq {
+            //noinspection ScalaUnusedSymbol
             val functionParams = defDecl.paramss.flatten.filter { p =>
               p.decltpe.get match {
                 case t"$_ => $_" => true
@@ -118,6 +119,7 @@ object SelectGenerator extends DaoMethodGenerator {
       if (isStream) {
         val (functionParamTerm, internalTpe, retTpe) = defDecl.paramss.flatten
           .find { p =>
+            //noinspection ScalaUnusedSymbol
             p.decltpe.get match {
               case t"Stream[$_] => $_" => true
               case x if TypeHelper.isWildcardType(x) =>
@@ -267,12 +269,13 @@ object SelectGenerator extends DaoMethodGenerator {
     }
 
     val addParameters = defDecl.paramss.flatten.map { p =>
+      //noinspection ScalaUnusedSymbol
       val paramTpe = p.decltpe.get match {
         case t"Option[$inner]" => inner
         case t"$container[..$inner]" =>
           val placeHolder = inner.map(_ => t"_")
           t"${Type.Name(container.toString)}[..$placeHolder]"
-        case t"Stream[$_] => $r" =>
+        case t"Stream[$_] => $_" =>
           t"java.util.function.Function[_, _]"
         case _ => TypeHelper.toType(p.decltpe.get)
       }
@@ -283,6 +286,7 @@ object SelectGenerator extends DaoMethodGenerator {
       q"""__query.addParameter(${p.name.syntax}, classOf[$paramTpe], $param)"""
     }
 
+    //noinspection ScalaUnusedSymbol
     val daoParamTypes = defDecl.paramss.flatten.filter(p => p.decltpe.get match {
       case t"Stream[$_] => $_" => false
       case t"SelectOptions" => false

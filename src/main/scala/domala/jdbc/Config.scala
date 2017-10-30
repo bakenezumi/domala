@@ -59,7 +59,7 @@ abstract class Config(
   getSqlFileRepository.clearCache()
 
   private val ds: LocalTransactionDataSource = dataSource match {
-    case ltds: LocalTransactionDataSource => ltds
+    case ds: LocalTransactionDataSource => ds
     case _ => new LocalTransactionDataSource(dataSource)
   }
   private val transactionManager = new LocalTransactionManager(ds.getLocalTransaction(getJdbcLogger))
