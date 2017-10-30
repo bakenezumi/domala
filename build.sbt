@@ -30,24 +30,17 @@ lazy val root = (project in file(".")).settings(
   )
 )
 
-lazy val sample = (project in file("sample")).settings (
+lazy val sample = project.settings (
   inThisBuild(List(
     scalaVersion := _scalaVersion,
     version      := _version
   )),
+  metaMacroSettings,
   libraryDependencies ++= Seq(
     "com.h2database" % "h2" % "1.4.193",
     scalaTest % Test
   )
-) dependsOn sampleRepository aggregate sampleRepository
-
-lazy val sampleRepository = (project in file("sample-repository")).settings(
-  inThisBuild(List(
-    scalaVersion := _scalaVersion,
-    version      := _version
-  )),
-  metaMacroSettings
-) dependsOn root aggregate root
+) dependsOn root
 
 licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt"))
 homepage := Some(url("https://github.com/bakenezumi"))
