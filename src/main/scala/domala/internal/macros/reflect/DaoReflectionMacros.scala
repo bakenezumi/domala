@@ -16,7 +16,7 @@ import org.seasar.doma.jdbc.query.AbstractSelectQuery
 
 import scala.language.experimental.macros
 import scala.reflect.ClassTag
-import scala.reflect.macros.blackbox
+import scala.reflect.macros.{blackbox, whitebox}
 
 object DaoReflectionMacros {
 

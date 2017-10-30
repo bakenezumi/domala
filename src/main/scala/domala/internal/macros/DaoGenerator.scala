@@ -14,7 +14,11 @@ object DaoGenerator {
   def generate(trt: Defn.Trait, config: Term.Arg): Term.Block = {
     val stats = trt.templ.stats.map(l =>
       l.collect {
-        case _def: Decl.Def => _def
+        case _def: Decl.Def => _def.copy(tparams = _def.tparams.map{
+          // 型パラメータにClassTag付与
+          case tp@Type.Param(_,_,_,_,_,Nil) => tp.copy(cbounds = Seq(Type.Name("scala.reflect.ClassTag")))
+          case tp => tp
+        })
       }.zip(from(0)).flatMap { t: (Decl.Def, Int) =>
         generateDef(trt.name, t._1, t._2)
       }
@@ -41,9 +45,16 @@ object DaoGenerator {
     """
     //logger.debug(obj)
     Term.Block(Seq(
-      // 処理済みdefアノテーション除去
       trt.copy(templ = trt.templ.copy(stats = trt.templ.stats.map(stat => stat.map {
-        case _def: Decl.Def => _def.copy(mods = Nil)
+        case _def: Decl.Def => _def.copy(
+          // 型パラメータにClassTag付与
+          tparams = _def.tparams.map{
+            case tp@Type.Param(_,_,_,_,_,Nil) => tp.copy(cbounds = Seq(Type.Name("scala.reflect.ClassTag")))
+            case tp => tp
+          },
+          // 処理済みdefアノテーション除去
+          mods = Nil
+        )
         case x => x
       }))),
       obj))
@@ -60,7 +71,7 @@ object DaoGenerator {
     val internalMethodName = Term.Name(s"__method$idx")
     List(
       {
-        val paramClasses = _def.paramss.flatten.map(p => {
+        val paramClasses: Seq[Term.ApplyType] = _def.paramss.flatten.map(p => {
           if(TypeHelper.isWildcardType(p.decltpe.get))
             abort(Message.DOMALA4209.getMessage(p.decltpe.get.syntax, trtName.syntax, _def.name.syntax))
           p.decltpe.get match {
@@ -71,7 +82,7 @@ object DaoGenerator {
               q"classOf[scala.Function1[_, _]]"
             case _ => q"classOf[${TypeHelper.toType(p.decltpe.get)}]"
           }
-        })
+        }) ++ _def.tparams.map(x => q"classOf[scala.reflect.ClassTag[_]]") // ClassTag型パラメータを付与した場合、実行時は実パラメータとなる
         q"""private val ${Pat.Var.Term(internalMethodName)} =
             org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[$trtName], ${_def.name.syntax}..$paramClasses)"""
       }, {

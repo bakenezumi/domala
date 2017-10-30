@@ -7,6 +7,41 @@ import org.seasar.doma.jdbc.entity.{NamingType, NullEntityListener}
 import scala.collection.immutable.Seq
 import scala.meta._
 
+/** Indicates an entity class.
+  *
+  * The entity class represents a database relation (table or SQL result set). An
+  * instance of the class represents a row.
+  *
+  * The entity class must be defined as immutable.
+  *
+  * The mutable entity:
+  *
+  * {{{
+  * @Entity
+  * case class Employee (
+  *
+  *   @Id
+  *   @Column(name = "ID")
+  *   id: Int,
+  *
+  *   @Column(name = "EMPLOYEE_NAME")
+  *   employeeName: String,
+  *
+  *   @Version
+  *   @Column(name = "VERSION")
+  *   version: Int,
+  *
+  *   ...
+  * )
+  * }}}
+  *
+  * The entity instance is not required to be thread safe.
+  *
+  * @see [[Table]]
+  * @see [[Column]]
+  * @see [[Id]]
+  * @see [[Version]]
+  */
 class Entity(listener: Class[_ <: EntityListener[_ <: Any]] = classOf[NullEntityListener[_]], naming: NamingType = NamingType.NONE) extends scala.annotation.StaticAnnotation {
   inline def apply(defn: Any): Any = meta {
     val q"new $_(..$params)" = this
@@ -25,7 +60,7 @@ class Entity(listener: Class[_ <: EntityListener[_ <: Any]] = classOf[NullEntity
     }
     //logger.debug(newCompanion)
     Term.Block(Seq(
-      // 処理済みアノテーション除去
+      // 警告抑制のため一部アノテーションを除去
       cls.copy(
         mods = cls.mods.filter {
           case mod"@Table(..$_)" => false

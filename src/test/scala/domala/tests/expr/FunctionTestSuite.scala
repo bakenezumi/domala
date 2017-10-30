@@ -40,6 +40,17 @@ class FunctionTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  test("type parameter") {
+    Required {
+      assert(
+        dao.selectAge(1, s => s.foldLeft(0)(_ + _.toInt)) == 10
+      )
+      assert(
+        dao.selectAge(2, s => s.foldLeft(0.0)(_ + _.toDouble)) == 20.0
+      )
+    }
+  }
+
 }
 
 @Dao
@@ -58,5 +69,10 @@ where
 id = /* twice(x) */0
   """)
   def defaultParameterFunctionSelect(x: Integer, twice: Integer => Int = _ * 2): Option[Person]
+
+  @Select("""
+  select age from person where id = /* departmentId */0
+  """,  strategy = SelectType.STREAM)
+  def selectAge[R](departmentId: Int, mapper: Stream[BigDecimal] => R): R
 
 }

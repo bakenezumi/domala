@@ -1,5 +1,7 @@
 package domala.tests
 
+import java.sql.Connection
+
 import org.scalatest._
 import domala.Required
 import domala.jdbc.{Config, SelectOptions}
@@ -382,7 +384,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     val options = SelectOptions.get
     Required {
       assert(
-        dao.selectAllOption(options) === Seq(
+        dao.selectAllByOption(options) == Seq(
           Person(
             Some(ID(1)),
             Some(Name("SMITH")),
@@ -399,9 +401,9 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
             Some(0))
         ))
       assert(options.getCount == -1)
-      options.limit(1).count()
+      options.limit(1).count
       assert(
-        dao.selectAllOption(options) === Seq(
+        dao.selectAllByOption(options) == Seq(
           Person(
             Some(ID(1)),
             Some(Name("SMITH")),

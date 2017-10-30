@@ -239,7 +239,7 @@ select *
 from person
 order by id
   """)
-  def selectAllOption(options: SelectOptions): Seq[Person]
+  def selectAllByOption(options: SelectOptions): Seq[Person]
 
   @BatchInsert("""
 insert into person(id, name, age, city, street, department_id, version)
