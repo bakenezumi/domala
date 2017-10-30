@@ -4,7 +4,7 @@ import org.seasar.doma.jdbc.id.{BuiltinSequenceIdGenerator, BuiltinTableIdGenera
 
 /** Indicates an entity identifier that is mapped to a primary key of a database
   * table.
-  * The annotated field must be a member of an [[Entity]] annotated class.
+  * The annotated field must be a member of an [[domala.Entity Entity]] annotated class.
   *
   * {{{
   * @Entity
@@ -17,21 +17,21 @@ import org.seasar.doma.jdbc.id.{BuiltinSequenceIdGenerator, BuiltinTableIdGenera
   * )
   * }}}
   *
-  * @see [[GeneratedValue]]
+  * @see [[domala.GeneratedValue GeneratedValue]]
   */
 class Id extends scala.annotation.StaticAnnotation
 
 /** Indicates a strategy to generate identifiers.
   *
-  * The annotated field must be a member of an [[Entity]] annotated class and
-  * the field must be annotated with [[Id]].
+  * The annotated field must be a member of an [[domala.Entity Entity]] annotated class and
+  * the field must be annotated with [[domala.Id Id]].
   *
   * The additional annotation is required according to the `strategy`
   * value:
-  * - [[SequenceGenerator]] annotation is required, if
-  * [[GenerationType.SEQUENCE]] is specified.
-  * - the [[TableGenerator]] annotation is required, if
-  * [[GenerationType.TABLE]] is specified.
+  *   - [[domala.SequenceGenerator SequenceGenerator]] annotation is required, if
+  *     [[domala.GenerationType.SEQUENCE GenerationType.SEQUENCE]] is specified. </li>
+  *   - the [[domala.TableGenerator TableGenerator]] annotation is required, if
+  *     [[domala.GenerationType.TABLE GenerationType.TABLE]] is specified. </li>
   *
   * {{{
   * @Entity
@@ -46,15 +46,15 @@ class Id extends scala.annotation.StaticAnnotation
   * )
   * }}}
   *
-  * @see [[GenerationType]]
-  * @see [[SequenceGenerator]]
-  * @see [[TableGenerator]]
+  * @see [[domala.GenerationType GenerationType]]
+  * @see [[domala.SequenceGenerator SequenceGenerator]]
+  * @see [[domala.TableGenerator TableGenerator]]
   */
 class GeneratedValue(strategy: GenerationType) extends scala.annotation.StaticAnnotation
 
 /** Defines strategies to generate identifiers.
   *
-  * @see [[GeneratedValue]]
+  * @see [[domala.GeneratedValue GeneratedValue]]
   */
 sealed trait GenerationType
 object GenerationType {
@@ -65,9 +65,9 @@ object GenerationType {
 
 /** Indicates an identifier generator that uses a sequence.
   *
-  * The annotated field must be a member of an [[Entity]] annotated class.
-  * This annotation must be used in conjunction with the [[Id]] annotation
-  * and the [[GeneratedValue]] annotation.
+  * The annotated field must be a member of an [[domala.Entity Entity]] annotated class.
+  * This annotation must be used in conjunction with the [[domala.Id Id]] annotation
+  * and the [[domala.GeneratedValue GeneratedValue]] annotation.
   *
   * {{{
   * @Entity
@@ -93,17 +93,17 @@ class SequenceGenerator(
 
 /** Indicates an identifier generator that uses a table.
   *
-  * The annotated field must be a member of an [[Entity]] annotated class.
-  * This annotation must be used in conjunction with the [[Id]] annotation
-  * and the [[GeneratedValue]] annotation.
+  * The annotated field must be a member of an [[domala.Entity Entity]] annotated class.
+  * This annotation must be used in conjunction with the [[domala.Id Id]] annotation
+  * and the [[domala.GeneratedValue GeneratedValue]] annotation.
   *
   * {{{
-  * @Entity
+  *@literal @Entity
   * case class Employee(
   *
-  *   @Id
-  *   @GeneratedValue(strategy = GenerationType.TABLE)
-  *   @TableGenerator(pkColumnValue = "EMPLOYEE_ID")
+  *  @literal @Id
+  *  @literal @GeneratedValue(strategy = GenerationType.TABLE)
+  *  @literal @TableGenerator(pkColumnValue = "EMPLOYEE_ID")
   *   id: Integer,
   *
   *   ...

@@ -1,14 +1,13 @@
 package domala.jdbc
 
 import java.lang.reflect.Method
-import java.sql.Statement
 import javax.sql.DataSource
 
 import domala.jdbc.command.ScriptCommand
 import domala.jdbc.query.SqlAnnotationScriptQuery
 import org.seasar.doma.jdbc._
 import org.seasar.doma.jdbc.dialect.Dialect
-import org.seasar.doma.jdbc.query.{Query, ScriptQuery}
+import org.seasar.doma.jdbc.query.ScriptQuery
 import org.seasar.doma.jdbc.tx.{LocalTransactionDataSource, LocalTransactionManager, TransactionManager}
 
 /** A runtime configuration for DAOs.
@@ -21,7 +20,7 @@ import org.seasar.doma.jdbc.tx.{LocalTransactionDataSource, LocalTransactionMana
   * @param requiresNewController  the transaction controller whose transaction attribute is
   * `REQUIRES_NEW`.
   * @param classHelper the class helper
-  * @param queryImplementors the factory for [[Query]] implementation classes
+  * @param queryImplementors the factory for [[org.seasar.doma.jdbc.query.Query]] implementation classes
   * @param exceptionSqlLogType the SQL log type that determines the SQL log format in
   * exceptions
   * @param unknownColumnHandler the unknown column handler
@@ -33,7 +32,7 @@ import org.seasar.doma.jdbc.tx.{LocalTransactionDataSource, LocalTransactionMana
   * @param fetchSize the fetch size
   * @param queryTimeout Returns the query timeout limit in seconds.
   * If the value is greater than or equal to 1, it is passed to
-  * [[Statement]].
+  * [[java.sql.Statement]].
   * @param batchSize the query timeout limit in seconds.
   * If the value is less than 1, it is regarded as 1
   * @param  entityListenerProvider the provider for [[org.seasar.doma.jdbc.entity.EntityListener]]

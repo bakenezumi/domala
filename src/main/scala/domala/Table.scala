@@ -2,12 +2,12 @@ package domala
 
 /** Indicates a database table.
   *
-  * This annotation must be used in conjunction with the [[Entity]]
+  * This annotation must be used in conjunction with the [[domala.Entity Entity]]
   * annotation.
   *
   * {{{
-  * @Entity
-  * @Table(name = "EMP")
+  *@literal @Entity
+  *@literal @Table(name = "EMP")
   * case class Employee {
   *   ...
   * }

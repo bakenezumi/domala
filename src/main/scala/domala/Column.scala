@@ -2,16 +2,16 @@ package domala
 
 /** Indicates a database column.
   *
-  * The annotated field must be a member of an [[Entity]] annotated class.
+  * The annotated field must be a member of an [[domala.Entity Entity]] annotated class.
   *
   * {{{
-  * @Entity
+  *@literal @Entity
   * case class Employee(
   *
-  *   @Column(name = "EMPLOYEE_NAME")
+  *  @literal @Column(name = "EMPLOYEE_NAME")
   *   employeeName: String,
   *
-  *   @Column(name = "SALARY")
+  *  @literal @Column(name = "SALARY")
   *   salary: BigDecimal,
   *
   *   ...

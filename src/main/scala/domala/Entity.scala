@@ -17,18 +17,18 @@ import scala.meta._
   * The mutable entity:
   *
   * {{{
-  * @Entity
+  *@literal @Entity
   * case class Employee (
   *
-  *   @Id
-  *   @Column(name = "ID")
+  *  @literal @Id
+  *  @literal @Column(name = "ID")
   *   id: Int,
   *
-  *   @Column(name = "EMPLOYEE_NAME")
+  *  @literal @Column(name = "EMPLOYEE_NAME")
   *   employeeName: String,
   *
-  *   @Version
-  *   @Column(name = "VERSION")
+  *  @literal @Version
+  *  @literal @Column(name = "VERSION")
   *   version: Int,
   *
   *   ...
@@ -37,10 +37,10 @@ import scala.meta._
   *
   * The entity instance is not required to be thread safe.
   *
-  * @see [[Table]]
-  * @see [[Column]]
-  * @see [[Id]]
-  * @see [[Version]]
+  * @see [[domala.Table Table]]
+  * @see [[domala.Column Column]]
+  * @see [[domala.Id Id]]
+  * @see [[domala.Version Version]]
   */
 class Entity(listener: Class[_ <: EntityListener[_ <: Any]] = classOf[NullEntityListener[_]], naming: NamingType = NamingType.NONE) extends scala.annotation.StaticAnnotation {
   inline def apply(defn: Any): Any = meta {

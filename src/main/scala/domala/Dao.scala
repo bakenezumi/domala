@@ -11,23 +11,23 @@ import scala.meta._
   *
   *
   * {{{
-  * @Dao
+  *@literal @Dao
   * trait EmployeeDao {
   *
-  *   @Insert
+  *  @literal @Insert
   *   def insert(Employee employee): Int
   * }
   * }}}
   *
   *
-  * @see [[BatchDelete]]
-  * @see [[BatchInsert]]
-  * @see [[BatchUpdate]]
-  * @see [[Delete]]
-  * @see [[Insert]]
-  * @see [[Select]]
-  * @see [[Script]]
-  * @see [[Update]]
+  * @see [[domala.BatchDelete BatchDelete]]
+  * @see [[domala.BatchInsert BatchInsert]]
+  * @see [[domala.BatchUpdate BatchUpdate]]
+  * @see [[domala.Delete Delete]]
+  * @see [[domala.Insert Insert]]
+  * @see [[domala.Select Select]]
+  * @see [[domala.Script Script]]
+  * @see [[domala.Update Update]]
   */
 class Dao(config: Config = null) extends scala.annotation.StaticAnnotation {
   inline def apply(defn: Any): Any = meta {

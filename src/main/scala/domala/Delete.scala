@@ -1,32 +1,31 @@
 package domala
 
-import org.seasar.doma.DomaNullPointerException
-import org.seasar.doma.jdbc.{JdbcException, OptimisticLockException, SqlLogType}
+import org.seasar.doma.jdbc.SqlLogType
 
 /** Indicates a delete.
   *
-  * The annotated method must be a member of a [[Dao]] annotated interface.
+  * The annotated method must be a member of a [[domala.Dao Dao]] annotated interface.
   *
   * {{{
-  * @Entity
+  *@literal @Entity
   * case class Employee(
   *   ...
   * )
   *
-  * @Dao
+  *@literal @Dao
   * trait EmployeeDao {
   *
-  *   @Delete
+  *  @literal @Delete
   *   delete(employee: Employee): Int
   * }
   * }}}
   *
   * The method may throw following exceptions:
-  * @throws DomaNullPointerException if any of the method parameters are
+  * @throws org.seasar.doma.DomaNullPointerException if any of the method parameters are
   * `null`
-  * @throws OptimisticLockException if optimistic locking is enabled and an
+  * @throws org.seasar.doma.jdbc.OptimisticLockException if optimistic locking is enabled and an
   * update count is 0 for each entity
-  * @throws JdbcException if a JDBC related error occurs
+  * @throws org.seasar.doma.jdbc.JdbcException if a JDBC related error occurs
   */
 class Delete(
   sql: String = "",

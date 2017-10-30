@@ -2,36 +2,31 @@ package domala
 
 import org.seasar.doma.jdbc.SqlLogType
 
-import org.seasar.doma.DomaNullPointerException
-import org.seasar.doma.jdbc.JdbcException
-import org.seasar.doma.jdbc.OptimisticLockException
-import org.seasar.doma.jdbc.UniqueConstraintException
-
 /** Indicates an update.
   *
-  * The annotated method must be a member of a [[Dao]] annotated trait.
+  * The annotated method must be a member of a [[domala.Dao Dao]] annotated trait.
   *
   * {{{
-  * @Entity
+  *@literal @Entity
   * case class Employee {
   * ...
   * }
   *
-  * @Dao
+  *@literal @Dao
   * trait EmployeeDao {
   *
-  *   @Update
+  *  @literal @Update
   *   def update(Employee employee): Result[Employee]
   * }
   * }}}
   *
   * The method may throw following exceptions:
-  * @throws DomaNullPointerException if any of the method parameters are
+  * @throws org.seasar.doma.DomaNullPointerException if any of the method parameters are
   * `null`
-  * @throws OptimisticLockException if optimistic locking is enabled and an
+  * @throws org.seasar.doma.jdbc.OptimisticLockException if optimistic locking is enabled and an
   * update count is 0 for each entity
-  * @throws UniqueConstraintException if an unique constraint is violated
-  * @throws JdbcException if a JDBC related error occurs
+  * @throws org.seasar.doma.jdbc.UniqueConstraintException if an unique constraint is violated
+  * @throws org.seasar.doma.jdbc.JdbcException if a JDBC related error occurs
   */
 class Update(
   sql: String = "",
