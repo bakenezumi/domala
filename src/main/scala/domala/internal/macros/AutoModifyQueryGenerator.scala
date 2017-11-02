@@ -7,9 +7,8 @@ import scala.collection.immutable.Seq
 object AutoModifyQueryGenerator {
   def extractParameter(defDecl: QueryDefDecl): (Term.Name, Type.Name) = {
     if (defDecl.paramss.flatten.length != 1)
-      abort(defDecl._def.pos,
-            Message.DOMALA4002
-              .getMessage(defDecl.trtName.value, defDecl.name.value))
+      MacrosHelper.abort(Message.DOMALA4002,
+              defDecl.trtName.value, defDecl.name.value)
     defDecl.paramss.flatten.head match {
       case param"$paramName: ${Some(paramTpe)}" =>
         (Term.Name(paramName.value), Type.Name(paramTpe.toString))

@@ -38,7 +38,6 @@ object DaoGenerator {
       with ${Ctor.Ref.Name(trt.name.syntax)} {
         import scala.collection.JavaConverters._
         import scala.compat.java8.OptionConverters._
-        import scala.compat.java8.StreamConverters._
         ..${stats.get}
       }
     }
@@ -65,7 +64,7 @@ object DaoGenerator {
   protected def generateDef(trtName: Type.Name, _def: Decl.Def, idx: Int): Seq[Defn] = {
     _def.paramss.flatten.foreach{p =>
       if(p.name.syntax.startsWith(MetaConstants.RESERVED_NAME_PREFIX)) {
-        abort(Message.DOMALA4025.getMessage(MetaConstants.RESERVED_NAME_PREFIX, trtName.syntax, _def.name.syntax))
+        MacrosHelper.abort(Message.DOMALA4025, MetaConstants.RESERVED_NAME_PREFIX, trtName.syntax, _def.name.syntax)
       }
     }
     val internalMethodName = Term.Name(s"__method$idx")
@@ -74,7 +73,7 @@ object DaoGenerator {
         //noinspection ScalaUnusedSymbol
         val paramClasses: Seq[Term.ApplyType] = _def.paramss.flatten.map(p => {
           if(TypeHelper.isWildcardType(p.decltpe.get))
-            abort(Message.DOMALA4209.getMessage(p.decltpe.get.syntax, trtName.syntax, _def.name.syntax))
+            MacrosHelper.abort(Message.DOMALA4209, p.decltpe.get.syntax, trtName.syntax, _def.name.syntax)
           p.decltpe.get match {
             case t"$container[..$inner]" =>
               val placeHolder = inner.map(_ => t"_")
@@ -103,10 +102,10 @@ object DaoGenerator {
           case mod"@BatchDelete" => (BatchDeleteGenerator, Nil)
           case mod"@BatchDelete(..$modParams)" => (BatchDeleteGenerator, modParams)
         } match {
-          case Nil => abort(_def.pos, domala.message.Message.DOMALA4005.getMessage(trtName.syntax, _def.name.syntax))
+          case Nil => MacrosHelper.abort(domala.message.Message.DOMALA4005, trtName.syntax, _def.name.syntax)
           case (generator, modParams) :: Nil =>
             generator.generate(trtName, _def, internalMethodName, modParams)
-          case x => abort(_def.pos,domala.message.Message.DOMALA4087.getMessage(x.head._1.annotationName, x(1)._1.annotationName, trtName.syntax, _def.name.syntax))
+          case x => MacrosHelper.abort(domala.message.Message.DOMALA4087, x.head._1.annotationName, x(1)._1.annotationName, trtName.syntax, _def.name.syntax)
         }
         defImpl.copy(
           tparams = _def.tparams,

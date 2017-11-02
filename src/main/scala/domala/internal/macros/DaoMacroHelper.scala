@@ -16,8 +16,7 @@ object DaoMacroHelper {
         new SqlParser(x.syntax).parse()
       } catch {
         case e: JdbcException =>
-          abort(domala.message.Message.DOMALA4069
-            .getMessage(traitName, methodName, e))
+          MacrosHelper.abort(domala.message.Message.DOMALA4069, traitName, methodName, e)
       }
       (true, x)
     }.getOrElse((false, arg""""""""))
@@ -35,7 +34,7 @@ object DaoMacroHelper {
   private def hasEntityParameter(defDecl: QueryDefDecl, resultEntityType: Type, paramTypes: Seq[Term.Param]): Boolean = {
     paramTypes.map(_.decltpe.get.syntax).exists {
       case x if x == resultEntityType.syntax => true
-      case _ => abort(domala.message.Message.DOMALA4222.getMessage(defDecl.trtName.syntax, defDecl.name.syntax))
+      case _ => MacrosHelper.abort(domala.message.Message.DOMALA4222, defDecl.trtName.syntax, defDecl.name.syntax)
     }
   }
 
@@ -47,8 +46,8 @@ object DaoMacroHelper {
       case t"domala.jdbc.Result[$entity]" if hasEntityParameter(defDecl, entity, params) => (true, entity)
       case t"Int" => (false, t"Int")
       case _ =>
-        abort(defDecl._def.pos, domala.message.Message.DOMALA4001
-          .getMessage(defDecl.trtName.syntax, defDecl.name.syntax))
+        MacrosHelper.abort(domala.message.Message.DOMALA4001,
+          defDecl.trtName.syntax, defDecl.name.syntax)
     }
   }
 
@@ -56,7 +55,7 @@ object DaoMacroHelper {
   private def hasEntitySeqParameter(defDecl: QueryDefDecl, resultEntityType: Type, paramTypes: Seq[Term.Param]): Boolean = {
     paramTypes.map(_.decltpe.get).exists {
       case t"$_[$entity]" if entity.syntax == resultEntityType.syntax => true
-      case _ => abort(domala.message.Message.DOMALA4223.getMessage(defDecl.trtName.syntax, defDecl.name.syntax))
+      case _ => MacrosHelper.abort(domala.message.Message.DOMALA4223, defDecl.trtName.syntax, defDecl.name.syntax)
     }
   }
 
@@ -71,9 +70,7 @@ object DaoMacroHelper {
         if hasEntitySeqParameter(defDecl, entity, params) => (true, entity)
       case t"Array[Int]" => (false, t"Array[Int]")
       case _ =>
-        abort(defDecl._def.pos,
-          domala.message.Message.DOMALA4040
-            .getMessage(defDecl.trtName.syntax, defDecl.name.syntax))
+        MacrosHelper.abort(domala.message.Message.DOMALA4040, defDecl.trtName.syntax, defDecl.name.syntax)
     }
   }
 

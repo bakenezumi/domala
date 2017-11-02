@@ -34,14 +34,12 @@ object ScriptGenerator extends DaoMethodGenerator {
 
     tpe match {
       case t"Unit" | t"scala.Unit" => ()
-      case _ =>  abort(
-        Message.DOMALA4172
-          .getMessage(trtName.syntax, name.syntax))
+      case _ =>  MacrosHelper.abort(
+        Message.DOMALA4172, trtName.syntax, name.syntax)
     }
     if(paramss.flatten.nonEmpty) {
-      abort(
-        Message.DOMALA4173
-          .getMessage(trtName.syntax, name.syntax))
+      MacrosHelper.abort(
+        Message.DOMALA4173, trtName.syntax, name.syntax)
     }
 
     q"""

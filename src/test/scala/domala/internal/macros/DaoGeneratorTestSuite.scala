@@ -1,6 +1,8 @@
 package domala.internal.macros
 
+import domala.message.Message
 import org.scalatest.FunSuite
+
 import scala.meta._
 
 class DaoGeneratorTestSuite extends FunSuite{
@@ -48,7 +50,6 @@ trait PersonDao {
     class Internal(config: org.seasar.doma.jdbc.Config) extends org.seasar.doma.internal.jdbc.dao.AbstractDao(config) with PersonDao {
       import scala.collection.JavaConverters._
       import scala.compat.java8.OptionConverters._
-      import scala.compat.java8.StreamConverters._
       private val __method0 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "selectById", classOf[Int])
       override def selectById(id: Int): Option[Person] = {
         domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql("PersonDao", "selectById", true, false, "select * from person where id = /*id*/0", domala.internal.macros.DaoParamClass.apply("id", classOf[Int]))
@@ -281,6 +282,98 @@ trait PersonDao {
     """
     val ret = DaoGenerator.generate(trt, null)
     assert(ret.syntax == expect.syntax)
+  }
+
+  test("illegal parameter name") {
+    val trt = q"""
+trait IllegalParameterNameDao {
+  @Select("select * from test where name = /* __name */")
+  def select(__name: String): Emp
+}
+"""
+    val caught = intercept[MacrosException] {
+      DaoGenerator.generate(trt, null)
+    }
+    assert(caught.message == Message.DOMALA4025)
+  }
+
+  test("wildcard type parameter") {
+    val trt = q"""
+trait WildcardTypeParamDao {
+  @Select("select * from test where height >= /* height */")
+  def select(height: Height[_]): Emp
+}
+"""
+    val caught = intercept[MacrosException] {
+      DaoGenerator.generate(trt, null)
+    }
+    assert(caught.message == Message.DOMALA4209)
+  }
+
+  test("annotation not found") {
+    val trt = q"""
+trait AnnotationNotFoundDao {
+
+  def aaa(): Unit
+}
+"""
+    val caught = intercept[MacrosException] {
+      DaoGenerator.generate(trt, null)
+    }
+    assert(caught.message == Message.DOMALA4005)
+  }
+
+  test("annotation conflicted") {
+    val trt = q"""
+trait AnnotationConflictedDao {
+   @Update
+   @Delete
+  def delete(): Int
+}
+"""
+    val caught = intercept[MacrosException] {
+      DaoGenerator.generate(trt, null)
+    }
+    assert(caught.message == Message.DOMALA4087)
+  }
+
+  test("illegal parameter") {
+    val trt = q"""
+trait IllegalParameterDao {
+   @Insert
+  def insert(dept: Dept): Result[Emp]
+}
+"""
+    val caught = intercept[MacrosException] {
+      DaoGenerator.generate(trt, null)
+    }
+    assert(caught.message == Message.DOMALA4222)
+  }
+
+  test("illegal batch parameter") {
+    val trt = q"""
+trait IllegalBatchParameterDao {
+   @BatchInsert
+  def insert(dept: Seq[Dept]): BatchResult[Emp]
+}
+"""
+    val caught = intercept[MacrosException] {
+      DaoGenerator.generate(trt, null)
+    }
+    assert(caught.message == Message.DOMALA4223)
+  }
+
+  test("no test literal") {
+    val trt = q"""
+trait NoTestLiteralDao {
+   @Select("select * from Emp where id = /*id*/")
+  def selectById(id: Int): Emp
+}
+"""
+    val caught = intercept[MacrosException] {
+      DaoGenerator.generate(trt, null)
+    }
+    assert(caught.message == Message.DOMALA4069)
   }
 
 }

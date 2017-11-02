@@ -1,6 +1,6 @@
 package domala
 
-import domala.internal.macros.EntityTypeGenerator
+import domala.internal.macros.{EntityTypeGenerator, MacrosHelper}
 import org.seasar.doma.jdbc.entity.EntityListener
 import org.seasar.doma.jdbc.entity.{NamingType, NullEntityListener}
 
@@ -45,6 +45,7 @@ import scala.meta._
 //noinspection ScalaUnusedSymbol
 class Entity(listener: Class[_ <: EntityListener[_ <: Any]] = classOf[NullEntityListener[_]], naming: NamingType = NamingType.NONE) extends scala.annotation.StaticAnnotation {
   inline def apply(defn: Any): Any = meta {
+
     val q"new $_(..$params)" = this
     val (cls, newCompanion) = defn match {
       case Term.Block(Seq(cls: Defn.Class, companion: Defn.Object)) =>
@@ -56,7 +57,7 @@ class Entity(listener: Class[_ <: EntityListener[_ <: Any]] = classOf[NullEntity
           ))
         )
       case cls: Defn.Class => (cls, EntityTypeGenerator.generate(cls, params))
-      case _ => abort(domala.message.Message.DOMALA4015.getMessage())
+      case _ => MacrosHelper.abort(domala.message.Message.DOMALA4015)
     }
     //logger.debug(newCompanion)
     Term.Block(Seq(
@@ -66,7 +67,7 @@ class Entity(listener: Class[_ <: EntityListener[_ <: Any]] = classOf[NullEntity
           case mod"@Table(..$_)" => false
           case _ => true
         },
-        ctor = cls.ctor.copy(paramss = cls.ctor.paramss.map(ps => ps.map(p => p.copy(mods = p.mods.filter{
+        ctor = cls.ctor.copy(paramss = cls.ctor.paramss.map(ps => ps.map(p => p.copy(mods = p.mods.filter {
           case mod"@Column(..$_)" => false
           case mod"@GeneratedValue(..$_)" => false
           case mod"@SequenceGenerator(..$_)" => false

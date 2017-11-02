@@ -3,6 +3,7 @@ package domala.internal.macros.reflect
 import java.lang.reflect.Method
 import java.util.Optional
 
+import domala.internal.WrapStream
 import domala.internal.macros.reflect.util.{ReflectionUtil, TypeUtil}
 import domala.internal.macros.{DaoParam, DaoParamClass}
 import domala.jdbc.{BatchResult, Result}
@@ -16,7 +17,7 @@ import org.seasar.doma.jdbc.query.AbstractSelectQuery
 
 import scala.language.experimental.macros
 import scala.reflect.ClassTag
-import scala.reflect.macros.{blackbox, whitebox}
+import scala.reflect.macros.blackbox
 
 object DaoReflectionMacros {
 
@@ -29,19 +30,17 @@ object DaoReflectionMacros {
     val tpe = weakTypeOf[T]
     if (TypeUtil.isEntity(c)(tpe)) {
       reify {
-        import scala.compat.java8.StreamConverters._
         val entity = ReflectionUtil.getEntityCompanion(classTag.splice)
         new EntityStreamHandler(
           entity,
-          (p: java.util.stream.Stream[T]) => f.splice.apply(p.toScala[Stream]))
+          (p: java.util.stream.Stream[T]) => f.splice.apply(WrapStream.of(p)))
       }
     } else if (TypeUtil.isHolder(c)(tpe)) {
       reify {
-        import scala.compat.java8.StreamConverters._
         val domain = ReflectionUtil.getHolderCompanion(classTag.splice)
         new DomainStreamHandler(
           domain,
-          (p: java.util.stream.Stream[T]) => f.splice.apply(p.toScala[Stream]))
+          (p: java.util.stream.Stream[T]) => f.splice.apply(WrapStream.of(p)))
       }
     } else {
       val Literal(Constant(daoNameText: String)) = daoName.tree

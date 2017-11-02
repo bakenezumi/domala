@@ -1,6 +1,8 @@
 package domala.internal.macros
 
+import domala.message.Message
 import org.scalatest.FunSuite
+
 import scala.meta._
 
 class EntityTypeGeneratorTestSuite extends FunSuite {
@@ -105,6 +107,142 @@ case class Person(
 }"""
     val ret = EntityTypeGenerator.generate(cls, Nil)
     assert(ret.syntax == expect)
+  }
+
+  test("annotation  conflicted") {
+    val cls = q"""
+case class AnnotationConflictedEntity(
+  @Id
+  @Version
+  id: Int
+)
+"""
+    val caught = intercept[MacrosException] {
+      EntityTypeGenerator.generate(cls, Nil)
+    }
+    assert(caught.message == Message.DOMALA4086)
+  }
+
+  test("generated value with composite ID") {
+    val cls = q"""
+case class GeneratedValueWithCompositeIdEntity(
+  @Id
+  id1: Int,
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  id2: Int
+)
+"""
+    val caught = intercept[MacrosException] {
+      EntityTypeGenerator.generate(cls, Nil)
+    }
+    assert(caught.message == Message.DOMALA4036)
+  }
+
+  test("generated value without ID") {
+    val cls = q"""
+case class GeneratedValueWithoutIdEntity(
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  id: Int
+)
+"""
+    val caught = intercept[MacrosException] {
+      EntityTypeGenerator.generate(cls, Nil)
+    }
+    assert(caught.message == Message.DOMALA4033)
+  }
+
+  test("sequence generator without generated value") {
+    val cls = q"""
+case class SequenceGeneratorWithoutGeneratedValueEntity(
+  @SequenceGenerator(sequence = "SEQ")
+  id: Int
+)
+"""
+    val caught = intercept[MacrosException] {
+      EntityTypeGenerator.generate(cls, Nil)
+    }
+    assert(caught.message == Message.DOMALA4030)
+  }
+
+  test("table generator without generated value") {
+    val cls = q"""
+case class TableGeneratorWithoutGeneratedValueEntity(
+  @TableGenerator(pkColumnValue = "TableGeneratorWithoutGeneratedValueEntity")
+  id: Int
+)
+"""
+    val caught = intercept[MacrosException] {
+      EntityTypeGenerator.generate(cls, Nil)
+    }
+    assert(caught.message == Message.DOMALA4031)
+  }
+
+  test("version duplicated") {
+    val cls = q"""
+case class VersionDuplicatedEntity(
+  @Id
+  id: Int,
+  @Version
+  version: Int,
+  @Version
+  version2: Int
+)
+"""
+    val caught = intercept[MacrosException] {
+      EntityTypeGenerator.generate(cls, Nil)
+    }
+    assert(caught.message == Message.DOMALA4024)
+  }
+
+  test("property name reserved") {
+    val cls = q"""
+case class PropertyNameReservedEntity(
+  __name: String
+)
+"""
+    val caught = intercept[MacrosException] {
+      EntityTypeGenerator.generate(cls, Nil)
+    }
+    assert(caught.message == Message.DOMALA4025)
+  }
+
+  test("unsupported property") {
+    val cls = q"""
+case class UnsupportedPropertyEntity(
+  intMap: Map[Int, AnyRef]
+)
+"""
+    val caught = intercept[MacrosException] {
+      EntityTypeGenerator.generate(cls, Nil)
+    }
+    assert(caught.message == Message.DOMALA4096)
+  }
+
+  test("wildcard property") {
+    val cls = q"""
+case class WildcardPropertyEntity(
+  wight: Weight[_]
+)
+"""
+    val caught = intercept[MacrosException] {
+      EntityTypeGenerator.generate(cls, Nil)
+    }
+    assert(caught.message == Message.DOMALA4205)
+  }
+
+  test("var property") {
+    val cls = q"""
+case class VarPropertyEntity(
+  aaa: String,
+  var bbb: Int,
+  ccc: Int
+)
+"""
+    val caught = intercept[MacrosException] {
+      EntityTypeGenerator.generate(cls, Nil)
+    }
+    assert(caught.message == Message.DOMALA4225)
   }
 
 }

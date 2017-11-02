@@ -24,6 +24,8 @@ object TypeUtil {
     tpe =:= typeOf[Float] ||
     tpe =:= typeOf[Double] ||
     tpe =:= typeOf[Object] ||
+    tpe =:= typeOf[AnyRef] ||
+    tpe =:= typeOf[Any] ||
     tpe =:= typeOf[BigDecimal] ||
     tpe =:= typeOf[BigInteger] ||
     tpe =:= typeOf[BigInt] ||

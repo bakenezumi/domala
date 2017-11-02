@@ -20,7 +20,7 @@ object EntityTypeGenerator {
 
   def generate(cls: Defn.Class, args: Seq[Term.Arg]): Defn.Object = {
     if(cls.tparams.nonEmpty)
-      abort(Message.DOMALA4051.getMessage(cls.name.syntax))
+      MacrosHelper.abort(Message.DOMALA4051, cls.name.syntax)
     validateFieldAnnotation(cls.name, cls.ctor)
     val entitySetting = EntitySetting(
       args.collectFirst {
@@ -58,7 +58,7 @@ object EntityTypeGenerator {
         case mod"@Transient" | mod"@Transient()" | mod"@domala.Transient" | mod"@domala.Transient()" => "@Transient"
         case mod"@Version" | mod"@Version()" | mod"@domala.Version" | mod"@domala.Version()" => "@Version"
       } match {
-        case x :: y :: _ => abort(Message.DOMALA4086.getMessage(x, y, clsName.syntax, p.name.syntax))
+        case x :: y :: _ => MacrosHelper.abort(Message.DOMALA4086, x, y, clsName.syntax, p.name.syntax)
         case _ => ()
       }
     }
@@ -99,14 +99,14 @@ object EntityTypeGenerator {
       case _ => false
     })
     if(generatedValueParams.length > 1) {
-      abort(Message.DOMALA4037.getMessage(clsName.syntax, idParams.head.name.syntax))
+      MacrosHelper.abort(Message.DOMALA4037, clsName.syntax, idParams.head.name.syntax)
     }
     if(generatedValueParams.length == 1) {
       if(idParams.size > 1) {
-        abort(Message.DOMALA4036.getMessage(clsName.syntax))
+        MacrosHelper.abort(Message.DOMALA4036, clsName.syntax)
       }
       if(idParams.isEmpty || idParams.head.name.syntax != generatedValueParams.head.name.syntax) {
-        abort(Message.DOMALA4033.getMessage(clsName.syntax, generatedValueParams.head.name.syntax))
+        MacrosHelper.abort(Message.DOMALA4033, clsName.syntax, generatedValueParams.head.name.syntax)
       }
     }
     val strategy = generatedValueParams.flatMap(_.mods).collectFirst {
@@ -126,21 +126,21 @@ object EntityTypeGenerator {
           case Some(GenerationType.SEQUENCE) => false
           case _ => true
           }})
-          abort(Message.DOMALA4030.getMessage(clsName.syntax, p.name.syntax + ":" + strategy))
+          MacrosHelper.abort(Message.DOMALA4030, clsName.syntax, p.name.syntax)
       case mod"@TableGenerator(..$_)" =>
         if(generatedValueParams.isEmpty || p.name.syntax != generatedValueParams.head.name.syntax || {
           strategy match {
             case  Some(GenerationType.TABLE) => false
             case _ => true
           }})
-          abort(Message.DOMALA4031.getMessage(clsName.syntax, p.name.syntax))
+          MacrosHelper.abort(Message.DOMALA4031, clsName.syntax, p.name.syntax)
     })
 
     strategy.map {
       case GenerationType.IDENTITY => Seq(q"private val __idGenerator = new org.seasar.doma.jdbc.id.BuiltinIdentityIdGenerator()")
       case GenerationType.SEQUENCE =>
         val sequenceGeneratorSetting = SequenceGeneratorSetting.read(idParams.head.mods, clsName.syntax)
-          .getOrElse(abort(domala.message.Message.DOMALA4034.getMessage(clsName.syntax, idParams.head.name.syntax)))
+          .getOrElse(MacrosHelper.abort(Message.DOMALA4034, clsName.syntax, idParams.head.name.syntax))
         q"""
           domala.internal.macros.reflect.EntityReflectionMacros.validateSequenceIdGenerator(classOf[${sequenceGeneratorSetting.implementer}])
           private val __idGenerator = new ${sequenceGeneratorSetting.implementer.syntax.parse[Ctor.Call].get}()
@@ -151,7 +151,7 @@ object EntityTypeGenerator {
           """.stats
       case GenerationType.TABLE =>
         val tableGeneratorSetting = TableGeneratorSetting.read(idParams.head.mods, clsName.syntax)
-          .getOrElse(abort(domala.message.Message.DOMALA4035.getMessage(clsName.syntax, idParams.head.name.syntax)))
+          .getOrElse(MacrosHelper.abort(Message.DOMALA4035, clsName.syntax, idParams.head.name.syntax))
         q"""
           domala.internal.macros.reflect.EntityReflectionMacros.validateTableIdGenerator(classOf[${tableGeneratorSetting.implementer}])
           private val __idGenerator = new ${tableGeneratorSetting.implementer.syntax.parse[Ctor.Call].get}()
@@ -172,14 +172,14 @@ object EntityTypeGenerator {
     if (ctor.paramss.flatten.flatMap(_.mods).count {
       case mod"@Version" | mod"@domala.Version" | mod"@Version()" | mod"@domala.Version()"=> true
       case _ => false
-    } > 1) abort(Message.DOMALA4024.getMessage(clsName.syntax))
+    } > 1) MacrosHelper.abort(Message.DOMALA4024, clsName.syntax)
 
     ctor.paramss.flatten.map { p =>
       val Term.Param(mods, name, Some(decltpe), _) = p
       val columnSetting = ColumnSetting.read(mods)
       val tpe = Type.Name(decltpe.toString)
       if(name.syntax.startsWith(MetaConstants.RESERVED_NAME_PREFIX)) {
-        abort(Message.DOMALA4025.getMessage(MetaConstants.RESERVED_NAME_PREFIX, clsName.syntax, name.syntax))
+        MacrosHelper.abort(Message.DOMALA4025, MetaConstants.RESERVED_NAME_PREFIX, clsName.syntax, name.syntax)
       }
       val propertyName = Pat.Var.Term(Term.Name("$" + name.syntax))
 
@@ -188,14 +188,14 @@ object EntityTypeGenerator {
         case DomaType.Option(DomaType.Basic(_, convertedType, wrapperSupplier), _) => (true, convertedType, wrapperSupplier)
         case DomaType.EntityOrHolderOrEmbeddable(otherType) => (false, otherType, q"null")
         case DomaType.Option(DomaType.EntityOrHolderOrEmbeddable(otherType), _) => (false, otherType,  q"null")
-        case _ => abort(Message.DOMALA4096.getMessage(decltpe.syntax, clsName.syntax, name.syntax))
+        case _ => MacrosHelper.abort(Message.DOMALA4096, decltpe.syntax, clsName.syntax, name.syntax)
       }
 
-      if(TypeHelper.isWildcardType(nakedTpe)) abort(Message.DOMALA4205.getMessage(nakedTpe.syntax, clsName.syntax, name.syntax))
+      if(TypeHelper.isWildcardType(nakedTpe)) MacrosHelper.abort(Message.DOMALA4205, nakedTpe.children.head, clsName.syntax, name.syntax)
       if(mods.exists {
         case Mod.VarParam() => true
         case _ => false
-      }) abort(Message.DOMALA4225.getMessage(clsName.syntax, name.syntax))
+      }) MacrosHelper.abort(Message.DOMALA4225, clsName.syntax, name.syntax)
 
       val isId = mods.exists {
         case mod"@Id" | mod"@domala.Id" | mod"@Id()" | mod"@domala.Id()"=> true
@@ -215,9 +215,9 @@ object EntityTypeGenerator {
         case _ => false
       }
       if(columnSetting.insertable.syntax == "false" && (isId || isVersion || isTenantId))
-        abort(Message.DOMALA4088.getMessage(clsName.syntax, name.syntax))
+        MacrosHelper.abort(Message.DOMALA4088, clsName.syntax, name.syntax)
       if(columnSetting.updatable.syntax == "false" && (isId || isVersion || isTenantId))
-        abort(Message.DOMALA4089.getMessage(clsName.syntax, name.syntax))
+        MacrosHelper.abort(Message.DOMALA4089, clsName.syntax, name.syntax)
 
       q"""
       val $propertyName = domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyType[$tpe, $clsName, $nakedTpe](

@@ -53,7 +53,7 @@ public enum Message implements MessageResource {
     DOMALA4037(org.seasar.doma.message.Message.DOMA4037.getMessagePattern()),
     // TODO: DOMALA4038 EntityListenerの型パラメータ検査
     DOMALA4040("戻り値の型は更新件数を示すArray[Int]でなければいけません。 at {0}.{1}"),
-    DOMALA4042("パラーメータの型はscala.collection.Iterableのサブタイプでなければいけません。 at {0}.{1}"),
+    DOMALA4042("パラーメータの型は型パラメータを一つとる、scala.collection.Iterableのサブタイプでなければいけません。 at {0}.{1}"),
     DOMALA4043("scala.collection.Iterableのサブタイプに対する実型引数はエンティティクラスでなければいけません。 at {0}.{1}"),
     DOMALA4051(org.seasar.doma.message.Message.DOMA4051.getMessagePattern()),
     DOMALA4053(org.seasar.doma.message.Message.DOMA4053.getMessagePattern()),
@@ -81,6 +81,7 @@ public enum Message implements MessageResource {
     // TODO: ファクトリ系未実装 DOMA4097 - DOMA4101
     DOMALA4102(org.seasar.doma.message.Message.DOMA4102.getMessagePattern()),
     DOMALA4105("クラス以外には注釈できません。 at {0}"),
+    // @HolderのfactoryMethod未実装 DOMA4106
     // TODO: ストアド系未実装 DOMA4108
     DOMALA4109("戻り値であるSeqのサブタイプ[{0}]には実型引数が必須です。 at {1}.{2}"),
     // TODO: ストアド系未実装 DOMA4111
@@ -159,8 +160,8 @@ public enum Message implements MessageResource {
     DOMALA4244("Functionの1番目の実型引数の型は、Streamでなければいけません。 at {0}.{1}"),
     DOMALA4245("Streamの実型引数の型[{0}]はサポートされていません。 at {1}.{2}"),
     DOMALA4246(org.seasar.doma.message.Message.DOMA4246.getMessagePattern()),
-    DOMALA4247(org.seasar.doma.message.Message.DOMA4247.getMessagePattern()),
-    DOMALA4249(org.seasar.doma.message.Message.DOMA4249.getMessagePattern()),
+    DOMALA4247("@Selectのstrategy要素にSelectStrategyType.STREAMを設定した場合、Stream[?] => ?型のパラメータが必要です。 at {0}.{1}"),
+    DOMALA4249("Stream[?] => ?型のパラメータは複数指定できません。"),
     // 抽象型Entity未実装 DOMA4250
     // acceptNull非対応 DOMA4251
     // acceptNull非対応 DOMA4251

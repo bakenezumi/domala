@@ -1,7 +1,5 @@
 package domala.tests
 
-import java.sql.Connection
-
 import org.scalatest._
 import domala.Required
 import domala.jdbc.{Config, SelectOptions}
@@ -104,7 +102,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
   test("select stream no param") {
     Required {
       assert(dao.selectAllStream { stream =>
-        stream.length
+        stream.size
       } == 2)
     }
   }
@@ -167,7 +165,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
   test("select map stream") {
     Required {
       assert(dao.selectAllStreamMap { stream =>
-        stream.length
+        stream.size
       } == 2)
     }
   }
@@ -176,7 +174,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       assert(dao.selectNameStream{ stream =>
         assert(stream.toList == List(Name("SMITH"), Name("ALLEN")))
-        stream.length
+        stream.size
       } == 2)
     }
   }

@@ -10,12 +10,12 @@ import scala.meta._
 object HolderTypeGenerator {
   def generate(cls: Defn.Class): Defn.Object = {
 
-    if (cls.ctor.paramss.flatten.length != 1) abort(cls.pos, Message.DOMALA6001.getMessage())
-    val valueParam = cls.ctor.paramss.flatten.headOption.getOrElse(abort(cls.pos, Message.DOMALA6001.getMessage()))
-    if (valueParam.name.syntax != "value") abort(cls.pos, Message.DOMALA6002.getMessage())
+    if (cls.ctor.paramss.flatten.length != 1)  MacrosHelper.abort(Message.DOMALA6001)
+    val valueParam = cls.ctor.paramss.flatten.headOption.getOrElse(MacrosHelper.abort(Message.DOMALA6001))
+    if (valueParam.name.syntax != "value") MacrosHelper.abort(Message.DOMALA6002)
     val (basicTpe, wrapperSupplier) = TypeHelper.convertToDomaType(valueParam.decltpe.get) match {
       case DomaType.Basic(_, convertedType, function) => (convertedType, function)
-      case _ => abort(cls.pos, Message.DOMALA4102.getMessage(valueParam.decltpe.get.toString(), cls.name.syntax, valueParam.name.syntax))
+      case _ => MacrosHelper.abort(Message.DOMALA4102, valueParam.decltpe.get.toString(), cls.name.syntax, valueParam.name.syntax)
     }
 
     val erasedHolderType =

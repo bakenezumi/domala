@@ -7,18 +7,16 @@ import scala.meta._
 object AutoBatchModifyQueryGenerator {
   def extractParameter(defDecl: QueryDefDecl): (Term.Name, Type.Name, Type.Name) = {
     if (defDecl.paramss.flatten.length != 1)
-      abort(defDecl._def.pos,
-            Message.DOMALA4002
-              .getMessage(defDecl.trtName.value, defDecl.name.value))
+      MacrosHelper.abort(Message.DOMALA4002,
+              defDecl.trtName.value, defDecl.name.value)
     defDecl.paramss.flatten.head match {
       case param"$paramName: ${Some(paramTpe)}" =>
         paramTpe match {
           case t"$tpe[$internalTpe]" =>
             (Term.Name(paramName.value), Type.Name(t"$tpe[$internalTpe]".syntax), Type.Name(internalTpe.syntax))
           case _ =>
-            abort(defDecl._def.pos,
-              Message.DOMALA4042
-                .getMessage(defDecl.trtName.value, defDecl.name.value))
+            MacrosHelper.abort(Message.DOMALA4042,
+                defDecl.trtName.value, defDecl.name.value)
         }
     }
   }

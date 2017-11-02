@@ -28,7 +28,7 @@ object EmbeddableTypeGenerator {
           case DomaType.Option(DomaType.Basic(_, convertedType, wrapperSupplier), _) => (true, convertedType, wrapperSupplier)
           case DomaType.EntityOrHolderOrEmbeddable(otherType) => (false, otherType, q"null")
           case DomaType.Option(DomaType.EntityOrHolderOrEmbeddable(otherType), _) => (false, otherType,  q"null")
-          case _ => abort(domala.message.Message.DOMALA4096.getMessage(decltpe.syntax, clsName.syntax, name.syntax))
+          case _ => MacrosHelper.abort(domala.message.Message.DOMALA4096, decltpe.syntax, clsName.syntax, name.syntax)
         }
         q"""
         domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyType[$tpe, ENTITY, $nakedTpe](

@@ -1,4 +1,4 @@
-package domala.tests.select
+package domala.tests.dao
 
 import java.time.{LocalDate, LocalDateTime, LocalTime}
 

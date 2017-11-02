@@ -1,6 +1,8 @@
 package domala.internal.macros
 
+import domala.message.Message
 import org.scalatest.FunSuite
+
 import scala.meta._
 
 class HolderTypeGeneratorTestSuite extends FunSuite {
@@ -30,5 +32,15 @@ object Name extends domala.jdbc.holder.AbstractHolderDesc[String, Name]((() => n
 """
     val ret = HolderTypeGenerator.generate(cls)
     assert(ret.syntax == expect.syntax)
+  }
+
+  test("unsupported value type") {
+    val cls = q"""
+case class UnsupportedValueTypeHolder(value: Seq[String])
+"""
+    val caught = intercept[MacrosException] {
+      HolderTypeGenerator.generate(cls)
+    }
+    assert(caught.message == Message.DOMALA4102)
   }
 }
