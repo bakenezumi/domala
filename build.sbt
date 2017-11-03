@@ -1,7 +1,7 @@
 import Dependencies._
 
 lazy val _scalaVersion = "2.12.3"
-lazy val _version = "0.1.0-beta.4-SNAPSHOT"
+lazy val _version = "0.1.0-beta.4"
 
 lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(
   resolvers += Resolver.sonatypeRepo("releases"),
