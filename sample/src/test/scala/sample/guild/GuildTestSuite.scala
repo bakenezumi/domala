@@ -48,9 +48,9 @@ class GuildTestSuite extends FunSuite with BeforeAndAfter {
         }
       val houses =
         (1 to 5).map(i => GuildHouse(ID(i), Name("gh" + i), ID(i * 2)))
-      guildDao.insert(guilds)
-      characterDao.insert(characters)
-      guildHouseDao.insert(houses)
+      guildDao.load(guilds)
+      characterDao.load(characters)
+      guildHouseDao.load(houses)
       val views = app.getAllGuildViews
       assert(
         views == List(
@@ -163,10 +163,10 @@ class GuildTestSuite extends FunSuite with BeforeAndAfter {
   trait EnvDao {
     @Script(
       """
-CREATE TABLE guild(id INT NOT NULL IDENTITY PRIMARY KEY, name VARCHAR(20), deleted_time time);
-CREATE TABLE `character`(id INT NOT NULL IDENTITY PRIMARY KEY, name VARCHAR(20), guild_id INT, deleted_time time,
+CREATE TABLE guild(id INT NOT NULL IDENTITY PRIMARY KEY, name VARCHAR(20), deleted_time timestamp);
+CREATE TABLE `character`(id INT NOT NULL IDENTITY PRIMARY KEY, name VARCHAR(20), guild_id INT, deleted_time timestamp,
   constraint fk_character_guild_id foreign key(guild_id) references guild(id));
-CREATE TABLE guild_house(id INT NOT NULL IDENTITY PRIMARY KEY, name VARCHAR(20), guild_id INT, deleted_time time,
+CREATE TABLE guild_house(id INT NOT NULL IDENTITY PRIMARY KEY, name VARCHAR(20), guild_id INT, deleted_time timestamp,
   constraint fk_guild_house_guild_id foreign key(guild_id) references guild(id));
 """)
     def create()

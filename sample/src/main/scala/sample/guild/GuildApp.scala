@@ -12,7 +12,7 @@ import domala.jdbc.{BatchResult, SelectOptions}
   * */
 class GuildApp (implicit guildDao: GuildDao, characterDao: CharacterDao, guildHouseDao: GuildHouseDao) {
 
-  def getAllGuildViews: List[GuildView] ={
+  def getAllGuildViews: List[GuildView] = {
     val opt = SelectOptions.get.limit(100).offset(0)
     val guilds = guildDao.findAll[List[Guild]](opt, _.toList)
     val ids = guilds.map(_.id)
@@ -31,7 +31,9 @@ class GuildApp (implicit guildDao: GuildDao, characterDao: CharacterDao, guildHo
         houses.get(guild.id)
       )
   }
+
 }
+
 case class GuildView(
   meta: Guild,
   members: List[Character],
@@ -39,7 +41,7 @@ case class GuildView(
 )
 
 @Holder
-case class ID[E](value: Int)
+case class ID[ENTITY](value: Int)
 
 @Holder
 case class Name(value: String)
@@ -72,12 +74,11 @@ SELECT /*%expand*/* FROM guild WHERE deleted_time IS NULL
   def findAll[R](opt: SelectOptions, mapper: Stream[Guild] => R): R
 
   @BatchInsert
-  def insert(entity: Seq[Guild]): BatchResult[Guild]
+  def load(entity: Seq[Guild]): BatchResult[Guild]
 }
 
 @Dao
 trait CharacterDao {
-
   @Select("""
 SELECT
   /*%expand*/*
@@ -90,7 +91,7 @@ WHERE
   def findByGuildIds[R](guildIds: Iterable[ID[Guild]], mapper: Stream[Character] => R): R
 
   @BatchInsert
-  def insert(entity: Seq[Character]): BatchResult[Character]
+  def load(entity: Seq[Character]): BatchResult[Character]
 }
 
 @Dao
@@ -107,5 +108,5 @@ WHERE
   def findByGuildIds[R](guildIds: Iterable[ID[Guild]], mapper: Stream[GuildHouse] => R): R
 
   @BatchInsert
-  def insert(entity: Seq[GuildHouse]): BatchResult[GuildHouse]
+  def load(entity: Seq[GuildHouse]): BatchResult[GuildHouse]
 }
