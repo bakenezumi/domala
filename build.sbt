@@ -4,16 +4,15 @@ lazy val _scalaVersion = "2.12.4"
 lazy val _version = "0.1.0-beta.5-SNAPSHOT"
 
 lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(
-  resolvers += Resolver.sonatypeRepo("releases"),
-  resolvers += Resolver.bintrayRepo("scalameta", "maven"),
   addCompilerPlugin("org.scalameta" % "paradise" % "3.0.0-M10" cross CrossVersion.full),
   scalacOptions += "-Xplugin-require:macroparadise",
-  scalacOptions in (Compile, console) := Seq()
+  scalacOptions in (Compile, console) ~= (_ filterNot (_ contains "paradise"))
 )
 
 lazy val root = (project in file(".")).settings(
   inThisBuild(List(
     scalaVersion := _scalaVersion,
+    //crossScalaVersions := Seq(_scalaVersion, "2.11.11"),  // can't compile 2.11 because SAM conversion using
     version      := _version
   )),
   name := "domala",
