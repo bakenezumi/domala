@@ -1,6 +1,6 @@
 import Dependencies._
 
-lazy val _scalaVersion = "2.12.3"
+lazy val _scalaVersion = "2.12.4"
 lazy val _version = "0.1.0-beta.5-SNAPSHOT"
 
 lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(
