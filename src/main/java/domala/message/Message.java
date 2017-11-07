@@ -180,10 +180,15 @@ public enum Message implements MessageResource {
     // lombokには非対応 DOMA4418 - DOMA4432
 
     // macros(domala original)
-    DOMALA6001("@Holderを注釈するcase classのパラメータは1つでなければなりません。"),
-    DOMALA6002("@Holderを注釈するcase classのパラメータ名は`value`でなければいけません。"),
+    DOMALA6001("@Holderを注釈するclassのコンストラクタパラメータは1つでなければなりません。"),
+    DOMALA6002("@Holderを注釈するclassのコンストラクタパラメータ名は`value`でなければなりません。"),
     DOMALA6003("式[{0}]（[{1}]番目の文字付近）staticメソッドの呼び出しはサポートされていません。"),
-    DOMALA6004("式[{0}]（[{1}]番目の文字付近）staticフィールドへのアクセスはサポートされていません。"),;
+    DOMALA6004("式[{0}]（[{1}]番目の文字付近）staticフィールドへのアクセスはサポートされていません。"),
+    DOMALA6005("@Holderはcase class、もしくはabstract sealed classにのみ注釈できます。"),
+    DOMALA6006("@Holderをabstract sealed classに注釈する場合、コンストラクタパラメータを(val value: ...)とし、immutableなフィールドとして公開しなければなりません。"),
+    DOMALA6007("@Holderをabstract sealed classに注釈する場合、1つ以上の継承したobjectが必要です。at {0}"),
+    DOMALA6008("@Holderをabstract sealed classに注釈する場合、全ての継承先はobjectにする必要があります。at {0}"),
+    ;
 
     private final String messagePattern;
 

@@ -17,7 +17,7 @@ import scala.reflect.macros.blackbox
 object EntityReflectionMacros {
 
   def extractionClassString(str: String): String = {
-    val r = ".*classOf\\[(.*)\\].*".r
+    val r = ".*\\[(.*)\\].*".r
     str match {
       case r(x) => x
       case _    => str

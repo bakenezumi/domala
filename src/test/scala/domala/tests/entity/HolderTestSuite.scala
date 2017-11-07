@@ -24,16 +24,16 @@ class HolderTestSuite extends FunSuite with BeforeAndAfter {
 
   test("insert & update Holder") {
     Required {
-      val newEntity = Holders(id = None, name = Name("AAA"), optionName = Some(Name("BBB")), weight1 = Some(Weight(1)), weight2 = Weight(1000), nested = Holders.Inner("DDD"), version = None)
+      val newEntity = Holders(id = None, name = Name("AAA"), optionName = Some(Name("BBB")), weight1 = Some(Weight(1)), weight2 = Weight(1000), nested = Holders.Inner("DDD"), enum = EnumA, version = None)
       dao.insert(newEntity)
       val selected1 = dao.selectAll
       assert(selected1 == Seq(
-        Holders(Some(Id(1)), Name("AAA"), Some(Name("BBB")), Some(Weight(1)), Weight(1000), Holders.Inner("DDD"), Some(Version(1)))
+        Holders(Some(Id(1)), Name("AAA"), Some(Name("BBB")), Some(Weight(1)), Weight(1000), Holders.Inner("DDD"), EnumA, Some(Version(1)))
       ))
-      dao.update(selected1.head.copy(name = Name("CCC"), weight2 = Weight(1002), nested = Holders.Inner("EEE")))
+      dao.update(selected1.head.copy(name = Name("CCC"), weight2 = Weight(1002), nested = Holders.Inner("EEE"), enum = EnumB))
       val selected2 = dao.selectAll
       assert(selected2 == Seq(
-        Holders(Some(Id(1)), Name("CCC"), Some(Name("BBB")), Some(Weight(1)), Weight(1002), Holders.Inner("EEE"), Some(Version(2)))
+        Holders(Some(Id(1)), Name("CCC"), Some(Name("BBB")), Some(Weight(1)), Weight(1002), Holders.Inner("EEE"), EnumB, Some(Version(2)))
       ))
     }
   }
@@ -41,8 +41,8 @@ class HolderTestSuite extends FunSuite with BeforeAndAfter {
   test("select Holder result") {
     Required {
       val newEntities = Seq(
-        Holders(id = None, name = Name("AAA"), optionName = Some(Name("BBB")), weight1 = Some(Weight(1)), weight2 = Weight(1000), nested = Holders.Inner("DDD"), version = None),
-        Holders(id = None, name = Name("EEE"), optionName = Some(Name("FFF")), weight1 = Some(Weight(2)), weight2 = Weight(2000), nested = Holders.Inner("GGG"), version = None)
+        Holders(id = None, name = Name("AAA"), optionName = Some(Name("BBB")), weight1 = Some(Weight(1)), weight2 = Weight(1000), nested = Holders.Inner("DDD"), enum = EnumA, version = None),
+        Holders(id = None, name = Name("EEE"), optionName = Some(Name("FFF")), weight1 = Some(Weight(2)), weight2 = Weight(2000), nested = Holders.Inner("GGG"), enum = EnumB, version = None)
       )
       dao.insertList(newEntities)
       val w = dao.selectSumKg
@@ -53,9 +53,9 @@ class HolderTestSuite extends FunSuite with BeforeAndAfter {
   test("select Holder parameter") {
     Required {
       val newEntities = Seq(
-        Holders(id = None, name = Name("AAA"), optionName = Some(Name("BBB")), weight1 = Some(Weight(1)), weight2 = Weight(1000), nested = Holders.Inner("DDD"), version = None),
-        Holders(id = None, name = Name("EEE"), optionName = Some(Name("FFF")), weight1 = Some(Weight(2)), weight2 = Weight(2000), nested = Holders.Inner("GGG"), version = None),
-        Holders(id = None, name = Name("HHH"), optionName = Some(Name("III")), weight1 = Some(Weight(3)), weight2 = Weight(3000), nested = Holders.Inner("JJJ"), version = None)
+        Holders(id = None, name = Name("AAA"), optionName = Some(Name("BBB")), weight1 = Some(Weight(1)), weight2 = Weight(1000), nested = Holders.Inner("DDD"), enum = EnumA, version = None),
+        Holders(id = None, name = Name("EEE"), optionName = Some(Name("FFF")), weight1 = Some(Weight(2)), weight2 = Weight(2000), nested = Holders.Inner("GGG"), enum = EnumA, version = None),
+        Holders(id = None, name = Name("HHH"), optionName = Some(Name("III")), weight1 = Some(Weight(3)), weight2 = Weight(3000), nested = Holders.Inner("JJJ"), enum = EnumA, version = None)
       )
       dao.insertList(newEntities)
       assert(dao.selectHeavierTHan(Weight(1)) == Seq(Name("EEE"), Name("HHH")))
@@ -74,6 +74,7 @@ case class Holders(
   weight1: Option[Weight[Kg]],
   weight2: Weight[G],
   nested: Holders.Inner,
+  enum: LikeEnum,
   @domala.Version
   version: Option[Version] = None
 )
@@ -93,11 +94,17 @@ case class Name(value: String)
 case class Version(value: Long)
 
 sealed trait WeightType
-class Kg extends WeightType
-class G extends WeightType
+final class Kg extends WeightType
+final class G extends WeightType
 
 @Holder
 case class Weight[T <: WeightType](value: Int)
+
+@Holder
+abstract sealed class LikeEnum(val value: String)
+
+case object EnumA extends LikeEnum("A")
+case object EnumB extends LikeEnum("B")
 
 @Dao(config = TestConfig)
 trait HolderDao {
@@ -110,6 +117,7 @@ create table holders(
   weight1 int,
   weight2 int,
   nested varchar(20),
+  enum char(1),
   version long not null
 );
     """)

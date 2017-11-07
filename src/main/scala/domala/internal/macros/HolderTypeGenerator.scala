@@ -18,6 +18,12 @@ object HolderTypeGenerator {
       case _ => MacrosHelper.abort(Message.DOMALA4102, valueParam.decltpe.get.toString(), cls.name.syntax, valueParam.name.syntax)
     }
 
+    val isCase = cls.mods.exists(_.syntax == Mod.Case().syntax)
+    val isEnum = cls.mods.exists(_.syntax == Mod.Abstract().syntax) && cls.mods.exists(_.syntax == Mod.Sealed().syntax)
+    if (isCase && isEnum) MacrosHelper.abort(Message.DOMALA6005)
+
+    if(isEnum && !valueParam.mods.exists(_.syntax == Mod.ValParam().syntax)) MacrosHelper.abort(Message.DOMALA6006)
+
     val erasedHolderType =
       if(cls.tparams.nonEmpty) {
         val tparams = cls.tparams.map(_ => t"_")
@@ -27,6 +33,18 @@ object HolderTypeGenerator {
       }
     val methods = makeMethods(cls.name, cls.ctor, basicTpe, erasedHolderType)
 
+    val applyDef =
+      if(isEnum) {
+        val paramss = cls.ctor.paramss.map(ps => ps.map(_.copy(mods = Nil)))
+        val argss = paramss.map(ps => ps.map(p => Term.Name(p.name.syntax)))
+        val tparams = cls.tparams.map(tp => Type.Name(tp.name.syntax))
+        val matchSubclasses = q"domala.internal.macros.reflect.HolderReflectionMacros.matchSubclasses(classOf[$basicTpe], classOf[${cls.name}])(...$argss)"
+        if (tparams.nonEmpty)
+          q"private def apply[..{${cls.tparams}}](...$paramss): ${cls.name}[..{$tparams}] = $matchSubclasses"
+        else
+          q"private def apply(...$paramss): ${cls.name} = $matchSubclasses"
+      } else CaseClassMacroHelper.generateApply(cls)
+
     q"""
     object ${Term.Name(cls.name.syntax) } extends
       domala.jdbc.holder.AbstractHolderDesc[
@@ -34,7 +52,7 @@ object HolderTypeGenerator {
         $wrapperSupplier: java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$basicTpe]]) {
       def getSingletonInternal() = this
       override def wrapper: java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$basicTpe]] = $wrapperSupplier
-      ..${Seq(CaseClassMacroHelper.generateApply(cls), CaseClassMacroHelper.generateUnapply(cls))}
+      ..${Seq(applyDef, CaseClassMacroHelper.generateUnapply(cls))}
       ..$methods
     }
     """
