@@ -188,6 +188,10 @@ public enum Message implements MessageResource {
     DOMALA6006("@Holderをabstract sealed classに注釈する場合、コンストラクタパラメータを(val value: ...)とし、immutableなフィールドとして公開しなければなりません。"),
     DOMALA6007("@Holderをabstract sealed classに注釈する場合、1つ以上の継承したobjectが必要です。at {0}"),
     DOMALA6008("@Holderをabstract sealed classに注釈する場合、全ての継承先はobjectにする必要があります。at {0}"),
+    DOMALA6009("@Selectのstrategy要素にSelectStrategyType.ITERATORを設定した場合、Iterator[?] => ?型のパラメータが必要です。 at {0}.{1}"),
+    DOMALA6010("Iterator[?] => ?型のパラメータは複数指定できません。"),
+    DOMALA6011("Functionの1番目の実型引数の型は、Iteratorでなければいけません。 at {0}.{1}"),
+    DOMALA6012("Iteratorの実型引数の型[{0}]はサポートされていません。 at {1}.{2}"),
     ;
 
     private final String messagePattern;

@@ -94,4 +94,5 @@ sealed trait SelectType
 object SelectType {
   case object RETURN extends SelectType
   case object STREAM extends SelectType
+  case object ITERATOR extends SelectType
 }

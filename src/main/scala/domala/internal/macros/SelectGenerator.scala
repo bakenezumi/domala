@@ -63,9 +63,9 @@ object SelectGenerator extends DaoMethodGenerator {
     if(TypeHelper.isWildcardType(defDecl.tpe))
       MacrosHelper.abort(Message.DOMALA4207, defDecl.tpe, trtName.syntax, defDecl.name.syntax)
 
-    val (checkParameter: Seq[Stat], isStream: Boolean) =
+    val (checkParameter: Seq[Stat], isStream: Boolean, isIterator: Boolean) =
       selectSetting.strategy match {
-        case q"SelectType.RETURN" | q"RETURN" => (Nil, false)
+        case q"SelectType.RETURN" | q"RETURN" => (Nil, false, false)
         case q"SelectType.STREAM" | q"STREAM" =>
           (Seq {
             //noinspection ScalaUnusedSymbol
@@ -82,7 +82,24 @@ object SelectGenerator extends DaoMethodGenerator {
             }
             val functionParam = Term.Name(functionParams.head.name.toString)
             q"""if ($functionParam == null) throw new org.seasar.doma.DomaNullPointerException(${functionParam.syntax})"""
-          }, true)
+          }, true, false)
+        case q"SelectType.ITERATOR" | q"ITERATOR" =>
+          (Seq {
+            //noinspection ScalaUnusedSymbol
+            val functionParams = defDecl.paramss.flatten.filter { p =>
+              p.decltpe.get match {
+                case t"Iterator[$_] => $_" => true
+                case _           => false
+              }
+            }
+            if (functionParams.isEmpty) {
+              MacrosHelper.abort(Message.DOMALA6009, trtName.syntax, defDecl.name.syntax)
+            } else if (functionParams.length > 1) {
+              MacrosHelper.abort(Message.DOMALA6010, trtName.syntax, defDecl.name.syntax)
+            }
+            val functionParam = Term.Name(functionParams.head.name.toString)
+            q"""if ($functionParam == null) throw new org.seasar.doma.DomaNullPointerException(${functionParam.syntax})"""
+          }, false, true)
         case _ => abort(_def.pos, "error")
       }
     val setOptions = {
@@ -120,7 +137,7 @@ object SelectGenerator extends DaoMethodGenerator {
               case t"Stream[$_] => $_" => true
               case x if TypeHelper.isWildcardType(x) =>
                 MacrosHelper.abort(Message.DOMALA4243, x.children.head.syntax, trtName.syntax, defDecl.name.syntax)
-              case _  => false
+              case _ => false
             }
           }
           .map { p =>
@@ -129,13 +146,13 @@ object SelectGenerator extends DaoMethodGenerator {
                 (Term.Name(p.name.syntax), internalTpe, retTpe)
             }
           }
-          .getOrElse( MacrosHelper.abort(Message.DOMALA4244, trtName.syntax, defDecl.name.syntax))
+          .getOrElse(MacrosHelper.abort(Message.DOMALA4244, trtName.syntax, defDecl.name.syntax))
         if (retTpe.toString().trim != defDecl.tpe.toString().trim) {
           MacrosHelper.abort(Message.DOMALA4246,
-                  defDecl.tpe,
-                  retTpe,
-                  trtName.syntax,
-                  defDecl.name.syntax)
+            defDecl.tpe,
+            retTpe,
+            trtName.syntax,
+            defDecl.name.syntax)
         }
         TypeHelper.convertToDomaType(internalTpe) match {
           case DomaType.Map =>
@@ -161,6 +178,63 @@ object SelectGenerator extends DaoMethodGenerator {
             // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
             val command = commandTemplate(
               q"domala.internal.macros.reflect.DaoReflectionMacros.getStreamHandler($functionParamTerm, ${trtName.syntax}, ${defDecl.name.syntax})")
+            (
+              q"$command.execute()",
+              Seq(q"domala.internal.macros.reflect.DaoReflectionMacros.setEntityType[$internalTpe](__query)")
+            )
+          case _ =>
+            MacrosHelper.abort(
+              Message.DOMALA4008, defDecl.tpe, trtName.syntax, defDecl.name.syntax)
+        }
+      } else if (isIterator) {
+        val (functionParamTerm, internalTpe, retTpe) = defDecl.paramss.flatten
+          .find { p =>
+            //noinspection ScalaUnusedSymbol
+            p.decltpe.get match {
+              case t"Iterator[$_] => $_" => true
+              case x if TypeHelper.isWildcardType(x) =>
+                MacrosHelper.abort(Message.DOMALA4243, x.children.head.syntax, trtName.syntax, defDecl.name.syntax)
+              case _  => false
+            }
+          }
+          .map { p =>
+            p.decltpe.get match {
+              case t"Iterator[$internalTpe] => $retTpe" =>
+                (Term.Name(p.name.syntax), internalTpe, retTpe)
+            }
+          }
+          .getOrElse( MacrosHelper.abort(Message.DOMALA6010, trtName.syntax, defDecl.name.syntax))
+        if (retTpe.toString().trim != defDecl.tpe.toString().trim) {
+          MacrosHelper.abort(Message.DOMALA4246,
+            defDecl.tpe,
+            retTpe,
+            trtName.syntax,
+            defDecl.name.syntax)
+        }
+        TypeHelper.convertToDomaType(internalTpe) match {
+          case DomaType.Map =>
+            val command = commandTemplate(
+              q"""new org.seasar.doma.internal.jdbc.command.MapStreamHandler[$retTpe](${selectSetting.mapKeyNaming}, new java.util.function.Function[java.util.stream.Stream[java.util.Map[String, Object]], $retTpe](){
+          def apply(p: java.util.stream.Stream[java.util.Map[String, Object]]) = $functionParamTerm(domala.internal.WrapIterator.of(p).map(_.asScala.toMap))
+          })""")
+            (
+              q"$command.execute()",
+              Nil
+            )
+          case DomaType.Basic(_, convertedType, wrapperSupplier) =>
+            val command = commandTemplate(
+              q"""new org.seasar.doma.internal.jdbc.command.BasicStreamHandler(($wrapperSupplier),
+            new java.util.function.Function[java.util.stream.Stream[$convertedType], $retTpe](){
+            def apply(p: java.util.stream.Stream[$convertedType]) = $functionParamTerm(domala.internal.WrapIterator.of(p).map(x => x: $internalTpe))
+          })""")
+            (
+              q"$command.execute()",
+              Nil
+            )
+          case DomaType.EntityOrHolderOrEmbeddable(_) =>
+            // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
+            val command = commandTemplate(
+              q"domala.internal.macros.reflect.DaoReflectionMacros.getIteratorHandler($functionParamTerm, ${trtName.syntax}, ${defDecl.name.syntax})")
             (
               q"$command.execute()",
               Seq(q"domala.internal.macros.reflect.DaoReflectionMacros.setEntityType[$internalTpe](__query)")
@@ -265,6 +339,8 @@ object SelectGenerator extends DaoMethodGenerator {
           t"${Type.Name(container.toString)}[..$placeHolder]"
         case t"Stream[$_] => $_" =>
           t"java.util.function.Function[_, _]"
+        case t"Iterator[$_] => $_" =>
+          t"java.util.function.Function[_, _]"
         case _ => TypeHelper.toType(p.decltpe.get)
       }
       val param = p.decltpe.get match {
@@ -277,6 +353,7 @@ object SelectGenerator extends DaoMethodGenerator {
     //noinspection ScalaUnusedSymbol
     val daoParamTypes = defDecl.paramss.flatten.filter(p => p.decltpe.get match {
       case t"Stream[$_] => $_" => false
+      case t"Iterator[$_] => $_" => false
       case t"SelectOptions" => false
       case _ => true
     }).map { p =>
@@ -286,7 +363,7 @@ object SelectGenerator extends DaoMethodGenerator {
       q"domala.internal.macros.DaoParamClass.apply(${p.name.syntax}, classOf[$pType])"
     }
 
-    val setResultStream = if(isStream) {
+    val setResultStream = if(isStream || isIterator) {
       Seq(q"__query.setResultStream(true)")
     } else {
       Nil

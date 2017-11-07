@@ -45,13 +45,24 @@ class FunctionTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("type parameter") {
+  test("type parameter stream") {
     Required {
       assert(
-        dao.selectSalaryByDepartmentId(ID(1), _.sum ) == 40
+        dao.selectSalaryStreamByDepartmentId(ID(1), _.sum ) == 40
       )
       assert(
-        dao.selectSalaryByDepartmentId(ID(2), _.reduce((x, y) => (x + y) / 2)) == 30.0f
+        dao.selectSalaryStreamByDepartmentId(ID(2), _.reduce((x, y) => (x + y) / 2)) == 30.0f
+      )
+    }
+  }
+
+  test("type parameter iterator") {
+    Required {
+      assert(
+        dao.selectSalaryIteratorByDepartmentId(ID(1), _.sum ) == 40
+      )
+      assert(
+        dao.selectSalaryIteratorByDepartmentId(ID(2), _.reduce((x, y) => (x + y) / 2)) == 30.0f
       )
     }
   }
@@ -109,5 +120,11 @@ id = /* twice(x) */0
   @Select("""
 select salary from emp where department_id = /* departmentId */0
   """, strategy = SelectType.STREAM)
-  def selectSalaryByDepartmentId[R: scala.reflect.ClassTag](departmentId: ID[Department], mapper: Stream[BigDecimal] => R): R
+  def selectSalaryStreamByDepartmentId[R: scala.reflect.ClassTag](departmentId: ID[Department], mapper: Stream[BigDecimal] => R): R
+
+  @Select("""
+select salary from emp where department_id = /* departmentId */0
+  """, strategy = SelectType.ITERATOR)
+  def selectSalaryIteratorByDepartmentId[R: scala.reflect.ClassTag](departmentId: ID[Department], mapper: Iterator[BigDecimal] => R): R
+
 }

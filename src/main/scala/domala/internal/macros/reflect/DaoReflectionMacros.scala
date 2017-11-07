@@ -3,7 +3,7 @@ package domala.internal.macros.reflect
 import java.lang.reflect.Method
 import java.util.Optional
 
-import domala.internal.WrapStream
+import domala.internal.{WrapIterator, WrapStream}
 import domala.internal.macros.reflect.util.{ReflectionUtil, TypeUtil}
 import domala.internal.macros.{DaoParam, DaoParamClass}
 import domala.jdbc.{BatchResult, Result}
@@ -55,6 +55,41 @@ object DaoReflectionMacros {
                              methodName: String)(
       implicit classTag: ClassTag[T]): AbstractStreamHandler[T, R] =
     macro getStreamHandlerImpl[T, R]
+
+  def getIteratorHandlerImpl[T: c.WeakTypeTag, R: c.WeakTypeTag](
+    c: blackbox.Context)(f: c.Expr[Iterator[T] => R],
+    daoName: c.Expr[String],
+    methodName: c.Expr[String])(
+    classTag: c.Expr[ClassTag[T]]): c.Expr[AbstractStreamHandler[T, R]] = {
+    import c.universe._
+    val tpe = weakTypeOf[T]
+    if (TypeUtil.isEntity(c)(tpe)) {
+      reify {
+        val entity = ReflectionUtil.getEntityCompanion(classTag.splice)
+        new EntityStreamHandler(
+          entity,
+          (p: java.util.stream.Stream[T]) => f.splice.apply(WrapIterator.of(p)))
+      }
+    } else if (TypeUtil.isHolder(c)(tpe)) {
+      reify {
+        val domain = ReflectionUtil.getHolderCompanion(classTag.splice)
+        new DomainStreamHandler(
+          domain,
+          (p: java.util.stream.Stream[T]) => f.splice.apply(WrapIterator.of(p)))
+      }
+    } else {
+      val Literal(Constant(daoNameText: String)) = daoName.tree
+      val Literal(Constant(methodNameText: String)) = methodName.tree
+      c.abort(c.enclosingPosition,
+        Message.DOMALA6012
+          .getMessage(tpe.typeSymbol.name, daoNameText, methodNameText))
+    }
+  }
+  def getIteratorHandler[T, R](f: Iterator[T] => R,
+    daoName: String,
+    methodName: String)(
+    implicit classTag: ClassTag[T]): AbstractStreamHandler[T, R] =
+    macro getIteratorHandlerImpl[T, R]
 
   def getResultListHandlerImpl[T: c.WeakTypeTag](
       c: blackbox.Context)(daoName: c.Expr[String], methodName: c.Expr[String])(

@@ -16,7 +16,7 @@ class AsyncFunctionTestSuite extends AsyncFunSuite with BeforeAndAfter{
       dao.create()
       val emps = (1 to 10).map(i => Emp(ID(i), Name("hoge"),  Jpy(i*10), Some(ID(1)))).toList
       dao.insert(emps)
-      dao.selectSalaryByDepartmentId(ID(1), _.sum)
+      dao.selectSalaryIteratorByDepartmentId(ID(1), _.sum)
     }).map(sum => assert(sum == 550))
   }
 

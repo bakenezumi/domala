@@ -105,10 +105,24 @@ from person
   @Select(sql = """
 select *
 from person
+  """, strategy = SelectType.ITERATOR)
+  def selectAllIterator(f: Iterator[Person] => Int): Int
+
+  @Select(sql = """
+select *
+from person
 where
     id = /*id*/0
   """, strategy = SelectType.STREAM)
   def selectByIdStream(id: Int)(f: Stream[Person] => Option[Address]): Option[Address]
+
+  @Select(sql = """
+select *
+from person
+where
+    id = /*id*/0
+  """, strategy = SelectType.ITERATOR)
+  def selectByIdIterator(id: Int)(f: Iterator[Person] => Option[Address]): Option[Address]
 
   @Select(sql = """
 select *
@@ -141,6 +155,13 @@ order by id
   def selectAllStreamMap(f: Stream[Map[String, Any]] => Int): Int
 
   @Select(sql = """
+select *
+from person
+order by id
+  """, strategy = SelectType.ITERATOR)
+  def selectAllIteratorMap(f: Iterator[Map[String, Any]] => Int): Int
+
+  @Select(sql = """
 select name
 from person
 where
@@ -169,6 +190,13 @@ from person
 order by id
   """, strategy = SelectType.STREAM)
   def selectNameStream(f: Stream[Name] => Int): Int
+
+  @Select(sql = """
+select name
+from person
+order by id
+  """, strategy = SelectType.ITERATOR)
+  def selectNameIterator(f: Iterator[Name] => Int): Int
 
   def selectByIDBuilder(id: Int): String = {
     import org.seasar.doma.jdbc.builder.SelectBuilder

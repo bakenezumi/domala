@@ -107,6 +107,14 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  test("select iterator no param") {
+    Required {
+      assert(dao.selectAllIterator { it =>
+        it.size
+      } == 2)
+    }
+  }
+
   test("select stream with one param") {
     Required {
       assert(dao.selectByIdStream(1) { stream =>
@@ -114,6 +122,17 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
       }.contains(Address("Tokyo", "Yaesu")))
       assert(dao.selectByIdStream(5) { stream =>
         stream.headOption.map(_.address)
+      }.isEmpty)
+    }
+  }
+
+  test("select iterator with one param") {
+    Required {
+      assert(dao.selectByIdIterator(1) { it =>
+        it.toStream.headOption.map(_.address)
+      }.contains(Address("Tokyo", "Yaesu")))
+      assert(dao.selectByIdIterator(5) { it =>
+        it.toStream.headOption.map(_.address)
       }.isEmpty)
     }
   }
@@ -170,11 +189,29 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  test("select map iterator") {
+    Required {
+      assert(dao.selectAllIteratorMap { it =>
+        it.size
+      } == 2)
+    }
+  }
+
   test("select domain stream") {
     Required {
       assert(dao.selectNameStream{ stream =>
         assert(stream.toList == List(Name("SMITH"), Name("ALLEN")))
         stream.size
+      } == 2)
+    }
+  }
+
+  test("select domain itarator") {
+    Required {
+      assert(dao.selectNameIterator{ it =>
+        val list = it.toList
+        assert(list == List(Name("SMITH"), Name("ALLEN")))
+        list.size
       } == 2)
     }
   }

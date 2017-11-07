@@ -39,6 +39,9 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
       assert(dao.selectBooleanStream(0)(_.toList) === Seq(false))
       assert(dao.selectBooleanStream(1)(_.toList) === Seq(true))
       assert(dao.selectBooleanStream(5)(_.toList) === Nil)
+      assert(dao.selectBooleanIterator(0)(_.toList) === Seq(false))
+      assert(dao.selectBooleanIterator(1)(_.toList) === Seq(true))
+      assert(dao.selectBooleanIterator(5)(_.toList) === Nil)
     }
   }
 
@@ -56,6 +59,9 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
       assert(dao.selectByteStream(0)(_.toList) === Seq(0))
       assert(dao.selectByteStream(1)(_.toList) === Seq(1))
       assert(dao.selectByteStream(5)(_.toList) === Nil)
+      assert(dao.selectByteIterator(0)(_.toList) === Seq(0))
+      assert(dao.selectByteIterator(1)(_.toList) === Seq(1))
+      assert(dao.selectByteIterator(5)(_.toList) === Nil)
     }
   }
 
@@ -73,6 +79,9 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
       assert(dao.selectShortStream(0)(_.toList) === Seq(0))
       assert(dao.selectShortStream(1)(_.toList) === Seq(1))
       assert(dao.selectShortStream(5)(_.toList) === Nil)
+      assert(dao.selectShortIterator(0)(_.toList) === Seq(0))
+      assert(dao.selectShortIterator(1)(_.toList) === Seq(1))
+      assert(dao.selectShortIterator(5)(_.toList) === Nil)
     }
   }
 
@@ -90,6 +99,9 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
       assert(dao.selectIntStream(0)(_.toList) === Seq(0))
       assert(dao.selectIntStream(1)(_.toList) === Seq(1))
       assert(dao.selectIntStream(5)(_.toList) === Nil)
+      assert(dao.selectIntIterator(0)(_.toList) === Seq(0))
+      assert(dao.selectIntIterator(1)(_.toList) === Seq(1))
+      assert(dao.selectIntIterator(5)(_.toList) === Nil)
     }
   }
 
@@ -107,6 +119,9 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
       assert(dao.selectLongStream(0)(_.toList) === Seq(0))
       assert(dao.selectLongStream(1)(_.toList) === Seq(1))
       assert(dao.selectLongStream(5)(_.toList) === Nil)
+      assert(dao.selectLongIterator(0)(_.toList) === Seq(0))
+      assert(dao.selectLongIterator(1)(_.toList) === Seq(1))
+      assert(dao.selectLongIterator(5)(_.toList) === Nil)
     }
   }
 
@@ -125,6 +140,9 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
       assert(dao.selectFloatStream(0)(_.toList) === Seq(0))
       assert(dao.selectFloatStream(1)(_.toList) === Seq(1.1f))
       assert(dao.selectFloatStream(5)(_.toList) === Nil)
+      assert(dao.selectFloatIterator(0)(_.toList) === Seq(0))
+      assert(dao.selectFloatIterator(1)(_.toList) === Seq(1.1f))
+      assert(dao.selectFloatIterator(5)(_.toList) === Nil)
     }
   }
 
@@ -143,6 +161,9 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
       assert(dao.selectDoubleStream(0)(_.toList) === Seq(0d))
       assert(dao.selectDoubleStream(1)(_.toList) === Seq(1.1d))
       assert(dao.selectDoubleStream(5)(_.toList) === Nil)
+      assert(dao.selectDoubleIterator(0)(_.toList) === Seq(0d))
+      assert(dao.selectDoubleIterator(1)(_.toList) === Seq(1.1d))
+      assert(dao.selectDoubleIterator(5)(_.toList) === Nil)
     }
   }
 
@@ -160,6 +181,9 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
       assert(dao.selectStringStream(0)(_.toList) === Seq(null))
       assert(dao.selectStringStream(1)(_.toList) === Seq("abc"))
       assert(dao.selectStringStream(5)(_.toList) === Nil)
+      assert(dao.selectStringIterator(0)(_.toList) === Seq(null))
+      assert(dao.selectStringIterator(1)(_.toList) === Seq("abc"))
+      assert(dao.selectStringIterator(5)(_.toList) === Nil)
     }
   }
 
@@ -177,6 +201,9 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
       assert(dao.selectBigDecimalStream(0)(_.toList) === Seq(null))
       assert(dao.selectBigDecimalStream(1)(_.toList) === Seq(BigDecimal("1234567890.123456789")))
       assert(dao.selectBigDecimalStream(5)(_.toList) === Nil)
+      assert(dao.selectBigDecimalIterator(0)(_.toList) === Seq(null))
+      assert(dao.selectBigDecimalIterator(1)(_.toList) === Seq(BigDecimal("1234567890.123456789")))
+      assert(dao.selectBigDecimalIterator(5)(_.toList) === Nil)
     }
   }
 
@@ -194,6 +221,9 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
       assert(dao.selectBigIntStream(0)(_.toList) === Seq(null))
       assert(dao.selectBigIntStream(1)(_.toList) === Seq(BigInt("12345678901234567890")))
       assert(dao.selectBigIntStream(5)(_.toList) === Nil)
+      assert(dao.selectBigIntIterator(0)(_.toList) === Seq(null))
+      assert(dao.selectBigIntIterator(1)(_.toList) === Seq(BigInt("12345678901234567890")))
+      assert(dao.selectBigIntIterator(5)(_.toList) === Nil)
     }
   }
 
@@ -211,6 +241,9 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
       assert(dao.selectLocalDateStream(0)(_.toList) === Seq(null))
       assert(dao.selectLocalDateStream(1)(_.toList) === Seq(LocalDate.of(2017, 12, 31)))
       assert(dao.selectLocalDateStream(5)(_.toList) === Nil)
+      assert(dao.selectLocalDateIterator(0)(_.toList) === Seq(null))
+      assert(dao.selectLocalDateIterator(1)(_.toList) === Seq(LocalDate.of(2017, 12, 31)))
+      assert(dao.selectLocalDateIterator(5)(_.toList) === Nil)
     }
   }
 
@@ -228,6 +261,9 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
       assert(dao.selectLocalTimeStream(0)(_.toList) === Seq(null))
       assert(dao.selectLocalTimeStream(1)(_.toList) === Seq(LocalTime.of(11, 59, 59)))
       assert(dao.selectLocalTimeStream(5)(_.toList) === Nil)
+      assert(dao.selectLocalTimeIterator(0)(_.toList) === Seq(null))
+      assert(dao.selectLocalTimeIterator(1)(_.toList) === Seq(LocalTime.of(11, 59, 59)))
+      assert(dao.selectLocalTimeIterator(5)(_.toList) === Nil)
     }
   }
 
@@ -245,6 +281,9 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
       assert(dao.selectLocalDateTimeStream(0)(_.toList) === Seq(null))
       assert(dao.selectLocalDateTimeStream(1)(_.toList) === Seq(LocalDateTime.of(2017, 12, 31, 11, 59, 59, 999999999)))
       assert(dao.selectLocalDateTimeStream(5)(_.toList) === Nil)
+      assert(dao.selectLocalDateTimeIterator(0)(_.toList) === Seq(null))
+      assert(dao.selectLocalDateTimeIterator(1)(_.toList) === Seq(LocalDateTime.of(2017, 12, 31, 11, 59, 59, 999999999)))
+      assert(dao.selectLocalDateTimeIterator(5)(_.toList) === Nil)
     }
   }
 }
@@ -440,4 +479,43 @@ values(1, true, 1, 1, 1, 1, 1.1, 1.1,
 
   @Select(sql ="select local_date_time from single_result where id = /* id */0", strategy = SelectType.STREAM)
   def selectLocalDateTimeStream(id: Int)(f: Stream[LocalDateTime] => Seq[LocalDateTime]): Seq[LocalDateTime]
+
+  @Select(sql ="select boolean from single_result where id = /* id */0", strategy = SelectType.ITERATOR)
+  def selectBooleanIterator(id: Int)(f: Iterator[Boolean] => Seq[Boolean]): Seq[Boolean]
+
+  @Select(sql ="select byte from single_result where id = /* id */0", strategy = SelectType.ITERATOR)
+  def selectByteIterator(id: Int)(f: Iterator[Byte] => Seq[Byte]): Seq[Byte]
+
+  @Select(sql ="select short from single_result where id = /* id */0", strategy = SelectType.ITERATOR)
+  def selectShortIterator(id: Int)(f: Iterator[Short] => Seq[Short]): Seq[Short]
+
+  @Select(sql ="select int from single_result where id = /* id */0", strategy = SelectType.ITERATOR)
+  def selectIntIterator(id: Int)(f: Iterator[Int] => Seq[Int]): Seq[Int]
+
+  @Select(sql ="select long from single_result where id = /* id */0", strategy = SelectType.ITERATOR)
+  def selectLongIterator(id: Int)(f: Iterator[Long] => Seq[Long]): Seq[Long]
+
+  @Select(sql ="select float from single_result where id = /* id */0", strategy = SelectType.ITERATOR)
+  def selectFloatIterator(id: Int)(f: Iterator[Float] => Seq[Float]): Seq[Float]
+
+  @Select(sql ="select double from single_result where id = /* id */0", strategy = SelectType.ITERATOR)
+  def selectDoubleIterator(id: Int)(f: Iterator[Double] => Seq[Double]): Seq[Double]
+
+  @Select(sql ="select string from single_result where id = /* id */0", strategy = SelectType.ITERATOR)
+  def selectStringIterator(id: Int)(f: Iterator[String] => Seq[String]): Seq[String]
+
+  @Select(sql ="select big_decimal from single_result where id = /* id */0", strategy = SelectType.ITERATOR)
+  def selectBigDecimalIterator(id: Int)(f: Iterator[BigDecimal] => Seq[BigDecimal]): Seq[BigDecimal]
+
+  @Select(sql ="select bigint from single_result where id = /* id */0", strategy = SelectType.ITERATOR)
+  def selectBigIntIterator(id: Int)(f: Iterator[BigInt] => Seq[BigInt]): Seq[BigInt]
+
+  @Select(sql ="select local_date from single_result where id = /* id */0", strategy = SelectType.ITERATOR)
+  def selectLocalDateIterator(id: Int)(f: Iterator[LocalDate] => Seq[LocalDate]): Seq[LocalDate]
+
+  @Select(sql ="select localtime from single_result where id = /* id */0", strategy = SelectType.ITERATOR)
+  def selectLocalTimeIterator(id: Int)(f: Iterator[LocalTime] => Seq[LocalTime]): Seq[LocalTime]
+
+  @Select(sql ="select local_date_time from single_result where id = /* id */0", strategy = SelectType.ITERATOR)
+  def selectLocalDateTimeIterator(id: Int)(f: Iterator[LocalDateTime] => Seq[LocalDateTime]): Seq[LocalDateTime]
 }
