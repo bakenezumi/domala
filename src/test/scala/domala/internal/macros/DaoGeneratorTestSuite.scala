@@ -49,7 +49,6 @@ trait PersonDao {
     def impl(implicit config: org.seasar.doma.jdbc.Config): PersonDao = new Internal(config)
     class Internal(config: org.seasar.doma.jdbc.Config) extends org.seasar.doma.internal.jdbc.dao.AbstractDao(config) with PersonDao {
       import scala.collection.JavaConverters._
-      import scala.compat.java8.OptionConverters._
       private val __method0 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "selectById", classOf[Int])
       override def selectById(id: Int): Option[Person] = {
         domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql("PersonDao", "selectById", true, false, "select * from person where id = /*id*/0", domala.internal.macros.DaoParamClass.apply("id", classOf[Int]))
@@ -70,6 +69,7 @@ trait PersonDao {
           __query.setFetchSize(-1)
           __query.setSqlLogType(org.seasar.doma.jdbc.SqlLogType.FORMATTED)
           __query.prepare()
+          import domala.internal.OptionConverters._
           val __result: Option[Person] = getCommandImplementors.createSelectCommand(__method0, __query, domala.internal.macros.reflect.DaoReflectionMacros.getOptionalSingleResultHandler[Person]("PersonDao", "selectById")).execute().asScala
           __query.complete()
           exiting("PersonDao", "selectById", __result)

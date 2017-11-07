@@ -37,7 +37,6 @@ object DaoGenerator {
       class Internal(config: org.seasar.doma.jdbc.Config) extends org.seasar.doma.internal.jdbc.dao.AbstractDao(config)
       with ${Ctor.Ref.Name(trt.name.syntax)} {
         import scala.collection.JavaConverters._
-        import scala.compat.java8.OptionConverters._
         ..${stats.get}
       }
     }

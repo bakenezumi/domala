@@ -392,6 +392,7 @@ object SelectGenerator extends DaoMethodGenerator {
         __query.setSqlLogType(${commonSetting.sqlLogType})
         ..$setResultStream
         __query.prepare()
+        import domala.internal.OptionConverters._
         val __result: ${defDecl.tpe} = $result
         __query.complete()
         exiting(${trtName.syntax}, ${defDecl.name.syntax}, __result)
