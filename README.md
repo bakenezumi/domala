@@ -4,6 +4,7 @@ Domala: Doma for Scala
 Domala is a database access library for Scala. This wraps [Doma2](https://github.com/domaframework/doma).
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.domala/domala_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.github.domala/domala_2.12)
+[![CircleCI](https://circleci.com/gh/bakenezumi/domala.svg?style=svg)](https://circleci.com/gh/bakenezumi/domala)
 
 - Domala uses [scalameta](http://scalameta.org/paradise/) to generate code and validate sql mappings at **compile time**.
 
