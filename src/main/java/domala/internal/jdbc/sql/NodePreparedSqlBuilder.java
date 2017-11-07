@@ -95,9 +95,10 @@ import org.seasar.doma.wrapper.WrapperVisitor;
  * 独自のExpressionEvaluator, ExpressionParser, Scalarsを利用するため
  * org.seasar.doma.internal.jdbc.sql.NodePreparedSqlBuilderをcopy
  * import以外は同一
+ * <p>
+ * Copyright 2004-2010 the Seasar Foundation and the Others.
  *
- * @author bakenezumi
- * 
+ * @see <a href="https://github.com/domaframework/doma/blob/master/src/main/java/org/seasar/doma/internal/jdbc/sql/NodePreparedSqlBuilder.java">original</a>
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class NodePreparedSqlBuilder implements

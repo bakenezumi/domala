@@ -66,10 +66,12 @@ abstract class Config(
   fetchSize: Int = 0,
   queryTimeout: Int = 0,
   batchSize: Int = 0,
-  entityListenerProvider: EntityListenerProvider = ConfigSupport.defaultEntityListenerProvider
+  entityListenerProvider: EntityListenerProvider = ConfigSupport.defaultEntityListenerProvider,
+  sqlNodeRepository: SqlNodeRepository = GreedyCacheSqlFileRepository
 ) extends org.seasar.doma.jdbc.Config {
 
   getSqlFileRepository.clearCache()
+  getSqlNodeRepository.clearCache()
 
   private val ds: LocalTransactionDataSource = dataSource match {
     case ds: LocalTransactionDataSource => ds
@@ -95,6 +97,7 @@ abstract class Config(
   override def getQueryTimeout: Int = queryTimeout
   override def getBatchSize: Int = batchSize
   override def getEntityListenerProvider: EntityListenerProvider = entityListenerProvider
+  def getSqlNodeRepository: SqlNodeRepository = sqlNodeRepository
 }
 
 /**

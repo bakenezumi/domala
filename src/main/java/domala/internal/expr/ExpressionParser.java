@@ -58,9 +58,12 @@ import org.seasar.doma.message.Message;
 
 /**
  * tokenizerを独自のものに変更している
- * コンストラクタパラメータになかったため全コピー..
+ * コンストラクタパラメータになかったため全コピー
  *
- * @author bakenezumi
+ * <p>
+ * Copyright 2004-2010 the Seasar Foundation and the Others.
+ *
+ * @see <a href="https://github.com/domaframework/doma/blob/master/src/main/java/org/seasar/doma/internal/expr/ExpressionParser.java">original</a>
  *
  */
 @SuppressWarnings("WeakerAccess")

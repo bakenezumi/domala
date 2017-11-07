@@ -9,14 +9,17 @@ import org.seasar.doma.internal.jdbc.sql.{SqlContext, SqlParser}
 import org.seasar.doma.internal.jdbc.sql.node.{ExpandNode, PopulateNode}
 import org.seasar.doma.internal.util.AssertionUtil
 import org.seasar.doma.jdbc._
-import org.seasar.doma.jdbc.entity.EntityType
 import org.seasar.doma.jdbc.query.{AbstractQuery, BatchModifyQuery}
 
 abstract class SqlAnnotationBatchModifyQuery[ELEMENT](protected val elementClass: Class[ELEMENT], protected val kind: SqlKind, sqlString: String) extends AbstractQuery with BatchModifyQuery {
 
   protected val EMPTY_STRINGS = new Array[String](0)
   protected var parameterName: String = _
-  protected val sqlNode: SqlNode = new SqlParser(sqlString).parse()
+  protected val sqlNode: SqlNode = this.config match {
+    case domalaConfig: domala.jdbc.Config => domalaConfig.getSqlNodeRepository.get(sqlString)
+    case _ => new SqlParser(sqlString).parse()
+  }
+
   protected var optimisticLockCheckRequired: Boolean = false
   private var executable = false
   private var sqlExecutionSkipCause = SqlExecutionSkipCause.BATCH_TARGET_NONEXISTENT

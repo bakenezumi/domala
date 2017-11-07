@@ -21,8 +21,12 @@ import org.seasar.doma.internal.expr.ExpressionException;
 import org.seasar.doma.message.Message;
 
 /**
- * @author balemezumi
- * 
+ * Function型のパラメータをapplyを付けずに実行できるように拡張.
+ * at `if (Character.isJavaIdentifierStart(c)))` block
+ * <p>
+ * Copyright 2004-2010 the Seasar Foundation and the Others.
+ *
+ * @see <a href="https://github.com/domaframework/doma/blob/master/src/main/java/org/seasar/doma/internal/expr/ExpressionTokenizer.java">original</a>
  */
 @SuppressWarnings("UnnecessaryReturnStatement")
 class ExpressionTokenizer extends org.seasar.doma.internal.expr.ExpressionTokenizer{
