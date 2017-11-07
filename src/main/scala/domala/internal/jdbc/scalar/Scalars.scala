@@ -161,9 +161,9 @@ object Scalars {
         .get(null)
         .asInstanceOf[AbstractHolderDesc[_, DOMAIN]]
     } else return null
-      if (domainType == null) return null
-      val domain = valueClass.cast(value)
-      if (optional) () => domainType.createOptionalScalar(domain)
-      else () => domainType.createScalar(domain)
+    if (domainType == null) return null
+    val domain = valueClass.cast(value)
+    if (optional) () => domainType.createOptionalScalar(domain)
+    else () => domainType.createScalar(domain)
   }
 }

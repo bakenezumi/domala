@@ -16,26 +16,39 @@ import org.seasar.doma.jdbc.tx.{LocalTransactionDataSource, LocalTransactionMana
   *
   * @param dataSource the data source
   * @param dialect the SQL dialect
-  * @param jdbcLogger the JDBC logger
-  * @param requiresNewController  the transaction controller whose transaction attribute is
-  * `REQUIRES_NEW`.
-  * @param classHelper the class helper
-  * @param queryImplementors the factory for [[org.seasar.doma.jdbc.query.Query]] implementation classes
+  * @param jdbcLogger the JDBC logger. defaults to
+  *  [[org.seasar.doma.jdbc.ConfigSupport ConfigSupport#defaultJdbcLogger]]
+  * @param requiresNewController  the transaction controller whose transaction
+  *  attribute is `REQUIRES_NEW`. defaults to
+  *  [[org.seasar.doma.jdbc.ConfigSupport ConfigSupport#defaultRequiresNewController]]
+  * @param classHelper the class helper. defaults to
+  *  [[org.seasar.doma.jdbc.ConfigSupport ConfigSupport#defaultClassHelper]]
+  * @param queryImplementors the factory for [[org.seasar.doma.jdbc.query.Query Query]]
+  *  implementation classes. defaults to
+  *  [[org.seasar.doma.jdbc.ConfigSupport ConfigSupport#defaultQueryImplementors]]
   * @param exceptionSqlLogType the SQL log type that determines the SQL log format in
-  * exceptions
-  * @param unknownColumnHandler the unknown column handler
-  * @param naming the naming convention controller
+  *  exceptions. defaults to [[org.seasar.doma.jdbc.SqlLogType SqlLogType#FORMATTED]]
+  * @param unknownColumnHandler the unknown column handler. defaults to
+  *  [[org.seasar.doma.jdbc.ConfigSupport ConfigSupport#defaultUnknownColumnHandler]]
+  * @param naming the naming convention controller. defaults to
+  *  [[org.seasar.doma.jdbc.Naming Naming#NONE]]
   * @param mapKeyNaming a naming convention controller for keys contained in a
-  * `Map[String, AnyRef]` object.
-  * @param commenter the commenter for SQL strings
-  * @param maxRows the maximum number of rows for a `ResultSet` object
-  * @param fetchSize the fetch size
+  *  `Map[String, AnyRef]` object. defaults to
+  *  [[org.seasar.doma.jdbc.ConfigSupport ConfigSupport#defaultMapKeyNaming]]
+  * @param commenter the commenter for SQL strings. defaults to
+  *  [[org.seasar.doma.jdbc.ConfigSupport ConfigSupport#defaultCommenter]]
+  * @param maxRows the maximum number of rows for a `ResultSet` object.
+  *  defaults to 0
+  * @param fetchSize the fetch size. defaults to 0
   * @param queryTimeout Returns the query timeout limit in seconds.
-  * If the value is greater than or equal to 1, it is passed to
-  * [[java.sql.Statement]].
+  *  If the value is greater than or equal to 1, it is passed to
+  * [[java.sql.Statement Statement]]. defaults to 0
   * @param batchSize the query timeout limit in seconds.
-  * If the value is less than 1, it is regarded as 1
-  * @param  entityListenerProvider the provider for [[org.seasar.doma.jdbc.entity.EntityListener]]
+  *  If the value is less than 1, it is regarded as 1.
+  *  defaults to 0
+  * @param  entityListenerProvider the provider for
+  *  [[org.seasar.doma.jdbc.entity.EntityListener EntityListener]].
+  *  defaults to [[org.seasar.doma.jdbc.ConfigSupport ConfigSupport#defaultCommenter]]
   */
 abstract class Config(
   dataSource: DataSource,

@@ -76,7 +76,7 @@ object SqlModifyQueryGenerator {
         ..$addParameters
         __query.setCallerClassName(${defDecl.trtName.syntax})
         __query.setCallerMethodName(${defDecl.name.syntax})
-        __query.setQueryTimeout(${commonSetting.queryTimeout})
+        __query.setQueryTimeout(${commonSetting.queryTimeOut})
         __query.setSqlLogType(${commonSetting.sqlLogType})
         ..$otherQuerySettings
         __query.prepare()

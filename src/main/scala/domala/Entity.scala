@@ -43,7 +43,7 @@ import scala.meta._
   * @see [[domala.Version Version]]
   */
 //noinspection ScalaUnusedSymbol
-class Entity(listener: Class[_ <: EntityListener[_ <: Any]] = classOf[NullEntityListener[_]], naming: NamingType = NamingType.NONE) extends scala.annotation.StaticAnnotation {
+class Entity(listener: Class[_ <: EntityListener[_ <: Any]] = classOf[NullEntityListener[_]], val naming: NamingType = NamingType.NONE) extends scala.annotation.StaticAnnotation {
   inline def apply(defn: Any): Any = meta {
 
     val q"new $_(..$params)" = this

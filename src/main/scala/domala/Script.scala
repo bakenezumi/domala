@@ -17,9 +17,14 @@ import org.seasar.doma.jdbc.SqlLogType
   * }
   * }}}
   *
-  * The method may throw following exceptions:
-  * @throws org.seasar.doma.jdbc.ScriptException if an exception is thrown while executing a
-  *         script
+  * @param sql a execution SQL.
+  * @param blockDelimiter The SQL block delimiter.
+  *  The SQL block delimiter is a mark that indicates the end of definition of
+  *  such as stored procedures, stored functions and triggers.
+  *  If not specified, the return value of
+  *  [[org.seasar.doma.jdbc.dialect.Dialect Dialect#getScriptBlockDelimiter]] is used.
+  * @throws org.seasar.doma.jdbc.ScriptException if an exception is thrown
+  *  while executing a script
   * @throws org.seasar.doma.jdbc.JdbcException if a JDBC related error occurs
   */
 class Script(

@@ -58,7 +58,31 @@ import org.seasar.doma.{FetchType, MapKeyNamingType}
   * }
   * }}}
   *
-  * The method may throw following exceptions:
+  * @param sql a execution SQL.
+  * @param queryTimeOut The query timeout in seconds.
+  *  If not specified, [[domala.jdbc.Config Config#getQueryTimeout]] is used.
+  * @param fetchSize The fetch size. If not specified,
+  *  [[domala.jdbc.Config Config#getFetchSize]] is used.
+  * @param maxRows The maximum number of rows. If not specified,
+  *  [[domala.jdbc.Config Config#getMaxRows]] is used.
+  * @param strategy The strategy for handling an object that is mapped to
+  *  a result set.
+  * @param fetch The fetch type.
+  * @param ensureResult Whether to ensure that one or more rows are found in
+  *  a result set.
+  *  if `true` and no row is found,
+  *  [[org.seasar.doma.jdbc.NoResultException jdbcNoResultException]] is thrown
+  *  @param ensureResultMapping Whether to ensure that all entity
+  *   properties are mapped to columns of a result set.
+  *   This value is used only if the result set is fetched as an entity or a
+  *   entity list.
+  *   If `true` and there are some unmapped properties,
+  *   [[org.seasar.doma.jdbc.ResultMappingException ResultMappingException]] is thrown from the method.
+  * @param mapKeyNaming The naming convention for keys of `Map[String, Any]`.
+  *  This value is used only if a result set is fetched as `Map[String, Any]` or `Seq[ Map[String, Any] ]`.
+  * @param sqlLog The output format of SQL logs.
+  * @throws org.seasar.doma.DomaNullPointerException if any of the method parameters are
+  * `null`
   * @throws org.seasar.doma.DomaNullPointerException if any of the method parameters are
   * `null`
   * @throws org.seasar.doma.jdbc.UnknownColumnException if a property whose mapped column is
@@ -78,7 +102,7 @@ import org.seasar.doma.{FetchType, MapKeyNamingType}
   */
 class Select(
   sql: String,
-  queryTimeout: Int = -1,
+  queryTimeOut: Int = -1,
   fetchSize: Int = -1,
   maxRows: Int = -1,
   strategy: SelectType = SelectType.RETURN,

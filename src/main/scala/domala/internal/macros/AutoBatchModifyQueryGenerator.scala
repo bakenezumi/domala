@@ -54,7 +54,7 @@ object AutoBatchModifyQueryGenerator {
         __query.setCallerClassName(${defDecl.trtName.syntax})
         __query.setCallerMethodName(${defDecl.name.syntax})
         __query.setBatchSize(${commonSetting.batchSize})
-        __query.setQueryTimeout(${commonSetting.queryTimeout})
+        __query.setQueryTimeout(${commonSetting.queryTimeOut})
         __query.setSqlLogType(${commonSetting.sqlLogType})
         ..$otherQuerySettings
         __query.prepare()

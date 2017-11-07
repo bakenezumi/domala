@@ -63,7 +63,7 @@ object SqlBatchModifyQueryGenerator {
         __query.setParameterName(${paramName.syntax})
         __query.setCallerClassName(${defDecl.trtName.syntax})
         __query.setCallerMethodName(${defDecl.name.syntax})
-        __query.setQueryTimeout(${commonSetting.queryTimeout})
+        __query.setQueryTimeout(${commonSetting.queryTimeOut})
         __query.setBatchSize(${commonSetting.batchSize})
         __query.setSqlLogType(${commonSetting.sqlLogType})
         ..$otherQuerySettings

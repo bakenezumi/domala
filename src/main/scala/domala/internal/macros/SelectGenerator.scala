@@ -386,7 +386,7 @@ object SelectGenerator extends DaoMethodGenerator {
         __query.setResultEnsured(${selectSetting.ensureResult})
         __query.setResultMappingEnsured(${selectSetting.ensureResultMapping})
         __query.setFetchType(${selectSetting.fetch})
-        __query.setQueryTimeout(${commonSetting.queryTimeout})
+        __query.setQueryTimeout(${commonSetting.queryTimeOut})
         __query.setMaxRows(${selectSetting.maxRows})
         __query.setFetchSize(${selectSetting.fetchSize})
         __query.setSqlLogType(${commonSetting.sqlLogType})

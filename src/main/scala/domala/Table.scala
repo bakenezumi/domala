@@ -12,6 +12,13 @@ package domala
   *   ...
   * }
   * }}}
+  *
+  * @param catalog The catalog name.
+  * @param schema The schema name.
+  * @param name The table name. If not specified, the name is
+  *  resolved by [[domala.Entity Entity#naming]].
+  * @param quote Whether quotation marks are used for the catalog name,
+  *  the schema name and the table name.
   */
 class Table(
   catalog: String = "",

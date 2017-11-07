@@ -28,7 +28,7 @@ object DaoMacroHelper {
   def readCommonBatchSetting(args: Seq[Term.Arg], traitName: String, methodName: String): DaoMethodCommonBatchSetting = {
     val commonSetting = readCommonSetting(args, traitName, methodName)
     val batchSize = args.collectFirst{ case arg"batchSize = $x" => x }.getOrElse(arg"-1")
-    DaoMethodCommonBatchSetting(commonSetting.hasSql, commonSetting.sql, commonSetting.queryTimeout, commonSetting.sqlLogType, batchSize)
+    DaoMethodCommonBatchSetting(commonSetting.hasSql, commonSetting.sql, commonSetting.queryTimeOut, commonSetting.sqlLogType, batchSize)
   }
 
   private def hasEntityParameter(defDecl: QueryDefDecl, resultEntityType: Type, paramTypes: Seq[Term.Param]): Boolean = {

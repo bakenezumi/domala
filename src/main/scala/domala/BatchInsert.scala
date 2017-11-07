@@ -20,7 +20,20 @@ import org.seasar.doma.jdbc.SqlLogType
   * }
   * }}}
   *
-  * The method may throw following exceptions:
+  * @param sql a execution SQL. If not specified, SQL is auto generating.
+  * @param queryTimeOut The query timeout in seconds.
+  *  If not specified, [[domala.jdbc.Config Config#getQueryTimeout]] is used.
+  * @param batchSize The batch size.
+  *  If not specified, [[domala.jdbc.Config Config#getBatchSize]] is used.
+  *  This value is used when [[java.sql.PreparedStatement PreparedStatement#executeBatch()]]
+  *  is executed.
+  * @param include The properties whose mapped columns are included in
+  *  SQL INSERT statements.
+  *  Only if `sql` is not specified, this value is used.
+  * @param exclude The properties whose mapped columns are excluded
+  *  from SQL INSERT statements.
+  *  Only if `sql` is not specified, this value is used.
+  * @param sqlLog The output format of SQL logs.
   * @throws org.seasar.doma.DomaNullPointerException if any of the method parameters are
   * `null`
   * @throws org.seasar.doma.jdbc.UniqueConstraintException if an unique constraint is violated
