@@ -206,7 +206,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("select domain itarator") {
+  test("select domain iterator") {
     Required {
       assert(dao.selectNameIterator{ it =>
         val list = it.toList
@@ -436,7 +436,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
             Some(0))
         ))
       assert(options.getCount == -1)
-      options.limit(1).count
+      options.limit(1).count()
       assert(
         dao.selectAllByOption(options) == Seq(
           Person(

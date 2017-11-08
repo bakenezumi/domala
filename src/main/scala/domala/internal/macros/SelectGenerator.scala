@@ -203,7 +203,7 @@ object SelectGenerator extends DaoMethodGenerator {
                 (Term.Name(p.name.syntax), internalTpe, retTpe)
             }
           }
-          .getOrElse( MacrosHelper.abort(Message.DOMALA6010, trtName.syntax, defDecl.name.syntax))
+          .getOrElse( MacrosHelper.abort(Message.DOMALA6011, trtName.syntax, defDecl.name.syntax))
         if (retTpe.toString().trim != defDecl.tpe.toString().trim) {
           MacrosHelper.abort(Message.DOMALA4246,
             defDecl.tpe,

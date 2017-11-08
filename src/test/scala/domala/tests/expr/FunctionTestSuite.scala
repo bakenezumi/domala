@@ -120,11 +120,11 @@ id = /* twice(x) */0
   @Select("""
 select salary from emp where department_id = /* departmentId */0
   """, strategy = SelectType.STREAM)
-  def selectSalaryStreamByDepartmentId[R: scala.reflect.ClassTag](departmentId: ID[Department], mapper: Stream[BigDecimal] => R): R
+  def selectSalaryStreamByDepartmentId[R](departmentId: ID[Department], mapper: Stream[BigDecimal] => R): R
 
   @Select("""
 select salary from emp where department_id = /* departmentId */0
   """, strategy = SelectType.ITERATOR)
-  def selectSalaryIteratorByDepartmentId[R: scala.reflect.ClassTag](departmentId: ID[Department], mapper: Iterator[BigDecimal] => R): R
+  def selectSalaryIteratorByDepartmentId[R](departmentId: ID[Department], mapper: Iterator[BigDecimal] => R): R
 
 }

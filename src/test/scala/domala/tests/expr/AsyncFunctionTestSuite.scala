@@ -14,8 +14,8 @@ class AsyncFunctionTestSuite extends AsyncFunSuite with BeforeAndAfter{
   test("future transaction") {
     Future(Required {
       dao.create()
-      val emps = (1 to 10).map(i => Emp(ID(i), Name("hoge"),  Jpy(i*10), Some(ID(1)))).toList
-      dao.insert(emps)
+      val employees = (1 to 10).map(i => Emp(ID(i), Name("hoge"),  Jpy(i*10), Some(ID(1)))).toList
+      dao.insert(employees)
       dao.selectSalaryIteratorByDepartmentId(ID(1), _.sum)
     }).map(sum => assert(sum == 550))
   }

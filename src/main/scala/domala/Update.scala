@@ -35,7 +35,7 @@ import org.seasar.doma.jdbc.SqlLogType
   * @param suppressOptimisticLockException Whether
   *  [[org.seasar.doma.jdbc.OptimisticLockException OptimisticLockException]] is suppressed.
   *  Only if `sql` is not specified, this element value is used.
-  *  dafaults to `false`.
+  *  defaults to `false`.
   * @param sqlLog The output format of SQL logs.  * @throws org.seasar.doma.DomaNullPointerException if any of the method parameters are
   * `null`
   * @throws org.seasar.doma.jdbc.OptimisticLockException if optimistic locking is enabled and an

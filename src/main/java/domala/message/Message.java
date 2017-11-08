@@ -156,7 +156,7 @@ public enum Message implements MessageResource {
     // 抽象型Entity未実装 DOMA4234
     DOMALA4235("Optionに対する実型引数の型[{0}]はサポートされていません。サポートされている型は次のものです。基本型、ホルダークラス、エンティティクラス。  at {1}.{2}"),
     // パラメータのワイルドカード検査メッセージはDOMALA4209に統合 DOMA4236 - DOMA4242
-    DOMALA4243(org.seasar.doma.message.Message.DOMA4209.getMessagePattern()),
+    DOMALA4243(org.seasar.doma.message.Message.DOMA4243.getMessagePattern()),
     DOMALA4244("Functionの1番目の実型引数の型は、Streamでなければいけません。 at {0}.{1}"),
     DOMALA4245("Streamの実型引数の型[{0}]はサポートされていません。 at {1}.{2}"),
     DOMALA4246(org.seasar.doma.message.Message.DOMA4246.getMessagePattern()),
