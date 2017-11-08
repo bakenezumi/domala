@@ -9,7 +9,7 @@ import org.seasar.doma.jdbc.entity.EntityPropertyType
 import org.seasar.doma.jdbc.entity.NamingType
 import org.seasar.doma.wrapper.Wrapper
 
-class VersionPropertyType[PARENT, ENTITY <: PARENT, BASIC <: Number, HOLDER](
+class VersionPropertyType[PARENT, ENTITY <: PARENT, BASIC <: Number, HOLDER] private (
   entityClass: Class[ENTITY],
   entityPropertyClass: Class[_],
   basicClass: Class[BASIC],
@@ -38,6 +38,30 @@ class VersionPropertyType[PARENT, ENTITY <: PARENT, BASIC <: Number, HOLDER](
 }
 
 object VersionPropertyType {
+  def ofBasic[ENTITY, BASIC <: Number, HOLDER](
+    entityClass: Class[ENTITY],
+    entityPropertyClass: Class[_],
+    basicClass: Class[BASIC],
+    wrapperSupplier: Supplier[Wrapper[BASIC]],
+    name: String,
+    columnName: String,
+    namingType: NamingType,
+    quoteRequired: Boolean
+  ): VersionPropertyType[ENTITY, ENTITY, BASIC, HOLDER] = {
+    new VersionPropertyType[ENTITY, ENTITY, BASIC, HOLDER](
+      entityClass,
+      entityPropertyClass,
+      basicClass,
+      wrapperSupplier,
+      null,
+      null,
+      name,
+      columnName,
+      namingType,
+      quoteRequired
+    )
+  }
+
   def ofHolder[ENTITY, BASIC <: Number, HOLDER](
     entityClass: Class[ENTITY],
     entityPropertyClass: Class[_],

@@ -4,21 +4,23 @@ import java.util.Collections
 
 import domala.internal.expr.ExpressionEvaluator
 import domala.internal.jdbc.sql.NodePreparedSqlBuilder
+import domala.jdbc.SqlNodeRepository
 import org.seasar.doma.internal.expr.Value
-import org.seasar.doma.internal.jdbc.sql.{SqlContext, SqlParser}
+import org.seasar.doma.internal.jdbc.sql.SqlContext
 import org.seasar.doma.internal.jdbc.sql.node.{ExpandNode, PopulateNode}
 import org.seasar.doma.internal.util.AssertionUtil
 import org.seasar.doma.jdbc._
 import org.seasar.doma.jdbc.query.{AbstractQuery, BatchModifyQuery}
 
-abstract class SqlAnnotationBatchModifyQuery[ELEMENT](protected val elementClass: Class[ELEMENT], protected val kind: SqlKind, sqlString: String) extends AbstractQuery with BatchModifyQuery {
+abstract class SqlAnnotationBatchModifyQuery[ELEMENT](
+  protected val elementClass: Class[ELEMENT],
+  protected val kind: SqlKind,
+  sqlString: String)(sqlNodeRepository: SqlNodeRepository)
+  extends AbstractQuery with BatchModifyQuery {
 
   protected val EMPTY_STRINGS = new Array[String](0)
   protected var parameterName: String = _
-  protected val sqlNode: SqlNode = this.config match {
-    case domalaConfig: domala.jdbc.Config => domalaConfig.getSqlNodeRepository.get(sqlString)
-    case _ => new SqlParser(sqlString).parse()
-  }
+  protected val sqlNode: SqlNode = sqlNodeRepository.get(sqlString)
 
   protected var optimisticLockCheckRequired: Boolean = false
   private var executable = false
@@ -59,8 +61,9 @@ abstract class SqlAnnotationBatchModifyQuery[ELEMENT](protected val elementClass
     this.parameterName = parameterName
   }
 
-  import org.seasar.doma.jdbc.PreparedSql
   import java.util
+
+  import org.seasar.doma.jdbc.PreparedSql
 
   def setElements(elements: Iterable[ELEMENT]): Unit = {
     AssertionUtil.assertNotNull(elements, "")

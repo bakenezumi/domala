@@ -3,14 +3,16 @@ package domala.jdbc.query
 import java.lang.reflect.Method
 import java.sql.Statement
 
+import domala.jdbc.SqlNodeRepository
+import org.seasar.doma.internal.jdbc.entity.{AbstractPostInsertContext, AbstractPreInsertContext}
 import org.seasar.doma.internal.util.AssertionUtil.assertNotNull
-import org.seasar.doma.jdbc.{Config, SqlKind}
-import org.seasar.doma.internal.jdbc.entity.AbstractPostInsertContext
-import org.seasar.doma.internal.jdbc.entity.AbstractPreInsertContext
 import org.seasar.doma.jdbc.entity.EntityType
 import org.seasar.doma.jdbc.query.InsertQuery
+import org.seasar.doma.jdbc.{Config, SqlKind}
 
-class SqlAnnotationInsertQuery[E](sqlString: String)(entityAndEntityType: Option[EntityAndEntityType[E]] = None) extends SqlAnnotationModifyQuery(SqlKind.INSERT, sqlString) with InsertQuery {
+class SqlAnnotationInsertQuery[E](sqlString: String)(entityAndEntityType: Option[EntityAndEntityType[E]] = None)
+  (implicit sqlNodeRepository: SqlNodeRepository)
+  extends SqlAnnotationModifyQuery(SqlKind.INSERT, sqlString)(sqlNodeRepository) with InsertQuery {
 
   val entityHandler: Option[EntityHandler] = entityAndEntityType.map(e => new this.EntityHandler(e.name, e.entity, e.entityType))
 

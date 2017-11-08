@@ -2,21 +2,24 @@ package domala.jdbc.query
 
 import java.lang.reflect.Method
 
+import domala.jdbc.SqlNodeRepository
+import org.seasar.doma.internal.jdbc.entity.{AbstractPostDeleteContext, AbstractPreDeleteContext}
 import org.seasar.doma.internal.util.AssertionUtil.{assertEquals, assertNotNull}
-import org.seasar.doma.internal.jdbc.entity.AbstractPostDeleteContext
-import org.seasar.doma.internal.jdbc.entity.AbstractPreDeleteContext
-import org.seasar.doma.jdbc.{Config, SqlKind}
 import org.seasar.doma.jdbc.entity.EntityType
 import org.seasar.doma.jdbc.query.BatchDeleteQuery
+import org.seasar.doma.jdbc.{Config, SqlKind}
 
 class SqlAnnotationBatchDeleteQuery[ELEMENT](
   elementClass: Class[ELEMENT],
   sql: String,
   versionIgnored: Boolean = false,
   optimisticLockExceptionSuppressed: Boolean = false
-)(entityType: Option[_ >: EntityType[ELEMENT]] = None) extends SqlAnnotationBatchModifyQuery(elementClass, SqlKind.BATCH_INSERT, sql) with BatchDeleteQuery {
+)(entityType: Option[_ >: EntityType[ELEMENT]] = None)(implicit sqlNodeRepository: SqlNodeRepository)
+  extends SqlAnnotationBatchModifyQuery(elementClass, SqlKind.BATCH_INSERT, sql)(sqlNodeRepository) with BatchDeleteQuery {
 
   val entityHandler: Option[EntityHandler] = entityType.map(e => new this.EntityHandler(e.asInstanceOf[EntityType[ELEMENT]]))
+
+  setConfig(config)
 
   override def prepare(): Unit = {
     super.prepare()

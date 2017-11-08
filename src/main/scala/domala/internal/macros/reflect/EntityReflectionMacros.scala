@@ -53,14 +53,14 @@ object EntityReflectionMacros {
       nakedClassTag: c.Expr[ClassTag[N]]
   ): c.Expr[Object] = {
     import c.universe._
-    val Literal(Constant(isBasicActual: Boolean)) = isBasic.tree
-    val Literal(Constant(isIdActual: Boolean)) = isId.tree
-    val Literal(Constant(isIdGenerateActual: Boolean)) = isIdGenerate.tree
-    val Literal(Constant(isVersionActual: Boolean)) = isVersion.tree
+    val Literal(Constant(isBasicLiteral: Boolean)) = isBasic.tree
+    val Literal(Constant(isIdLiteral: Boolean)) = isId.tree
+    val Literal(Constant(isIdGenerateActualLiteral: Boolean)) = isIdGenerate.tree
+    val Literal(Constant(isVersionLiteral: Boolean)) = isVersion.tree
     val tpe = weakTypeOf[T]
     val nakedTpe = weakTypeOf[N]
     if (tpe.companion <:< typeOf[EmbeddableType[_]]) {
-      if (isIdActual) {
+      if (isIdLiteral) {
         c.abort(
           c.enclosingPosition,
           Message.DOMALA4302.getMessage(
@@ -68,7 +68,7 @@ object EntityReflectionMacros {
             extractionQuotedString(paramName.toString()))
         )
       }
-      if (isIdGenerateActual) {
+      if (isIdGenerateActualLiteral) {
         c.abort(
           c.enclosingPosition,
           Message.DOMALA4303.getMessage(
@@ -76,7 +76,7 @@ object EntityReflectionMacros {
             extractionQuotedString(paramName.toString()))
         )
       }
-      if (isVersionActual) {
+      if (isVersionLiteral) {
         c.abort(
           c.enclosingPosition,
           Message.DOMALA4304.getMessage(
@@ -99,8 +99,8 @@ object EntityReflectionMacros {
     } else if (nakedTpe.companion <:< typeOf[AbstractHolderDesc[_, _]]) {
       val holder = reify(
         ReflectionUtil.getHolderCompanion(nakedClassTag.splice))
-      if (isIdActual) {
-        if (isIdGenerateActual) {
+      if (isIdLiteral) {
+        if (isIdGenerateActualLiteral) {
           if (!(nakedTpe.companion <:< typeOf[
                 AbstractHolderDesc[_ <: Number, _]])) {
             c.abort(
@@ -141,7 +141,7 @@ object EntityReflectionMacros {
             prop
           }
         }
-      } else if (isVersionActual) {
+      } else if (isVersionLiteral) {
         if (!(nakedTpe.companion <:< typeOf[
               AbstractHolderDesc[_ <: Number, _]])) {
           c.abort(
@@ -182,7 +182,7 @@ object EntityReflectionMacros {
         }
       }
     } else {
-      if (!isBasicActual) {
+      if (!isBasicLiteral) {
         c.abort(
           c.enclosingPosition,
           Message.DOMALA4096.getMessage(
@@ -191,8 +191,8 @@ object EntityReflectionMacros {
             extractionQuotedString(paramName.toString()))
         )
       }
-      if (isIdActual) {
-        if (isIdGenerateActual) {
+      if (isIdLiteral) {
+        if (isIdGenerateActualLiteral) {
           if (!(nakedTpe <:< typeOf[Number])) {
             c.abort(
               c.enclosingPosition,
@@ -202,13 +202,11 @@ object EntityReflectionMacros {
             )
           }
           reify {
-            val prop = new domala.jdbc.entity.GeneratedIdPropertyType(
+            val prop = domala.jdbc.entity.GeneratedIdPropertyType.ofBasic(
               entityClass.splice,
               propertyClassTag.splice.runtimeClass,
               nakedClassTag.splice.runtimeClass.asInstanceOf[Class[Number]],
               wrapperSupplier.splice.asInstanceOf[Supplier[Wrapper[Number]]],
-              null,
-              null,
               paramName.splice,
               columnName.splice,
               namingType.splice,
@@ -221,13 +219,11 @@ object EntityReflectionMacros {
           }
         } else {
           reify {
-            val prop = new domala.jdbc.entity.AssignedIdPropertyType(
+            val prop = AssignedIdPropertyType.ofBasic(
               entityClass.splice,
               propertyClassTag.splice.runtimeClass,
               nakedClassTag.splice.runtimeClass.asInstanceOf[Class[Any]],
               wrapperSupplier.splice.asInstanceOf[Supplier[Wrapper[Any]]],
-              null,
-              null,
               paramName.splice,
               columnName.splice,
               namingType.splice,
@@ -238,7 +234,7 @@ object EntityReflectionMacros {
             prop
           }
         }
-      } else if (isVersionActual) {
+      } else if (isVersionLiteral) {
         if (!(nakedTpe <:< typeOf[Number])) {
           c.abort(
             c.enclosingPosition,
@@ -248,13 +244,11 @@ object EntityReflectionMacros {
           )
         }
         reify {
-          val prop = new VersionPropertyType(
+          val prop = VersionPropertyType.ofBasic(
             entityClass.splice,
             propertyClassTag.splice.runtimeClass,
             nakedClassTag.splice.runtimeClass.asInstanceOf[Class[Number]],
             wrapperSupplier.splice.asInstanceOf[Supplier[Wrapper[Number]]],
-            null,
-            null,
             paramName.splice,
             columnName.splice,
             namingType.splice,
@@ -265,13 +259,11 @@ object EntityReflectionMacros {
         }
       } else {
         reify {
-          val prop = new DefaultPropertyType(
+          val prop = DefaultPropertyType.ofBasic(
             entityClass.splice,
             propertyClassTag.splice.runtimeClass,
             nakedClassTag.splice.runtimeClass.asInstanceOf[Class[Any]],
             wrapperSupplier.splice.asInstanceOf[Supplier[Wrapper[Any]]],
-            null,
-            null,
             paramName.splice,
             columnName.splice,
             namingType.splice,

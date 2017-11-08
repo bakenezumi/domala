@@ -2,6 +2,7 @@ package domala.jdbc.query
 
 import java.lang.reflect.Method
 
+import domala.jdbc.SqlNodeRepository
 import org.seasar.doma.internal.jdbc.entity.{AbstractPostUpdateContext, AbstractPreUpdateContext}
 import org.seasar.doma.internal.jdbc.sql.SqlContext
 import org.seasar.doma.internal.jdbc.sql.node.PopulateNode
@@ -17,8 +18,9 @@ class SqlAnnotationUpdateQuery[E](
   versionIgnored: Boolean = false,
   optimisticLockExceptionSuppressed: Boolean = false,
   includedPropertyNames: Array[String] = new Array[String](0),
-  excludedPropertyNames: Array[String] = new Array[String](0))(
-  entityAndEntityType: Option[EntityAndEntityType[E]] = None) extends SqlAnnotationModifyQuery(SqlKind.UPDATE, sqlString) with UpdateQuery {
+  excludedPropertyNames: Array[String] = new Array[String](0)
+)(entityAndEntityType: Option[EntityAndEntityType[E]] = None)(implicit sqlNodeRepository: SqlNodeRepository)
+  extends SqlAnnotationModifyQuery(SqlKind.UPDATE, sqlString)(sqlNodeRepository) with UpdateQuery {
 
   //noinspection VarCouldBeVal
   var targetPropertyTypes: java.util.List[EntityPropertyType[E, _]] = _

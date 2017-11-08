@@ -15,9 +15,16 @@ object DeleteGenerator extends DaoMethodGenerator {
     val defDecl = QueryDefDecl.of(trtName, _def)
     val commonSetting =
       DaoMacroHelper.readCommonSetting(args, trtName.syntax, _def.name.syntax)
+    val ignoreVersion = args
+      .collectFirst { case arg"ignoreVersion = $x" => x }
+      .getOrElse(q"false")
+    val suppressOptimisticLockException = args
+      .collectFirst { case arg"suppressOptimisticLockException = $x" => x }
+      .getOrElse(q"false")
+
     if (commonSetting.hasSql) {
       val query: Term => Term.New = (entityAndEntityType) =>
-        q"new domala.jdbc.query.SqlAnnotationDeleteQuery(${commonSetting.sql})($entityAndEntityType)"
+        q"new domala.jdbc.query.SqlAnnotationDeleteQuery(${commonSetting.sql}, $ignoreVersion, $suppressOptimisticLockException)($entityAndEntityType)"
       val otherQuerySettings = Seq[Stat]()
       val command =
         q"getCommandImplementors.createDeleteCommand($internalMethodName, __query)"
@@ -30,12 +37,6 @@ object DeleteGenerator extends DaoMethodGenerator {
         command,
         q"false")
     } else {
-      val ignoreVersion = args
-        .collectFirst { case arg"ignoreVersion = $x" => x }
-        .getOrElse(q"false")
-      val suppressOptimisticLockException = args
-        .collectFirst { case arg"suppressOptimisticLockException = $x" => x }
-        .getOrElse(q"false")
       val (paramName, paramTpe) =
         AutoModifyQueryGenerator.extractParameter(defDecl)
       val query =

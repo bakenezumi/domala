@@ -49,7 +49,7 @@ object AutoBatchModifyQueryGenerator {
         }
         val __query = $query
         __query.setMethod($internalMethodName)
-        __query.setConfig(__config)
+        __query.setConfig(___config)
         __query.setEntities($paramName.asJava)
         __query.setCallerClassName(${defDecl.trtName.syntax})
         __query.setCallerMethodName(${defDecl.name.syntax})

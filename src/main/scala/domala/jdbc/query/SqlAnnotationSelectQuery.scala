@@ -1,15 +1,12 @@
 package domala.jdbc.query
 
-import org.seasar.doma.internal.jdbc.sql.SqlParser
+import domala.jdbc.SqlNodeRepository
 
 import scala.collection.JavaConverters._
 
-class SqlAnnotationSelectQuery(sql: String) extends SqlSelectQuery {
-  setSqlNode(
-    this.config match {
-      case domalaConfig: domala.jdbc.Config => domalaConfig.getSqlNodeRepository.get(sql)
-      case _ => new SqlParser(sql).parse()
-    })
+class SqlAnnotationSelectQuery(sql: String)(implicit sqlNodeRepository: SqlNodeRepository) extends SqlSelectQuery {
+
+  setSqlNode(sqlNodeRepository.get(sql))
 
   override def addParameter(name: String, `type`: Class[_], value: Any): Unit = {
     value match {

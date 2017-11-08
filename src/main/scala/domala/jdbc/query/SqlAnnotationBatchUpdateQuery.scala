@@ -3,21 +3,22 @@ package domala.jdbc.query
 import java.lang.reflect.Method
 import java.sql.Statement
 
-import org.seasar.doma.internal.util.AssertionUtil.{assertEquals, assertNotNull}
-import org.seasar.doma.internal.jdbc.entity.AbstractPostUpdateContext
-import org.seasar.doma.internal.jdbc.entity.AbstractPreUpdateContext
+import domala.jdbc.SqlNodeRepository
+import org.seasar.doma.internal.jdbc.entity.{AbstractPostUpdateContext, AbstractPreUpdateContext}
 import org.seasar.doma.internal.jdbc.sql.SqlContext
 import org.seasar.doma.internal.jdbc.sql.node.PopulateNode
-import org.seasar.doma.jdbc.{Config, SqlKind}
+import org.seasar.doma.internal.util.AssertionUtil.{assertEquals, assertNotNull}
 import org.seasar.doma.jdbc.entity.EntityType
 import org.seasar.doma.jdbc.query.BatchUpdateQuery
+import org.seasar.doma.jdbc.{Config, SqlKind}
 
 class SqlAnnotationBatchUpdateQuery[ELEMENT](
   elementClass: Class[ELEMENT],
   sql: String,
   versionIgnored: Boolean = false,
   optimisticLockExceptionSuppressed: Boolean = false
-)(entityType: Option[_ >: EntityType[ELEMENT]] = None) extends SqlAnnotationBatchModifyQuery(elementClass, SqlKind.BATCH_INSERT, sql) with BatchUpdateQuery {
+)(entityType: Option[_ >: EntityType[ELEMENT]] = None)(implicit sqlNodeRepository: SqlNodeRepository)
+  extends SqlAnnotationBatchModifyQuery(elementClass, SqlKind.BATCH_INSERT, sql)(sqlNodeRepository) with BatchUpdateQuery {
 
   val entityHandler: Option[EntityHandler] = entityType.map(e => new this.EntityHandler(e.asInstanceOf[EntityType[ELEMENT]]))
 

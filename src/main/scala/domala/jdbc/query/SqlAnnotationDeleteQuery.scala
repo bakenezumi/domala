@@ -2,18 +2,19 @@ package domala.jdbc.query
 
 import java.lang.reflect.Method
 
+import domala.jdbc.SqlNodeRepository
 import org.seasar.doma.internal.jdbc.entity.{AbstractPostDeleteContext, AbstractPreDeleteContext}
 import org.seasar.doma.internal.util.AssertionUtil.assertNotNull
-import org.seasar.doma.jdbc.{Config, SqlKind}
 import org.seasar.doma.jdbc.entity.EntityType
 import org.seasar.doma.jdbc.query.DeleteQuery
+import org.seasar.doma.jdbc.{Config, SqlKind}
 
 class SqlAnnotationDeleteQuery[E](
   sqlString: String,
-  nullExcluded: Boolean = false,
   versionIgnored: Boolean = false,
-  optimisticLockExceptionSuppressed: Boolean = false)(
-  entityAndEntityType: Option[EntityAndEntityType[E]] = None) extends SqlAnnotationModifyQuery(SqlKind.UPDATE, sqlString) with DeleteQuery {
+  optimisticLockExceptionSuppressed: Boolean = false
+)(entityAndEntityType: Option[EntityAndEntityType[E]] = None)(implicit sqlNodeRepository: SqlNodeRepository)
+  extends SqlAnnotationModifyQuery(SqlKind.UPDATE, sqlString)(sqlNodeRepository) with DeleteQuery {
 
   val entityHandler: Option[EntityHandler] = entityAndEntityType.map(e => new this.EntityHandler(e.name, e.entity, e.entityType))
 

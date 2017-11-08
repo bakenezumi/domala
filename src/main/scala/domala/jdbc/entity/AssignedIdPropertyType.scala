@@ -9,7 +9,7 @@ import org.seasar.doma.jdbc.entity.EntityPropertyType
 import org.seasar.doma.jdbc.entity.NamingType
 import org.seasar.doma.wrapper.Wrapper
 
-class AssignedIdPropertyType[PARENT, ENTITY <: PARENT, BASIC, HOLDER] (
+class AssignedIdPropertyType[PARENT, ENTITY <: PARENT, BASIC, HOLDER] private (
   entityClass: Class[ENTITY],
   entityPropertyClass: Class[_],
   basicClass: Class[BASIC],
@@ -37,10 +37,11 @@ class AssignedIdPropertyType[PARENT, ENTITY <: PARENT, BASIC, HOLDER] (
 }
 
 object AssignedIdPropertyType {
-  def ofHolder[ENTITY, BASIC, HOLDER](
+  def ofBasic[ENTITY, BASIC, HOLDER](
     entityClass: Class[ENTITY],
     entityPropertyClass: Class[_],
-    domainType: AbstractHolderDesc[BASIC, HOLDER],
+    basicClass: Class[BASIC],
+    wrapperSupplier: Supplier[Wrapper[BASIC]],
     name: String,
     columnName: String,
     namingType: NamingType,
@@ -49,10 +50,32 @@ object AssignedIdPropertyType {
     new AssignedIdPropertyType[ENTITY, ENTITY, BASIC, HOLDER](
       entityClass,
       entityPropertyClass,
-      domainType.getBasicClass.asInstanceOf[Class[BASIC]],
-      domainType.wrapper,
+      basicClass,
+      wrapperSupplier,
       null,
-      domainType,
+      null,
+      name,
+      columnName,
+      namingType,
+      quoteRequired)
+  }
+
+  def ofHolder[ENTITY, BASIC, HOLDER](
+    entityClass: Class[ENTITY],
+    entityPropertyClass: Class[_],
+    holderType: AbstractHolderDesc[BASIC, HOLDER],
+    name: String,
+    columnName: String,
+    namingType: NamingType,
+    quoteRequired: Boolean
+  ): AssignedIdPropertyType[ENTITY, ENTITY, BASIC, HOLDER] = {
+    new AssignedIdPropertyType[ENTITY, ENTITY, BASIC, HOLDER](
+      entityClass,
+      entityPropertyClass,
+      holderType.getBasicClass.asInstanceOf[Class[BASIC]],
+      holderType.wrapper,
+      null,
+      holderType,
       name,
       columnName,
       namingType,

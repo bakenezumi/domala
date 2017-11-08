@@ -46,9 +46,10 @@ trait PersonDao {
   }
   object PersonDao {
     ()
-    def impl(implicit config: org.seasar.doma.jdbc.Config): PersonDao = new Internal(config)
-    class Internal(config: org.seasar.doma.jdbc.Config) extends org.seasar.doma.internal.jdbc.dao.AbstractDao(config) with PersonDao {
+    def impl(implicit config: domala.jdbc.Config): PersonDao = new Internal(config)
+    class Internal(___config: domala.jdbc.Config) extends org.seasar.doma.internal.jdbc.dao.AbstractDao(___config) with PersonDao {
       import scala.collection.JavaConverters._
+      implicit val __sqlNodeRepository: domala.jdbc.SqlNodeRepository = ___config.getSqlNodeRepository
       private val __method0 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "selectById", classOf[Int])
       override def selectById(id: Int): Option[Person] = {
         domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql("PersonDao", "selectById", true, false, "select * from person where id = /*id*/0", domala.internal.macros.DaoParamClass.apply("id", classOf[Int]))
@@ -56,7 +57,7 @@ trait PersonDao {
         try {
           val __query = new domala.jdbc.query.SqlAnnotationSelectQuery("select * from person where id = /*id*/0")
           __query.setMethod(__method0)
-          __query.setConfig(__config)
+          __query.setConfig(___config)
           domala.internal.macros.reflect.DaoReflectionMacros.setEntityType[Person](__query)
           __query.addParameter("id", classOf[Int], id)
           __query.setCallerClassName("PersonDao")
@@ -90,7 +91,7 @@ trait PersonDao {
           }
           val __query = getQueryImplementors.createAutoInsertQuery(__method1, Person)
           __query.setMethod(__method1)
-          __query.setConfig(__config)
+          __query.setConfig(___config)
           __query.setEntity(person)
           __query.setCallerClassName("PersonDao")
           __query.setCallerMethodName("insert")
@@ -122,7 +123,7 @@ trait PersonDao {
           }
           val __query = getQueryImplementors.createAutoUpdateQuery(__method2, Person)
           __query.setMethod(__method2)
-          __query.setConfig(__config)
+          __query.setConfig(___config)
           __query.setEntity(person)
           __query.setCallerClassName("PersonDao")
           __query.setCallerMethodName("update")
@@ -157,7 +158,7 @@ trait PersonDao {
           }
           val __query = getQueryImplementors.createAutoDeleteQuery(__method3, Person)
           __query.setMethod(__method3)
-          __query.setConfig(__config)
+          __query.setConfig(___config)
           __query.setEntity(person)
           __query.setCallerClassName("PersonDao")
           __query.setCallerMethodName("delete")
@@ -188,7 +189,7 @@ trait PersonDao {
           }
           val __query = getQueryImplementors.createAutoBatchInsertQuery(__method4, Person)
           __query.setMethod(__method4)
-          __query.setConfig(__config)
+          __query.setConfig(___config)
           __query.setEntities(persons.asJava)
           __query.setCallerClassName("PersonDao")
           __query.setCallerMethodName("batchInsert")
@@ -220,7 +221,7 @@ trait PersonDao {
           }
           val __query = getQueryImplementors.createAutoBatchUpdateQuery(__method5, Person)
           __query.setMethod(__method5)
-          __query.setConfig(__config)
+          __query.setConfig(___config)
           __query.setEntities(persons.asJava)
           __query.setCallerClassName("PersonDao")
           __query.setCallerMethodName("batchUpdate")
@@ -254,7 +255,7 @@ trait PersonDao {
           }
           val __query = getQueryImplementors.createAutoBatchDeleteQuery(__method6, Person)
           __query.setMethod(__method6)
-          __query.setConfig(__config)
+          __query.setConfig(___config)
           __query.setEntities(persons.asJava)
           __query.setCallerClassName("PersonDao")
           __query.setCallerMethodName("batchDelete")

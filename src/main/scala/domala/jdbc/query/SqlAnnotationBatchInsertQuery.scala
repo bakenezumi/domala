@@ -3,14 +3,18 @@ package domala.jdbc.query
 import java.lang.reflect.Method
 import java.sql.Statement
 
+import domala.jdbc.SqlNodeRepository
+import org.seasar.doma.internal.jdbc.entity.{AbstractPostInsertContext, AbstractPreInsertContext}
 import org.seasar.doma.internal.util.AssertionUtil.{assertEquals, assertNotNull}
-import org.seasar.doma.internal.jdbc.entity.AbstractPostInsertContext
-import org.seasar.doma.internal.jdbc.entity.AbstractPreInsertContext
-import org.seasar.doma.jdbc.{Config, SqlKind}
 import org.seasar.doma.jdbc.entity.EntityType
 import org.seasar.doma.jdbc.query.BatchInsertQuery
+import org.seasar.doma.jdbc.{Config, SqlKind}
 
-class SqlAnnotationBatchInsertQuery[ELEMENT](elementClass: Class[ELEMENT], sql: String)(entityType: Option[_ >: EntityType[ELEMENT]] = None) extends SqlAnnotationBatchModifyQuery(elementClass, SqlKind.BATCH_INSERT, sql) with BatchInsertQuery{
+class SqlAnnotationBatchInsertQuery[ELEMENT](
+  elementClass: Class[ELEMENT],
+  sql: String,
+)(entityType: Option[_ >: EntityType[ELEMENT]] = None)(implicit sqlNodeRepository: SqlNodeRepository)
+  extends SqlAnnotationBatchModifyQuery(elementClass, SqlKind.BATCH_INSERT, sql)(sqlNodeRepository) with BatchInsertQuery{
 
   val entityHandler: Option[EntityHandler] = entityType.map(e => new this.EntityHandler(e.asInstanceOf[EntityType[ELEMENT]]))
 

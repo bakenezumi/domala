@@ -10,7 +10,7 @@ import org.seasar.doma.jdbc.entity.NamingType
 import org.seasar.doma.jdbc.id.IdGenerator
 import org.seasar.doma.wrapper.Wrapper
 
-class GeneratedIdPropertyType[PARENT, ENTITY <: PARENT, BASIC <: Number, HOLDER] (
+class GeneratedIdPropertyType[PARENT, ENTITY <: PARENT, BASIC <: Number, HOLDER] private (
   entityClass: Class[ENTITY],
   entityPropertyClass: Class[_],
   basicClass: Class[BASIC],
@@ -40,6 +40,30 @@ class GeneratedIdPropertyType[PARENT, ENTITY <: PARENT, BASIC <: Number, HOLDER]
 }
 
 object GeneratedIdPropertyType {
+  def ofBasic[ENTITY, BASIC <: Number, HOLDER] (
+    entityClass: Class[ENTITY],
+    entityPropertyClass: Class[_],
+    basicClass: Class[BASIC],
+    wrapperSupplier: Supplier[Wrapper[BASIC]],
+    name: String,
+    columnName: String,
+    namingType: NamingType,
+    quoteRequired: Boolean,
+    idGenerator: IdGenerator
+  ) : GeneratedIdPropertyType[ENTITY, ENTITY, BASIC, HOLDER] =
+    new GeneratedIdPropertyType[ENTITY, ENTITY, BASIC, HOLDER](
+    entityClass,
+    entityPropertyClass,
+    basicClass,
+    wrapperSupplier,
+    null,
+    null,
+    name,
+    columnName,
+    namingType,
+    quoteRequired,
+    idGenerator)
+
   def ofHolder[ENTITY, BASIC <: Number, HOLDER](
     entityClass: Class[ENTITY],
     entityPropertyClass: Class[_],

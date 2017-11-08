@@ -22,7 +22,7 @@ public class SqlSelectQuery extends org.seasar.doma.jdbc.query.SqlSelectQuery {
 
     @Override
     protected void prepareSql() {
-        SqlNode transformedSqlNode = this.config.getDialect().transformSelectSqlNode(this.sqlNode, this.options);
+        SqlNode transformedSqlNode = getConfig().getDialect().transformSelectSqlNode(this.sqlNode, this.options);
         buildSqlDomala((evaluator, expander) -> {
             NodePreparedSqlBuilder sqlBuilder = new NodePreparedSqlBuilder(this.config, SqlKind.SELECT, evaluator, this.sqlLogType, expander);
             return sqlBuilder.build(transformedSqlNode, this::comment);

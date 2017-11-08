@@ -32,11 +32,12 @@ object DaoGenerator {
     q"""
     object ${Term.Name(trt.name.syntax)} {
       $defaultImpl
-      def impl(implicit config: org.seasar.doma.jdbc.Config): ${Type.Name(trt.name.syntax)} = new Internal(config)
+      def impl(implicit config: domala.jdbc.Config): ${Type.Name(trt.name.syntax)} = new Internal(config)
 
-      class Internal(config: org.seasar.doma.jdbc.Config) extends org.seasar.doma.internal.jdbc.dao.AbstractDao(config)
+      class Internal(___config: domala.jdbc.Config) extends org.seasar.doma.internal.jdbc.dao.AbstractDao(___config)
       with ${Ctor.Ref.Name(trt.name.syntax)} {
         import scala.collection.JavaConverters._
+        implicit val __sqlNodeRepository: domala.jdbc.SqlNodeRepository = ___config.getSqlNodeRepository
         ..${stats.get}
       }
     }
