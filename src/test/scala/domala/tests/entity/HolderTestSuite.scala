@@ -28,12 +28,12 @@ class HolderTestSuite extends FunSuite with BeforeAndAfter {
       dao.insert(newEntity)
       val selected1 = dao.selectAll
       assert(selected1 == Seq(
-        Holders(Some(Id(1)), Name("AAA"), Some(Name("BBB")), Some(Weight(1)), Weight(1000), Holders.Inner("DDD"), EnumA, Some(Version(1)))
+        Holders(Some(ID(1)), Name("AAA"), Some(Name("BBB")), Some(Weight(1)), Weight(1000), Holders.Inner("DDD"), EnumA, Some(Version(1)))
       ))
       dao.update(selected1.head.copy(name = Name("CCC"), weight2 = Weight(1002), nested = Holders.Inner("EEE"), enum = EnumB))
       val selected2 = dao.selectAll
       assert(selected2 == Seq(
-        Holders(Some(Id(1)), Name("CCC"), Some(Name("BBB")), Some(Weight(1)), Weight(1002), Holders.Inner("EEE"), EnumB, Some(Version(2)))
+        Holders(Some(ID(1)), Name("CCC"), Some(Name("BBB")), Some(Weight(1)), Weight(1002), Holders.Inner("EEE"), EnumB, Some(Version(2)))
       ))
     }
   }
@@ -62,13 +62,35 @@ class HolderTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  test("Numeric holder calculate") {
+    Required {
+      val newEntities = Seq(
+        Holders(id = None, name = Name("AAA"), optionName = Some(Name("BBB")), weight1 = Some(Weight(1)), weight2 = Weight(1000), nested = Holders.Inner("DDD"), enum = EnumA, version = None),
+        Holders(id = None, name = Name("EEE"), optionName = Some(Name("FFF")), weight1 = Some(Weight(2)), weight2 = Weight(2000), nested = Holders.Inner("GGG"), enum = EnumA, version = None),
+        Holders(id = None, name = Name("HHH"), optionName = Some(Name("III")), weight1 = Some(Weight(3)), weight2 = Weight(3000), nested = Holders.Inner("JJJ"), enum = EnumA, version = None)
+      )
+      dao.insertList(newEntities)
+      val selected = dao.selectAll
+      assert(selected.map(_.weight2).sum == Weight(6000))
+
+      // use Ops
+      import Numeric.Implicits._
+      val sum: Option[Weight[Kg]] = for {
+        x <- selected(1).weight1
+        y <- selected(2).weight1
+      } yield x + y
+
+      assert(sum.contains(Weight(5)))
+    }
+  }
+
 }
 
 @Entity
 case class Holders(
   @domala.Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  id : Option[Id] = None,
+  id : Option[ID] = None,
   name: Name,
   optionName: Option[Name],
   weight1: Option[Weight[Kg]],
@@ -85,7 +107,7 @@ object Holders {
 }
 
 @Holder
-case class Id(value: Int)
+case class ID(value: Int)
 
 @Holder
 case class Name(value: String)

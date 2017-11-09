@@ -18,19 +18,23 @@ object TypeHelper {
       case t"Optional[$elementTpe]" => DomaType.Option(convertToDomaType(elementTpe), elementTpe)
       case t"BigDecimal" => DomaType.Basic(
         toType(tpe), toType(tpe),
-        q"() => new domala.wrapper.BigDecimalWrapper(): org.seasar.doma.wrapper.Wrapper[BigDecimal]"
+        q"() => new domala.wrapper.BigDecimalWrapper(): org.seasar.doma.wrapper.Wrapper[BigDecimal]",
+        isNumeric = true
       )
       case t"BigInt" => DomaType.Basic(
         toType(tpe), toType(tpe),
-        q"() => new domala.wrapper.BigIntWrapper(): org.seasar.doma.wrapper.Wrapper[BigInt]"
+        q"() => new domala.wrapper.BigIntWrapper(): org.seasar.doma.wrapper.Wrapper[BigInt]",
+        isNumeric = true
       )
       case t"Int" | t"Integer" | t"OptionalInt" => DomaType.Basic(
         toType(tpe), t"Integer",
-        q"() => new org.seasar.doma.wrapper.IntegerWrapper(): org.seasar.doma.wrapper.Wrapper[Integer]"
+        q"() => new org.seasar.doma.wrapper.IntegerWrapper(): org.seasar.doma.wrapper.Wrapper[Integer]",
+        isNumeric = true
       )
       case t"Any" | t"AnyRef" | t"Object" => DomaType.Basic(
         toType(tpe), t"Object",
-        q"() => new org.seasar.doma.wrapper.ObjectWrapper(): org.seasar.doma.wrapper.Wrapper[Object]"
+        q"() => new org.seasar.doma.wrapper.ObjectWrapper(): org.seasar.doma.wrapper.Wrapper[Object]",
+        isNumeric = true
       )
       case t"Array[Byte]" => DomaType.Basic(
         toType(tpe), t"Array[Byte]",
@@ -38,11 +42,13 @@ object TypeHelper {
       )
       case t"Long" | t"OptionalLong" => DomaType.Basic(
         toType(tpe), t"java.lang.Long",
-        q"() => new org.seasar.doma.wrapper.LongWrapper(): org.seasar.doma.wrapper.Wrapper[java.lang.Long]"
+        q"() => new org.seasar.doma.wrapper.LongWrapper(): org.seasar.doma.wrapper.Wrapper[java.lang.Long]",
+        isNumeric = true
       )
       case t"Double" | t"OptionalDouble" => DomaType.Basic(
         toType(tpe), t"java.lang.Double",
-        q"() => new org.seasar.doma.wrapper.DoubleWrapper(): org.seasar.doma.wrapper.Wrapper[java.lang.Double]"
+        q"() => new org.seasar.doma.wrapper.DoubleWrapper(): org.seasar.doma.wrapper.Wrapper[java.lang.Double]",
+        isNumeric = true
       )
       case t"Boolean" => DomaType.Basic(
         toType(tpe), t"java.lang.Boolean",
@@ -58,7 +64,8 @@ object TypeHelper {
       )
       case t"Float" => DomaType.Basic(
         toType(tpe), t"java.lang.Float",
-        q"() => new org.seasar.doma.wrapper.FloatWrapper(): org.seasar.doma.wrapper.Wrapper[java.lang.Float]"
+        q"() => new org.seasar.doma.wrapper.FloatWrapper(): org.seasar.doma.wrapper.Wrapper[java.lang.Float]",
+        isNumeric = true
       )
       case t"String" => DomaType.Basic(
         toType(tpe), toType(tpe),
@@ -66,11 +73,13 @@ object TypeHelper {
       )
       case t"java.math.BigDecimal" => DomaType.Basic(
         toType(tpe), toType(tpe),
-        q"() => new org.seasar.doma.wrapper.BigDecimalWrapper(): org.seasar.doma.wrapper.Wrapper[java.math.BigDecimal]"
+        q"() => new org.seasar.doma.wrapper.BigDecimalWrapper(): org.seasar.doma.wrapper.Wrapper[java.math.BigDecimal]",
+        isNumeric = true
       )
       case t"BigInteger" | t"java.math.BigInteger" => DomaType.Basic(
         toType(tpe), toType(tpe),
-        q"() => new org.seasar.doma.wrapper.BigIntegerWrapper(): org.seasar.doma.wrapper.Wrapper[java.math.BigInteger]"
+        q"() => new org.seasar.doma.wrapper.BigIntegerWrapper(): org.seasar.doma.wrapper.Wrapper[java.math.BigInteger]",
+        isNumeric = true
       )
       case t"LocalDate" | t"java.time.LocalDate" => DomaType.Basic(
         toType(tpe), toType(tpe),

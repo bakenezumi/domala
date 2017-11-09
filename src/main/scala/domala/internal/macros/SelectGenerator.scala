@@ -165,7 +165,7 @@ object SelectGenerator extends DaoMethodGenerator {
               q"$command.execute()",
               Nil
             )
-          case DomaType.Basic(_, convertedType, wrapperSupplier) =>
+          case DomaType.Basic(_, convertedType, wrapperSupplier, _) =>
             val command = commandTemplate(
               q"""new org.seasar.doma.internal.jdbc.command.BasicStreamHandler(($wrapperSupplier),
               new java.util.function.Function[java.util.stream.Stream[$convertedType], $retTpe](){
@@ -222,7 +222,7 @@ object SelectGenerator extends DaoMethodGenerator {
               q"$command.execute()",
               Nil
             )
-          case DomaType.Basic(_, convertedType, wrapperSupplier) =>
+          case DomaType.Basic(_, convertedType, wrapperSupplier, _) =>
             val command = commandTemplate(
               q"""new org.seasar.doma.internal.jdbc.command.BasicStreamHandler(($wrapperSupplier),
             new java.util.function.Function[java.util.stream.Stream[$convertedType], $retTpe](){
@@ -253,7 +253,7 @@ object SelectGenerator extends DaoMethodGenerator {
               q"$command.execute().asScala.map(x => x.asScala.toMap)",
               Nil
             )
-          case DomaType.Option(DomaType.Basic(_, _, wrapperSupplier), _) =>
+          case DomaType.Option(DomaType.Basic(_, _, wrapperSupplier, _), _) =>
             val command = commandTemplate(
               q"new org.seasar.doma.internal.jdbc.command.OptionalBasicSingleResultHandler($wrapperSupplier, false)")
             (
@@ -281,7 +281,7 @@ object SelectGenerator extends DaoMethodGenerator {
               Nil
             )
           case DomaType.Seq(
-              DomaType.Basic(originalType, convertedType, wrapperSupplier),
+              DomaType.Basic(originalType, convertedType, wrapperSupplier, _),
               _) =>
             val command = commandTemplate(
               q"""new org.seasar.doma.internal.jdbc.command.BasicResultListHandler(($wrapperSupplier): java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$convertedType]])""")
@@ -307,7 +307,7 @@ object SelectGenerator extends DaoMethodGenerator {
               Nil
             )
 
-          case DomaType.Basic(_, _, wrapperSupplier) =>
+          case DomaType.Basic(_, _, wrapperSupplier, _) =>
             val command = commandTemplate(
               q"new org.seasar.doma.internal.jdbc.command.BasicSingleResultHandler($wrapperSupplier, false)")
             (

@@ -48,7 +48,7 @@ class FunctionTestSuite extends FunSuite with BeforeAndAfter {
   test("type parameter stream") {
     Required {
       assert(
-        dao.selectSalaryStreamByDepartmentId(ID(1), _.sum ) == 40
+        dao.selectSalaryStreamByDepartmentId(ID(1), _.sum) == 40
       )
       assert(
         dao.selectSalaryStreamByDepartmentId(ID(2), _.reduce((x, y) => (x + y) / 2)) == 30.0f
@@ -59,7 +59,7 @@ class FunctionTestSuite extends FunSuite with BeforeAndAfter {
   test("type parameter iterator") {
     Required {
       assert(
-        dao.selectSalaryIteratorByDepartmentId(ID(1), _.sum ) == 40
+        dao.selectSalaryIteratorByDepartmentId(ID(1), _.sum) == 40
       )
       assert(
         dao.selectSalaryIteratorByDepartmentId(ID(2), _.reduce((x, y) => (x + y) / 2)) == 30.0f
@@ -76,33 +76,8 @@ class FunctionTestSuite extends FunSuite with BeforeAndAfter {
   }
 }
 
-
 @Holder
 case class Jpy(value: Int)
-object Jpy {
-
-  implicit val __num: Numeric[Jpy] = new Numeric[Jpy] {
-    override def plus(x: Jpy, y: Jpy): Jpy = Jpy(x.value + y.value)
-
-    override def minus(x: Jpy, y: Jpy): Jpy = Jpy(x.value - y.value)
-
-    override def times(x: Jpy, y: Jpy): Jpy = Jpy(x.value * y.value)
-
-    override def negate(x: Jpy): Jpy = Jpy(-x.value)
-
-    override def fromInt(x: Int): Jpy = Jpy(x)
-
-    override def toInt(x: Jpy): Int = x.value
-
-    override def toLong(x: Jpy): Long = x.value.toLong
-
-    override def toFloat(x: Jpy): Float = x.value.toFloat
-
-    override def toDouble(x: Jpy): Double = x.value.toDouble
-
-    override def compare(x: Jpy, y: Jpy): Int = x.value compare y.value
-  }
-}
 
 @Entity
 case class Emp(

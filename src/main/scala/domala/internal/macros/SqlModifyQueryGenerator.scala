@@ -24,7 +24,7 @@ object SqlModifyQueryGenerator {
 
     val checkNullParameter = params.map(p => {
       TypeHelper.convertToDomaType(p.decltpe.get) match {
-        case DomaType.Basic(_, _, _) => q"()"
+        case DomaType.Basic(_, _, _, _) => q"()"
         case _ =>
           q"""
           if (${Term.Name(p.name.syntax)} == null) {

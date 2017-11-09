@@ -185,8 +185,8 @@ object EntityTypeGenerator {
       val propertyName = Pat.Var.Term(Term.Name("$" + name.syntax))
 
       val (isBasic, nakedTpe, newWrapperExpr) = TypeHelper.convertToEntityDomaType(decltpe) match {
-        case DomaType.Basic(_, convertedType, wrapperSupplier) => (true, convertedType, wrapperSupplier)
-        case DomaType.Option(DomaType.Basic(_, convertedType, wrapperSupplier), _) => (true, convertedType, wrapperSupplier)
+        case DomaType.Basic(_, convertedType, wrapperSupplier, _) => (true, convertedType, wrapperSupplier)
+        case DomaType.Option(DomaType.Basic(_, convertedType, wrapperSupplier, _), _) => (true, convertedType, wrapperSupplier)
         case DomaType.EntityOrHolderOrEmbeddable(otherType) => (false, otherType, q"null")
         case DomaType.Option(DomaType.EntityOrHolderOrEmbeddable(otherType), _) => (false, otherType,  q"null")
         case _ => MacrosHelper.abort(Message.DOMALA4096, decltpe.syntax, clsName.syntax, name.syntax)
