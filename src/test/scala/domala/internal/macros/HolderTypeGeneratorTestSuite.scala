@@ -133,7 +133,7 @@ case class UnsupportedValueTypeHolder(value: Seq[String])
     assert(BigDecimalHolder(3).toDouble == 3.0D)
   }
 
-  test("Numeric Double custom") {
+  test("Fractional Double") {
     val holders = (1 to 10).map(v => DoubleHolder2(v))
     assert(holders.sum == DoubleHolder2(55))
     assert(holders.product == DoubleHolder2(3628800))
