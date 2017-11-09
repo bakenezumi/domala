@@ -1,6 +1,6 @@
 package domala.internal.macros.reflect
 
-import domala.internal.macros.MacrosHelper
+import domala.internal.macros.helper.MacrosHelper
 import domala.message.Message
 
 import scala.language.experimental.macros

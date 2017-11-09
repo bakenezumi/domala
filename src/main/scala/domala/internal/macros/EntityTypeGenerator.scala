@@ -1,7 +1,8 @@
 package domala.internal.macros
 
 import domala.GenerationType
-import domala.internal.macros.TypeHelper.toType
+import domala.internal.macros.helper.TypeHelper.toType
+import domala.internal.macros.helper.{CaseClassMacroHelper, MacrosHelper, TypeHelper}
 import domala.message.Message
 import org.seasar.doma.internal.apt.meta.MetaConstants
 

@@ -1,4 +1,6 @@
-package domala.internal.macros
+package domala.internal.macros.helper
+
+import domala.internal.macros.DomaType
 
 import scala.meta._
 

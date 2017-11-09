@@ -1,6 +1,6 @@
 package domala.tests.expr
 
-import domala.jdbc.BatchResult
+import domala.jdbc.{BatchResult, SelectOptions}
 import domala.tests._
 import domala._
 import org.scalatest.{BeforeAndAfter, FunSuite}
@@ -67,12 +67,42 @@ class FunctionTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  test("Holder sum") {
+    Required {
+      assert(
+        dao.selectAll(SelectOptions.get, _.map(_.salary).sum) == Jpy(150)
+      )
+    }
+  }
 }
-
 
 
 @Holder
 case class Jpy(value: Int)
+object Jpy {
+
+  implicit val __num: Numeric[Jpy] = new Numeric[Jpy] {
+    override def plus(x: Jpy, y: Jpy): Jpy = Jpy(x.value + y.value)
+
+    override def minus(x: Jpy, y: Jpy): Jpy = Jpy(x.value - y.value)
+
+    override def times(x: Jpy, y: Jpy): Jpy = Jpy(x.value * y.value)
+
+    override def negate(x: Jpy): Jpy = Jpy(-x.value)
+
+    override def fromInt(x: Int): Jpy = Jpy(x)
+
+    override def toInt(x: Jpy): Int = x.value
+
+    override def toLong(x: Jpy): Long = x.value.toLong
+
+    override def toFloat(x: Jpy): Float = x.value.toFloat
+
+    override def toDouble(x: Jpy): Double = x.value.toDouble
+
+    override def compare(x: Jpy, y: Jpy): Int = x.value compare y.value
+  }
+}
 
 @Entity
 case class Emp(
@@ -126,5 +156,10 @@ select salary from emp where department_id = /* departmentId */0
 select salary from emp where department_id = /* departmentId */0
   """, strategy = SelectType.ITERATOR)
   def selectSalaryIteratorByDepartmentId[R](departmentId: ID[Department], mapper: Iterator[BigDecimal] => R): R
+
+  @Select("""
+select /*%expand*/* from emp
+  """, strategy = SelectType.ITERATOR)
+  def selectAll[R](option: SelectOptions, mapper: Iterator[Emp] => R): R
 
 }

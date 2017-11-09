@@ -1,5 +1,6 @@
 package domala.internal.macros
 
+import domala.internal.macros.helper.DaoMacroHelper
 import org.seasar.doma.BatchUpdate
 
 import scala.collection.immutable.Seq

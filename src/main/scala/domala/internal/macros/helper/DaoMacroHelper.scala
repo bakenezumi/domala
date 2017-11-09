@@ -1,5 +1,6 @@
-package domala.internal.macros
+package domala.internal.macros.helper
 
+import domala.internal.macros.{DaoMethodCommonBatchSetting, DaoMethodCommonSetting, QueryDefDecl}
 import org.seasar.doma.internal.jdbc.sql.SqlParser
 import org.seasar.doma.jdbc.JdbcException
 

@@ -1,5 +1,7 @@
 package domala.internal.macros
 
+import domala.internal.macros.helper.{DaoMacroHelper, TypeHelper}
+
 import scala.collection.immutable.Seq
 import scala.meta._
 

@@ -1,5 +1,6 @@
 package domala.internal.macros
 
+import domala.internal.macros.helper.{MacrosHelper, TypeHelper}
 import domala.message.Message
 import org.seasar.doma.internal.apt.meta.MetaConstants
 

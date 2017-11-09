@@ -1,6 +1,7 @@
 package domala.internal.macros
 
 import domala.Select
+import domala.internal.macros.helper.{DaoMacroHelper, MacrosHelper, TypeHelper}
 import domala.message.Message
 
 import scala.collection.immutable.Seq

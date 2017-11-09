@@ -35,6 +35,12 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  test("Nil parameter") {
+    Required {
+      assert(dao.inSelect(Nil) == Nil)
+    }
+  }
+
   test("literal") {
     Required {
       assert(

@@ -1,6 +1,7 @@
 package domala
 
-import domala.internal.macros.{EntityTypeGenerator, MacrosHelper}
+import domala.internal.macros.EntityTypeGenerator
+import domala.internal.macros.helper.MacrosHelper
 import org.seasar.doma.jdbc.entity.EntityListener
 import org.seasar.doma.jdbc.entity.{NamingType, NullEntityListener}
 

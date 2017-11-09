@@ -1,6 +1,7 @@
 package domala.internal.macros
 
 import domala.Delete
+import domala.internal.macros.helper.DaoMacroHelper
 
 import scala.collection.immutable.Seq
 import scala.meta._
