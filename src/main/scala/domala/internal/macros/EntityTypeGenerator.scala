@@ -69,15 +69,15 @@ object EntityTypeGenerator {
     val propertySize = ctor.paramss.flatten.size
 
     val namingTypeField =
-      q"private val __namingType: org.seasar.doma.jdbc.entity.NamingType = ${entitySetting.naming}"
+      q"private[this]  val __namingType: org.seasar.doma.jdbc.entity.NamingType = ${entitySetting.naming}"
     val idGeneratorField = generateIdGeneratorFields(clsName, ctor)
 
     val propertyTypesFields =
       q"""
-      val __idList = new java.util.ArrayList[org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]]()
-      val __list = new java.util.ArrayList[org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]]($propertySize)
-      val __map = new java.util.HashMap[String, org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]]($propertySize)
-      val __collections = domala.internal.macros.reflect.EntityCollections[$clsName](__list, __map, __idList)
+      private[this] val __idList = new java.util.ArrayList[org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]]()
+      private[this] val __list = new java.util.ArrayList[org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]]($propertySize)
+      private[this] val __map = new java.util.HashMap[String, org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]]($propertySize)
+      private[this] val __collections = domala.internal.macros.reflect.EntityCollections[$clsName](__list, __map, __idList)
       """.stats
 
     val propertyTypeFields = generatePropertyTypeFields(clsName, ctor)
@@ -138,13 +138,13 @@ object EntityTypeGenerator {
     })
 
     strategy.map {
-      case GenerationType.IDENTITY => Seq(q"private val __idGenerator = new org.seasar.doma.jdbc.id.BuiltinIdentityIdGenerator()")
+      case GenerationType.IDENTITY => Seq(q"private[this] val __idGenerator = new org.seasar.doma.jdbc.id.BuiltinIdentityIdGenerator()")
       case GenerationType.SEQUENCE =>
         val sequenceGeneratorSetting = SequenceGeneratorSetting.read(idParams.head.mods, clsName.syntax)
           .getOrElse(MacrosHelper.abort(Message.DOMALA4034, clsName.syntax, idParams.head.name.syntax))
         q"""
           domala.internal.macros.reflect.EntityReflectionMacros.validateSequenceIdGenerator(classOf[${sequenceGeneratorSetting.implementer}])
-          private val __idGenerator = new ${sequenceGeneratorSetting.implementer.syntax.parse[Ctor.Call].get}()
+          private[this] val __idGenerator = new ${sequenceGeneratorSetting.implementer.syntax.parse[Ctor.Call].get}()
           __idGenerator.setQualifiedSequenceName(${sequenceGeneratorSetting.sequence})
           __idGenerator.setInitialValue(${sequenceGeneratorSetting.initialValue})
           __idGenerator.setAllocationSize(${sequenceGeneratorSetting.allocationSize})
@@ -155,7 +155,7 @@ object EntityTypeGenerator {
           .getOrElse(MacrosHelper.abort(Message.DOMALA4035, clsName.syntax, idParams.head.name.syntax))
         q"""
           domala.internal.macros.reflect.EntityReflectionMacros.validateTableIdGenerator(classOf[${tableGeneratorSetting.implementer}])
-          private val __idGenerator = new ${tableGeneratorSetting.implementer.syntax.parse[Ctor.Call].get}()
+          private[this] val __idGenerator = new ${tableGeneratorSetting.implementer.syntax.parse[Ctor.Call].get}()
           __idGenerator.setQualifiedTableName(${tableGeneratorSetting.table})
           __idGenerator.setInitialValue(${tableGeneratorSetting.initialValue})
           __idGenerator.setAllocationSize(${tableGeneratorSetting.allocationSize})
@@ -165,7 +165,7 @@ object EntityTypeGenerator {
           __idGenerator.initialize()
           """.stats
       }.getOrElse(
-        Seq(q"private val __idGenerator = null")
+        Seq(q"private[this] val __idGenerator = null")
       )
   }
 
@@ -221,7 +221,7 @@ object EntityTypeGenerator {
         MacrosHelper.abort(Message.DOMALA4089, clsName.syntax, name.syntax)
 
       q"""
-      val $propertyName = domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyType[$tpe, $clsName, $nakedTpe](
+      private[this] val $propertyName = domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyType[$tpe, $clsName, $nakedTpe](
         classOf[$clsName],
         ${name.syntax},
         __namingType,
@@ -243,17 +243,17 @@ object EntityTypeGenerator {
 
   protected def generateConstructor(clsName: Type.Name, ctor: Ctor.Primary, entitySetting: EntitySetting, tableSetting: TableSetting): Seq[Stat] = {
     q"""
-    val __listenerSupplier: java.util.function.Supplier[${entitySetting.listener}] =
+    private[this] val __listenerSupplier: java.util.function.Supplier[${entitySetting.listener}] =
       () => ListenerHolder.listener
-    val __immutable = true
-    val __name = ${Term.Name("\"" + clsName.syntax + "\"")}
-    val __catalogName = ${Term.Name(tableSetting.catalog.syntax)}
-    val __schemaName = ${Term.Name(tableSetting.schema.syntax)}
-    val __tableName = ${Term.Name(tableSetting.name.syntax)}
-    val __isQuoteRequired = ${tableSetting.quote}
-    val __idPropertyTypes = java.util.Collections.unmodifiableList(__idList)
-    val __entityPropertyTypes = java.util.Collections.unmodifiableList(__list)
-    val __entityPropertyTypeMap: java.util.Map[
+    private[this] val __immutable = true
+    private[this] val __name = ${Term.Name("\"" + clsName.syntax + "\"")}
+    private[this] val __catalogName = ${Term.Name(tableSetting.catalog.syntax)}
+    private[this] val __schemaName = ${Term.Name(tableSetting.schema.syntax)}
+    private[this] val __tableName = ${Term.Name(tableSetting.name.syntax)}
+    private[this] val __isQuoteRequired = ${tableSetting.quote}
+    private[this] val __idPropertyTypes = java.util.Collections.unmodifiableList(__idList)
+    private[this] val __entityPropertyTypes = java.util.Collections.unmodifiableList(__list)
+    private[this] val __entityPropertyTypeMap: java.util.Map[
       String,
       org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]] =
       java.util.Collections.unmodifiableMap(__map)

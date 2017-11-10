@@ -57,7 +57,6 @@ object HolderTypeGenerator {
       domala.jdbc.holder.AbstractHolderDesc[
         $basicTpe, $erasedHolderType](
         $wrapperSupplier: java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$basicTpe]]) {
-      def getSingletonInternal() = this
       override def wrapper: java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$basicTpe]] = $wrapperSupplier
       ..${Seq(applyDef, CaseClassMacroHelper.generateUnapply(cls))}
       ..$numericImplicitVal
@@ -76,11 +75,11 @@ object HolderTypeGenerator {
       if (domain == null) null else domain.value
     }
 
-    override def getBasicClass() = {
+    override def getBasicClass: Class[$basicTpe] = {
       classOf[$basicTpe]
     }
 
-    override def getDomainClass() = {
+    override def getDomainClass: Class[$erasedHolderType] = {
       classOf[$erasedHolderType]
     }
     """.stats

@@ -63,12 +63,3 @@ insert into person (id, city, street, department_id, version) values (
   """)
   def batchSqlInsert(id: Seq[String]): Array[Int]
 }
-
-object ModifyTestConfig extends Config(
-  dataSource =  new LocalTransactionDataSource(
-    "jdbc:h2:mem:modify_test;DB_CLOSE_DELAY=-1", "sa", null),
-  dialect = new H2Dialect,
-  naming = Naming.SNAKE_LOWER_CASE
-) {
-  Class.forName("org.h2.Driver")
-}

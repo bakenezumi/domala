@@ -84,7 +84,7 @@ object DaoGenerator {
             case _ => q"classOf[${TypeHelper.toType(p.decltpe.get)}]"
           }
         }) ++ _def.tparams.map(_ => q"classOf[scala.reflect.ClassTag[_]]") // ClassTag型パラメータを付与した場合、実行時は実パラメータとなる
-        q"""private val ${Pat.Var.Term(internalMethodName)} =
+        q"""private[this] val ${Pat.Var.Term(internalMethodName)} =
             org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[$trtName], ${_def.name.syntax}..$paramClasses)"""
       }, {
         val defImpl = _def.mods.collect {

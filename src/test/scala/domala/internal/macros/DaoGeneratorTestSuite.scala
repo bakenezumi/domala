@@ -5,7 +5,7 @@ import org.scalatest.FunSuite
 
 import scala.meta._
 
-class DaoGeneratorTestSuite extends FunSuite{
+class DaoGeneratorTestSuite extends FunSuite {
 
   test("normal dao") {
     val trt = q"""
@@ -50,7 +50,7 @@ trait PersonDao {
     class Internal(___config: domala.jdbc.Config) extends org.seasar.doma.internal.jdbc.dao.AbstractDao(___config) with PersonDao {
       import scala.collection.JavaConverters._
       implicit val __sqlNodeRepository: domala.jdbc.SqlNodeRepository = ___config.getSqlNodeRepository
-      private val __method0 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "selectById", classOf[Int])
+      private[this] val __method0 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "selectById", classOf[Int])
       override def selectById(id: Int): Option[Person] = {
         domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql("PersonDao", "selectById", true, false, "select * from person where id = /*id*/0", domala.internal.macros.DaoParamClass.apply("id", classOf[Int]))
         entering("PersonDao", "selectById", id.asInstanceOf[Object])
@@ -81,7 +81,7 @@ trait PersonDao {
             throw __e
         }
       }
-      private val __method1 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "insert", classOf[Person])
+      private[this] val __method1 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "insert", classOf[Person])
       override def insert(person: Person): Result[Person] = {
         domala.internal.macros.reflect.DaoReflectionMacros.validateAutoModifyParam("PersonDao", "insert", classOf[Person])
         entering("PersonDao", "insert", person)
@@ -113,7 +113,7 @@ trait PersonDao {
             throw __e
         }
       }
-      private val __method2 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "update", classOf[Person])
+      private[this] val __method2 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "update", classOf[Person])
       override def update(person: Person): Result[Person] = {
         domala.internal.macros.reflect.DaoReflectionMacros.validateAutoModifyParam("PersonDao", "update", classOf[Person])
         entering("PersonDao", "update", person)
@@ -148,7 +148,7 @@ trait PersonDao {
             throw __e
         }
       }
-      private val __method3 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "delete", classOf[Person])
+      private[this] val __method3 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "delete", classOf[Person])
       override def delete(person: Person): Int = {
         domala.internal.macros.reflect.DaoReflectionMacros.validateAutoModifyParam("PersonDao", "delete", classOf[Person])
         entering("PersonDao", "delete", person)
@@ -179,7 +179,7 @@ trait PersonDao {
             throw __e
         }
       }
-      private val __method4 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "batchInsert", classOf[Seq[_]])
+      private[this] val __method4 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "batchInsert", classOf[Seq[_]])
       override def batchInsert(persons: Seq[Person]): BatchResult[Person] = {
         domala.internal.macros.reflect.DaoReflectionMacros.validateAutoBatchModifyParam("PersonDao", "batchInsert", classOf[Seq[Person]], classOf[Person])
         entering("PersonDao", "batchInsert", persons)
@@ -211,7 +211,7 @@ trait PersonDao {
             throw __e
         }
       }
-      private val __method5 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "batchUpdate", classOf[Seq[_]])
+      private[this] val __method5 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "batchUpdate", classOf[Seq[_]])
       override def batchUpdate(persons: Seq[Person]): BatchResult[Person] = {
         domala.internal.macros.reflect.DaoReflectionMacros.validateAutoBatchModifyParam("PersonDao", "batchUpdate", classOf[Seq[Person]], classOf[Person])
         entering("PersonDao", "batchUpdate", persons)
@@ -245,7 +245,7 @@ trait PersonDao {
             throw __e
         }
       }
-      private val __method6 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "batchDelete", classOf[Seq[_]])
+      private[this] val __method6 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "batchDelete", classOf[Seq[_]])
       override def batchDelete(persons: Seq[Person]): Array[Int] = {
         domala.internal.macros.reflect.DaoReflectionMacros.validateAutoBatchModifyParam("PersonDao", "batchDelete", classOf[Seq[Person]], classOf[Person])
         entering("PersonDao", "batchDelete", persons)

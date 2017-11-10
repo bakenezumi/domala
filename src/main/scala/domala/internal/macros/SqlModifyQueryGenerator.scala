@@ -71,7 +71,7 @@ object SqlModifyQueryGenerator {
       domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, false, $populatable, ${commonSetting.sql}, ..$daoParamTypes)
       entering(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, ..$enteringParam)
       try {
-        val __query = ${query(entityAndEntityType)}(___config.getSqlNodeRepository)
+        val __query = ${query(entityAndEntityType)}
         ..$checkNullParameter
         __query.setMethod($internalMethodName)
         __query.setConfig(___config)

@@ -26,7 +26,7 @@ class EmbeddableTestSuite extends FunSuite with BeforeAndAfter {
 
   test("insert & update Embedded") {
     Required {
-      val newEntity = new Embedded(e1 = E1(10), e2 = E2(1.23, MyDate(LocalDateTime.of(2017, 12, 31, 23, 59, 59, 999999999))))
+      val newEntity = new Embedded(None, e1 = E1(10), e2 = E2(1.23, MyDate(LocalDateTime.of(2017, 12, 31, 23, 59, 59, 999999999))))
       dao.insert(newEntity)
       val selected1 = dao.selectById(1)
       assert(selected1.contains(Embedded(Some(1), E1(10), E2(1.23, MyDate(LocalDateTime.of(2017, 12, 31, 23, 59, 59, 999999999))))))

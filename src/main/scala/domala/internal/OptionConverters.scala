@@ -39,4 +39,6 @@ object OptionConverters {
     /** Create a `scala.Option` version of this `OptionalLong` */
     def asScala: Option[Long] = if (underlying.isPresent) Some(underlying.getAsLong) else None
   }
+
+  def asScala[A](underlying: java.util.Optional[A]): Option[A] = if (underlying.isPresent) Some(underlying.get) else None
 }

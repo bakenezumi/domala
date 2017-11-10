@@ -28,28 +28,28 @@ case class Person(
   }
   def apply(id: Option[ID[Person]] = None, name: Option[Name], age: Option[Int], address: Address, departmentId: Option[Int], version: Option[Int] = Option(-1)): Person = new Person(id, name, age, address, departmentId, version)
   def unapply(x: Person): Option[(Option[ID[Person]], Option[Name], Option[Int], Address, Option[Int], Option[Int])] = Some((x.id, x.name, x.age, x.address, x.departmentId, x.version))
-  private val __namingType: org.seasar.doma.jdbc.entity.NamingType = null
-  private val __idGenerator = new org.seasar.doma.jdbc.id.BuiltinIdentityIdGenerator()
-  val __idList = new java.util.ArrayList[org.seasar.doma.jdbc.entity.EntityPropertyType[Person, _]]()
-  val __list = new java.util.ArrayList[org.seasar.doma.jdbc.entity.EntityPropertyType[Person, _]](6)
-  val __map = new java.util.HashMap[String, org.seasar.doma.jdbc.entity.EntityPropertyType[Person, _]](6)
-  val __collections = domala.internal.macros.reflect.EntityCollections[Person](__list, __map, __idList)
-  val $id = domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyType[Option[ID[Person]], Person, ID[Person]](classOf[Person], "id", __namingType, true, true, __idGenerator, false, false, null, "", true, true, false, __collections)
-  val $name = domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyType[Option[Name], Person, Name](classOf[Person], "name", __namingType, false, false, __idGenerator, false, false, null, "", true, false, false, __collections)
-  val $age = domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyType[Option[Int], Person, Integer](classOf[Person], "age", __namingType, false, false, __idGenerator, false, true, () => new org.seasar.doma.wrapper.IntegerWrapper(): org.seasar.doma.wrapper.Wrapper[Integer], "", true, true, false, __collections)
-  val $address = domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyType[Address, Person, Address](classOf[Person], "address", __namingType, false, false, __idGenerator, false, false, null, "", true, true, false, __collections)
-  val $departmentId = domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyType[Option[Int], Person, Integer](classOf[Person], "departmentId", __namingType, false, false, __idGenerator, false, true, () => new org.seasar.doma.wrapper.IntegerWrapper(): org.seasar.doma.wrapper.Wrapper[Integer], "", true, true, false, __collections)
-  val $version = domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyType[Option[Int], Person, Integer](classOf[Person], "version", __namingType, false, false, __idGenerator, true, true, () => new org.seasar.doma.wrapper.IntegerWrapper(): org.seasar.doma.wrapper.Wrapper[Integer], "", true, true, false, __collections)
-  val __listenerSupplier: java.util.function.Supplier[org.seasar.doma.jdbc.entity.NullEntityListener[Person]] = () => ListenerHolder.listener
-  val __immutable = true
-  val __name = "Person"
-  val __catalogName = ""
-  val __schemaName = ""
-  val __tableName = ""
-  val __isQuoteRequired = false
-  val __idPropertyTypes = java.util.Collections.unmodifiableList(__idList)
-  val __entityPropertyTypes = java.util.Collections.unmodifiableList(__list)
-  val __entityPropertyTypeMap: java.util.Map[String, org.seasar.doma.jdbc.entity.EntityPropertyType[Person, _]] = java.util.Collections.unmodifiableMap(__map)
+  private[this] val __namingType: org.seasar.doma.jdbc.entity.NamingType = null
+  private[this] val __idGenerator = new org.seasar.doma.jdbc.id.BuiltinIdentityIdGenerator()
+  private[this] val __idList = new java.util.ArrayList[org.seasar.doma.jdbc.entity.EntityPropertyType[Person, _]]()
+  private[this] val __list = new java.util.ArrayList[org.seasar.doma.jdbc.entity.EntityPropertyType[Person, _]](6)
+  private[this] val __map = new java.util.HashMap[String, org.seasar.doma.jdbc.entity.EntityPropertyType[Person, _]](6)
+  private[this] val __collections = domala.internal.macros.reflect.EntityCollections[Person](__list, __map, __idList)
+  private[this] val $id = domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyType[Option[ID[Person]], Person, ID[Person]](classOf[Person], "id", __namingType, true, true, __idGenerator, false, false, null, "", true, true, false, __collections)
+  private[this] val $name = domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyType[Option[Name], Person, Name](classOf[Person], "name", __namingType, false, false, __idGenerator, false, false, null, "", true, false, false, __collections)
+  private[this] val $age = domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyType[Option[Int], Person, Integer](classOf[Person], "age", __namingType, false, false, __idGenerator, false, true, () => new org.seasar.doma.wrapper.IntegerWrapper(): org.seasar.doma.wrapper.Wrapper[Integer], "", true, true, false, __collections)
+  private[this] val $address = domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyType[Address, Person, Address](classOf[Person], "address", __namingType, false, false, __idGenerator, false, false, null, "", true, true, false, __collections)
+  private[this] val $departmentId = domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyType[Option[Int], Person, Integer](classOf[Person], "departmentId", __namingType, false, false, __idGenerator, false, true, () => new org.seasar.doma.wrapper.IntegerWrapper(): org.seasar.doma.wrapper.Wrapper[Integer], "", true, true, false, __collections)
+  private[this] val $version = domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyType[Option[Int], Person, Integer](classOf[Person], "version", __namingType, false, false, __idGenerator, true, true, () => new org.seasar.doma.wrapper.IntegerWrapper(): org.seasar.doma.wrapper.Wrapper[Integer], "", true, true, false, __collections)
+  private[this] val __listenerSupplier: java.util.function.Supplier[org.seasar.doma.jdbc.entity.NullEntityListener[Person]] = () => ListenerHolder.listener
+  private[this] val __immutable = true
+  private[this] val __name = "Person"
+  private[this] val __catalogName = ""
+  private[this] val __schemaName = ""
+  private[this] val __tableName = ""
+  private[this] val __isQuoteRequired = false
+  private[this] val __idPropertyTypes = java.util.Collections.unmodifiableList(__idList)
+  private[this] val __entityPropertyTypes = java.util.Collections.unmodifiableList(__list)
+  private[this] val __entityPropertyTypeMap: java.util.Map[String, org.seasar.doma.jdbc.entity.EntityPropertyType[Person, _]] = java.util.Collections.unmodifiableMap(__map)
   override def getNamingType: org.seasar.doma.jdbc.entity.NamingType = __namingType
   override def isImmutable: Boolean = __immutable
   override def getName: String = __name
