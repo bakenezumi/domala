@@ -57,7 +57,6 @@ object HolderTypeGenerator {
       domala.jdbc.holder.AbstractHolderDesc[
         $basicTpe, $erasedHolderType](
         $wrapperSupplier: java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$basicTpe]]) {
-      override def wrapper: java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$basicTpe]] = $wrapperSupplier
       ..${Seq(applyDef, CaseClassMacroHelper.generateUnapply(cls))}
       ..$numericImplicitVal
       ..$methods
@@ -68,11 +67,11 @@ object HolderTypeGenerator {
   protected def makeMethods(clsName: Type.Name, ctor: Ctor.Primary, basicTpe: Type, erasedHolderType: Type): Seq[Stat] = {
     q"""
     override protected def newDomain(value: $basicTpe): $erasedHolderType = {
-      if (value == null) null else ${Term.Name(clsName.toString)}(value)
+      if (value == null) null else ${Ctor.Name(clsName.toString)}(value)
     }
 
-    override protected def getBasicValue(domain: $erasedHolderType): $basicTpe = {
-      if (domain == null) null else domain.value
+    override protected def getBasicValue(holder: $erasedHolderType): $basicTpe = {
+      if (holder == null) null else holder.value
     }
 
     override def getBasicClass: Class[$basicTpe] = {

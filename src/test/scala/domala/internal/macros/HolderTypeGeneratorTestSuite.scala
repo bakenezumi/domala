@@ -13,14 +13,13 @@ case class Name(value: String)
 """
     val expect = q"""
 object Name extends domala.jdbc.holder.AbstractHolderDesc[String, Name]((() => new org.seasar.doma.wrapper.StringWrapper(): org.seasar.doma.wrapper.Wrapper[String]): java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[String]]) {
-  override def wrapper: java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[String]] = () => new org.seasar.doma.wrapper.StringWrapper(): org.seasar.doma.wrapper.Wrapper[String]
   def apply(value: String): Name = new Name(value)
   def unapply(x: Name): Option[String] = Some(x.value)
   override protected def newDomain(value: String): Name = {
     if (value == null) null else Name(value)
   }
-  override protected def getBasicValue(domain: Name): String = {
-    if (domain == null) null else domain.value
+  override protected def getBasicValue(holder: Name): String = {
+    if (holder == null) null else holder.value
   }
   override def getBasicClass: Class[String] = {
     classOf[String]
