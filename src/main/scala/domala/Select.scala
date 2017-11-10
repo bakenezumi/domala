@@ -7,56 +7,56 @@ import org.seasar.doma.{FetchType, MapKeyNamingType}
   *
   * The annotated method must be a member of a [[domala.Dao Dao]] annotated trait.
   *
-  * {{{
-  *@literal @Entity
+  * <pre>
+  * &#64;Entity
   * case class Employee(
   *   ...
   * )
   *
-  *@literal @Dao
+  * &#64;Dao
   * trait EmployeeDao {
   *
-  *  @literal @Select("""
+  *  &#64;Select("""
   *   select name from employee
-  *   where id = |* id *| 0 -- Scaladoc can not nest comments, actually replace `|` with `/`.
+  *   where id = &#47;* id *&#47; 0
   *   """)
   *   def selectNameById(id: Int): String
   *
-  *  @literal @Select("""
+  *  &#64;Select("""
   *   select name from employee
-  *   where age >= |* age *|0  -- Scaladoc can not nest comments, actually replace `|` with `/`.
-  *   and salary >= |* salary *|0
+  *   where age >= &#47;* age *&#47;0
+  *   and salary >= &#47;* salary *&#47;0
   *   """)
   *   def selectNamesByAgeAndSalary(age: Integer, salary[BigDecimal]): List[Employee]
   *
-  *  @literal @Select("""
+  *  &#64;Select("""
   *   select name from employee
-  *   where age >= |* age *|0  -- Scaladoc can not nest comments, actually replace `|` with `/`.
-  *   and salary >= |* salary *|0
+  *   where age >= &#47;* age *&#47;0
+  *   and salary >= &#47;* salary *&#47;0
   *   """)
   *   def selectById(id: Int): Employee
   *
-  *  @literal @Select("""
-  *   select |*%expand *|* from employee -- Scaladoc can not nest comments, actually replace `|` with `/`.
+  *  &#64;Select("""
+  *   select &#47;*%expand *&#47;* from employee
   *   where
-  *   |*%If example.id != null *|
-  *     id = |* id *|0
-  *   |*%end *|
-  *   |*%If example.name != null *|
+  *   &#47;*%If example.id != null *&#47;
+  *     id = &#47;* id *&#47;0
+  *   &#47;*%end *&#47;
+  *   &#47;*%If example.name != null *&#47;
   *     and
-  *     name = |* example.name *|''
-  *   |*%end *|
+  *     name = &#47;* example.name *&#47;&#x27;&#x27;
+  *   &#47;*%end *&#47;
   *   """)
   *   def selectByExample(example: Employee): List[Employee];
   *
-  *  @literal @Select(sql = """
+  *  &#64;Select(sql = """
   *   select salary from employee
   *   where
-  *   department_id = |* departmentId *|0  -- Scaladoc can not nest comments, actually replace `|` with `/`.
+  *   department_id = &#47;* departmentId *&#47;0
   *   """, strategy = SelectStrategyType.STREAM)
   *   def selectSalary[R](departmentId: Int, mapper: Stream[BigDecimal] => R): R
   * }
-  * }}}
+  * <pre>
   *
   * @param sql a execution SQL.
   * @param queryTimeOut The query timeout in seconds.
