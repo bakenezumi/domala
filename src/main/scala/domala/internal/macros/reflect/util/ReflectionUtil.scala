@@ -32,4 +32,18 @@ object ReflectionUtil {
     getCompanion(classTag).asInstanceOf[EmbeddableType[T]]
   }
 
+  def extractionClassString(str: String): String = {
+    val r = ".*\\[(.*)\\].*".r
+    str match {
+      case r(x) => x
+      case _    => str
+    }
+  }
+  def extractionQuotedString(str: String): String = {
+    val r = """.*"(.*)".*""".r
+    str match {
+      case r(x) => x
+      case _    => str
+    }
+  }
 }

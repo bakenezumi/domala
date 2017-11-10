@@ -57,7 +57,7 @@ class Embeddable extends scala.annotation.StaticAnnotation {
           ))
         )
       case cls: Defn.Class => (cls, EmbeddableTypeGenerator.generate(cls))
-      case _ => abort(domala.message.Message.DOMALA4015.getMessage())
+      case _ => abort(domala.message.Message.DOMALA4283.getMessage())
     }
     //logger.debug(newCompanion)
     Term.Block(Seq(

@@ -173,11 +173,23 @@ public enum Message implements MessageResource {
     // trait Holder未対応 DOMA4268
     DOMALA4270("[{0}.{1}]のSQLの妥当検査に失敗しました（[{3}]行目[{4}]番目の文字付近）。/*%populate */の式が使用されていますが、SET句の自動生成ができません。メソッドに@Updateまたは@BatchUpdateが注釈され、第一引数がエンティティクラスにマッピングされていることを確認してください。SQL[{2}]"),
     // TODO: 戻り値Stream未対応 DOMA4271 - DOMA4274
+    // TODO: 囲む型未チェック DOMA4275 - DOMA4277
+    // @ExternalDomainは未対応 DOMA4278 - DOMA4280
+    DOMALA4283(org.seasar.doma.message.Message.DOMA4283.getMessagePattern()),
+    DOMALA4285(org.seasar.doma.message.Message.DOMA4285.getMessagePattern()),
+    // OriginalStates未実装 DOMA4286
+    DOMALA4289(org.seasar.doma.message.Message.DOMA4289.getMessagePattern()),
+    DOMALA4290(org.seasar.doma.message.Message.DOMA4290.getMessagePattern()),
+    DOMALA4291(org.seasar.doma.message.Message.DOMA4291.getMessagePattern()),
+    DOMALA4297(org.seasar.doma.message.Message.DOMA4297.getMessagePattern()),
 
     DOMALA4302(org.seasar.doma.message.Message.DOMA4302.getMessagePattern()),
     DOMALA4303(org.seasar.doma.message.Message.DOMA4303.getMessagePattern()),
     DOMALA4304(org.seasar.doma.message.Message.DOMA4304.getMessagePattern()),
     // lombokには非対応 DOMA4418 - DOMA4432
+
+    DOMALA4442(org.seasar.doma.message.Message.DOMA4442.getMessagePattern()),
+    DOMALA4443(org.seasar.doma.message.Message.DOMA4443.getMessagePattern()),
 
     // macros(domala original)
     DOMALA6001("@Holderを注釈するclassのコンストラクタパラメータは1つでなければなりません。"),

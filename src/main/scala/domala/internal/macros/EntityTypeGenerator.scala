@@ -170,11 +170,6 @@ object EntityTypeGenerator {
   }
 
   protected def generatePropertyTypeFields(clsName: Type.Name, ctor: Ctor.Primary): Seq[Defn.Val] = {
-    if (ctor.paramss.flatten.flatMap(_.mods).count {
-      case mod"@Version" | mod"@domala.Version" | mod"@Version()" | mod"@domala.Version()"=> true
-      case _ => false
-    } > 1) MacrosHelper.abort(Message.DOMALA4024, clsName.syntax)
-
     ctor.paramss.flatten.map { p =>
       val Term.Param(mods, name, Some(decltpe), _) = p
       val columnSetting = ColumnSetting.read(mods)
@@ -206,15 +201,20 @@ object EntityTypeGenerator {
       //noinspection ScalaUnusedSymbol
       val isIdGenerate = mods.exists {
         case mod"@GeneratedValue($_)" => true
+        case mod"@domala.GeneratedValue($_)" => true
         case _ => false
       }
-
-      val isTenantId = false
 
       val isVersion = mods.exists {
         case mod"@Version" | mod"@domala.Version" | mod"@Version()" | mod"@domala.Version()" => true
         case _ => false
       }
+
+      val isTenantId = mods.exists {
+        case mod"@TenantId" | mod"@domala.TenantId" | mod"@TenantId()" | mod"@domala.TenantId()"=> true
+        case _ => false
+      }
+
       if(columnSetting.insertable.syntax == "false" && (isId || isVersion || isTenantId))
         MacrosHelper.abort(Message.DOMALA4088, clsName.syntax, name.syntax)
       if(columnSetting.updatable.syntax == "false" && (isId || isVersion || isTenantId))
@@ -229,6 +229,7 @@ object EntityTypeGenerator {
         ${if(isIdGenerate) q"true" else q"false"},
         __idGenerator,
         ${if(isVersion) q"true" else q"false"},
+        ${if(isTenantId) q"true" else q"false"},
         ${if(isBasic) q"true" else q"false"},
         $newWrapperExpr,
         ${columnSetting.name},
@@ -268,10 +269,23 @@ object EntityTypeGenerator {
   }
 
   protected def generateVersionPropertyType(clsName: Type.Name, ctor: Ctor.Primary): Term = {
-    ctor.paramss.flatten.collect {
-      case param if param.mods.exists(mod => mod.syntax.startsWith("@Version") || mod.syntax.startsWith("@domala.Version")) =>
-        ("$" + param.name.syntax  + s".asInstanceOf[org.seasar.doma.jdbc.entity.VersionPropertyType[$clsName, $clsName, _ <: Number, _]]").parse[Term].get
-    }.headOption.getOrElse(q"null")
+    val versionProperties = ctor.paramss.flatten.collect {
+      case param if param.mods.exists(mod => mod.syntax.startsWith("@Version") || mod.syntax.startsWith("@domala.Version")) => param
+    }
+    if(versionProperties.length > 1) MacrosHelper.abort(Message.DOMALA4024, clsName.syntax, versionProperties(1).name.syntax)
+    versionProperties.headOption.map(param =>
+      ("$" + param.name.syntax  + s".asInstanceOf[org.seasar.doma.jdbc.entity.VersionPropertyType[$clsName, $clsName, _ <: Number, _]]").parse[Term].get
+    ).getOrElse(q"null")
+  }
+
+  protected def generateGetTenantIdPropertyTypeMethod(clsName: Type.Name, ctor: Ctor.Primary): Term = {
+    val tenantIdProperties = ctor.paramss.flatten.collect {
+      case param if param.mods.exists(mod => mod.syntax.startsWith("@TenantId") || mod.syntax.startsWith("@domala.TenantId")) => param
+    }
+    if(tenantIdProperties.length > 1) MacrosHelper.abort(Message.DOMALA4442,  clsName.syntax, tenantIdProperties(1).name.syntax)
+    tenantIdProperties.headOption.map(param =>
+      ("$" + param.name.syntax  + s".asInstanceOf[org.seasar.doma.jdbc.entity.TenantIdPropertyType[$clsName, $clsName, _, _]]").parse[Term].get
+    ).getOrElse(q"null")
   }
 
   protected def generateMethods(clsName: Type.Name, ctor: Ctor.Primary, entitySetting: EntitySetting): Seq[Stat] = {
@@ -380,7 +394,7 @@ object EntityTypeGenerator {
 
     override def getVersionPropertyType: org.seasar.doma.jdbc.entity.VersionPropertyType[_ >: $clsName, $clsName, _, _] = ${generateVersionPropertyType(clsName, ctor)}
 
-    override def getTenantIdPropertyType: org.seasar.doma.jdbc.entity.TenantIdPropertyType[_ >: $clsName, $clsName, _, _] = null
+    override def getTenantIdPropertyType: org.seasar.doma.jdbc.entity.TenantIdPropertyType[_ >: $clsName, $clsName, _, _] = ${generateGetTenantIdPropertyTypeMethod(clsName, ctor)}
 
     """.stats ++ {
         val params = ctor.paramss.flatten.map { p =>

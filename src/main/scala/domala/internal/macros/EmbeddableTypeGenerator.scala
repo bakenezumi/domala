@@ -1,6 +1,7 @@
 package domala.internal.macros
 
 import domala.internal.macros.helper.{CaseClassMacroHelper, MacrosHelper, TypeHelper}
+import domala.message.Message
 
 import scala.collection.immutable.Seq
 import scala.meta._
@@ -10,6 +11,8 @@ import scala.meta._
   */
 object EmbeddableTypeGenerator {
   def generate(cls: Defn.Class): Defn.Object = {
+    if(cls.tparams.nonEmpty)
+      MacrosHelper.abort(Message.DOMALA4285, cls.name.syntax)
     val methods = makeMethods(cls.name, cls.ctor)
     q"""
     object ${Term.Name(cls.name.syntax)} extends org.seasar.doma.jdbc.entity.EmbeddableType[${cls.name}] {
@@ -29,17 +32,37 @@ object EmbeddableTypeGenerator {
         case DomaType.Option(DomaType.Basic(_, convertedType, wrapperSupplier, _), _) => (true, convertedType, wrapperSupplier)
         case DomaType.EntityOrHolderOrEmbeddable(otherType) => (false, otherType, q"null")
         case DomaType.Option(DomaType.EntityOrHolderOrEmbeddable(otherType), _) => (false, otherType,  q"null")
-        case _ => MacrosHelper.abort(domala.message.Message.DOMALA4096, decltpe.syntax, clsName.syntax, name.syntax)
+        case _ => MacrosHelper.abort(Message.DOMALA4096, decltpe.syntax, clsName.syntax, name.syntax)
       }
+
+      mods.collect {
+        case mod"@Id" | mod"@domala.dId" | mod"@Id()" | mod"@domala.Id()" =>
+          MacrosHelper.abort(Message.DOMALA4289, decltpe.syntax, name.syntax)
+      }
+
+      //noinspection ScalaUnusedSymbol
+      if(mods.exists {
+        case mod"@GeneratedValue($_)" => true
+        case mod"@domala.GeneratedValue($_)" => true
+        case _ => false
+      }) MacrosHelper.abort(Message.DOMALA4291, decltpe.syntax, name.syntax)
+
+      mods.collect {
+        case mod"@Version" | mod"@domala.Version" | mod"@Version()" | mod"@domala.Version()" =>
+          MacrosHelper.abort(Message.DOMALA4290, decltpe.syntax, name.syntax)
+      }
+
+      mods.collect {
+        case mod"@TenantId" | mod"@domala.TenantId" | mod"@TenantId()" | mod"@domala.TenantId()"=>
+          MacrosHelper.abort(Message.DOMALA4443, decltpe.syntax, name.syntax)
+      }
+
+
       q"""
-      domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyType[$tpe, ENTITY, $nakedTpe](
+      domala.internal.macros.reflect.EmbeddableReflectionMacros.generatePropertyType[$tpe, ENTITY, $nakedTpe](
         entityClass,
         embeddedPropertyName + "." + ${name.syntax},
         namingType,
-        false,
-        false,
-        null,
-        false,
         ${if(isBasic) q"true" else q"false"},
         $newWrapperExpr,
         ${columnSetting.name},

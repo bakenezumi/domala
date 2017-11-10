@@ -41,6 +41,7 @@ import scala.meta._
   * @see [[domala.Table Table]]
   * @see [[domala.Column Column]]
   * @see [[domala.Id Id]]
+  * @see [[domala.TenantId TenantId]]
   * @see [[domala.Version Version]]
   */
 //noinspection ScalaUnusedSymbol

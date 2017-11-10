@@ -4,8 +4,8 @@ import java.math.BigInteger
 import java.sql.{Blob, Clob, NClob, SQLXML, Time, Timestamp}
 import java.time.{LocalDate, LocalDateTime, LocalTime}
 
-import org.seasar.doma.jdbc.domain.AbstractDomainType
-import org.seasar.doma.jdbc.entity.AbstractEntityType
+import domala.jdbc.holder.AbstractHolderDesc
+import org.seasar.doma.jdbc.entity.{AbstractEntityType, EmbeddableType}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.macros.blackbox
@@ -50,7 +50,22 @@ object TypeUtil {
 
   def isHolder[C <: blackbox.Context](c: C)(tpe: C#Type): Boolean = {
     import c.universe._
-    tpe.companion <:< typeOf[AbstractDomainType[_, _]]
+    tpe.companion <:< typeOf[AbstractHolderDesc[_, _]]
+  }
+
+  def isNumberHolder[C <: blackbox.Context](c: C)(tpe: C#Type): Boolean = {
+    import c.universe._
+    tpe.companion <:< typeOf[AbstractHolderDesc[_ <: Number, _]]
+  }
+
+  def isNumber[C <: blackbox.Context](c: C)(tpe: C#Type): Boolean = {
+    import c.universe._
+    tpe <:< typeOf[Number]
+  }
+
+  def isEmbeddable[C <: blackbox.Context](c: C)(tpe: C#Type): Boolean = {
+    import c.universe._
+    tpe.companion <:< typeOf[EmbeddableType[_]]
   }
 
   def isIterable[C <: blackbox.Context](c: C)(tpe: C#Type): Boolean = {
