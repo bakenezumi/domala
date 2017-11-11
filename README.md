@@ -77,7 +77,7 @@ from person where
 #### Config
 
 ```scala
-object SampleConfig extends Config(
+object SampleConfig extends LocalTransactionConfig(
   dataSource = new LocalTransactionDataSource(
     "jdbc:h2:mem:sample;DB_CLOSE_DELAY=-1", "sa", null),
   dialect = new H2Dialect,
