@@ -25,7 +25,7 @@ package object domala {
       * @return the result
       */
     def apply[RESULT](isolationLevel: TransactionIsolationLevel)(supplier: => RESULT)(implicit config: Config): RESULT =
-      config.getTransactionManager.required(() => supplier)
+      config.getTransactionManager.required(isolationLevel, () => supplier)
   }
 
   object RequiresNew {
@@ -51,7 +51,7 @@ package object domala {
       * @return the result
       */
     def apply[RESULT](isolationLevel: TransactionIsolationLevel)(supplier: => RESULT)(implicit config: Config): RESULT =
-      config.getTransactionManager.requiresNew(() => supplier)
+      config.getTransactionManager.requiresNew(isolationLevel, () => supplier)
   }
 
   object NotSupported {
@@ -76,7 +76,7 @@ package object domala {
       * @return the result
       */
     def apply[RESULT](isolationLevel: TransactionIsolationLevel)(supplier: => RESULT)(implicit config: Config): RESULT =
-      config.getTransactionManager.notSupported(() => supplier)
+      config.getTransactionManager.notSupported(isolationLevel, () => supplier)
   }
 
 }
