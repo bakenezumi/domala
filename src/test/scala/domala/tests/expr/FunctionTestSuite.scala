@@ -70,7 +70,7 @@ class FunctionTestSuite extends FunSuite with BeforeAndAfter {
   test("Holder sum") {
     Required {
       assert(
-        dao.selectAll(SelectOptions.get, _.map(_.salary).sum) == Jpy(150)
+        dao.selectAll(_.map(_.salary).sum)(SelectOptions.get) == Jpy(150)
       )
     }
   }
@@ -135,6 +135,6 @@ select salary from emp where department_id = /* departmentId */0
   @Select("""
 select /*%expand*/* from emp
   """, strategy = SelectType.ITERATOR)
-  def selectAll[R](option: SelectOptions, mapper: Iterator[Emp] => R): R
+  def selectAll[R](mapper: Iterator[Emp] => R)(option: SelectOptions): R
 
 }
