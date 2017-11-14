@@ -1,10 +1,11 @@
 package domala.tests.expr
 
 import domala._
-import domala.jdbc.{Config, SelectOptions}
+import domala.jdbc.{BatchResult, Config, SelectOptions}
 import domala.tests.{ID, Name}
 import org.scalatest.{AsyncFunSuite, BeforeAndAfter}
 
+import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -12,7 +13,7 @@ class AsyncFunctionTestSuite extends AsyncFunSuite with BeforeAndAfter{
 
   override def executionContext: ExecutionContext = global
 
-  private def init(dao: FunctionDao)(implicit config: Config) = Required {
+  private def init(dao: FunctionDao)(implicit config: Config): BatchResult[Emp] = Required {
     dao.create()
     val employees = (1 to 100).map(i => Emp(ID(i), Name("hoge"),  Jpy(i), Some(ID(1)))).toList
     dao.insert(employees)
@@ -64,13 +65,13 @@ class AsyncFunctionTestSuite extends AsyncFunSuite with BeforeAndAfter{
         f(option.clone.offset(offset).limit(limit))
       }
 
-    def partition[A, T <: Traversable[A]](f: SelectOptions => T)(limit: Int, option: SelectOptions = SelectOptions.get): Iterator[T] = {
+    def partition[A, T <: Traversable[A]](f: SelectOptions => T)(blockSize: Int, option: SelectOptions = SelectOptions.get): Iterator[T] = {
       def next(offset: Int): Iterator[T] = {
-        val list = slice[A, T](f)(offset, limit, option)
+        val list = slice[A, T](f)(offset, blockSize, option)
           if (list.isEmpty)
-            Iterator()
+            Iterator.empty
           else
-            Iterator(list) ++ next(limit + offset) // Iterator's `++` operation is lazy evaluation
+            Iterator(list) ++ next(blockSize + offset) // Iterator's `++` operation is lazy evaluation
         }
       next(0)
     }
@@ -91,6 +92,7 @@ class AsyncFunctionTestSuite extends AsyncFunSuite with BeforeAndAfter{
     // original connection use
     println("connection open!")
     import java.sql.DriverManager
+    // noinspection SpellCheckingInspection
     val connection = DriverManager.getConnection("jdbc:h2:mem:asyncfnctest3;DB_CLOSE_DELAY=-1", "sa", "")
     connection.setAutoCommit(false)
     val dao: FunctionDao = FunctionDao.impl(connection)
@@ -99,13 +101,13 @@ class AsyncFunctionTestSuite extends AsyncFunSuite with BeforeAndAfter{
     def slice[A, T <: Traversable[A]](f: SelectOptions => T)(offset: Int, limit: Int, option: SelectOptions = SelectOptions.get): T =
       f(option.clone.offset(offset).limit(limit))
 
-    def partition[A, T <: Traversable[A]](f: SelectOptions => T)(limit: Int, option: SelectOptions = SelectOptions.get): Iterator[T] = {
+    def partition[A, T <: Traversable[A]](f: SelectOptions => T)(blockSize: Int, option: SelectOptions = SelectOptions.get): Iterator[T] = {
       def next(offset: Int): Iterator[T] = {
-        val list = slice[A, T](f)(offset, limit, option)
+        val list = slice[A, T](f)(offset, blockSize, option)
         if (list.isEmpty)
-          Iterator()
+          Iterator.empty
         else
-          Iterator(list) ++ next(limit + offset) // Iterator's `++` operation is lazy evaluation
+          Iterator(list) ++ next(blockSize + offset) // Iterator's `++` operation is lazy evaluation
       }
       next(0)
     }
@@ -113,7 +115,61 @@ class AsyncFunctionTestSuite extends AsyncFunSuite with BeforeAndAfter{
     val partitioningFunction = partition[Jpy, List[Jpy]](selectFunction)(33) // needs type parameter
 
     val assertion = Future(partitioningFunction).map{ x =>
-      assert(x.map{_.sum}.toList == Seq(Jpy(561), Jpy(1650), Jpy(2739), Jpy(100))) // (1 to 33).sum, (34 to 66).sum, (67 to 99).sum, 100,
+      assert(x.map(_.sum).toList == Seq(Jpy(561), Jpy(1650), Jpy(2739), Jpy(100))) // (1 to 33).sum, (34 to 66).sum, (67 to 99).sum, 100,
+    }
+
+    assertion.onComplete(_ => {
+      connection.close()
+      println("connection close!")
+    })
+    assertion
+  }
+
+  test("parallel partitioning iterator in one transaction") {
+    implicit val config: jdbc.Config = AsyncFunctionTestConfigs.get(4)
+
+    val createDao: FunctionDao = FunctionDao.impl
+
+    init(createDao)
+
+    // original connection use
+    println("connection open!")
+    import java.sql.DriverManager
+    // noinspection SpellCheckingInspection
+    val connection = DriverManager.getConnection("jdbc:h2:mem:asyncfnctest4;DB_CLOSE_DELAY=-1", "sa", "")
+    connection.setAutoCommit(false)
+    val dao: FunctionDao = FunctionDao.impl(connection)
+
+    // no transaction
+    def slice[A, T <: Traversable[A]](f: SelectOptions => T)(offset: Int, limit: Int, option: SelectOptions = SelectOptions.get): T =
+      f(option.clone.offset(offset).limit(limit))
+
+    def parallelPartition[A, T <: Traversable[A]](f: SelectOptions => T)(
+      blockSize: Int,
+      concurrentSize: Int = 4,
+      option: SelectOptions = SelectOptions.get
+    ): Future[Seq[T]] = {
+      def par: Future[Seq[T]] = {
+        val futures: Seq[Future[Seq[T]]] = (0 until concurrentSize).map { i =>
+          Future(next(i * blockSize, Nil))
+        }
+        Future.sequence(futures).map(_.flatten)
+      }
+      @tailrec
+      def next(offset: Int, acc: List[T]): List[T] = {
+        val list = slice[A, T](f)(offset, blockSize, option)
+        if(list.isEmpty)
+          acc
+        else
+          next(offset + blockSize * concurrentSize, list :: acc)
+      }
+      par
+    }
+    val selectFunction = dao.selectAll(_.map(_.salary).toList) _
+    val partitioningFunction = parallelPartition[Jpy, List[Jpy]](selectFunction)(8) // needs type parameter
+
+    val assertion = partitioningFunction.map { x =>
+      assert(x.map(_.sum).sum == Jpy(5050))
     }
 
     assertion.onComplete(_ => {
