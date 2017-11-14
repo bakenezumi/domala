@@ -1,7 +1,7 @@
 package domala.tests.expr
 
 import domala._
-import domala.jdbc.SelectOptions
+import domala.jdbc.{Config, SelectOptions}
 import domala.tests.{ID, Name}
 import org.scalatest.{AsyncFunSuite, BeforeAndAfter}
 
@@ -12,15 +12,17 @@ class AsyncFunctionTestSuite extends AsyncFunSuite with BeforeAndAfter{
 
   override def executionContext: ExecutionContext = global
 
+  private def init(dao: FunctionDao)(implicit config: Config) = Required {
+    dao.create()
+    val employees = (1 to 100).map(i => Emp(ID(i), Name("hoge"),  Jpy(i), Some(ID(1)))).toList
+    dao.insert(employees)
+  }
+
   test("future transaction") {
-    implicit val config: jdbc.Config = AsyncFunctionTestConfig1
+    implicit val config: jdbc.Config = AsyncFunctionTestConfigs.get(0)
     val dao: FunctionDao = FunctionDao.impl
 
-    Required {
-      dao.create()
-      val employees = (1 to 100).map(i => Emp(ID(i), Name("hoge"),  Jpy(i), Some(ID(1)))).toList
-      dao.insert(employees)
-    }
+    init(dao)
 
     Future(Required {
       val option = SelectOptions.get
@@ -29,14 +31,10 @@ class AsyncFunctionTestSuite extends AsyncFunSuite with BeforeAndAfter{
   }
 
   test("parallel future") {
-    implicit val config: jdbc.Config = AsyncFunctionTestConfig2
+    implicit val config: jdbc.Config = AsyncFunctionTestConfigs.get(1)
     val dao: FunctionDao = FunctionDao.impl
 
-    Required {
-      dao.create()
-      val employees = (1 to 100).map(i => Emp(ID(i), Name("hoge"), Jpy(i), Some(ID(1)))).toList
-      dao.insert(employees)
-    }
+    init(dao)
 
     def f(offset: Int, limit: Int) = Future(Required {
       val option = SelectOptions.get.offset(offset).limit(limit)
@@ -55,13 +53,10 @@ class AsyncFunctionTestSuite extends AsyncFunSuite with BeforeAndAfter{
   }
 
   test("partitioning iterator") {
-    implicit val config: jdbc.Config = AsyncFunctionTestConfig3
+    implicit val config: jdbc.Config = AsyncFunctionTestConfigs.get(2)
     val dao: FunctionDao = FunctionDao.impl
-    Required {
-      dao.create()
-      val employees = (1 to 100).map(i => Emp(ID(i), Name("hoge"),  Jpy(i), Some(ID(1)))).toList
-      dao.insert(employees)
-    }
+
+    init(dao)
 
     // one partition is one transaction
     def slice[A, T <: Traversable[A]](f: SelectOptions => T)(offset: Int, limit: Int, option: SelectOptions = SelectOptions.get): T =
@@ -87,19 +82,16 @@ class AsyncFunctionTestSuite extends AsyncFunSuite with BeforeAndAfter{
   }
 
   test("partitioning iterator in one transaction") {
-    implicit val config: jdbc.Config = AsyncFunctionTestConfig4
+    implicit val config: jdbc.Config = AsyncFunctionTestConfigs.get(3)
 
     val createDao: FunctionDao = FunctionDao.impl
-    Required {
-      createDao.create()
-      val employees = (1 to 100).map(i => Emp(ID(i), Name("hoge"),  Jpy(i), Some(ID(1)))).toList
-      createDao.insert(employees)
-    }
+
+    init(createDao)
 
     // original connection use
     println("connection open!")
     import java.sql.DriverManager
-    val connection = DriverManager.getConnection("jdbc:h2:mem:asyncfnctest4;DB_CLOSE_DELAY=-1", "sa", "")
+    val connection = DriverManager.getConnection("jdbc:h2:mem:asyncfnctest3;DB_CLOSE_DELAY=-1", "sa", "")
     connection.setAutoCommit(false)
     val dao: FunctionDao = FunctionDao.impl(connection)
 
