@@ -60,7 +60,7 @@ object SqlBatchModifyQueryGenerator {
         val __query = ${query(entityTypeOption)}
         ..$checkNullParameter
         __query.setMethod($internalMethodName)
-        __query.setConfig(___config)
+        __query.setConfig(__config)
         __query.setElements($paramName)
         __query.setParameterName(${paramName.syntax})
         __query.setCallerClassName(${defDecl.trtName.syntax})

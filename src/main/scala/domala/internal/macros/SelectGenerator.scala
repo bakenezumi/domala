@@ -378,7 +378,7 @@ object SelectGenerator extends DaoMethodGenerator {
         val __query = new domala.jdbc.query.SqlAnnotationSelectQuery(${commonSetting.sql})
         ..$checkParameter
         __query.setMethod($internalMethodName)
-        __query.setConfig(___config)
+        __query.setConfig(__config)
         ..$setOptions
         ..$setEntityType
         ..$addParameters

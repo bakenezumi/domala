@@ -74,7 +74,7 @@ object SqlModifyQueryGenerator {
         val __query = ${query(entityAndEntityType)}
         ..$checkNullParameter
         __query.setMethod($internalMethodName)
-        __query.setConfig(___config)
+        __query.setConfig(__config)
         ..$addParameters
         __query.setCallerClassName(${defDecl.trtName.syntax})
         __query.setCallerMethodName(${defDecl.name.syntax})

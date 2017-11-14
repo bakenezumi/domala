@@ -1,5 +1,7 @@
 package domala.jdbc
 
+import org.seasar.doma.jdbc.{SelectForUpdateType, SelectOptionsAccessor}
+
 /**
   * The options for an SQL SELECT statement.
   *
@@ -52,6 +54,19 @@ class SelectOptions extends org.seasar.doma.jdbc.SelectOptions {
   override def limit(limit: Int): SelectOptions = {
     super.limit(limit)
     this
+  }
+
+  override def clone: SelectOptions = {
+    val newInstance = SelectOptions.get
+    val offsetValue = SelectOptionsAccessor.getOffset(this)
+    if(offsetValue > 0) offset(offsetValue.toInt)
+    val limitValue = SelectOptionsAccessor.getLimit(this)
+    if(limitValue > 0) limit(limitValue.toInt)
+    if (SelectOptionsAccessor.isCount(this)) newInstance.count()
+    newInstance.forUpdateType = this.forUpdateType
+    newInstance.waitSeconds = this.waitSeconds
+    newInstance.aliases = this.aliases
+    newInstance
   }
 
 }

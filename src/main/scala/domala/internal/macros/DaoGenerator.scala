@@ -15,7 +15,7 @@ object DaoGenerator {
   def generate(trt: Defn.Trait, config: Term.Arg): Term.Block = {
     val stats = trt.templ.stats.map(l =>
       l.collect {
-        case _def: Decl.Def => _def.copy(tparams = _def.tparams.map{
+        case _def: Decl.Def => _def.copy(tparams = _def.tparams.map {
           // 型パラメータにClassTag付与
           case tp@Type.Param(_,_,_,_,_,Nil) => tp.copy(cbounds = Seq(Type.Name("scala.reflect.ClassTag")))
           case tp => tp
@@ -28,15 +28,18 @@ object DaoGenerator {
       if(config == null)
         q"()"
       else
-        q"def impl = new Internal(${Term.Name(config.syntax)})"
+        q"def impl = new Internal(${Term.Name(config.syntax)}, ${Term.Name(config.syntax)}.getDataSource)"
     val obj =
     q"""
     object ${Term.Name(trt.name.syntax)} {
       $defaultImpl
-      def impl(implicit config: domala.jdbc.Config): ${Type.Name(trt.name.syntax)} = new Internal(config)
+      def impl(implicit config: domala.jdbc.Config): ${Type.Name(trt.name.syntax)} = new Internal(config, Option(config).getOrElse(throw new org.seasar.doma.DomaNullPointerException("config")).getDataSource)
+      def impl(connection: java.sql.Connection)(implicit config: domala.jdbc.Config): ${Type.Name(trt.name.syntax)} = new Internal(config, connection)
+      def impl(dataSource: javax.sql.DataSource)(implicit config: domala.jdbc.Config): ${Type.Name(trt.name.syntax)} = new Internal(config, dataSource)
 
-      class Internal(___config: domala.jdbc.Config) extends org.seasar.doma.internal.jdbc.dao.AbstractDao(___config)
+      class Internal(___config: domala.jdbc.Config, dataSource: javax.sql.DataSource) extends org.seasar.doma.internal.jdbc.dao.AbstractDao(___config, dataSource)
       with ${Ctor.Ref.Name(trt.name.syntax)} {
+        def this(config: domala.jdbc.Config, connection: java.sql.Connection) = this(config, org.seasar.doma.internal.jdbc.dao.DomalaAbstractDaoHelper.toDataSource(connection))
         import scala.collection.JavaConverters._
         implicit val __sqlNodeRepository: domala.jdbc.SqlNodeRepository = ___config.getSqlNodeRepository
         ..${stats.get}

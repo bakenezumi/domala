@@ -44,7 +44,7 @@ object AutoModifyQueryGenerator {
         }
         val __query = $query
         __query.setMethod($internalMethodName)
-        __query.setConfig(___config)
+        __query.setConfig(__config)
         __query.setEntity($paramName)
         __query.setCallerClassName(${defDecl.trtName.syntax})
         __query.setCallerMethodName(${defDecl.name.syntax})
