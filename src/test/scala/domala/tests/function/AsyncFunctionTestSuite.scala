@@ -125,22 +125,15 @@ class AsyncFunctionTestSuite extends AsyncFunSuite with BeforeAndAfter {
     assertion
   }
 
-  test("parallel partitioning iterator in one transaction") {
+  test("parallel partitioning iterator") {
     implicit val config: jdbc.Config = AsyncFunctionTestConfigs.get(4)
 
     val createDao: FunctionDao = FunctionDao.impl
 
     init(createDao)
 
-    // original connection use
-    println("connection open!")
-    import java.sql.DriverManager
-    // noinspection SpellCheckingInspection
-    val connection = DriverManager.getConnection("jdbc:h2:mem:asyncfnctest4;DB_CLOSE_DELAY=-1", "sa", "")
-    connection.setAutoCommit(false)
-    val dao: FunctionDao = FunctionDao.impl(connection)
+    val dao: FunctionDao = FunctionDao.impl
 
-    // no transaction
     def slice[A, T <: Traversable[A]](f: SelectOptions => T)(offset: Int, limit: Int, option: SelectOptions = SelectOptions.get): T =
       f(option.clone.offset(offset).limit(limit))
 
@@ -151,7 +144,7 @@ class AsyncFunctionTestSuite extends AsyncFunSuite with BeforeAndAfter {
     ): Future[Seq[T]] = {
       def par: Future[Seq[T]] = {
         val futures: Seq[Future[Seq[T]]] = (0 until concurrentSize).map { i =>
-          Future(next(i * blockSize, Nil))
+          Future(Required(next(i * blockSize, Nil))) // Transaction block
         }
         Future.sequence(futures).map(_.flatten)
       }
@@ -168,15 +161,9 @@ class AsyncFunctionTestSuite extends AsyncFunSuite with BeforeAndAfter {
     val selectFunction = dao.selectAllEager(_.map(_.salary).toList) _
     val partitioningFunction = parallelPartition[Jpy, List[Jpy]](selectFunction)(8) // needs type parameter
 
-    val assertion = partitioningFunction.map { x =>
+    partitioningFunction.map { x =>
       assert(x.map(_.sum).sum == Jpy(5050))
     }
-
-    assertion.onComplete(_ => {
-      connection.close()
-      println("connection close!")
-    })
-    assertion
   }
 
   test("buffered iterator") {

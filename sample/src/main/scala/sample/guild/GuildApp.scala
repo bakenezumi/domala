@@ -8,9 +8,15 @@ import domala.jdbc.{BatchResult, SelectOptions}
   * Guild : 1 ------ N   : Character
   * Guild : 1 ------ 0-1 : GuildHouse
   * }}}
-  * @see [[http://gakuzzzz.github.io/slides/doma_practice/#1]]
+  * @see [[http://gakuzzzz.github.io/slides/doma_practice/#31]]
   * */
-class GuildApp (implicit guildDao: GuildDao, characterDao: CharacterDao, guildHouseDao: GuildHouseDao) {
+case class GuildView(
+  meta: Guild,
+  members: List[Character],
+  house: Option[GuildHouse]
+)
+
+class GuildService (implicit guildDao: GuildDao, characterDao: CharacterDao, guildHouseDao: GuildHouseDao) {
 
   def getAllGuildViews: List[GuildView] = {
     val opt = SelectOptions.get.limit(100).offset(0)
@@ -34,11 +40,6 @@ class GuildApp (implicit guildDao: GuildDao, characterDao: CharacterDao, guildHo
 
 }
 
-case class GuildView(
-  meta: Guild,
-  members: List[Character],
-  house: Option[GuildHouse]
-)
 
 @Holder
 case class ID[ENTITY](value: Int)
@@ -109,4 +110,72 @@ WHERE
 
   @BatchInsert
   def load(entity: Seq[GuildHouse]): BatchResult[GuildHouse]
+}
+
+object GuildApp {
+  import domala.jdbc.Config
+  import sample.SampleConfig
+  import sample.util.prettyPrint
+
+  implicit val config: Config = SampleConfig
+  implicit val guildDao: GuildDao = GuildDao.impl
+  implicit val characterDao: CharacterDao = CharacterDao.impl
+  implicit val guildHouseDao: GuildHouseDao = GuildHouseDao.impl
+  val app = new GuildService
+  val envDao: EnvDao = EnvDao.impl
+  val service = new GuildService()
+
+  def run(): Unit = Required {
+    init()
+    println(prettyPrint(service.getAllGuildViews))
+    terminate()
+  }
+
+  def init(): Unit = {
+    envDao.create()
+
+    // 4 guilds
+    val guilds = (1 to 4).map(i => Guild(ID(i), Name("g" + i)))
+
+    // 10 characters
+    val characters = (1 to 10)
+      .zip(
+        Stream.continually(guilds.flatMap {
+          case Guild(id @ ID(2), _) => Seq(id, id)
+          case Guild(     ID(3), _) => Nil
+          case Guild(id,         _) => Seq(id)
+        }).flatten
+      ).map {
+        case (id, gid) => Character(ID(id), Name("c" + id), gid)
+      }
+
+    // 2 houses
+    val houses = (1 to 2).map(i => GuildHouse(ID(i), Name("gh" + i), ID(i * 2 - 1)))
+    guildDao.load(guilds)
+    characterDao.load(characters)
+    guildHouseDao.load(houses)
+  }
+
+  def terminate(): Unit = {
+    envDao.drop()
+  }
+
+  @Dao
+  trait EnvDao {
+    @Script(
+      """
+CREATE TABLE guild(id INT NOT NULL IDENTITY PRIMARY KEY, name VARCHAR(20), deleted_time timestamp);
+CREATE TABLE `character`(id INT NOT NULL IDENTITY PRIMARY KEY, name VARCHAR(20), guild_id INT, deleted_time timestamp,
+  constraint fk_character_guild_id foreign key(guild_id) references guild(id));
+CREATE TABLE guild_house(id INT NOT NULL IDENTITY PRIMARY KEY, name VARCHAR(20), guild_id INT, deleted_time timestamp,
+  constraint fk_guild_house_guild_id foreign key(guild_id) references guild(id));
+""")
+    def create()
+    @Script("""
+DROP TABLE guild_house;
+DROP TABLE `character`;
+DROP TABLE guild;
+""")
+    def drop()
+  }
 }

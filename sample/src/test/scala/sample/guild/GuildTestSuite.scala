@@ -10,8 +10,8 @@ class GuildTestSuite extends FunSuite with BeforeAndAfter {
   implicit val guildDao: GuildDao = GuildDao.impl
   implicit val characterDao: CharacterDao = CharacterDao.impl
   implicit val guildHouseDao: GuildHouseDao = GuildHouseDao.impl
-  val app = new GuildApp()
-  val envDao: EnvDao = EnvDao.impl
+  val app = new GuildService
+  val envDao: GuildApp.EnvDao = GuildApp.EnvDao.impl
 
   before {
     Required {
@@ -32,13 +32,10 @@ class GuildTestSuite extends FunSuite with BeforeAndAfter {
         .zip(
           Stream
             .continually(guilds
-              .filter {
-                case Guild(ID(4), _) | Guild(ID(8), _) => false
-                case _                                 => true
-              }
               .flatMap {
                 case Guild(id @ ID(3), _) => Seq(id, id, id)
                 case Guild(id @ ID(5), _) => Seq(id, id)
+                case Guild(ID(4), _) | Guild(ID(8), _) => Nil
                 case Guild(id, _)         => Seq(id)
               })
             .flatten
@@ -157,25 +154,6 @@ class GuildTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       assert(guildHouseDao.findByGuildIds(Nil, _.toList).isEmpty)
     }
-  }
-
-  @Dao
-  trait EnvDao {
-    @Script(
-      """
-CREATE TABLE guild(id INT NOT NULL IDENTITY PRIMARY KEY, name VARCHAR(20), deleted_time timestamp);
-CREATE TABLE `character`(id INT NOT NULL IDENTITY PRIMARY KEY, name VARCHAR(20), guild_id INT, deleted_time timestamp,
-  constraint fk_character_guild_id foreign key(guild_id) references guild(id));
-CREATE TABLE guild_house(id INT NOT NULL IDENTITY PRIMARY KEY, name VARCHAR(20), guild_id INT, deleted_time timestamp,
-  constraint fk_guild_house_guild_id foreign key(guild_id) references guild(id));
-""")
-    def create()
-    @Script("""
-DROP TABLE guild_house;
-DROP TABLE `character`;
-DROP TABLE guild;
-""")
-    def drop()
   }
 
 }
