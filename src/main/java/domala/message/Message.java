@@ -33,7 +33,7 @@ import org.seasar.doma.message.MessageResource;
 @SuppressWarnings("WeakerAccess")
 public enum Message implements MessageResource {
     // macros
-    DOMALA4001("戻り値の型は更新件数を示すIntでなければいけません。 at {0}.{1}"),
+    DOMALA4001("戻り値の型はエンティティクラスをパラメータとする場合はdomala.jdbc.Result<E>、そうでない場合は更新件数を示すIntでなければいけません at {0}.{1}"),
     DOMALA4002(org.seasar.doma.message.Message.DOMA4002.getMessagePattern()),
     DOMALA4003(org.seasar.doma.message.Message.DOMA4003.getMessagePattern()),
     DOMALA4005(org.seasar.doma.message.Message.DOMA4005.getMessagePattern()),
@@ -52,7 +52,7 @@ public enum Message implements MessageResource {
     DOMALA4036(org.seasar.doma.message.Message.DOMA4036.getMessagePattern()),
     DOMALA4037(org.seasar.doma.message.Message.DOMA4037.getMessagePattern()),
     // TODO: DOMALA4038 EntityListenerの型パラメータ検査
-    DOMALA4040("戻り値の型は更新件数を示すArray[Int]でなければいけません。 at {0}.{1}"),
+    DOMALA4040("戻り値の型はエンティティクラスをパラメータとする場合はdomala.jdbc.BatchResult<E>、そうでない場合は更新件数を示すArray[Int]でなければいけません。 at {0}.{1}"),
     DOMALA4042("パラーメータの型は型パラメータを一つとる、scala.collection.Iterableのサブタイプでなければいけません。 at {0}.{1}"),
     DOMALA4043("scala.collection.Iterableのサブタイプに対する実型引数はエンティティクラスでなければいけません。 at {0}.{1}"),
     DOMALA4051(org.seasar.doma.message.Message.DOMA4051.getMessagePattern()),
