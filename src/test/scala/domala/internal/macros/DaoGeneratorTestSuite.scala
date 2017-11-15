@@ -74,8 +74,7 @@ trait PersonDao {
           __query.setFetchSize(-1)
           __query.setSqlLogType(org.seasar.doma.jdbc.SqlLogType.FORMATTED)
           __query.prepare()
-          import domala.internal.OptionConverters._
-          val __result: Option[Person] = getCommandImplementors.createSelectCommand(__method0, __query, domala.internal.macros.reflect.DaoReflectionMacros.getOptionalSingleResultHandler[Person]("PersonDao", "selectById")).execute().asScala
+          val __result: Option[Person] = domala.internal.OptionConverters.asScala(getCommandImplementors.createSelectCommand(__method0, __query, domala.internal.macros.reflect.DaoReflectionMacros.getOptionalSingleResultHandler[Person]("PersonDao", "selectById")).execute())
           __query.complete()
           exiting("PersonDao", "selectById", __result)
           __result
@@ -108,7 +107,7 @@ trait PersonDao {
           val __command = getCommandImplementors.createInsertCommand(__method1, __query)
           val __count = __command.execute()
           __query.complete()
-          val __result = new domala.jdbc.Result[Person](__count, __query.getEntity)
+          val __result = domala.jdbc.Result[Person](__count, __query.getEntity)
           exiting("PersonDao", "insert", __result)
           __result
         } catch {
@@ -143,7 +142,7 @@ trait PersonDao {
           val __command = getCommandImplementors.createUpdateCommand(__method2, __query)
           val __count = __command.execute()
           __query.complete()
-          val __result = new domala.jdbc.Result[Person](__count, __query.getEntity)
+          val __result = domala.jdbc.Result[Person](__count, __query.getEntity)
           exiting("PersonDao", "update", __result)
           __result
         } catch {
@@ -206,7 +205,7 @@ trait PersonDao {
           val __command = getCommandImplementors.createBatchInsertCommand(__method4, __query)
           val __count = __command.execute()
           __query.complete()
-          val __result = new domala.jdbc.BatchResult[Person](__count, __query.getEntities.asScala)
+          val __result = domala.jdbc.BatchResult[Person](__count, __query.getEntities.asScala)
           exiting("PersonDao", "batchInsert", __result)
           __result
         } catch {
@@ -240,7 +239,7 @@ trait PersonDao {
           val __command = getCommandImplementors.createBatchUpdateCommand(__method5, __query)
           val __count = __command.execute()
           __query.complete()
-          val __result = new domala.jdbc.BatchResult[Person](__count, __query.getEntities.asScala)
+          val __result = domala.jdbc.BatchResult[Person](__count, __query.getEntities.asScala)
           exiting("PersonDao", "batchUpdate", __result)
           __result
         } catch {

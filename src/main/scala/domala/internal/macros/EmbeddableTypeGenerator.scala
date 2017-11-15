@@ -1,5 +1,6 @@
 package domala.internal.macros
 
+import domala.internal.macros.helper.LiteralConverters._
 import domala.internal.macros.helper.{CaseClassMacroHelper, MacrosHelper, TypeHelper}
 import domala.message.Message
 
@@ -61,7 +62,7 @@ object EmbeddableTypeGenerator {
       q"""
       domala.internal.macros.reflect.EmbeddableReflectionMacros.generatePropertyType[$tpe, ENTITY, $nakedTpe](
         entityClass,
-        embeddedPropertyName + "." + ${name.syntax},
+        embeddedPropertyName + "." + ${name.literal},
         namingType,
         ${if(isBasic) q"true" else q"false"},
         $newWrapperExpr,
@@ -83,8 +84,8 @@ object EmbeddableTypeGenerator {
       val Term.Param(_, name, Some(decltpe), _) = p
       val tpe = Type.Name(decltpe.toString)
       q"""
-      { (if(__args.get(embeddedPropertyName + "." + ${name.syntax}) != null )
-          __args.get(embeddedPropertyName + "." + ${name.syntax} )
+      { (if(__args.get(embeddedPropertyName + "." + ${name.literal}) != null )
+          __args.get(embeddedPropertyName + "." + ${name.literal} )
         else null).get().asInstanceOf[$tpe] }
       """
     }

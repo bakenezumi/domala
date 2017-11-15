@@ -1,5 +1,6 @@
 package domala.internal.macros
 
+import domala.internal.macros.helper.LiteralConverters._
 import domala.internal.macros.helper.DaoMacroHelper
 
 import scala.collection.immutable.Seq
@@ -24,7 +25,7 @@ object SqlBatchModifyQueryGenerator {
     val checkNullParameter = params.map(p => {
       q"""
       if (${Term.Name(p.name.syntax)} == null) {
-        throw new org.seasar.doma.DomaNullPointerException(${p.name.syntax})
+        throw new org.seasar.doma.DomaNullPointerException(${p.name.literal})
       }
       """
     })
@@ -32,39 +33,39 @@ object SqlBatchModifyQueryGenerator {
     val (isReturnResult, _) = DaoMacroHelper.getBatchResultType(defDecl)
 
     val daoParam =
-      q"domala.internal.macros.DaoParam.apply(${paramName.syntax}, $paramName, classOf[$paramType])"
+      q"domala.internal.macros.DaoParam.apply(${paramName.literal}, $paramName, classOf[$paramType])"
 
     val entityTypeOption = q"""
-    domala.internal.macros.reflect.DaoReflectionMacros.getBatchEntityType(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, classOf[$internalType], $daoParam)
+    domala.internal.macros.reflect.DaoReflectionMacros.getBatchEntityType(${defDecl.trtName.literal}, ${defDecl.name.literal}, classOf[$internalType], $daoParam)
     """
     val result = if(isReturnResult) {
-      q"new domala.jdbc.BatchResult(__counts, __query.getEntities.asScala)"
+      q"domala.jdbc.BatchResult(__counts, __query.getEntities.asScala)"
     } else {
       q"__counts"
     }
 
     val daoParamType =
-      q"domala.internal.macros.DaoParamClass.apply(${paramName.syntax}, classOf[$internalType])"
+      q"domala.internal.macros.DaoParamClass.apply(${paramName.literal}, classOf[$internalType])"
 
     //noinspection ScalaUnusedSymbol
     val suppress = defDecl._def.mods.collectFirst {
-      case mod"@Suppress(messages=$_(..$x))" => x.map(xx =>  arg"${xx.toString()}")
+      case mod"@Suppress(messages=$_(..$x))" => x.map(xx => {arg"${Term.Name("\"" + xx.syntax + "\"")}" })
 //      case mod"@Suppress($x)" => arg"$x.map(_.name)"
     }.getOrElse(Nil)
 
     q"""
     override def ${defDecl.name} = {
-      domala.internal.macros.reflect.DaoReflectionMacros.validateBatchParameterAndSql(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, false, $populatable, ${commonSetting.sql}, $daoParamType, ..$suppress)
-      entering(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, $paramName)
+      domala.internal.macros.reflect.DaoReflectionMacros.validateBatchParameterAndSql(${defDecl.trtName.literal}, ${defDecl.name.literal}, false, $populatable, ${commonSetting.sql}, $daoParamType, ..$suppress)
+      entering(${defDecl.trtName.literal}, ${defDecl.name.literal}, $paramName)
       try {
         val __query = ${query(entityTypeOption)}
         ..$checkNullParameter
         __query.setMethod($internalMethodName)
         __query.setConfig(__config)
         __query.setElements($paramName)
-        __query.setParameterName(${paramName.syntax})
-        __query.setCallerClassName(${defDecl.trtName.syntax})
-        __query.setCallerMethodName(${defDecl.name.syntax})
+        __query.setParameterName(${paramName.literal})
+        __query.setCallerClassName(${defDecl.trtName.literal})
+        __query.setCallerMethodName(${defDecl.name.literal})
         __query.setQueryTimeout(${commonSetting.queryTimeOut})
         __query.setBatchSize(${commonSetting.batchSize})
         __query.setSqlLogType(${commonSetting.sqlLogType})
@@ -74,11 +75,11 @@ object SqlBatchModifyQueryGenerator {
         val __counts = __command.execute()
         __query.complete()
         val __result = $result
-        exiting(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, __result)
+        exiting(${defDecl.trtName.literal}, ${defDecl.name.literal}, __result)
         __result
       } catch {
         case __e: java.lang.RuntimeException => {
-          throwing(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, __e)
+          throwing(${defDecl.trtName.literal}, ${defDecl.name.literal}, __e)
           throw __e
         }
       }

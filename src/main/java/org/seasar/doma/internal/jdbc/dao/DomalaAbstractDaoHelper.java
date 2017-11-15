@@ -8,6 +8,7 @@ import java.sql.Connection;
 // Scalaではコンストラクタオーバーロードが困難であり、
 // NeverClosedConnection, NeverClosedConnectionProviderがパッケージプライベートのため
 // このパッケージにてフックしている
+@SuppressWarnings("unused")
 public class DomalaAbstractDaoHelper {
     public static DataSource toDataSource(Connection connection) {
         if (connection == null) {

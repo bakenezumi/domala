@@ -1,5 +1,6 @@
 package domala.internal.macros
 
+import domala.internal.macros.helper.LiteralConverters._
 import domala.internal.macros.helper.{DaoMacroHelper, TypeHelper}
 
 import scala.collection.immutable.Seq
@@ -28,7 +29,7 @@ object SqlModifyQueryGenerator {
         case _ =>
           q"""
           if (${Term.Name(p.name.syntax)} == null) {
-            throw new org.seasar.doma.DomaNullPointerException(${p.name.syntax})
+            throw new org.seasar.doma.DomaNullPointerException(${p.name.literal})
           }
           """
       }
@@ -41,20 +42,20 @@ object SqlModifyQueryGenerator {
           t"${Type.Name(container.toString)}[..$placeHolder]"
         case _ => t"${Type.Name(p.decltpe.get.toString)}"
       }
-      q"__query.addParameter(${p.name.syntax}, classOf[$paramTpe], ${Term.Name(p.name.syntax): Term.Arg})"
+      q"__query.addParameter(${p.name.literal}, classOf[$paramTpe], ${Term.Name(p.name.syntax): Term.Arg})"
     }
 
     val (isReturnResult, entityType) = DaoMacroHelper.getResultType(defDecl)
 
     val daoParams = defDecl.paramss.flatten.map { p =>
-      q"domala.internal.macros.DaoParam.apply(${p.name.syntax}, ${Term.Name(p.name.syntax)}, classOf[${TypeHelper.toType(p.decltpe.get)}])"
+      q"domala.internal.macros.DaoParam.apply(${p.name.literal}, ${Term.Name(p.name.syntax)}, classOf[${TypeHelper.toType(p.decltpe.get)}])"
     }
 
     val entityAndEntityType = q"""
-    domala.internal.macros.reflect.DaoReflectionMacros.getEntityAndEntityType(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, classOf[${defDecl.tpe}], ..$daoParams)
+    domala.internal.macros.reflect.DaoReflectionMacros.getEntityAndEntityType(${defDecl.trtName.literal}, ${defDecl.name.literal}, classOf[${defDecl.tpe}], ..$daoParams)
     """
     val result = if(isReturnResult) {
-      q"new domala.jdbc.Result(__count, __query.getEntity.asInstanceOf[$entityType])"
+      q"domala.jdbc.Result(__count, __query.getEntity.asInstanceOf[$entityType])"
     } else {
       q"__count"
     }
@@ -63,21 +64,21 @@ object SqlModifyQueryGenerator {
       val pType: Type = p.decltpe.get match {
         case tpe => TypeHelper.toType(tpe)
       }
-      q"domala.internal.macros.DaoParamClass.apply(${p.name.syntax}, classOf[$pType])"
+      q"domala.internal.macros.DaoParamClass.apply(${p.name.literal}, classOf[$pType])"
     }
 
     q"""
     override def ${defDecl.name} = {
-      domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, false, $populatable, ${commonSetting.sql}, ..$daoParamTypes)
-      entering(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, ..$enteringParam)
+      domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql(${defDecl.trtName.literal}, ${defDecl.name.literal}, false, $populatable, ${commonSetting.sql}, ..$daoParamTypes)
+      entering(${defDecl.trtName.literal}, ${defDecl.name.literal}, ..$enteringParam)
       try {
         val __query = ${query(entityAndEntityType)}
         ..$checkNullParameter
         __query.setMethod($internalMethodName)
         __query.setConfig(__config)
         ..$addParameters
-        __query.setCallerClassName(${defDecl.trtName.syntax})
-        __query.setCallerMethodName(${defDecl.name.syntax})
+        __query.setCallerClassName(${defDecl.trtName.literal})
+        __query.setCallerMethodName(${defDecl.name.literal})
         __query.setQueryTimeout(${commonSetting.queryTimeOut})
         __query.setSqlLogType(${commonSetting.sqlLogType})
         ..$otherQuerySettings
@@ -86,11 +87,11 @@ object SqlModifyQueryGenerator {
         val __count = __command.execute()
         __query.complete()
         val __result = $result
-        exiting(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, __result)
+        exiting(${defDecl.trtName.literal}, ${defDecl.name.literal}, __result)
         __result
       } catch {
         case __e: java.lang.RuntimeException => {
-          throwing(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, __e)
+          throwing(${defDecl.trtName.literal}, ${defDecl.name.literal}, __e)
           throw __e
         }
       }

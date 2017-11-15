@@ -1,5 +1,6 @@
 package domala.internal.macros
 
+import domala.internal.macros.helper.LiteralConverters._
 import domala.internal.macros.helper.{DaoMacroHelper, MacrosHelper}
 import domala.message.Message
 
@@ -12,9 +13,9 @@ object AutoBatchModifyQueryGenerator {
       MacrosHelper.abort(Message.DOMALA4002,
               defDecl.trtName.value, defDecl.name.value)
     defDecl.paramss.flatten.head match {
-      case param"$paramName: ${Some(paramTpe)}" =>
+      case param"$paramName: ${paramTpe}" =>
         paramTpe match {
-          case t"$tpe[$internalTpe]" =>
+          case Some(t"$tpe[$internalTpe]") =>
             (Term.Name(paramName.value), Type.Name(t"$tpe[$internalTpe]".syntax), Type.Name(internalTpe.syntax))
           case _ =>
             MacrosHelper.abort(Message.DOMALA4042,
@@ -36,25 +37,25 @@ object AutoBatchModifyQueryGenerator {
     val (isReturnBatchResult, entityType) =
       DaoMacroHelper.getBatchResultType(defDecl)
     val result = if (isReturnBatchResult) {
-      q"new domala.jdbc.BatchResult[$entityType](__count, __query.getEntities.asScala)"
+      q"domala.jdbc.BatchResult[$entityType](__count, __query.getEntities.asScala)"
     } else {
       q"__count"
     }
 
     q"""
     override def ${defDecl.name} = {
-      domala.internal.macros.reflect.DaoReflectionMacros.validateAutoBatchModifyParam(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, classOf[$paramType], classOf[$internalType])
-      entering(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, $paramName)
+      domala.internal.macros.reflect.DaoReflectionMacros.validateAutoBatchModifyParam(${defDecl.trtName.literal}, ${defDecl.name.literal}, classOf[$paramType], classOf[$internalType])
+      entering(${defDecl.trtName.literal}, ${defDecl.name.literal}, $paramName)
       try {
         if ($paramName == null) {
-          throw new org.seasar.doma.DomaNullPointerException(${paramName.syntax})
+          throw new org.seasar.doma.DomaNullPointerException(${paramName.literal})
         }
         val __query = $query
         __query.setMethod($internalMethodName)
         __query.setConfig(__config)
         __query.setEntities($paramName.asJava)
-        __query.setCallerClassName(${defDecl.trtName.syntax})
-        __query.setCallerMethodName(${defDecl.name.syntax})
+        __query.setCallerClassName(${defDecl.trtName.literal})
+        __query.setCallerMethodName(${defDecl.name.literal})
         __query.setBatchSize(${commonSetting.batchSize})
         __query.setQueryTimeout(${commonSetting.queryTimeOut})
         __query.setSqlLogType(${commonSetting.sqlLogType})
@@ -64,11 +65,11 @@ object AutoBatchModifyQueryGenerator {
         val __count = __command.execute()
         __query.complete()
         val __result = $result
-        exiting(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, __result)
+        exiting(${defDecl.trtName.literal}, ${defDecl.name.literal}, __result)
         __result
       } catch {
         case __e: java.lang.RuntimeException => {
-          throwing(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, __e)
+          throwing(${defDecl.trtName.literal}, ${defDecl.name.literal}, __e)
           throw __e
         }
       }

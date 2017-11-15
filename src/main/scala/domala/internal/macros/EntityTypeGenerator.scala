@@ -1,6 +1,7 @@
 package domala.internal.macros
 
 import domala.GenerationType
+import domala.internal.macros.helper.LiteralConverters._
 import domala.internal.macros.helper.TypeHelper.toType
 import domala.internal.macros.helper.{CaseClassMacroHelper, MacrosHelper, TypeHelper}
 import domala.message.Message
@@ -75,8 +76,8 @@ object EntityTypeGenerator {
     val propertyTypesFields =
       q"""
       private[this] val __idList = new java.util.ArrayList[org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]]()
-      private[this] val __list = new java.util.ArrayList[org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]]($propertySize)
-      private[this] val __map = new java.util.HashMap[String, org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]]($propertySize)
+      private[this] val __list = new java.util.ArrayList[org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]](${Term.Name(propertySize.toString)})
+      private[this] val __map = new java.util.HashMap[String, org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]](${Term.Name(propertySize.toString)})
       private[this] val __collections = domala.internal.macros.reflect.EntityCollections[$clsName](__list, __map, __idList)
       """.stats
 
@@ -223,7 +224,7 @@ object EntityTypeGenerator {
       q"""
       private[this] val $propertyName = domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyType[$tpe, $clsName, $nakedTpe](
         classOf[$clsName],
-        ${name.syntax},
+        ${name.literal},
         __namingType,
         ${if(isId) q"true" else q"false"},
         ${if(isIdGenerate) q"true" else q"false"},
@@ -316,11 +317,11 @@ object EntityTypeGenerator {
       }
     }
 
-    override def isQuoteRequired = __isQuoteRequired
+    override def isQuoteRequired: Boolean = __isQuoteRequired
 
     override def preInsert(
         entity: $clsName,
-        context: org.seasar.doma.jdbc.entity.PreInsertContext[$clsName]) = {
+        context: org.seasar.doma.jdbc.entity.PreInsertContext[$clsName]): Unit = {
       val __listenerClass =
         classOf[${entitySetting.listener}]
       val __listener =
@@ -331,7 +332,7 @@ object EntityTypeGenerator {
 
     override def preUpdate(
         entity: $clsName,
-        context: org.seasar.doma.jdbc.entity.PreUpdateContext[$clsName]) = {
+        context: org.seasar.doma.jdbc.entity.PreUpdateContext[$clsName]): Unit = {
       val __listenerClass =
         classOf[${entitySetting.listener}]
       val __listener =
@@ -342,7 +343,7 @@ object EntityTypeGenerator {
 
     override def preDelete(
         entity: $clsName,
-        context: org.seasar.doma.jdbc.entity.PreDeleteContext[$clsName]) = {
+        context: org.seasar.doma.jdbc.entity.PreDeleteContext[$clsName]): Unit = {
       val __listenerClass =
         classOf[${entitySetting.listener}]
       val __listener =
@@ -353,7 +354,7 @@ object EntityTypeGenerator {
 
     override def postInsert(
         entity: $clsName,
-        context: org.seasar.doma.jdbc.entity.PostInsertContext[$clsName]) = {
+        context: org.seasar.doma.jdbc.entity.PostInsertContext[$clsName]): Unit = {
       val __listenerClass =
         classOf[${entitySetting.listener}]
       val __listener =
@@ -364,7 +365,7 @@ object EntityTypeGenerator {
 
     override def postUpdate(
         entity: $clsName,
-        context: org.seasar.doma.jdbc.entity.PostUpdateContext[$clsName]) = {
+        context: org.seasar.doma.jdbc.entity.PostUpdateContext[$clsName]): Unit = {
       val __listenerClass =
         classOf[${entitySetting.listener}]
       val __listener =
@@ -375,7 +376,7 @@ object EntityTypeGenerator {
 
     override def postDelete(
         entity: $clsName,
-        context: org.seasar.doma.jdbc.entity.PostDeleteContext[$clsName]) = {
+        context: org.seasar.doma.jdbc.entity.PostDeleteContext[$clsName]): Unit = {
       val __listenerClass =
         classOf[${entitySetting.listener}]
       val __listener =
@@ -384,11 +385,11 @@ object EntityTypeGenerator {
       __listener.postDelete(entity, context)
     }
 
-    override def getEntityPropertyTypes = __entityPropertyTypes
+    override def getEntityPropertyTypes: java.util.List[org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]] = __entityPropertyTypes
 
-    override def getEntityPropertyType(__name: String) = __entityPropertyTypeMap.get(__name)
+    override def getEntityPropertyType(__name: String): org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _] = __entityPropertyTypeMap.get(__name)
 
-    override def getIdPropertyTypes = __idPropertyTypes
+    override def getIdPropertyTypes: java.util.List[org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]] = __idPropertyTypes
 
     override def getGeneratedIdPropertyType: org.seasar.doma.jdbc.entity.GeneratedIdPropertyType[_ >: $clsName, $clsName, _, _] = ${generateGeneratedIdPropertyType(clsName, ctor)}
 
@@ -398,7 +399,7 @@ object EntityTypeGenerator {
 
     """.stats ++ {
         val params = ctor.paramss.flatten.map { p =>
-          q"domala.internal.macros.reflect.EntityReflectionMacros.readProperty[${toType(p.decltpe.get)}, $clsName](classOf[$clsName], __args, ${p.name.syntax})"
+          q"domala.internal.macros.reflect.EntityReflectionMacros.readProperty[${toType(p.decltpe.get)}, $clsName](classOf[$clsName], __args, ${p.name.literal})"
         }
         Seq(
           q"""
@@ -412,7 +413,7 @@ object EntityTypeGenerator {
           """)
     } ++
     q"""
-    override def getEntityClass = classOf[$clsName]
+    override def getEntityClass: Class[$clsName] = classOf[$clsName]
 
     override def getOriginalStates(__entity: $clsName): $clsName = null
 

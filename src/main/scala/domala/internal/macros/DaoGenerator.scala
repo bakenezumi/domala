@@ -1,5 +1,6 @@
 package domala.internal.macros
 
+import domala.internal.macros.helper.LiteralConverters._
 import domala.internal.macros.helper.{MacrosHelper, TypeHelper}
 import domala.message.Message
 import org.seasar.doma.internal.apt.meta.MetaConstants
@@ -84,12 +85,12 @@ object DaoGenerator {
               val placeHolder = inner.map(_ => t"_")
               q"classOf[${Type.Name(container.toString)}[..$placeHolder]]"
             case t"$_ => $_" =>
-              q"classOf[scala.Function1[_, _]]"
+              q"classOf[(_) => _]"
             case _ => q"classOf[${TypeHelper.toType(p.decltpe.get)}]"
           }
         }) ++ _def.tparams.map(_ => q"classOf[scala.reflect.ClassTag[_]]") // ClassTag型パラメータを付与した場合、実行時は実パラメータとなる
         q"""private[this] val ${Pat.Var.Term(internalMethodName)} =
-            org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[$trtName], ${_def.name.syntax}..$paramClasses)"""
+            org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[$trtName], ${_def.name.literal}..$paramClasses)"""
       }, {
         val defImpl = _def.mods.collect {
           case mod"@Script(..$modParams)" => (ScriptGenerator, modParams)

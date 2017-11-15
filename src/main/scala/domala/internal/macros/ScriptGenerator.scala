@@ -1,6 +1,7 @@
 package domala.internal.macros
 
 import domala.Script
+import domala.internal.macros.helper.LiteralConverters._
 import domala.internal.macros.helper.{DaoMacroHelper, MacrosHelper}
 import domala.message.Message
 
@@ -45,13 +46,13 @@ object ScriptGenerator extends DaoMethodGenerator {
 
     q"""
     override def $name = {
-      entering(${trtName.syntax}, ${name.syntax})
+      entering(${trtName.literal}, ${name.literal})
       try {
         val __query = new domala.jdbc.query.SqlAnnotationScriptQuery(${commonSetting.sql})
         __query.setMethod($internalMethodName)
         __query.setConfig(__config)
-        __query.setCallerClassName(${trtName.syntax})
-        __query.setCallerMethodName(${name.syntax})
+        __query.setCallerClassName(${trtName.literal})
+        __query.setCallerMethodName(${name.literal})
         __query.setBlockDelimiter(${scriptSetting.blockDelimiter})
         __query.setHaltOnError(${scriptSetting.haltOnError})
         __query.setSqlLogType(${commonSetting.sqlLogType})
@@ -59,10 +60,10 @@ object ScriptGenerator extends DaoMethodGenerator {
         val __command = getCommandImplementors.createScriptCommand($internalMethodName, __query)
         __command.execute()
         __query.complete()
-        exiting(${trtName.syntax}, ${name.syntax}, null)
+        exiting(${trtName.literal}, ${name.literal}, null)
       } catch {
         case __e: java.lang.RuntimeException => {
-          throwing(${trtName.syntax}, ${name.syntax}, __e)
+          throwing(${trtName.literal}, ${name.literal}, __e)
           throw __e
         }
       }

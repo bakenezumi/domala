@@ -63,45 +63,45 @@ case class Person(
       __tableName
     }
   }
-  override def isQuoteRequired = __isQuoteRequired
-  override def preInsert(entity: Person, context: org.seasar.doma.jdbc.entity.PreInsertContext[Person]) = {
+  override def isQuoteRequired: Boolean = __isQuoteRequired
+  override def preInsert(entity: Person, context: org.seasar.doma.jdbc.entity.PreInsertContext[Person]): Unit = {
     val __listenerClass = classOf[org.seasar.doma.jdbc.entity.NullEntityListener[Person]]
     val __listener = context.getConfig.getEntityListenerProvider.get[Person, org.seasar.doma.jdbc.entity.NullEntityListener[Person]](__listenerClass, __listenerSupplier)
     __listener.preInsert(entity, context)
   }
-  override def preUpdate(entity: Person, context: org.seasar.doma.jdbc.entity.PreUpdateContext[Person]) = {
+  override def preUpdate(entity: Person, context: org.seasar.doma.jdbc.entity.PreUpdateContext[Person]): Unit = {
     val __listenerClass = classOf[org.seasar.doma.jdbc.entity.NullEntityListener[Person]]
     val __listener = context.getConfig.getEntityListenerProvider.get[Person, org.seasar.doma.jdbc.entity.NullEntityListener[Person]](__listenerClass, __listenerSupplier)
     __listener.preUpdate(entity, context)
   }
-  override def preDelete(entity: Person, context: org.seasar.doma.jdbc.entity.PreDeleteContext[Person]) = {
+  override def preDelete(entity: Person, context: org.seasar.doma.jdbc.entity.PreDeleteContext[Person]): Unit = {
     val __listenerClass = classOf[org.seasar.doma.jdbc.entity.NullEntityListener[Person]]
     val __listener = context.getConfig.getEntityListenerProvider.get[Person, org.seasar.doma.jdbc.entity.NullEntityListener[Person]](__listenerClass, __listenerSupplier)
     __listener.preDelete(entity, context)
   }
-  override def postInsert(entity: Person, context: org.seasar.doma.jdbc.entity.PostInsertContext[Person]) = {
+  override def postInsert(entity: Person, context: org.seasar.doma.jdbc.entity.PostInsertContext[Person]): Unit = {
     val __listenerClass = classOf[org.seasar.doma.jdbc.entity.NullEntityListener[Person]]
     val __listener = context.getConfig.getEntityListenerProvider.get[Person, org.seasar.doma.jdbc.entity.NullEntityListener[Person]](__listenerClass, __listenerSupplier)
     __listener.postInsert(entity, context)
   }
-  override def postUpdate(entity: Person, context: org.seasar.doma.jdbc.entity.PostUpdateContext[Person]) = {
+  override def postUpdate(entity: Person, context: org.seasar.doma.jdbc.entity.PostUpdateContext[Person]): Unit = {
     val __listenerClass = classOf[org.seasar.doma.jdbc.entity.NullEntityListener[Person]]
     val __listener = context.getConfig.getEntityListenerProvider.get[Person, org.seasar.doma.jdbc.entity.NullEntityListener[Person]](__listenerClass, __listenerSupplier)
     __listener.postUpdate(entity, context)
   }
-  override def postDelete(entity: Person, context: org.seasar.doma.jdbc.entity.PostDeleteContext[Person]) = {
+  override def postDelete(entity: Person, context: org.seasar.doma.jdbc.entity.PostDeleteContext[Person]): Unit = {
     val __listenerClass = classOf[org.seasar.doma.jdbc.entity.NullEntityListener[Person]]
     val __listener = context.getConfig.getEntityListenerProvider.get[Person, org.seasar.doma.jdbc.entity.NullEntityListener[Person]](__listenerClass, __listenerSupplier)
     __listener.postDelete(entity, context)
   }
-  override def getEntityPropertyTypes = __entityPropertyTypes
-  override def getEntityPropertyType(__name: String) = __entityPropertyTypeMap.get(__name)
-  override def getIdPropertyTypes = __idPropertyTypes
+  override def getEntityPropertyTypes: java.util.List[org.seasar.doma.jdbc.entity.EntityPropertyType[Person, _]] = __entityPropertyTypes
+  override def getEntityPropertyType(__name: String): org.seasar.doma.jdbc.entity.EntityPropertyType[Person, _] = __entityPropertyTypeMap.get(__name)
+  override def getIdPropertyTypes: java.util.List[org.seasar.doma.jdbc.entity.EntityPropertyType[Person, _]] = __idPropertyTypes
   override def getGeneratedIdPropertyType: org.seasar.doma.jdbc.entity.GeneratedIdPropertyType[_ >: Person, Person, _, _] = $id.asInstanceOf[org.seasar.doma.jdbc.entity.GeneratedIdPropertyType[Person, Person, _ <: Number, _]]
   override def getVersionPropertyType: org.seasar.doma.jdbc.entity.VersionPropertyType[_ >: Person, Person, _, _] = $version.asInstanceOf[org.seasar.doma.jdbc.entity.VersionPropertyType[Person, Person, _ <: Number, _]]
   override def getTenantIdPropertyType: org.seasar.doma.jdbc.entity.TenantIdPropertyType[_ >: Person, Person, _, _] = null
   override def newEntity(__args: java.util.Map[String, org.seasar.doma.jdbc.entity.Property[Person, _]]) = new Person(domala.internal.macros.reflect.EntityReflectionMacros.readProperty[Option[ID[Person]], Person](classOf[Person], __args, "id"), domala.internal.macros.reflect.EntityReflectionMacros.readProperty[Option[Name], Person](classOf[Person], __args, "name"), domala.internal.macros.reflect.EntityReflectionMacros.readProperty[Option[Int], Person](classOf[Person], __args, "age"), domala.internal.macros.reflect.EntityReflectionMacros.readProperty[Address, Person](classOf[Person], __args, "address"), domala.internal.macros.reflect.EntityReflectionMacros.readProperty[Option[Int], Person](classOf[Person], __args, "departmentId"), domala.internal.macros.reflect.EntityReflectionMacros.readProperty[Option[Int], Person](classOf[Person], __args, "version"))
-  override def getEntityClass = classOf[Person]
+  override def getEntityClass: Class[Person] = classOf[Person]
   override def getOriginalStates(__entity: Person): Person = null
   override def saveCurrentStates(__entity: Person): Unit = {}
 }"""

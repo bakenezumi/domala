@@ -1,5 +1,6 @@
 package domala.internal.macros
 
+import domala.internal.macros.helper.LiteralConverters._
 import domala.internal.macros.helper.{DaoMacroHelper, MacrosHelper}
 import domala.message.Message
 
@@ -29,25 +30,25 @@ object AutoModifyQueryGenerator {
 
     val (isReturnResult, entityType) = DaoMacroHelper.getResultType(defDecl)
     val result = if (isReturnResult) {
-      q"new domala.jdbc.Result[$entityType](__count, __query.getEntity)"
+      q"domala.jdbc.Result[$entityType](__count, __query.getEntity)"
     } else {
       q"__count"
     }
 
     q"""
     override def ${defDecl.name} = {
-      domala.internal.macros.reflect.DaoReflectionMacros.validateAutoModifyParam(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, classOf[$paramType])
-      entering(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, $paramName)
+      domala.internal.macros.reflect.DaoReflectionMacros.validateAutoModifyParam(${defDecl.trtName.literal}, ${defDecl.name.literal}, classOf[$paramType])
+      entering(${defDecl.trtName.literal}, ${defDecl.name.literal}, $paramName)
       try {
         if ($paramName == null) {
-          throw new org.seasar.doma.DomaNullPointerException(${paramName.syntax})
+          throw new org.seasar.doma.DomaNullPointerException(${paramName.literal})
         }
         val __query = $query
         __query.setMethod($internalMethodName)
         __query.setConfig(__config)
         __query.setEntity($paramName)
-        __query.setCallerClassName(${defDecl.trtName.syntax})
-        __query.setCallerMethodName(${defDecl.name.syntax})
+        __query.setCallerClassName(${defDecl.trtName.literal})
+        __query.setCallerMethodName(${defDecl.name.literal})
         __query.setQueryTimeout(${commonSetting.queryTimeOut})
         __query.setSqlLogType(${commonSetting.sqlLogType})
         ..$otherQuerySettings
@@ -56,11 +57,11 @@ object AutoModifyQueryGenerator {
         val __count = __command.execute()
         __query.complete()
         val __result = $result
-        exiting(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, __result)
+        exiting(${defDecl.trtName.literal}, ${defDecl.name.literal}, __result)
         __result
       } catch {
         case __e: java.lang.RuntimeException => {
-          throwing(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, __e)
+          throwing(${defDecl.trtName.literal}, ${defDecl.name.literal}, __e)
           throw __e
         }
       }

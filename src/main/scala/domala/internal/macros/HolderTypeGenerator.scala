@@ -16,7 +16,7 @@ object HolderTypeGenerator {
     val valueParam = cls.ctor.paramss.flatten.headOption.getOrElse(MacrosHelper.abort(Message.DOMALA6001))
     if (valueParam.name.syntax != "value") MacrosHelper.abort(Message.DOMALA6002)
     val (basicTpe: Type, wrapperSupplier: Term.Function, isNumeric) = TypeHelper.convertToDomaType(valueParam.decltpe.get) match {
-      case DomaType.Basic(_, convertedType, function, isNumeric) => (convertedType, function, isNumeric)
+      case DomaType.Basic(_, convertedType, function, numeric) => (convertedType, function, numeric)
       case _ => MacrosHelper.abort(Message.DOMALA4102, valueParam.decltpe.get.toString(), cls.name.syntax, valueParam.name.syntax)
     }
 

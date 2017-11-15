@@ -1,6 +1,7 @@
 package domala.internal.macros
 
 import domala.Select
+import domala.internal.macros.helper.LiteralConverters._
 import domala.internal.macros.helper.{DaoMacroHelper, MacrosHelper, TypeHelper}
 import domala.message.Message
 
@@ -82,7 +83,7 @@ object SelectGenerator extends DaoMethodGenerator {
               MacrosHelper.abort(Message.DOMALA4249, trtName.syntax, defDecl.name.syntax)
             }
             val functionParam = Term.Name(functionParams.head.name.toString)
-            q"""if ($functionParam == null) throw new org.seasar.doma.DomaNullPointerException(${functionParam.syntax})"""
+            q"""if ($functionParam == null) throw new org.seasar.doma.DomaNullPointerException(${functionParam.literal})"""
           }, true, false)
         case q"SelectType.ITERATOR" | q"ITERATOR" =>
           (Seq {
@@ -99,7 +100,7 @@ object SelectGenerator extends DaoMethodGenerator {
               MacrosHelper.abort(Message.DOMALA6010, trtName.syntax, defDecl.name.syntax)
             }
             val functionParam = Term.Name(functionParams.head.name.toString)
-            q"""if ($functionParam == null) throw new org.seasar.doma.DomaNullPointerException(${functionParam.syntax})"""
+            q"""if ($functionParam == null) throw new org.seasar.doma.DomaNullPointerException(${functionParam.literal})"""
           }, false, true)
         case _ => abort(_def.pos, "error")
       }
@@ -158,19 +159,20 @@ object SelectGenerator extends DaoMethodGenerator {
         TypeHelper.convertToDomaType(internalTpe) match {
           case DomaType.Map =>
             val command = commandTemplate(
-              q"""new org.seasar.doma.internal.jdbc.command.MapStreamHandler[$retTpe](${selectSetting.mapKeyNaming}, new java.util.function.Function[java.util.stream.Stream[java.util.Map[String, Object]], $retTpe](){
-            def apply(p: java.util.stream.Stream[java.util.Map[String, Object]]) = $functionParamTerm(domala.internal.WrapStream.of(p).map(_.asScala.toMap))
-            })""")
+              q"""
+              new org.seasar.doma.internal.jdbc.command.MapStreamHandler[$retTpe](${selectSetting.mapKeyNaming},
+                (p: java.util.stream.Stream[java.util.Map[String, Object]]) => $functionParamTerm(domala.internal.WrapStream.of(p).map(_.asScala.toMap))
+              )""")
             (
               q"$command.execute()",
               Nil
             )
           case DomaType.Basic(_, convertedType, wrapperSupplier, _) =>
             val command = commandTemplate(
-              q"""new org.seasar.doma.internal.jdbc.command.BasicStreamHandler(($wrapperSupplier),
-              new java.util.function.Function[java.util.stream.Stream[$convertedType], $retTpe](){
-              def apply(p: java.util.stream.Stream[$convertedType]) = $functionParamTerm(domala.internal.WrapStream.of(p).map(x => x: $internalTpe))
-            })""")
+              q"""
+              new org.seasar.doma.internal.jdbc.command.BasicStreamHandler(($wrapperSupplier),
+                (p: java.util.stream.Stream[$convertedType]) => $functionParamTerm(domala.internal.WrapStream.of(p).map(x => x: $internalTpe))
+              )""")
             (
               q"$command.execute()",
               Nil
@@ -178,7 +180,7 @@ object SelectGenerator extends DaoMethodGenerator {
           case DomaType.EntityOrHolderOrEmbeddable(_) =>
             // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
             val command = commandTemplate(
-              q"domala.internal.macros.reflect.DaoReflectionMacros.getStreamHandler($functionParamTerm, ${trtName.syntax}, ${defDecl.name.syntax})")
+              q"domala.internal.macros.reflect.DaoReflectionMacros.getStreamHandler($functionParamTerm, ${trtName.literal}, ${defDecl.name.literal})")
             (
               q"$command.execute()",
               Seq(q"domala.internal.macros.reflect.DaoReflectionMacros.setEntityType[$internalTpe](__query)")
@@ -215,19 +217,20 @@ object SelectGenerator extends DaoMethodGenerator {
         TypeHelper.convertToDomaType(internalTpe) match {
           case DomaType.Map =>
             val command = commandTemplate(
-              q"""new org.seasar.doma.internal.jdbc.command.MapStreamHandler[$retTpe](${selectSetting.mapKeyNaming}, new java.util.function.Function[java.util.stream.Stream[java.util.Map[String, Object]], $retTpe](){
-          def apply(p: java.util.stream.Stream[java.util.Map[String, Object]]) = $functionParamTerm(domala.internal.WrapIterator.of(p).map(_.asScala.toMap))
-          })""")
+              q"""
+              new org.seasar.doma.internal.jdbc.command.MapStreamHandler[$retTpe](${selectSetting.mapKeyNaming},
+                (p: java.util.stream.Stream[java.util.Map[String, Object]]) => $functionParamTerm(domala.internal.WrapIterator.of(p).map(_.asScala.toMap))
+              )""")
             (
               q"$command.execute()",
               Nil
             )
           case DomaType.Basic(_, convertedType, wrapperSupplier, _) =>
             val command = commandTemplate(
-              q"""new org.seasar.doma.internal.jdbc.command.BasicStreamHandler(($wrapperSupplier),
-            new java.util.function.Function[java.util.stream.Stream[$convertedType], $retTpe](){
-            def apply(p: java.util.stream.Stream[$convertedType]) = $functionParamTerm(domala.internal.WrapIterator.of(p).map(x => x: $internalTpe))
-          })""")
+              q"""
+              new org.seasar.doma.internal.jdbc.command.BasicStreamHandler(($wrapperSupplier),
+                (p: java.util.stream.Stream[$convertedType]) => $functionParamTerm(domala.internal.WrapIterator.of(p).map(x => x: $internalTpe))
+              )""")
             (
               q"$command.execute()",
               Nil
@@ -235,7 +238,7 @@ object SelectGenerator extends DaoMethodGenerator {
           case DomaType.EntityOrHolderOrEmbeddable(_) =>
             // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
             val command = commandTemplate(
-              q"domala.internal.macros.reflect.DaoReflectionMacros.getIteratorHandler($functionParamTerm, ${trtName.syntax}, ${defDecl.name.syntax})")
+              q"domala.internal.macros.reflect.DaoReflectionMacros.getIteratorHandler($functionParamTerm, ${trtName.literal}, ${defDecl.name.literal})")
             (
               q"$command.execute()",
               Seq(q"domala.internal.macros.reflect.DaoReflectionMacros.setEntityType[$internalTpe](__query)")
@@ -250,23 +253,23 @@ object SelectGenerator extends DaoMethodGenerator {
             val command = commandTemplate(
               q"new org.seasar.doma.internal.jdbc.command.OptionalMapSingleResultHandler(${selectSetting.mapKeyNaming})")
             (
-              q"$command.execute().asScala.map(x => x.asScala.toMap)",
+              q"domala.internal.OptionConverters.asScala($command.execute()).map(x => x.asScala.toMap)",
               Nil
             )
           case DomaType.Option(DomaType.Basic(_, _, wrapperSupplier, _), _) =>
             val command = commandTemplate(
               q"new org.seasar.doma.internal.jdbc.command.OptionalBasicSingleResultHandler($wrapperSupplier, false)")
             (
-              q"$command.execute().asScala.map(x => x)",
+              q"domala.internal.OptionConverters.asScala($command.execute()).map(x => x)",
               Nil
             )
           case DomaType
                 .Option(DomaType.EntityOrHolderOrEmbeddable(elementType), _) =>
             // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
             val command = commandTemplate(
-              q"domala.internal.macros.reflect.DaoReflectionMacros.getOptionalSingleResultHandler[$elementType](${trtName.syntax}, ${defDecl.name.syntax})")
+              q"domala.internal.macros.reflect.DaoReflectionMacros.getOptionalSingleResultHandler[$elementType](${trtName.literal}, ${defDecl.name.literal})")
             (
-              q"$command.execute().asScala",
+              q"domala.internal.OptionConverters.asScala($command.execute())",
               Seq(q"domala.internal.macros.reflect.DaoReflectionMacros.setEntityType[$elementType](__query)")
             )
           case DomaType.Option(_, elementTpe) =>
@@ -293,7 +296,7 @@ object SelectGenerator extends DaoMethodGenerator {
                 .Seq(DomaType.EntityOrHolderOrEmbeddable(internalTpe), _) =>
             val command = commandTemplate(
               // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
-              q"domala.internal.macros.reflect.DaoReflectionMacros.getResultListHandler[$internalTpe](${trtName.syntax}, ${defDecl.name.syntax})")
+              q"domala.internal.macros.reflect.DaoReflectionMacros.getResultListHandler[$internalTpe](${trtName.literal}, ${defDecl.name.literal})")
             (
               q"$command.execute().asScala",
               Seq(q"domala.internal.macros.reflect.DaoReflectionMacros.setEntityType[$internalTpe](__query)")
@@ -318,7 +321,7 @@ object SelectGenerator extends DaoMethodGenerator {
           case DomaType.EntityOrHolderOrEmbeddable(tpe) =>
             // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
             (
-              q"domala.internal.macros.reflect.DaoReflectionMacros.getOtherResult[$tpe](${trtName.syntax}, ${defDecl.name.syntax}, getCommandImplementors, __query, $internalMethodName)",
+              q"domala.internal.macros.reflect.DaoReflectionMacros.getOtherResult[$tpe](${trtName.literal}, ${defDecl.name.literal}, getCommandImplementors, __query, $internalMethodName)",
               Seq(q"domala.internal.macros.reflect.DaoReflectionMacros.setEntityType[$tpe](__query)")
             )
 
@@ -348,7 +351,7 @@ object SelectGenerator extends DaoMethodGenerator {
         case t"Option[$_]" => q"${Term.Name(p.name.syntax)}.orNull": Term.Arg
         case _ => Term.Name(p.name.syntax): Term.Arg
       }
-      q"""__query.addParameter(${p.name.syntax}, classOf[$paramTpe], $param)"""
+      q"""__query.addParameter(${p.name.literal}, classOf[$paramTpe], $param)"""
     }
 
     //noinspection ScalaUnusedSymbol
@@ -361,7 +364,7 @@ object SelectGenerator extends DaoMethodGenerator {
       val pType: Type = p.decltpe.get match {
         case tpe => TypeHelper.toType(tpe)
       }
-      q"domala.internal.macros.DaoParamClass.apply(${p.name.syntax}, classOf[$pType])"
+      q"domala.internal.macros.DaoParamClass.apply(${p.name.literal}, classOf[$pType])"
     }
 
     val setResultStream = if(isStream || isIterator) {
@@ -372,8 +375,8 @@ object SelectGenerator extends DaoMethodGenerator {
 
     q"""
     override def ${defDecl.name}= {
-      domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql(${trtName.syntax}, ${defDecl.name.syntax}, true, false, ${commonSetting.sql}, ..$daoParamTypes)
-      entering(${trtName.syntax}, ${defDecl.name.syntax} ..$enteringParam)
+      domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql(${trtName.literal}, ${defDecl.name.literal}, true, false, ${commonSetting.sql}, ..$daoParamTypes)
+      entering(${trtName.literal}, ${defDecl.name.literal} ..$enteringParam)
       try {
         val __query = new domala.jdbc.query.SqlAnnotationSelectQuery(${commonSetting.sql})
         ..$checkParameter
@@ -382,8 +385,8 @@ object SelectGenerator extends DaoMethodGenerator {
         ..$setOptions
         ..$setEntityType
         ..$addParameters
-        __query.setCallerClassName(${trtName.syntax})
-        __query.setCallerMethodName(${defDecl.name.syntax})
+        __query.setCallerClassName(${trtName.literal})
+        __query.setCallerMethodName(${defDecl.name.literal})
         __query.setResultEnsured(${selectSetting.ensureResult})
         __query.setResultMappingEnsured(${selectSetting.ensureResultMapping})
         __query.setFetchType(${selectSetting.fetch})
@@ -393,14 +396,13 @@ object SelectGenerator extends DaoMethodGenerator {
         __query.setSqlLogType(${commonSetting.sqlLogType})
         ..$setResultStream
         __query.prepare()
-        import domala.internal.OptionConverters._
         val __result: ${defDecl.tpe} = $result
         __query.complete()
-        exiting(${trtName.syntax}, ${defDecl.name.syntax}, __result)
+        exiting(${trtName.literal}, ${defDecl.name.literal}, __result)
         __result
       } catch {
         case  __e: java.lang.RuntimeException => {
-          throwing(${trtName.syntax}, ${defDecl.name.syntax}, __e)
+          throwing(${trtName.literal}, ${defDecl.name.literal}, __e)
           throw __e
         }
       }
