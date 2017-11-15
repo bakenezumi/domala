@@ -1,4 +1,4 @@
-package domala.tests.expr
+package domala.tests.function
 
 import domala.tests.H2TestConfigTemplate
 

@@ -1,4 +1,4 @@
-package domala.tests.expr
+package domala.tests.function
 
 import domala._
 import domala.jdbc.{BatchResult, Config, SelectOptions}
@@ -9,7 +9,7 @@ import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
-class AsyncFunctionTestSuite extends AsyncFunSuite with BeforeAndAfter{
+class AsyncFunctionTestSuite extends AsyncFunSuite with BeforeAndAfter {
 
   override def executionContext: ExecutionContext = global
 
@@ -165,7 +165,7 @@ class AsyncFunctionTestSuite extends AsyncFunSuite with BeforeAndAfter{
       }
       par
     }
-    val selectFunction = dao.selectAll(_.map(_.salary).toList) _
+    val selectFunction = dao.selectAllEager(_.map(_.salary).toList) _
     val partitioningFunction = parallelPartition[Jpy, List[Jpy]](selectFunction)(8) // needs type parameter
 
     val assertion = partitioningFunction.map { x =>
@@ -177,6 +177,39 @@ class AsyncFunctionTestSuite extends AsyncFunSuite with BeforeAndAfter{
       println("connection close!")
     })
     assertion
+  }
+
+  test("buffered iterator") {
+    implicit val config: jdbc.Config = AsyncFunctionTestConfigs.get(5)
+    val dao: FunctionDao = FunctionDao.impl
+
+    init(dao)
+
+    // one buffer is one transaction
+    def slice[A, T <: Traversable[A]](f: SelectOptions => T)(offset: Int, limit: Int, option: SelectOptions = SelectOptions.get): T = Required {
+      f(option.clone.offset(offset).limit(limit))
+    }
+
+    def bufferedPartition[A, T <: Traversable[A]](f: SelectOptions => T)(
+      blockSize: Int,
+      bufferSize: Int = 4,
+      option: SelectOptions = SelectOptions.get
+    ): Iterator[T] = {
+      def nextBuffer(offset: Int): Iterator[T] = {
+        val buffer = slice[A, T](f)(offset, blockSize * bufferSize, option)
+        if(buffer.isEmpty)
+          Iterator.empty
+        else
+          buffer.toSeq.grouped(blockSize).asInstanceOf[Iterator[T]] ++ nextBuffer(offset + blockSize * bufferSize)
+      }
+      nextBuffer(0)
+    }
+
+    val selectFunction = dao.selectAllEager(_.map(_.salary).toList) _
+    val partitioningFunction = bufferedPartition[Jpy, List[Jpy]](selectFunction)(8) // needs type parameter
+    Future(Required(partitioningFunction)).map{ x =>
+      assert(x.map{_.sum}.sum == Jpy(5050))
+    }
   }
 
 }

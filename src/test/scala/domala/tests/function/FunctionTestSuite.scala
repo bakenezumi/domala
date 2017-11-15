@@ -1,9 +1,10 @@
-package domala.tests.expr
+package domala.tests.function
 
+import domala._
 import domala.jdbc.{BatchResult, SelectOptions}
 import domala.tests._
-import domala._
 import org.scalatest.{BeforeAndAfter, FunSuite}
+import org.seasar.doma.FetchType
 
 
 class FunctionTestSuite extends FunSuite with BeforeAndAfter {
@@ -137,4 +138,8 @@ select /*%expand*/* from emp
   """, strategy = SelectType.ITERATOR)
   def selectAll[R](mapper: Iterator[Emp] => R)(option: SelectOptions): R
 
+  @Select("""
+select /*%expand*/* from emp
+  """, strategy = SelectType.ITERATOR, fetch = FetchType.EAGER)
+  def selectAllEager[R](mapper: Iterator[Emp] => R)(option: SelectOptions): R
 }

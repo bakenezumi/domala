@@ -1,6 +1,6 @@
 package domala.jdbc
 
-import org.seasar.doma.jdbc.{SelectForUpdateType, SelectOptionsAccessor}
+import org.seasar.doma.jdbc.SelectOptionsAccessor
 
 /**
   * The options for an SQL SELECT statement.
