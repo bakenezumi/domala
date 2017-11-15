@@ -55,7 +55,8 @@ object DaoGenerator {
             case tp@Type.Param(_,_,_,_,_,Nil) => tp.copy(cbounds = Seq(Type.Name("scala.reflect.ClassTag")))
             case tp => tp
           },
-          // 処理済みdefアノテーション除去
+          // 警告抑制のため処理済みdefアノテーション除去
+          // https://github.com/scala/bug/issues/9612
           mods = Nil
         )
         case x => x

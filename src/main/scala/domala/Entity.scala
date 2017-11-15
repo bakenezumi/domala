@@ -64,6 +64,7 @@ class Entity(listener: Class[_ <: EntityListener[_ <: Any]] = classOf[NullEntity
     //logger.debug(newCompanion)
     Term.Block(Seq(
       // 警告抑制のため一部アノテーションを除去
+      // https://github.com/scala/bug/issues/9612
       cls.copy(
         mods = cls.mods.filter {
           case mod"@Table(..$_)" => false
