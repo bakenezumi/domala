@@ -17,9 +17,9 @@ object Address extends org.seasar.doma.jdbc.entity.EmbeddableType[Address] {
   }
   override def newEmbeddable[ENTITY](embeddedPropertyName: String, __args: java.util.Map[String, org.seasar.doma.jdbc.entity.Property[ENTITY, _]]): Address = {
     Address({
-      (if (__args.get(embeddedPropertyName + "." + "city") != null) __args.get(embeddedPropertyName + "." + "city") else null).get().asInstanceOf[String]
+      Option(__args.get(embeddedPropertyName + "." + "city")).map(_.get()).orNull.asInstanceOf[String]
     }, {
-      (if (__args.get(embeddedPropertyName + "." + "street") != null) __args.get(embeddedPropertyName + "." + "street") else null).get().asInstanceOf[String]
+      Option(__args.get(embeddedPropertyName + "." + "street")).map(_.get()).orNull.asInstanceOf[String]
     })
   }
 }
