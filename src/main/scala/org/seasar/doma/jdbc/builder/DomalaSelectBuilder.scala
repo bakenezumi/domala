@@ -19,7 +19,9 @@ import scala.collection.JavaConverters._
 
 // Domaのパッケージプライベートクラスを利用しているためここに配置
 // org.seasar.doma.jdbc.builder.SelectBuilderを元にしており、
-// Option, Seq, IteratorなどScalaの標準コレクションを返すように修正
+// 下記修正をしている
+// - 独自拡張したSqlSelectQueryを利用する
+// - getXXにてOption, Seq, IteratorなどScalaの標準コレクションを返す
 class DomalaSelectBuilder(
     config: Config,
     val helper: BuildingHelper = new BuildingHelper(),

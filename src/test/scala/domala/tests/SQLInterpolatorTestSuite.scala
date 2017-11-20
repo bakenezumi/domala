@@ -4,7 +4,8 @@ import org.scalatest.{BeforeAndAfter, FunSuite}
 import domala._
 import domala.jdbc.Config
 import domala.message.Message
-import org.seasar.doma.DomaException
+import org.seasar.doma.{DomaException, MapKeyNamingType}
+import org.seasar.doma.jdbc.JdbcException
 
 
 class SQLInterpolatorTestSuite extends FunSuite with BeforeAndAfter {
@@ -44,10 +45,10 @@ class SQLInterpolatorTestSuite extends FunSuite with BeforeAndAfter {
       assert(statement(2).getOption[Person] == Some(person2))
       assert(statement(99).getSingle[Person] == null)
       assert(statement(99).getOption[Person] == None)
-      assert(statement(1).getMapSingle() == Map("ID" -> 1, "NAME" -> "SMITH", "CITY" -> "Tokyo", "DEPARTMENT_ID" -> 2, "AGE" -> 10, "VERSION" -> 0, "STREET" -> "Yaesu"))
-      assert(statement(2).getOptionMapSingle() == Some(Map("ID" -> 2, "NAME" -> "ALLEN", "CITY" -> "Kyoto", "DEPARTMENT_ID" -> 1, "AGE" -> 20, "VERSION" -> 0, "STREET" -> "Karasuma")))
-      assert(statement(99).getMapSingle() == null)
-      assert(statement(99).getOptionMapSingle() == None)
+      assert(statement(1).getMapSingle == Map("ID" -> 1, "NAME" -> "SMITH", "CITY" -> "Tokyo", "DEPARTMENT_ID" -> 2, "AGE" -> 10, "VERSION" -> 0, "STREET" -> "Yaesu"))
+      assert(statement(2).getOptionMapSingle == Some(Map("ID" -> 2, "NAME" -> "ALLEN", "CITY" -> "Kyoto", "DEPARTMENT_ID" -> 1, "AGE" -> 20, "VERSION" -> 0, "STREET" -> "Karasuma")))
+      assert(statement(99).getMapSingle == null)
+      assert(statement(99).getOptionMapSingle == None)
     }
   }
 
@@ -68,11 +69,11 @@ class SQLInterpolatorTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       assert(statement(0).getList[Person] == List(person1, person2))
       assert(statement(99).getList[Person] == Nil)
-      assert(statement(0).getMapSeq() == Seq(
+      assert(statement(0).getMapSeq == Seq(
         Map("ID" -> 1, "NAME" -> "SMITH", "CITY" -> "Tokyo", "DEPARTMENT_ID" -> 2, "AGE" -> 10, "VERSION" -> 0, "STREET" -> "Yaesu"),
         Map("ID" -> 2, "NAME" -> "ALLEN", "CITY" -> "Kyoto", "DEPARTMENT_ID" -> 1, "AGE" -> 20, "VERSION" -> 0, "STREET" -> "Karasuma")
       ))
-      assert(statement(99).getMapSeq() == Nil)
+      assert(statement(99).getMapSeq == Nil)
     }
   }
 
@@ -90,20 +91,21 @@ class SQLInterpolatorTestSuite extends FunSuite with BeforeAndAfter {
     val statement = (ids: List[ID[Person]]) => select"select * from person where id in ($ids)"
     Required {
       assert(statement(List(ID(1), ID(2))).apply((it: Iterator[Person]) => it.flatMap(_.id).sum) == ID(3))
-      assert(statement(List(ID(2))).apply((it: Iterator[Person]) => it.flatMap(_.age).sum) == 20)
-      assert(statement(Nil).apply((it: Iterator[Person]) => it.flatMap(_.age).sum) == 0)
+      // `apply` is can be omitted
+      assert(statement(List(ID(2))) { (it: Iterator[Person]) => it.flatMap(_.age).sum } == 20)
+      assert(statement(Nil) { (it: Iterator[Person]) => it.flatMap(_.age).sum } == 0)
     }
   }
 
   test("iterator holder select") {
     val statement = (ids: List[ID[Person]]) => select"select Name from person where id in ($ids)"
     Required {
-      assert(statement(List(ID(1), ID(2))).apply((it: Iterator[Name]) => it.toList) == List(Name("SMITH"), Name("ALLEN")))
-      assert(statement(Nil).apply((it: Iterator[Name]) => it.toList) == Nil)
+      assert(statement(List(ID(1), ID(2))) { (it: Iterator[Name]) => it.toList } == List(Name("SMITH"), Name("ALLEN")))
+      assert(statement(Nil) { (it: Iterator[Name]) => it.toList } == Nil)
     }
   }
 
-  test("not support type") {
+  test("return a not support type select") {
     val statement = select"select * from person"
 
     val caught1 = intercept[DomaException] {
@@ -122,10 +124,77 @@ class SQLInterpolatorTestSuite extends FunSuite with BeforeAndAfter {
     assert(caught3.getMessageResource == Message.DOMALA4008)
 
     val caught4 = intercept[DomaException] {
-      statement.apply((_: Iterator[PersonDao]) => 1)
+      statement { (_: Iterator[PersonDao]) => 1}
     }
     assert(caught4.getMessageResource == Message.DOMALA4008)
 
+  }
+
+  private[this] val createScript =
+    script"""
+      create table emp(
+        id int serial primary key,
+        name varchar(20),
+        age int default 1
+      )
+    """
+
+  private[this] val dropScript = script"drop table emp"
+
+  test("script execute") {
+    Required {
+      createScript.execute()
+      assert(select"select * from emp".getOptionMapSingle == None)
+      dropScript.execute()
+      val caught = intercept[JdbcException] {
+        select"select * from emp".getOptionMapSingle
+      }
+      assert(caught.getMessageResource == org.seasar.doma.message.Message.DOMA2016)
+    }
+  }
+
+  test("insert execute") {
+    Required {
+      createScript.execute()
+      Seq("foo", "baz", "bar").foreach { name =>
+        update"insert into emp(name) values($name)".execute()
+      }
+      assert(select"select count(*) from emp".getSingle[Int] == 3)
+      dropScript.execute()
+    }
+  }
+
+  test("update execute") {
+    Required {
+      createScript.execute()
+      Seq("foo", "baz", "bar").foreach { name =>
+        update"insert into emp(name) values($name)".execute()
+      }
+      assert(select"select age from emp".getList[Int].sum == 3)
+      select"select id from emp".apply { (ids: Iterator[Int]) =>
+        ids.foreach{ id =>
+          update"update emp set age = $id where id = $id".execute()
+        }
+      }
+      assert(select"select age from emp".getList[Int].sum == 6)
+      dropScript.execute()
+    }
+  }
+
+  test("delete execute") {
+    Required {
+      createScript.execute()
+      Seq("foo", "baz", "bar").foreach { name =>
+        update"insert into emp(name) values($name)".execute()
+      }
+      select"select id from emp".apply { (ids: Iterator[Int]) =>
+        ids.filter(_ %2 != 0).foreach{ id =>
+          update"delete from emp where id = $id".execute()
+        }
+      }
+      assert(select"select * from emp".getMapList(MapKeyNamingType.LOWER_CASE) == List(Map("id" -> 2, "name" -> "baz", "age" -> 1)))
+      dropScript.execute()
+    }
   }
 
 }

@@ -1,5 +1,5 @@
 import domala.jdbc.Config
-import domala.jdbc.interpolation.{SQLInterpolator, SelectStatement}
+import domala.jdbc.interpolation.{SQLInterpolator, ScriptStatement, SelectStatement, UpdateStatement}
 import org.seasar.doma.jdbc.tx.TransactionIsolationLevel
 
 package object domala {
@@ -85,17 +85,63 @@ package object domala {
       *
       * {{{
       *   val id = 1
-      *   val query = select"select id, name from employee where id = $id"
-      *   val singleEntity = query.getSingle[Employee]
-      *   val entities = "select"select id, name from employee".getList[Employee]
+      *   val query = select"""
+      *     select id, name
+      *     from employee
+      *     where id = $id
+      *   ""
+      *   val employee = query.getSingle[Employee]
+      *
+      *   val employees = "select"select id, name from employee".getList[Employee]
       * }}}
       *
       * @param params value parameters for SQL
       * @param config the runtime configuration
       * @return a executor for select statement
-      * @see [[domala.jdbc.interpolation.SelectStatement SelectExecutor]]
+      * @see [[domala.jdbc.interpolation.SelectStatement SelectStatement]]
       */
     def select(params: Any*)(implicit config: Config): SelectStatement = SQLInterpolator.select(context, params, config)
+
+    /** a String interpolator for INSERT, UPDATE, DELETE SQL literals.
+      *
+      * {{{
+      *   Seq("Scott", "Allen").map { name =>
+      *     update"""
+      *       insert into emp(name) values($name)
+      *     """.execute()
+      *   }
+      *
+      *   val (id, name) = (1, "Smith")
+      *   update"""
+      *     update emp set name = $name where id = $id
+      *   """.execute()
+      * }}}
+      *
+      * @param params value parameters for SQL
+      * @param config the runtime configuration
+      * @return a executor for update statement
+      * @see [[domala.jdbc.interpolation.UpdateStatement UpdateStatement]]
+      */
+    def update(params: Any*)(implicit config: Config): UpdateStatement = SQLInterpolator.update(context, params, config)
+
+    /** a String interpolator for SQL scripts.
+      *
+      * {{{
+      *   script"""
+      *     create table emp(
+      *       id int serial primary key,
+      *       name varchar(20)
+      *     );
+      *   """.execute()
+      * }}}
+      *
+      * @param params must be Nil
+      * @param config the runtime configuration
+      * @return a executor for SQL scripts
+      * @see [[domala.jdbc.interpolation.ScriptStatement ScriptStatement]]
+      */
+    def script(params: Any*)(implicit config: Config): ScriptStatement = SQLInterpolator.script(context, params, config)
+
   }
 
 }

@@ -1,6 +1,6 @@
 package domala.jdbc.command
 
-import domala.jdbc.query.SqlAnnotationScriptQuery
+import domala.jdbc.query.SqlScriptQuery
 import org.seasar.doma.internal.jdbc.util.JdbcUtil
 import org.seasar.doma.jdbc.AbstractSql
 import org.seasar.doma.jdbc.ScriptException
@@ -8,7 +8,7 @@ import org.seasar.doma.jdbc.SqlKind
 import org.seasar.doma.jdbc.SqlLogType
 import org.seasar.doma.jdbc.SqlParameter
 
-class ScriptCommand(query: SqlAnnotationScriptQuery)
+class ScriptCommand(query: SqlScriptQuery)
     extends org.seasar.doma.jdbc.command.ScriptCommand(query) {
   override def execute(): Void = {
     val config = query.getConfig

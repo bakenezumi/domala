@@ -3,7 +3,7 @@ package domala.jdbc
 import java.lang.reflect.Method
 
 import domala.jdbc.command.ScriptCommand
-import domala.jdbc.query.SqlAnnotationScriptQuery
+import domala.jdbc.query.SqlScriptQuery
 import org.seasar.doma.jdbc.query.ScriptQuery
 
 /** A runtime configuration for DAOs.
@@ -24,7 +24,7 @@ trait Config extends org.seasar.doma.jdbc.Config {
   */
 object CommandImplementors extends org.seasar.doma.jdbc.CommandImplementors {
   override def createScriptCommand(method: Method, query: ScriptQuery): org.seasar.doma.jdbc.command.ScriptCommand = query match {
-    case q: SqlAnnotationScriptQuery => new ScriptCommand(q)
+    case q: SqlScriptQuery => new ScriptCommand(q)
     case _ => super.createScriptCommand(method, query)
   }
 }

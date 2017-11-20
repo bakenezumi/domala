@@ -2,7 +2,7 @@ package domala.jdbc.command
 
 import java.io.{BufferedReader, StringReader}
 
-import domala.jdbc.query.SqlAnnotationScriptQuery
+import domala.jdbc.query.SqlScriptQuery
 import org.seasar.doma.internal.util.AssertionUtil._
 import org.seasar.doma.internal.jdbc.command.ScriptTokenizer
 import org.seasar.doma.internal.jdbc.command.ScriptTokenType
@@ -10,7 +10,7 @@ import org.seasar.doma.internal.jdbc.command.ScriptTokenType._
 import org.seasar.doma.internal.util.IOUtil
 import org.seasar.doma.jdbc.ScriptBlockContext
 
-class ScriptReader(query: SqlAnnotationScriptQuery) {
+class ScriptReader(query: SqlScriptQuery) {
 
   assertNotNull(query, "")
 

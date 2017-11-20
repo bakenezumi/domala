@@ -48,7 +48,7 @@ object ScriptGenerator extends DaoMethodGenerator {
     override def $name = {
       entering(${trtName.literal}, ${name.literal})
       try {
-        val __query = new domala.jdbc.query.SqlAnnotationScriptQuery(${commonSetting.sql})
+        val __query = new domala.jdbc.query.SqlScriptQuery(${commonSetting.sql})
         __query.setMethod($internalMethodName)
         __query.setConfig(__config)
         __query.setCallerClassName(${trtName.literal})

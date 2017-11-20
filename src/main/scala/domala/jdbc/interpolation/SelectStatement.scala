@@ -20,7 +20,7 @@ class SelectStatement(builder: SelectBuilder) {
     } else if (TypeUtil.isHolder(tpe) || TypeUtil.isBasic(tpe)) {
       builder.getScalarSingleResult[T](cTag.runtimeClass.asInstanceOf[Class[T]])
     } else if (TypeUtil.isMap(tpe)) {
-      getMapSingle().asInstanceOf[T]
+      getMapSingle.asInstanceOf[T]
     } else {
       throw new DomaException(Message.DOMALA4008, tpe, "SelectStatement", "getSingle")
     }
@@ -33,26 +33,42 @@ class SelectStatement(builder: SelectBuilder) {
     } else if (TypeUtil.isHolder(tpe) || TypeUtil.isBasic(tpe)) {
       builder.getOptionScalarSingleResult[T](cTag.runtimeClass.asInstanceOf[Class[T]])
     } else if (TypeUtil.isMap(tpe)) {
-      getOptionMapSingle().asInstanceOf[Option[T]]
+      getOptionMapSingle.asInstanceOf[Option[T]]
     } else {
       throw new DomaException(Message.DOMALA4008, tpe, "SelectStatement", "getOption")
     }
   }
 
-  def getMapSingle(mapKeyNamingType: MapKeyNamingType = MapKeyNamingType.NONE): Map[String, AnyRef] = {
-    builder.getMapSingleResult()
+  def getMapSingle(mapKeyNamingType: MapKeyNamingType): Map[String, AnyRef] = {
+    builder.getMapSingleResult(mapKeyNamingType)
   }
 
-  def getOptionMapSingle(mapKeyNamingType: MapKeyNamingType = MapKeyNamingType.NONE): Option[Map[String, AnyRef]] = {
-    builder.getOptionMapSingleResult()
+  def getMapSingle: Map[String, AnyRef] = {
+    builder.getMapSingleResult(MapKeyNamingType.NONE)
   }
 
-  def getMapSeq(mapKeyNamingType: MapKeyNamingType = MapKeyNamingType.NONE): Seq[Map[String, AnyRef]] = {
-    builder.getMapResultSeq()
+  def getOptionMapSingle(mapKeyNamingType: MapKeyNamingType): Option[Map[String, AnyRef]] = {
+    builder.getOptionMapSingleResult(mapKeyNamingType)
   }
 
-  def getMapList(mapKeyNamingType: MapKeyNamingType = MapKeyNamingType.NONE): List[Map[String, AnyRef]] = {
-    builder.getMapResultSeq().toList
+  def getOptionMapSingle: Option[Map[String, AnyRef]] = {
+    builder.getOptionMapSingleResult(MapKeyNamingType.NONE)
+  }
+
+  def getMapSeq(mapKeyNamingType: MapKeyNamingType): Seq[Map[String, AnyRef]] = {
+    builder.getMapResultSeq(mapKeyNamingType)
+  }
+
+  def getMapSeq: Seq[Map[String, AnyRef]] = {
+    builder.getMapResultSeq(MapKeyNamingType.NONE)
+  }
+
+  def getMapList(mapKeyNamingType: MapKeyNamingType): List[Map[String, AnyRef]] = {
+    builder.getMapResultSeq(mapKeyNamingType).toList
+  }
+
+  def getMapList: List[Map[String, AnyRef]] = {
+    builder.getMapResultSeq(MapKeyNamingType.NONE).toList
   }
 
   def getSeq[T](implicit cTag: ClassTag[T], tTag: TypeTag[T]): Seq[T] = {
@@ -62,7 +78,7 @@ class SelectStatement(builder: SelectBuilder) {
     } else if (TypeUtil.isHolder(tpe) || TypeUtil.isBasic(tpe)) {
       builder.getScalarResultSeq[T](cTag.runtimeClass.asInstanceOf[Class[T]])
     } else if (TypeUtil.isMap(tpe)) {
-      getMapSeq().asInstanceOf[Seq[T]]
+      getMapSeq.asInstanceOf[Seq[T]]
     } else {
       throw new DomaException(Message.DOMALA4008, tpe, "SelectStatement", "getSeq")
     }

@@ -8,7 +8,7 @@ import org.seasar.doma.jdbc.query.ScriptQuery
 import org.seasar.doma.jdbc.SqlLogType
 
 
-class SqlAnnotationScriptQuery(val scripts: String) extends AbstractQuery with ScriptQuery {
+class SqlScriptQuery(val scripts: String) extends AbstractQuery with ScriptQuery {
 
   protected var blockDelimiter = ""
 

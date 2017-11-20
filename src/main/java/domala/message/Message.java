@@ -203,6 +203,7 @@ public enum Message implements MessageResource {
     DOMALA6010("Iterator[?] => ?型のパラメータは複数指定できません。"),
     DOMALA6011("Functionの1番目の実型引数の型は、Iteratorでなければいけません。 at {0}.{1}"),
     DOMALA6012("Iteratorの実型引数の型[{0}]はサポートされていません。 at {1}.{2}"),
+    DOMALA6013("script\"...\"内での変数利用はできません。"),
     ;
 
     private final String messagePattern;
