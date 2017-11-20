@@ -6,7 +6,7 @@ lazy val _version = "0.1.0-beta.5-SNAPSHOT"
 lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(
   addCompilerPlugin("org.scalameta" % "paradise" % "3.0.0-M10" cross CrossVersion.full),
   scalacOptions += "-Xplugin-require:macroparadise",
-  scalacOptions in (Compile, console) ~= (_ filterNot (_ contains "paradise"))
+  scalacOptions in (Compile, console) ~= (_ filterNot (_ contains "paradise")) // macroparadise plugin doesn't work in repl yet.
 )
 
 lazy val root = (project in file(".")).settings(
@@ -20,7 +20,7 @@ lazy val root = (project in file(".")).settings(
   javacOptions ++= List("-encoding", "utf8"),
   metaMacroSettings,
   libraryDependencies ++= Seq(
-    "org.seasar.doma" % "doma" % "2.18.0",
+    "org.seasar.doma" % "doma" % "2.19.0",
     "org.scalameta" %% "scalameta" % "1.8.0",
     "org.scala-lang" % "scala-reflect" % scalaVersion.value,
     "com.h2database" % "h2" % "1.4.193" % Test,
