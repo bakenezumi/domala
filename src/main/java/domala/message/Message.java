@@ -193,7 +193,6 @@ public enum Message implements MessageResource {
 
     // macros(domala original)
     DOMALA6001("@Holderを注釈するclassのコンストラクタパラメータは1つでなければなりません。"),
-    DOMALA6002("@Holderを注釈するclassのコンストラクタパラメータ名は`value`でなければなりません。"),
     DOMALA6003("式[{0}]（[{1}]番目の文字付近）staticメソッドの呼び出しはサポートされていません。"),
     DOMALA6004("式[{0}]（[{1}]番目の文字付近）staticフィールドへのアクセスはサポートされていません。"),
     DOMALA6005("@Holderはcase class、もしくはabstract sealed classにのみ注釈できます。"),

@@ -120,10 +120,10 @@ final class Kg extends WeightType
 final class G extends WeightType
 
 @Holder
-case class Weight[T <: WeightType](value: Int)
+case class Weight[T <: WeightType](underlying: Int)
 
 @Holder
-sealed abstract class LikeEnum(val value: String)
+sealed abstract class LikeEnum(val underlying: String)
 
 case object EnumA extends LikeEnum("A")
 case object EnumB extends LikeEnum("B")
