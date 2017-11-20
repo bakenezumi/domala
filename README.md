@@ -12,6 +12,27 @@ Domala is a database access library for Scala. This wraps [Doma2](https://github
 
 - Other statements are automatically generated from Entity. It can also write SQL.
 
+
+### Setup build
+
+```scala
+lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(
+  addCompilerPlugin("org.scalameta" % "paradise" % "3.0.0-M10" cross CrossVersion.full),
+  scalacOptions += "-Xplugin-require:macroparadise",
+  scalacOptions in (Compile, console) ~= (_ filterNot (_ contains "paradise")) // macroparadise plugin doesn't work in repl yet.
+)
+
+lazy val yourProject = project.settings(
+  macroAnnotationSettings,
+  libraryDependencies ++= Seq(
+    "com.github.domala" %% "domala" % "0.1.0-beta.5",
+    // ... your other library dependencies
+  ),
+  // ... your other project settings
+)
+
+```
+
 ### Example
 
 #### Holder
@@ -88,7 +109,7 @@ object SampleConfig extends LocalTransactionConfig(
 ```
 
 #### Usage
-```scala
+```scala  
 implicit val config = SampleConfig
 
 // Dao implementation is auto generated.
@@ -114,6 +135,69 @@ Required {
 ```sh
 sbt
 >sample/run
+```
+
+### In REPL
+
+Annotation macro doesn't work in repl yet.
+So, compile separately with `sbt ~console` or use the following SQL interpolations. 
+
+```scala
+import domala._
+import domala.jdbc.LocalTransactionConfig
+import org.seasar.doma.jdbc.tx.LocalTransactionDataSource
+import org.seasar.doma.jdbc.dialect.H2Dialect
+
+object SampleConfig extends LocalTransactionConfig(
+  dataSource = new LocalTransactionDataSource(
+    "jdbc:h2:mem:sample;DB_CLOSE_DELAY=-1", "sa", null),
+  dialect = new H2Dialect
+) {
+  Class.forName("org.h2.Driver")
+}
+
+implicit val config = SampleConfig
+
+Required {
+  script"""
+    create table emp(
+      id int serial primary key,
+      name varchar(20)
+    );
+  """.execute()
+}
+
+Required {
+  Seq("Scott", "Allen").map { name =>
+    update"""
+      insert into emp(name) values($name)
+    """.execute()
+  }
+}
+
+val query =
+  select"""
+    select id, name
+    from emp
+    order by id
+  """
+
+Required {
+  query.getMapList
+} // => List(Map("ID" -> 1, "NAME" -> "Scott"), Map("ID" -> 2, "NAME" -> "Allen"))
+
+Required {
+  select"select id from emp".getList[Int]
+} // => List(1, 2)
+
+// If the `Entity` class has already been compiled
+// then can the following 
+// @Holder case class ID[E] (value: Int)
+// @Entity case class Emp(id: ID[Emp], name: String) 
+Required {
+  query.getList[Emp]
+} // => List(Emp(ID[1], "Scott"), Emp(ID[2], "Allen"))
+
 ```
 
 ### Play integration sample

@@ -1,7 +1,7 @@
 import Dependencies._
 
 lazy val _scalaVersion = "2.12.4"
-lazy val _version = "0.1.0-beta.5-SNAPSHOT"
+lazy val _version = "0.1.0-beta.5"
 
 lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(
   addCompilerPlugin("org.scalameta" % "paradise" % "3.0.0-M10" cross CrossVersion.full),
