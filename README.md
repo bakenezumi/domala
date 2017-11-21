@@ -36,6 +36,7 @@ lazy val yourProject = project.settings(
 ### Example
 
 #### Holder
+A value holder
 
 ```scala
 @Holder
@@ -44,12 +45,15 @@ case class Name(value: String)
 
 #### Embeddable
 
+Partial class to embed in entity
+
 ```scala
 @Embeddable
 case class Address(city: String, street: String)
 ```
 
 #### Entity
+Classes whose instances can be stored in a database
 
 ```scala
 @Entity
@@ -66,6 +70,7 @@ case class Person(
 ```
 
 #### Dao
+Trait of data access object
 
 ```scala
 @Dao
@@ -96,6 +101,7 @@ from person where
 ```
 
 #### Config
+A configuration of a database
 
 ```scala
 object SampleConfig extends LocalTransactionConfig(
@@ -122,6 +128,10 @@ val entity = Person(
   address = Address("TOKYO", "YAESU"),
   departmentId = Some(1)
 )
+
+// `Required` is Executes the transaction.
+// If processing in block ends normally it commit.
+// If Exception occurs it rollback.
 Required {
   dao.insert(entity)
   dao.selectById(1).foreach(e =>
@@ -148,7 +158,8 @@ import domala.jdbc.LocalTransactionConfig
 import org.seasar.doma.jdbc.tx.LocalTransactionDataSource
 import org.seasar.doma.jdbc.dialect.H2Dialect
 
-object SampleConfig extends LocalTransactionConfig(
+// A configuration of database
+implicit object SampleConfig extends LocalTransactionConfig(
   dataSource = new LocalTransactionDataSource(
     "jdbc:h2:mem:sample;DB_CLOSE_DELAY=-1", "sa", null),
   dialect = new H2Dialect
@@ -156,9 +167,8 @@ object SampleConfig extends LocalTransactionConfig(
   Class.forName("org.h2.Driver")
 }
 
-implicit val config = SampleConfig
-
 Required {
+  // `script"..." ` builds a script query statement
   script"""
     create table emp(
       id int serial primary key,
@@ -168,6 +178,7 @@ Required {
 }
 
 Required {
+  // `update"..." ` builds a `INSERT`, `UPDATE`, `DELETE` query statement
   Seq("Scott", "Allen").map { name =>
     update"""
       insert into emp(name) values($name)
@@ -175,6 +186,7 @@ Required {
   }
 }
 
+// `select"..." ` builds a `SELECT` query statement
 val query =
   select"""
     select id, name
@@ -196,7 +208,7 @@ Required {
 // @Entity case class Emp(id: ID[Emp], name: String) 
 Required {
   query.getList[Emp]
-} // => List(Emp(ID[1], "Scott"), Emp(ID[2], "Allen"))
+} // => List(Emp(ID(1), "Scott"), Emp(ID(2), "Allen"))
 
 ```
 
