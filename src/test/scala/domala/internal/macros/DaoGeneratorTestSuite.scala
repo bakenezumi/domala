@@ -45,26 +45,30 @@ trait PersonDao {
     def batchDelete(persons: Seq[Person]): Array[Int]
   }
   object PersonDao {
-    ()
     def impl(implicit config: domala.jdbc.Config): PersonDao = new Internal(config, Option(config).getOrElse(throw new org.seasar.doma.DomaNullPointerException("config")).getDataSource)
     def impl(connection: java.sql.Connection)(implicit config: domala.jdbc.Config): PersonDao = new Internal(config, connection)
     def impl(dataSource: javax.sql.DataSource)(implicit config: domala.jdbc.Config): PersonDao = new Internal(config, dataSource)
-
+    private[this] val __method0 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "selectById", classOf[Int])
+    private[this] val __method1 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "insert", classOf[Person])
+    private[this] val __method2 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "update", classOf[Person])
+    private[this] val __method3 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "delete", classOf[Person])
+    private[this] val __method4 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "batchInsert", classOf[Seq[_]])
+    private[this] val __method5 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "batchUpdate", classOf[Seq[_]])
+    private[this] val __method6 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "batchDelete", classOf[Seq[_]])
     class Internal(___config: domala.jdbc.Config, dataSource: javax.sql.DataSource) extends org.seasar.doma.internal.jdbc.dao.AbstractDao(___config, dataSource) with PersonDao {
       def this(config: domala.jdbc.Config, connection: java.sql.Connection) = this(config, org.seasar.doma.internal.jdbc.dao.DomalaAbstractDaoHelper.toDataSource(connection))
       import scala.collection.JavaConverters._
       implicit val __sqlNodeRepository: domala.jdbc.SqlNodeRepository = ___config.getSqlNodeRepository
-      private[this] val __method0 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "selectById", classOf[Int])
       override def selectById(id: Int): Option[Person] = {
         domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql("PersonDao", "selectById", true, false, "select * from person where id = /*id*/0", domala.internal.macros.DaoParamClass.apply("id", classOf[Int]))
-        entering("PersonDao", "selectById", id.asInstanceOf[Object])
+        entering(classOf[PersonDao].getName, "selectById", id.asInstanceOf[Object])
         try {
           val __query = new domala.jdbc.query.SqlAnnotationSelectQuery("select * from person where id = /*id*/0")
           __query.setMethod(__method0)
           __query.setConfig(__config)
           domala.internal.macros.reflect.DaoReflectionMacros.setEntityType[Person](__query)
           __query.addParameter("id", classOf[Int], id)
-          __query.setCallerClassName("PersonDao")
+          __query.setCallerClassName(classOf[PersonDao].getName)
           __query.setCallerMethodName("selectById")
           __query.setResultEnsured(false)
           __query.setResultMappingEnsured(false)
@@ -76,18 +80,17 @@ trait PersonDao {
           __query.prepare()
           val __result: Option[Person] = domala.internal.OptionConverters.asScala(getCommandImplementors.createSelectCommand(__method0, __query, domala.internal.macros.reflect.DaoReflectionMacros.getOptionalSingleResultHandler[Person]("PersonDao", "selectById")).execute())
           __query.complete()
-          exiting("PersonDao", "selectById", __result)
+          exiting(classOf[PersonDao].getName, "selectById", __result)
           __result
         } catch {
           case __e: java.lang.RuntimeException =>
-            throwing("PersonDao", "selectById", __e)
+            throwing(classOf[PersonDao].getName, "selectById", __e)
             throw __e
         }
       }
-      private[this] val __method1 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "insert", classOf[Person])
       override def insert(person: Person): Result[Person] = {
         domala.internal.macros.reflect.DaoReflectionMacros.validateAutoModifyParam("PersonDao", "insert", classOf[Person])
-        entering("PersonDao", "insert", person)
+        entering(classOf[PersonDao].getName, "insert", person)
         try {
           if (person == null) {
             throw new org.seasar.doma.DomaNullPointerException("person")
@@ -96,7 +99,7 @@ trait PersonDao {
           __query.setMethod(__method1)
           __query.setConfig(__config)
           __query.setEntity(person)
-          __query.setCallerClassName("PersonDao")
+          __query.setCallerClassName(classOf[PersonDao].getName)
           __query.setCallerMethodName("insert")
           __query.setQueryTimeout(-1)
           __query.setSqlLogType(org.seasar.doma.jdbc.SqlLogType.FORMATTED)
@@ -108,18 +111,17 @@ trait PersonDao {
           val __count = __command.execute()
           __query.complete()
           val __result = domala.jdbc.Result[Person](__count, __query.getEntity)
-          exiting("PersonDao", "insert", __result)
+          exiting(classOf[PersonDao].getName, "insert", __result)
           __result
         } catch {
           case __e: java.lang.RuntimeException =>
-            throwing("PersonDao", "insert", __e)
+            throwing(classOf[PersonDao].getName, "insert", __e)
             throw __e
         }
       }
-      private[this] val __method2 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "update", classOf[Person])
       override def update(person: Person): Result[Person] = {
         domala.internal.macros.reflect.DaoReflectionMacros.validateAutoModifyParam("PersonDao", "update", classOf[Person])
-        entering("PersonDao", "update", person)
+        entering(classOf[PersonDao].getName, "update", person)
         try {
           if (person == null) {
             throw new org.seasar.doma.DomaNullPointerException("person")
@@ -128,7 +130,7 @@ trait PersonDao {
           __query.setMethod(__method2)
           __query.setConfig(__config)
           __query.setEntity(person)
-          __query.setCallerClassName("PersonDao")
+          __query.setCallerClassName(classOf[PersonDao].getName)
           __query.setCallerMethodName("update")
           __query.setQueryTimeout(-1)
           __query.setSqlLogType(org.seasar.doma.jdbc.SqlLogType.FORMATTED)
@@ -143,18 +145,17 @@ trait PersonDao {
           val __count = __command.execute()
           __query.complete()
           val __result = domala.jdbc.Result[Person](__count, __query.getEntity)
-          exiting("PersonDao", "update", __result)
+          exiting(classOf[PersonDao].getName, "update", __result)
           __result
         } catch {
           case __e: java.lang.RuntimeException =>
-            throwing("PersonDao", "update", __e)
+            throwing(classOf[PersonDao].getName, "update", __e)
             throw __e
         }
       }
-      private[this] val __method3 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "delete", classOf[Person])
       override def delete(person: Person): Int = {
         domala.internal.macros.reflect.DaoReflectionMacros.validateAutoModifyParam("PersonDao", "delete", classOf[Person])
-        entering("PersonDao", "delete", person)
+        entering(classOf[PersonDao].getName, "delete", person)
         try {
           if (person == null) {
             throw new org.seasar.doma.DomaNullPointerException("person")
@@ -163,7 +164,7 @@ trait PersonDao {
           __query.setMethod(__method3)
           __query.setConfig(__config)
           __query.setEntity(person)
-          __query.setCallerClassName("PersonDao")
+          __query.setCallerClassName(classOf[PersonDao].getName)
           __query.setCallerMethodName("delete")
           __query.setQueryTimeout(-1)
           __query.setSqlLogType(org.seasar.doma.jdbc.SqlLogType.FORMATTED)
@@ -174,18 +175,17 @@ trait PersonDao {
           val __count = __command.execute()
           __query.complete()
           val __result = __count
-          exiting("PersonDao", "delete", __result)
+          exiting(classOf[PersonDao].getName, "delete", __result)
           __result
         } catch {
           case __e: java.lang.RuntimeException =>
-            throwing("PersonDao", "delete", __e)
+            throwing(classOf[PersonDao].getName, "delete", __e)
             throw __e
         }
       }
-      private[this] val __method4 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "batchInsert", classOf[Seq[_]])
       override def batchInsert(persons: Seq[Person]): BatchResult[Person] = {
         domala.internal.macros.reflect.DaoReflectionMacros.validateAutoBatchModifyParam("PersonDao", "batchInsert", classOf[Seq[Person]], classOf[Person])
-        entering("PersonDao", "batchInsert", persons)
+        entering(classOf[PersonDao].getName, "batchInsert", persons)
         try {
           if (persons == null) {
             throw new org.seasar.doma.DomaNullPointerException("persons")
@@ -194,7 +194,7 @@ trait PersonDao {
           __query.setMethod(__method4)
           __query.setConfig(__config)
           __query.setEntities(persons.asJava)
-          __query.setCallerClassName("PersonDao")
+          __query.setCallerClassName(classOf[PersonDao].getName)
           __query.setCallerMethodName("batchInsert")
           __query.setBatchSize(-1)
           __query.setQueryTimeout(-1)
@@ -206,18 +206,17 @@ trait PersonDao {
           val __count = __command.execute()
           __query.complete()
           val __result = domala.jdbc.BatchResult[Person](__count, __query.getEntities.asScala)
-          exiting("PersonDao", "batchInsert", __result)
+          exiting(classOf[PersonDao].getName, "batchInsert", __result)
           __result
         } catch {
           case __e: java.lang.RuntimeException =>
-            throwing("PersonDao", "batchInsert", __e)
+            throwing(classOf[PersonDao].getName, "batchInsert", __e)
             throw __e
         }
       }
-      private[this] val __method5 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "batchUpdate", classOf[Seq[_]])
       override def batchUpdate(persons: Seq[Person]): BatchResult[Person] = {
         domala.internal.macros.reflect.DaoReflectionMacros.validateAutoBatchModifyParam("PersonDao", "batchUpdate", classOf[Seq[Person]], classOf[Person])
-        entering("PersonDao", "batchUpdate", persons)
+        entering(classOf[PersonDao].getName, "batchUpdate", persons)
         try {
           if (persons == null) {
             throw new org.seasar.doma.DomaNullPointerException("persons")
@@ -226,7 +225,7 @@ trait PersonDao {
           __query.setMethod(__method5)
           __query.setConfig(__config)
           __query.setEntities(persons.asJava)
-          __query.setCallerClassName("PersonDao")
+          __query.setCallerClassName(classOf[PersonDao].getName)
           __query.setCallerMethodName("batchUpdate")
           __query.setBatchSize(-1)
           __query.setQueryTimeout(-1)
@@ -240,18 +239,17 @@ trait PersonDao {
           val __count = __command.execute()
           __query.complete()
           val __result = domala.jdbc.BatchResult[Person](__count, __query.getEntities.asScala)
-          exiting("PersonDao", "batchUpdate", __result)
+          exiting(classOf[PersonDao].getName, "batchUpdate", __result)
           __result
         } catch {
           case __e: java.lang.RuntimeException =>
-            throwing("PersonDao", "batchUpdate", __e)
+            throwing(classOf[PersonDao].getName, "batchUpdate", __e)
             throw __e
         }
       }
-      private[this] val __method6 = org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[PersonDao], "batchDelete", classOf[Seq[_]])
       override def batchDelete(persons: Seq[Person]): Array[Int] = {
         domala.internal.macros.reflect.DaoReflectionMacros.validateAutoBatchModifyParam("PersonDao", "batchDelete", classOf[Seq[Person]], classOf[Person])
-        entering("PersonDao", "batchDelete", persons)
+        entering(classOf[PersonDao].getName, "batchDelete", persons)
         try {
           if (persons == null) {
             throw new org.seasar.doma.DomaNullPointerException("persons")
@@ -260,7 +258,7 @@ trait PersonDao {
           __query.setMethod(__method6)
           __query.setConfig(__config)
           __query.setEntities(persons.asJava)
-          __query.setCallerClassName("PersonDao")
+          __query.setCallerClassName(classOf[PersonDao].getName)
           __query.setCallerMethodName("batchDelete")
           __query.setBatchSize(-1)
           __query.setQueryTimeout(-1)
@@ -272,11 +270,11 @@ trait PersonDao {
           val __count = __command.execute()
           __query.complete()
           val __result = __count
-          exiting("PersonDao", "batchDelete", __result)
+          exiting(classOf[PersonDao].getName, "batchDelete", __result)
           __result
         } catch {
           case __e: java.lang.RuntimeException =>
-            throwing("PersonDao", "batchDelete", __e)
+            throwing(classOf[PersonDao].getName, "batchDelete", __e)
             throw __e
         }
       }

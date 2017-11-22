@@ -70,14 +70,14 @@ object SqlModifyQueryGenerator {
     q"""
     override def ${defDecl.name} = {
       domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql(${defDecl.trtName.literal}, ${defDecl.name.literal}, false, $populatable, ${commonSetting.sql}, ..$daoParamTypes)
-      entering(${defDecl.trtName.literal}, ${defDecl.name.literal}, ..$enteringParam)
+      entering(${defDecl.trtName.className}, ${defDecl.name.literal}, ..$enteringParam)
       try {
         val __query = ${query(entityAndEntityType)}
         ..$checkNullParameter
         __query.setMethod($internalMethodName)
         __query.setConfig(__config)
         ..$addParameters
-        __query.setCallerClassName(${defDecl.trtName.literal})
+        __query.setCallerClassName(${defDecl.trtName.className})
         __query.setCallerMethodName(${defDecl.name.literal})
         __query.setQueryTimeout(${commonSetting.queryTimeOut})
         __query.setSqlLogType(${commonSetting.sqlLogType})
@@ -87,11 +87,11 @@ object SqlModifyQueryGenerator {
         val __count = __command.execute()
         __query.complete()
         val __result = $result
-        exiting(${defDecl.trtName.literal}, ${defDecl.name.literal}, __result)
+        exiting(${defDecl.trtName.className}, ${defDecl.name.literal}, __result)
         __result
       } catch {
         case __e: java.lang.RuntimeException => {
-          throwing(${defDecl.trtName.literal}, ${defDecl.name.literal}, __e)
+          throwing(${defDecl.trtName.className}, ${defDecl.name.literal}, __e)
           throw __e
         }
       }

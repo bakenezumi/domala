@@ -46,12 +46,12 @@ object ScriptGenerator extends DaoMethodGenerator {
 
     q"""
     override def $name = {
-      entering(${trtName.literal}, ${name.literal})
+      entering(${trtName.className}, ${name.literal})
       try {
         val __query = new domala.jdbc.query.SqlScriptQuery(${commonSetting.sql})
         __query.setMethod($internalMethodName)
         __query.setConfig(__config)
-        __query.setCallerClassName(${trtName.literal})
+        __query.setCallerClassName(${trtName.className})
         __query.setCallerMethodName(${name.literal})
         __query.setBlockDelimiter(${scriptSetting.blockDelimiter})
         __query.setHaltOnError(${scriptSetting.haltOnError})
@@ -60,10 +60,10 @@ object ScriptGenerator extends DaoMethodGenerator {
         val __command = getCommandImplementors.createScriptCommand($internalMethodName, __query)
         __command.execute()
         __query.complete()
-        exiting(${trtName.literal}, ${name.literal}, null)
+        exiting(${trtName.className}, ${name.literal}, null)
       } catch {
         case __e: java.lang.RuntimeException => {
-          throwing(${trtName.literal}, ${name.literal}, __e)
+          throwing(${trtName.className}, ${name.literal}, __e)
           throw __e
         }
       }

@@ -15,8 +15,6 @@ import scala.meta._
   *
   * The entity class must be defined as immutable.
   *
-  * The mutable entity:
-  *
   * {{{
   *@literal @Entity
   * case class Employee (

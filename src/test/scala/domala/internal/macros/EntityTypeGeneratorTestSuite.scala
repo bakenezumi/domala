@@ -27,7 +27,7 @@ case class Person(
     val listener = new org.seasar.doma.jdbc.entity.NullEntityListener[Person]()
   }
   def apply(id: Option[ID[Person]] = None, name: Option[Name], age: Option[Int], address: Address, departmentId: Option[Int], version: Option[Int] = Option(-1)): Person = new Person(id, name, age, address, departmentId, version)
-  def unapply(x: Person): Option[(Option[ID[Person]], Option[Name], Option[Int], Address, Option[Int], Option[Int])] = Some((x.id, x.name, x.age, x.address, x.departmentId, x.version))
+  def unapply(x: Person): Option[(Option[ID[Person]], Option[Name], Option[Int], Address, Option[Int], Option[Int])] = if (x == null) None else Some((x.id, x.name, x.age, x.address, x.departmentId, x.version))
   private[this] val __namingType: org.seasar.doma.jdbc.entity.NamingType = null
   private[this] val __idGenerator = new org.seasar.doma.jdbc.id.BuiltinIdentityIdGenerator()
   private[this] val __idList = new java.util.ArrayList[org.seasar.doma.jdbc.entity.EntityPropertyType[Person, _]]()

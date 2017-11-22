@@ -14,7 +14,7 @@ case class Name(value: String)
     val expect = q"""
 object Name extends domala.jdbc.holder.AbstractHolderDesc[String, Name]((() => new org.seasar.doma.wrapper.StringWrapper(): org.seasar.doma.wrapper.Wrapper[String]): java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[String]]) {
   def apply(value: String): Name = new Name(value)
-  def unapply(x: Name): Option[String] = Some(x.value)
+  def unapply(x: Name): Option[String] = if (x == null) None else Some(x.value)
   override protected def newDomain(value: String): Name = {
     if (value == null) null else Name(value)
   }
@@ -173,6 +173,7 @@ case class BigDecimalHolder(value: BigDecimal)
 
 @Holder
 case class DoubleHolder2(value: Double)
+
 object DoubleHolder2 {
   implicit val numeric: Fractional[DoubleHolder2] = new  Fractional[DoubleHolder2] {
     override def plus(x: DoubleHolder2, y: DoubleHolder2) = DoubleHolder2(x.value + y.value)

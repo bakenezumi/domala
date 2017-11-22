@@ -36,7 +36,7 @@ object SqlBatchModifyQueryGenerator {
       q"domala.internal.macros.DaoParam.apply(${paramName.literal}, $paramName, classOf[$paramType])"
 
     val entityTypeOption = q"""
-    domala.internal.macros.reflect.DaoReflectionMacros.getBatchEntityType(${defDecl.trtName.literal}, ${defDecl.name.literal}, classOf[$internalType], $daoParam)
+    domala.internal.macros.reflect.DaoReflectionMacros.getBatchEntityType(${defDecl.trtName.className}, ${defDecl.name.literal}, classOf[$internalType], $daoParam)
     """
     val result = if(isReturnResult) {
       q"domala.jdbc.BatchResult(__counts, __query.getEntities.asScala)"
@@ -56,7 +56,7 @@ object SqlBatchModifyQueryGenerator {
     q"""
     override def ${defDecl.name} = {
       domala.internal.macros.reflect.DaoReflectionMacros.validateBatchParameterAndSql(${defDecl.trtName.literal}, ${defDecl.name.literal}, false, $populatable, ${commonSetting.sql}, $daoParamType, ..$suppress)
-      entering(${defDecl.trtName.literal}, ${defDecl.name.literal}, $paramName)
+      entering(${defDecl.trtName.className}, ${defDecl.name.literal}, $paramName)
       try {
         val __query = ${query(entityTypeOption)}
         ..$checkNullParameter
@@ -64,7 +64,7 @@ object SqlBatchModifyQueryGenerator {
         __query.setConfig(__config)
         __query.setElements($paramName)
         __query.setParameterName(${paramName.literal})
-        __query.setCallerClassName(${defDecl.trtName.literal})
+        __query.setCallerClassName(${defDecl.trtName.className})
         __query.setCallerMethodName(${defDecl.name.literal})
         __query.setQueryTimeout(${commonSetting.queryTimeOut})
         __query.setBatchSize(${commonSetting.batchSize})
@@ -75,11 +75,11 @@ object SqlBatchModifyQueryGenerator {
         val __counts = __command.execute()
         __query.complete()
         val __result = $result
-        exiting(${defDecl.trtName.literal}, ${defDecl.name.literal}, __result)
+        exiting(${defDecl.trtName.className}, ${defDecl.name.literal}, __result)
         __result
       } catch {
         case __e: java.lang.RuntimeException => {
-          throwing(${defDecl.trtName.literal}, ${defDecl.name.literal}, __e)
+          throwing(${defDecl.trtName.className}, ${defDecl.name.literal}, __e)
           throw __e
         }
       }

@@ -18,4 +18,3 @@ class SqlAnnotationSelectQuery(sql: String)(implicit sqlNodeRepository: SqlNodeR
   }
 
 }
-

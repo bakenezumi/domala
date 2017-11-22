@@ -63,7 +63,7 @@ import org.seasar.doma.message.Message;
  * <p>
  * Copyright 2004-2010 the Seasar Foundation and the Others.
  *
- * @see <a href="https://github.com/domaframework/doma/blob/master/src/main/java/org/seasar/doma/internal/expr/ExpressionParser.java">original</a>
+ * @see <a href="https://github.com/domaframework/doma/blob/2.19.0/src/main/java/org/seasar/doma/internal/expr/ExpressionParser.java">original</a>
  *
  */
 @SuppressWarnings("WeakerAccess")

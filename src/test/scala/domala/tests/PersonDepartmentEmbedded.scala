@@ -8,4 +8,3 @@ case class PersonDepartmentEmbedded(
   name: String,
   department: Department
 )
-

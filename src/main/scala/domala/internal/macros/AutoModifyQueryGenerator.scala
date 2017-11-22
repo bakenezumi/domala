@@ -38,7 +38,7 @@ object AutoModifyQueryGenerator {
     q"""
     override def ${defDecl.name} = {
       domala.internal.macros.reflect.DaoReflectionMacros.validateAutoModifyParam(${defDecl.trtName.literal}, ${defDecl.name.literal}, classOf[$paramType])
-      entering(${defDecl.trtName.literal}, ${defDecl.name.literal}, $paramName)
+      entering(${defDecl.trtName.className}, ${defDecl.name.literal}, $paramName)
       try {
         if ($paramName == null) {
           throw new org.seasar.doma.DomaNullPointerException(${paramName.literal})
@@ -47,7 +47,7 @@ object AutoModifyQueryGenerator {
         __query.setMethod($internalMethodName)
         __query.setConfig(__config)
         __query.setEntity($paramName)
-        __query.setCallerClassName(${defDecl.trtName.literal})
+        __query.setCallerClassName(${defDecl.trtName.className})
         __query.setCallerMethodName(${defDecl.name.literal})
         __query.setQueryTimeout(${commonSetting.queryTimeOut})
         __query.setSqlLogType(${commonSetting.sqlLogType})
@@ -57,11 +57,11 @@ object AutoModifyQueryGenerator {
         val __count = __command.execute()
         __query.complete()
         val __result = $result
-        exiting(${defDecl.trtName.literal}, ${defDecl.name.literal}, __result)
+        exiting(${defDecl.trtName.className}, ${defDecl.name.literal}, __result)
         __result
       } catch {
         case __e: java.lang.RuntimeException => {
-          throwing(${defDecl.trtName.literal}, ${defDecl.name.literal}, __e)
+          throwing(${defDecl.trtName.className}, ${defDecl.name.literal}, __e)
           throw __e
         }
       }

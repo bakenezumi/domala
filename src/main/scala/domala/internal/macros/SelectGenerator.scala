@@ -180,7 +180,7 @@ object SelectGenerator extends DaoMethodGenerator {
           case DomaType.EntityOrHolderOrEmbeddable(_) =>
             // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
             val command = commandTemplate(
-              q"domala.internal.macros.reflect.DaoReflectionMacros.getStreamHandler($functionParamTerm, ${trtName.literal}, ${defDecl.name.literal})")
+              q"domala.internal.macros.reflect.DaoReflectionMacros.getStreamHandler($functionParamTerm, ${trtName.className}, ${defDecl.name.literal})")
             (
               q"$command.execute()",
               Seq(q"domala.internal.macros.reflect.DaoReflectionMacros.setEntityType[$internalTpe](__query)")
@@ -376,7 +376,7 @@ object SelectGenerator extends DaoMethodGenerator {
     q"""
     override def ${defDecl.name}= {
       domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql(${trtName.literal}, ${defDecl.name.literal}, true, false, ${commonSetting.sql}, ..$daoParamTypes)
-      entering(${trtName.literal}, ${defDecl.name.literal} ..$enteringParam)
+      entering(${trtName.className}, ${defDecl.name.literal} ..$enteringParam)
       try {
         val __query = new domala.jdbc.query.SqlAnnotationSelectQuery(${commonSetting.sql})
         ..$checkParameter
@@ -385,7 +385,7 @@ object SelectGenerator extends DaoMethodGenerator {
         ..$setOptions
         ..$setEntityType
         ..$addParameters
-        __query.setCallerClassName(${trtName.literal})
+        __query.setCallerClassName(${trtName.className})
         __query.setCallerMethodName(${defDecl.name.literal})
         __query.setResultEnsured(${selectSetting.ensureResult})
         __query.setResultMappingEnsured(${selectSetting.ensureResultMapping})
@@ -398,11 +398,11 @@ object SelectGenerator extends DaoMethodGenerator {
         __query.prepare()
         val __result: ${defDecl.tpe} = $result
         __query.complete()
-        exiting(${trtName.literal}, ${defDecl.name.literal}, __result)
+        exiting(${trtName.className}, ${defDecl.name.literal}, __result)
         __result
       } catch {
         case  __e: java.lang.RuntimeException => {
-          throwing(${trtName.literal}, ${defDecl.name.literal}, __e)
+          throwing(${trtName.className}, ${defDecl.name.literal}, __e)
           throw __e
         }
       }

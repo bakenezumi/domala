@@ -1,15 +1,18 @@
 package domala
 
-/** Indicates that the annotated field is not mapped to a column.
+/** Indicates the tenant's identifier.
   *
   * The annotated field must be a member of an [[domala.Entity Entity]] annotated class.
+  *
+  * In queries of the type where SQL is generated, columns mapped to annotated fields
+  * are included in the WHERE clause as search condition.
   *
   * {{{
   *@literal @Entity
   * case class Employee(
   *   ...
-  *  @literal @Transient
-  *   tempNumber: Int,
+  *  @literal @TenantId
+  *   tenantId: String,
   *
   *   ...
   * )

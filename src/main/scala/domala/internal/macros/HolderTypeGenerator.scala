@@ -24,7 +24,16 @@ object HolderTypeGenerator {
     val isEnum = cls.mods.exists(_.syntax == Mod.Abstract().syntax) && cls.mods.exists(_.syntax == Mod.Sealed().syntax)
     if (isCase && isEnum) MacrosHelper.abort(Message.DOMALA6005)
 
-    if(isEnum && !valueParam.mods.exists(_.syntax == Mod.ValParam().syntax)) MacrosHelper.abort(Message.DOMALA6006)
+    if(
+      isEnum &&
+      !valueParam.mods.exists {
+        case Mod.ValParam() => true
+        case _ => false
+      } ||
+      valueParam.mods.exists {
+        case Mod.Private(_) => true
+        case _ => false
+      }) MacrosHelper.abort(Message.DOMALA6006)
 
     val erasedHolderType =
       if(cls.tparams.nonEmpty) {
@@ -100,57 +109,44 @@ object HolderTypeGenerator {
   }
 
   def generateNumericImplicitVal(clsName: Type.Name, basicTpe: Type, tparams: Seq[Type.Param], valueParamName: Term.Name): Stat = {
+    def numericMethods(typedClsName: Type) = {
+      q"""
+      override def plus(x: $typedClsName, y: $typedClsName): $typedClsName = new ${Ctor.Name(typedClsName.syntax)}(x.$valueParamName + y.$valueParamName)
+
+      override def minus(x: $typedClsName, y: $typedClsName): $typedClsName = new ${Ctor.Name(typedClsName.syntax)}(x.$valueParamName - y.$valueParamName)
+
+      override def times(x: $typedClsName, y: $typedClsName): $typedClsName = new ${Ctor.Name(typedClsName.syntax)}(x.$valueParamName * y.$valueParamName)
+
+      override def negate(x: $typedClsName): $typedClsName = new ${Ctor.Name(clsName.syntax)}(-x.$valueParamName)
+
+      override def fromInt(x: Int): $typedClsName = new ${Ctor.Name(clsName.syntax)}(x)
+
+      override def toInt(x: $typedClsName): Int = x.$valueParamName.toInt
+
+      override def toLong(x: $typedClsName): Long = x.$valueParamName.toLong
+
+      override def toFloat(x: $typedClsName): Float = x.$valueParamName.toFloat
+
+      override def toDouble(x: $typedClsName): Double = x.$valueParamName.toDouble
+
+      override def compare(x: $typedClsName, y: $typedClsName): Int = x.$valueParamName compare y.$valueParamName
+      """
+    }
+
     if (tparams.isEmpty) {
       q"""
-      implicit val __num: Numeric[$clsName] = new Numeric[$clsName] {
-        override def plus(x: $clsName, y: $clsName): $clsName = new ${Ctor.Name(clsName.syntax)}(x.$valueParamName + y.$valueParamName)
-
-        override def minus(x: $clsName, y: $clsName): $clsName = new ${Ctor.Name(clsName.syntax)}(x.$valueParamName - y.$valueParamName)
-
-        override def times(x: $clsName, y: $clsName): $clsName = new ${Ctor.Name(clsName.syntax)}(x.$valueParamName * y.$valueParamName)
-
-        override def negate(x: $clsName): $clsName = new ${Ctor.Name(clsName.syntax)}(-x.$valueParamName)
-
-        override def fromInt(x: Int): $clsName = new ${Ctor.Name(clsName.syntax)}(x)
-
-        override def toInt(x: $clsName): Int = x.$valueParamName.toInt
-
-        override def toLong(x: $clsName): Long = x.$valueParamName.toLong
-
-        override def toFloat(x: $clsName): Float = x.$valueParamName.toFloat
-
-        override def toDouble(x: $clsName): Double = x.$valueParamName.toDouble
-
-        override def compare(x: $clsName, y: $clsName): Int = x.$valueParamName compare y.$valueParamName
+      implicit val __numeric: Numeric[$clsName] = new Numeric[$clsName] {
+        ..${numericMethods(clsName).stats}
       }
       """
     } else {
       val typeParamNames = tparams.map(t => Type.Name(t.name.syntax))
-      val typedClsName = t"$clsName[..${typeParamNames.map(t => Type.Name(t.syntax))}]"
+      val typedClsName: Type = t"$clsName[..${typeParamNames.map(t => Type.Name(t.syntax))}]"
       q"""
-      implicit def __num[..$tparams]: Numeric[$typedClsName] = new Numeric[$typedClsName] {
-        override def plus(x: $typedClsName, y: $typedClsName): $typedClsName = new ${Ctor.Name(typedClsName.syntax)}(x.$valueParamName + y.$valueParamName)
-
-        override def minus(x: $typedClsName, y: $typedClsName): $typedClsName = new ${Ctor.Name(typedClsName.syntax)}(x.$valueParamName - y.$valueParamName)
-
-        override def times(x: $typedClsName, y: $typedClsName): $typedClsName = new ${Ctor.Name(typedClsName.syntax)}(x.$valueParamName * y.$valueParamName)
-
-        override def negate(x: $typedClsName): $typedClsName = new ${Ctor.Name(typedClsName.syntax)}(-x.$valueParamName)
-
-        override def fromInt(x: Int): $typedClsName = new ${Ctor.Name(typedClsName.syntax)}(x)
-
-        override def toInt(x: $typedClsName): Int = x.$valueParamName.toInt
-
-        override def toLong(x: $typedClsName): Long = x.$valueParamName.toLong
-
-        override def toFloat(x: $typedClsName): Float = x.$valueParamName.toFloat
-
-        override def toDouble(x: $typedClsName): Double = x.$valueParamName.toDouble
-
-        override def compare(x: $typedClsName, y: $typedClsName): Int = x.$valueParamName compare y.$valueParamName
+      implicit def __numeric[..$tparams]: Numeric[$typedClsName] = new Numeric[$typedClsName] {
+        ..${numericMethods(typedClsName).stats}
       }
       """
-
     }
   }
 

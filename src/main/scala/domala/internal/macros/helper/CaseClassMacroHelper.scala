@@ -24,16 +24,16 @@ object CaseClassMacroHelper {
         Type.Tuple(params.map(p => Type.Name(p.decltpe.get.toString)))
       val unapplyBody = params.map(p => q"x.${Term.Name(p.name.syntax)}")
       if (tparams.nonEmpty)
-        q"def unapply[..{${cls.tparams}}](x: ${cls.name}[..$tparams]): Option[$typeTuple] = Some((..$unapplyBody))"
+        q"def unapply[..{${cls.tparams}}](x: ${cls.name}[..$tparams]): Option[$typeTuple] = if (x == null) None else Some((..$unapplyBody))"
       else
-        q"def unapply(x: ${cls.name}): Option[$typeTuple] = Some((..$unapplyBody))"
+        q"def unapply(x: ${cls.name}): Option[$typeTuple] = if (x == null) None else Some((..$unapplyBody))"
     } else {
       if (tparams.nonEmpty)
         q"def unapply[..{${cls.tparams}}](x: ${cls.name}[..$tparams]): Option[${Type.Name(
-          params.head.decltpe.get.toString)}] = Some(x.${Term.Name(params.head.name.syntax)})"
+          params.head.decltpe.get.toString)}] = if (x == null) None else Some(x.${Term.Name(params.head.name.syntax)})"
       else
         q"def unapply(x: ${cls.name}): Option[${Type.Name(
-          params.head.decltpe.get.toString)}] = Some(x.${Term.Name(params.head.name.syntax)})"
+          params.head.decltpe.get.toString)}] = if (x == null) None else Some(x.${Term.Name(params.head.name.syntax)})"
     }
   }
 

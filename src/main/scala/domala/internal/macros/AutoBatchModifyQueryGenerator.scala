@@ -45,7 +45,7 @@ object AutoBatchModifyQueryGenerator {
     q"""
     override def ${defDecl.name} = {
       domala.internal.macros.reflect.DaoReflectionMacros.validateAutoBatchModifyParam(${defDecl.trtName.literal}, ${defDecl.name.literal}, classOf[$paramType], classOf[$internalType])
-      entering(${defDecl.trtName.literal}, ${defDecl.name.literal}, $paramName)
+      entering(${defDecl.trtName.className}, ${defDecl.name.literal}, $paramName)
       try {
         if ($paramName == null) {
           throw new org.seasar.doma.DomaNullPointerException(${paramName.literal})
@@ -54,7 +54,7 @@ object AutoBatchModifyQueryGenerator {
         __query.setMethod($internalMethodName)
         __query.setConfig(__config)
         __query.setEntities($paramName.asJava)
-        __query.setCallerClassName(${defDecl.trtName.literal})
+        __query.setCallerClassName(${defDecl.trtName.className})
         __query.setCallerMethodName(${defDecl.name.literal})
         __query.setBatchSize(${commonSetting.batchSize})
         __query.setQueryTimeout(${commonSetting.queryTimeOut})
@@ -65,11 +65,11 @@ object AutoBatchModifyQueryGenerator {
         val __count = __command.execute()
         __query.complete()
         val __result = $result
-        exiting(${defDecl.trtName.literal}, ${defDecl.name.literal}, __result)
+        exiting(${defDecl.trtName.className}, ${defDecl.name.literal}, __result)
         __result
       } catch {
         case __e: java.lang.RuntimeException => {
-          throwing(${defDecl.trtName.literal}, ${defDecl.name.literal}, __e)
+          throwing(${defDecl.trtName.className}, ${defDecl.name.literal}, __e)
           throw __e
         }
       }
