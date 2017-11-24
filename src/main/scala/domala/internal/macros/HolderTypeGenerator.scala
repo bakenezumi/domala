@@ -44,21 +44,22 @@ object HolderTypeGenerator {
       }
 
     val methods = makeMethods(cls.name, cls.ctor, basicTpe, erasedHolderType, valueParam)
+    val tparams = TypeHelper.convertDefTypeParams(cls.tparams)
 
     val applyDef =
       if(isEnum) {
         val paramss = cls.ctor.paramss.map(ps => ps.map(_.copy(mods = Nil)))
         val argss = paramss.map(ps => ps.map(p => Term.Name(p.name.syntax)))
-        val tparams = cls.tparams.map(tp => Type.Name(tp.name.syntax))
+        val typeNames = cls.tparams.map(tp => Type.Name(tp.name.syntax))
         val matchSubclasses = q"domala.internal.macros.reflect.HolderReflectionMacros.matchSubclasses(classOf[$basicTpe], classOf[${cls.name}])(...$argss)"
-        if (tparams.nonEmpty)
-          q"private def apply[..{${cls.tparams}}](...$paramss): ${cls.name}[..{$tparams}] = $matchSubclasses"
+        if (typeNames.nonEmpty)
+          q"private def apply[..{$tparams}](...$paramss): ${cls.name}[..{$typeNames}] = $matchSubclasses"
         else
           q"private def apply(...$paramss): ${cls.name} = $matchSubclasses"
       } else CaseClassMacroHelper.generateApply(cls)
 
     val numericImplicitVal =
-      if(isNumeric && !isNumericDefined(companion)) Seq(generateNumericImplicitVal(cls.name, basicTpe, cls.tparams, Term.Name(valueParam.name.syntax)))
+      if(isNumeric && !isNumericDefined(companion)) Seq(generateNumericImplicitVal(cls.name, basicTpe, tparams, Term.Name(valueParam.name.syntax)))
       else Nil
 
     q"""

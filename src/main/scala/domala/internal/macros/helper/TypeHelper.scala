@@ -137,4 +137,8 @@ object TypeHelper {
   }
 
   def isWildcardType(arg: Type.Arg): Boolean = arg.syntax.contains("[_")
+
+  def convertDefTypeParams(tparams: collection.immutable.Seq[Type.Param]): collection.immutable.Seq[Type.Param] = {
+    tparams.map(_.copy(mods = Nil))
+  }
 }

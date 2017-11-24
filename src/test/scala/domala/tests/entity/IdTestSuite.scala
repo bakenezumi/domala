@@ -24,8 +24,8 @@ class IdTestSuite extends FunSuite with BeforeAndAfter {
 
   test("strategy = GenerationType.IDENTITY") {
     Required {
-      dao.insertIdentity(GeneratedIdentity (data = "aaa"))
-      dao.batchInsertIdentity(Seq(GeneratedIdentity(data = "bbb"), GeneratedIdentity(data = "ccc")))
+      dao.insertIdentity(GeneratedIdentity (None, "aaa"))
+      dao.batchInsertIdentity(Seq(GeneratedIdentity(None, "bbb"), GeneratedIdentity(None, "ccc")))
       assert(dao.selectIdentityAll == Seq(
         GeneratedIdentity(Some(1L), "aaa"),
         GeneratedIdentity(Some(2L), "bbb"),
@@ -36,8 +36,8 @@ class IdTestSuite extends FunSuite with BeforeAndAfter {
 
   test("strategy = GenerationType.SEQUENCE") {
     Required {
-      dao.insertSequence(GeneratedSequence(data = "aaa"))
-      dao.batchInsertSequence(Seq(GeneratedSequence(data = "bbb"), GeneratedSequence(data = "ccc")))
+      dao.insertSequence(GeneratedSequence(None, "aaa"))
+      dao.batchInsertSequence(Seq(GeneratedSequence(None, "bbb"), GeneratedSequence(None, "ccc")))
       assert(dao.selectSequenceAll == Seq(
         GeneratedSequence(Some(5L), "aaa"), // sequence start with 5
         GeneratedSequence(Some(6L), "bbb"),
@@ -48,8 +48,8 @@ class IdTestSuite extends FunSuite with BeforeAndAfter {
 
   test("strategy = GenerationType.TABLE") {
     Required {
-      dao.insertTable(GeneratedTable(data = "aaa"))
-      dao.batchInsertTable(Seq(GeneratedTable(data = "bbb"), GeneratedTable(data = "ccc")))
+      dao.insertTable(GeneratedTable(None, "aaa"))
+      dao.batchInsertTable(Seq(GeneratedTable(None, "bbb"), GeneratedTable(None, "ccc")))
       assert(dao.selectTableAll == Seq(
         GeneratedTable(Some(100L), "aaa"), // initial value is 100
         GeneratedTable(Some(101L), "bbb"),
@@ -70,6 +70,39 @@ class IdTestSuite extends FunSuite with BeforeAndAfter {
       ))
     }
   }
+
+  test("strategy = GenerationType.SEQUENCE and id type basic") {
+    Required {
+      val Result(count, result) = dao.insertBasic(GenerateBasic(-1, "aaa"))
+      assert(count == 1)
+      assert(result == GenerateBasic(5, "aaa"))
+      val BatchResult(counts, results) = dao.batchInsertBasic(Seq(GenerateBasic(-1, "bbb"), GenerateBasic(-1, "ccc")))
+      assert(counts sameElements Array(1, 1))
+      assert(results == Seq(GenerateBasic(6, "bbb"), GenerateBasic(7, "ccc")))
+      assert(dao.selectBasicAll == Seq(
+        GenerateBasic(5, "aaa"),
+        GenerateBasic(6, "bbb"),
+        GenerateBasic(7, "ccc")
+      ))
+    }
+  }
+
+  test("strategy = GenerationType.SEQUENCE and id type holder") {
+    Required {
+      val Result(count, result) = dao.insertHolder(GenerateHolder(IDHolder.notAssigned, "aaa"))
+      assert(count == 1)
+      assert(result == GenerateHolder(IDHolder(5), "aaa"))
+      val BatchResult(counts, results) = dao.batchInsertHolder(Seq(GenerateHolder(IDHolder.notAssigned, "bbb"), GenerateHolder(IDHolder.notAssigned, "ccc")))
+      assert(counts sameElements Array(1, 1))
+      assert(results == Seq(GenerateHolder(IDHolder(6), "bbb"), GenerateHolder(IDHolder(7), "ccc")))
+      assert(dao.selectHolderAll == Seq(
+        GenerateHolder(IDHolder(5), "aaa"),
+        GenerateHolder(IDHolder(6), "bbb"),
+        GenerateHolder(IDHolder(7), "ccc")
+      ))
+    }
+  }
+
 }
 
 @Entity
@@ -107,6 +140,35 @@ case class NoGenerate (
   @domala.Id
   id: Long,
   @domala.Id
+  data: String
+)
+
+@Entity
+@Table(name = "id_test")
+case class GenerateBasic (
+  @domala.Id
+  @GeneratedValue(strategy = GenerationType.SEQUENCE)
+  @SequenceGenerator(sequence = "seq")
+  id: Int,
+  data: String
+)
+
+@Holder
+case class IDHolder[+T](value: Int)
+
+object IDHolder {
+  def notAssigned: IDHolder[Nothing] = NOT_ASSIGNED
+  object NOT_ASSIGNED extends IDHolder[Nothing](-1)
+}
+
+
+@Entity
+@Table(name = "id_test")
+case class GenerateHolder (
+  @domala.Id
+  @GeneratedValue(strategy = GenerationType.SEQUENCE)
+  @SequenceGenerator(sequence = "seq")
+  id: IDHolder[GenerateHolder],
   data: String
 )
 
@@ -185,4 +247,27 @@ select * from id_test
 
   @BatchInsert
   def batchInsert(entity: Seq[NoGenerate]): BatchResult[NoGenerate]
+
+  @Select(sql="""
+select * from id_test
+  """)
+  def selectBasicAll: Seq[GenerateBasic]
+
+  @Insert
+  def insertBasic(entity: GenerateBasic): Result[GenerateBasic]
+
+  @BatchInsert
+  def batchInsertBasic(entity: Seq[GenerateBasic]): BatchResult[GenerateBasic]
+
+  @Select(sql="""
+select * from id_test
+  """)
+  def selectHolderAll: Seq[GenerateHolder]
+
+  @Insert
+  def insertHolder(entity: GenerateHolder): Result[GenerateHolder]
+
+  @BatchInsert
+  def batchInsertHolder(entity: Seq[GenerateHolder]): BatchResult[GenerateHolder]
+
 }
