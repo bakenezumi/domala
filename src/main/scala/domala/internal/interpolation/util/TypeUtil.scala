@@ -54,6 +54,10 @@ object TypeUtil {
     tpe.companion <:< typeOf[AbstractHolderDesc[_ <: Number, _]]
   }
 
+  def isAnyVal(tpe: Type): Boolean = {
+    tpe <:< typeOf[AnyVal]
+  }
+
   def isNumber(tpe: Type): Boolean = {
     tpe <:< typeOf[Number]
   }

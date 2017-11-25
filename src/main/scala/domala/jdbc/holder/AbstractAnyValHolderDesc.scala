@@ -43,13 +43,12 @@ abstract class AbstractAnyValHolderDesc[BASIC, HOLDER](val wrapperSupplier: Supp
     }
 
     override def cast(value: Any): HOLDER = {
-      //self.getDomainClass.cast(value)
       self.newHolder(value.asInstanceOf[BASIC])
     }
 
     override def get: HOLDER = newHolder(wrapper.get)
 
-    override def getDefault: HOLDER = null.asInstanceOf[HOLDER]
+    override def getDefault: HOLDER = self.newHolder(null.asInstanceOf[BASIC])
 
     override def set(domain: HOLDER): Unit = {
       val value = getBasicValue(domain)
@@ -57,7 +56,6 @@ abstract class AbstractAnyValHolderDesc[BASIC, HOLDER](val wrapperSupplier: Supp
     }
 
     override def getWrapper: Wrapper[BASIC] = wrapper
-
 
   }
 

@@ -17,8 +17,8 @@ class SelectStatement(builder: SelectBuilder) {
     val tpe = typeOf[T]
     if (TypeUtil.isEntity(tpe)) {
       builder.getEntitySingleResult[T](cTag.runtimeClass.asInstanceOf[Class[T]])
-    } else if (TypeUtil.isHolder(tpe) || TypeUtil.isBasic(tpe)) {
-      builder.getScalarSingleResult[T](cTag.runtimeClass.asInstanceOf[Class[T]])
+    } else if (TypeUtil.isHolder(tpe) || TypeUtil.isBasic(tpe) || TypeUtil.isAnyVal(tpe)) {
+        builder.getScalarSingleResult[T](cTag.runtimeClass.asInstanceOf[Class[T]])
     } else if (TypeUtil.isMap(tpe)) {
       getMapSingle.asInstanceOf[T]
     } else {
@@ -30,7 +30,7 @@ class SelectStatement(builder: SelectBuilder) {
     val tpe = typeOf[T]
     if (TypeUtil.isEntity(tpe)) {
       builder.getOptionEntitySingleResult[T](cTag.runtimeClass.asInstanceOf[Class[T]])
-    } else if (TypeUtil.isHolder(tpe) || TypeUtil.isBasic(tpe)) {
+    } else if (TypeUtil.isHolder(tpe) || TypeUtil.isBasic(tpe) || TypeUtil.isAnyVal(tpe)) {
       builder.getOptionScalarSingleResult[T](cTag.runtimeClass.asInstanceOf[Class[T]])
     } else if (TypeUtil.isMap(tpe)) {
       getOptionMapSingle.asInstanceOf[Option[T]]
@@ -75,7 +75,7 @@ class SelectStatement(builder: SelectBuilder) {
     val tpe = typeOf[T]
     if (TypeUtil.isEntity(tpe)) {
       builder.getEntityResultSeq[T](cTag.runtimeClass.asInstanceOf[Class[T]])
-    } else if (TypeUtil.isHolder(tpe) || TypeUtil.isBasic(tpe)) {
+    } else if (TypeUtil.isHolder(tpe) || TypeUtil.isBasic(tpe) || TypeUtil.isAnyVal(tpe)) {
       builder.getScalarResultSeq[T](cTag.runtimeClass.asInstanceOf[Class[T]])
     } else if (TypeUtil.isMap(tpe)) {
       getMapSeq.asInstanceOf[Seq[T]]

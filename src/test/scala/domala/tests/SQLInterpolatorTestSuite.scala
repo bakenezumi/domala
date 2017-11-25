@@ -64,6 +64,18 @@ class SQLInterpolatorTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  test("value class parameter single column single row select") {
+    val statement = (id: IDVal[Person]) => select"select name from person where id = $id"
+    Required {
+      assert(statement(IDVal(1)).getSingle[NameVal] == NameVal("SMITH"))
+      assert(statement(IDVal(2)).getOption[NameVal] == Some(NameVal("ALLEN")))
+      assert(statement(IDVal(99)).getSingle[NameVal] == NameVal(null))
+      assert(statement(IDVal(99)).getOption[NameVal] == None)
+      assert(statement(IDVal(1)).getSingle[String] == "SMITH")
+      assert(statement(IDVal(2)).getOption[String] == Some("ALLEN"))
+    }
+  }
+
   test("multi column multi row select") {
     val statement = (id: Int) => select"select * from person where id > $id"
     Required {
