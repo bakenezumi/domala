@@ -92,7 +92,7 @@ class SelectStatement(builder: SelectBuilder) {
     val tpe = typeOf[TARGET]
     if (TypeUtil.isEntity(tpe)) {
       builder.iteratorEntity[TARGET, RESULT](cTag.runtimeClass.asInstanceOf[Class[TARGET]], mapper)
-    } else if (TypeUtil.isHolder(tpe) || TypeUtil.isBasic(tpe)) {
+    } else if (TypeUtil.isHolder(tpe) || TypeUtil.isBasic(tpe) || TypeUtil.isAnyVal(tpe)) {
       builder.iteratorScalar[RESULT, TARGET](cTag.runtimeClass.asInstanceOf[Class[TARGET]], mapper)
     } else if (TypeUtil.isMap(tpe)) {
       builder.iteratorMap[RESULT](mapper.asInstanceOf[Iterator[Map[String, AnyRef]] => RESULT])
