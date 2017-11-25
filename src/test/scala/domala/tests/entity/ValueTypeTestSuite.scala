@@ -92,7 +92,45 @@ class ValueTypeTestSuite  extends FunSuite with BeforeAndAfter {
       dao.insertHolderOption(entity)
       assert(dao.selectHolderOption(1) === entity)
     }
-  }}
+  }
+
+  test("select basic value AnyVal") {
+    Required {
+      assert(dao.selectVal(0) === ValueTypeVal(0, BooleanVal(false), ByteVal(0: Byte), ShortVal(0: Short), IntVal(0), LongVal(0), FloatVal(0.0f), DoubleVal(0.0)))
+    }
+  }
+
+  test("insert basic value AnyVal") {
+    Required {
+      val entity = ValueTypeVal(1, BooleanVal(true), ByteVal(1: Byte), ShortVal(1: Short), IntVal(1), LongVal(1), FloatVal(1.0f), DoubleVal(1.0))
+      dao.insertVal(entity)
+      assert(dao.selectVal(1) === entity)
+    }
+  }
+
+  test("select basic value AnyVal option") {
+    Required {
+      assert(dao.selectValOption(0) === ValueTypeValOption(0, Some(BooleanVal(false)), Some(ByteVal(0: Byte)), Some(ShortVal(0: Short)), Some(IntVal(0)), Some(LongVal(0)), Some(FloatVal(0.0f)), Some(DoubleVal(0.0))))
+    }
+  }
+
+  test("insert basic value AnyVal option") {
+    Required {
+      val entity = ValueTypeValOption(1, Some(BooleanVal(true)), Some(ByteVal(1: Byte)), Some(ShortVal(1: Short)), Some(IntVal(1)), Some(LongVal(1)), Some(FloatVal(1.0f)), Some(DoubleVal(1.0)))
+      dao.insertValOption(entity)
+      assert(dao.selectValOption(1) === entity)
+    }
+  }
+
+  test("insert basic value AnyVal none") {
+    Required {
+      val entity = ValueTypeValOption(1, None, None, None, None, None, None, None)
+      dao.insertValOption(entity)
+      assert(dao.selectValOption(1) === entity)
+    }
+  }
+
+}
 
 @Entity
 @Table(name = "value_types")
@@ -161,6 +199,40 @@ case class ValueTypeHolderOption(
   double: Option[DoubleHolder]
 )
 
+case class BooleanVal(value: Boolean) extends AnyVal
+case class ByteVal(value: Byte) extends AnyVal
+case class ShortVal(value: Short) extends AnyVal
+case class IntVal(value: Int) extends AnyVal
+case class LongVal(value: Long) extends AnyVal
+case class FloatVal(value: Float) extends AnyVal
+case class DoubleVal(value: Double) extends AnyVal
+
+@Entity
+@Table(name = "value_types")
+case class ValueTypeVal(
+  id: Int,
+  boolean: BooleanVal,
+  byte: ByteVal,
+  short: ShortVal,
+  int: IntVal,
+  long: LongVal,
+  float: FloatVal,
+  double: DoubleVal
+)
+
+@Entity
+@Table(name = "value_types")
+case class ValueTypeValOption(
+  id: Int,
+  boolean: Option[BooleanVal],
+  byte: Option[ByteVal],
+  short: Option[ShortVal],
+  int: Option[IntVal],
+  long: Option[LongVal],
+  float: Option[FloatVal],
+  double: Option[DoubleVal],
+)
+
 @Dao(config = TestConfig)
 trait ValueTypeTestDao {
 
@@ -226,5 +298,26 @@ select * from value_types where id = /* id */0
 
   @Insert
   def insertHolderOption(entity: ValueTypeHolderOption): Result[ValueTypeHolderOption]
+
+  @Select(sql=
+    """
+select * from value_types where id = /* id */0
+"""
+  )
+  def selectVal(id: Int): ValueTypeVal
+
+  @Insert
+  def insertVal(entity: ValueTypeVal): Result[ValueTypeVal]
+
+  @Select(sql=
+    """
+select * from value_types where id = /* id */0
+"""
+  )
+  def selectValOption(id: Int): ValueTypeValOption
+
+  @Insert
+  def insertValOption(entity: ValueTypeValOption): Result[ValueTypeValOption]
+
 }
 

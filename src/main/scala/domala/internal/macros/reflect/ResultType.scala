@@ -14,6 +14,7 @@ object ResultType {
   case class Basic[C <: blackbox.Context](c: C, tpe: C#Type) extends ResultType
   case class Entity[C <: blackbox.Context](c: C, tpe: C#Type) extends ResultType
   case class Holder[C <: blackbox.Context](c: C, tpe: C#Type) extends ResultType
+  case class AnyValHolder[C <: blackbox.Context](c: C, tpe: C#Type) extends ResultType
   case class UnSupport[C <: blackbox.Context](c: C, tpe: C#Type) extends ResultType
 
   def convert[C <: blackbox.Context](c: C)(tpe: C#Type): ResultType = {
@@ -24,6 +25,7 @@ object ResultType {
       case t if isBasic(c)(t) => ResultType.Basic(c, t)
       case t if isEntity(c)(t) => ResultType.Entity(c, t)
       case t if isHolder(c)(t) => ResultType.Holder(c, t)
+      case t if isAnyVal(c)(t) => ResultType.AnyValHolder(c, t)
       case _ => ResultType.UnSupport(c, tpe)
     }
   }

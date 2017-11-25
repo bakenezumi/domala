@@ -43,6 +43,40 @@ class JavaDateTestSuite  extends FunSuite with BeforeAndAfter {
       assert(dao.select(1) === entity)
     }
   }
+
+  test("select Java Date holder") {
+    Required {
+      assert(dao.selectHolder(0) === JavaDateHolderEntity(0, null, None, null, None, null, None))
+    }
+  }
+
+  test("insert Java Date holder") {
+    Required {
+      val entity = JavaDateHolderEntity(
+        1,
+        LocalDateHolder(LocalDate.of(2017, 9, 5)), Some(LocalDateHolder(LocalDate.of(2020, 12, 31))),
+        LocalTimeHolder(LocalTime.of(12, 59, 59)), Some(LocalTimeHolder(LocalTime.of(13, 0, 0))),
+        LocalDateTimeHolder(LocalDateTime.of(2017, 9, 5, 12, 59, 59, 999999999)), Some(LocalDateTimeHolder(LocalDateTime.of(2020, 12, 31, 13, 0, 0, 1)))
+      )
+      dao.insertHolder(entity)
+      assert(dao.selectHolder(1) == entity)
+    }
+  }
+
+  test("insert Java Date AnyVal") {
+    Required {
+      val entity = JavaDateValEntity(
+        1,
+        LocalDateVal(LocalDate.of(2017, 9, 5)), Some(LocalDateVal(LocalDate.of(2020, 12, 31))),
+        LocalTimeVal(LocalTime.of(12, 59, 59)), Some(LocalTimeVal(LocalTime.of(13, 0, 0))),
+        LocalDateTimeVal(LocalDateTime.of(2017, 9, 5, 12, 59, 59, 999999999)), Some(LocalDateTimeVal(LocalDateTime.of(2020, 12, 31, 13, 0, 0, 1)))
+      )
+      dao.insertVal(entity)
+      assert(dao.selectVal(1) == entity)
+
+    }
+  }
+
 }
 
 @Entity
@@ -57,6 +91,38 @@ case class JavaDateEntity(
    optionDateTime : Option[LocalDateTime]
 )
 
+@Holder
+case class LocalDateHolder(value: LocalDate)
+@Holder
+case class LocalTimeHolder(value: LocalTime)
+@Holder
+case class LocalDateTimeHolder(value: LocalDateTime)
+@Entity
+@Table(name = "java_date")
+case class JavaDateHolderEntity(
+  id : Int,
+  basicDate : LocalDateHolder,
+  optionDate : Option[LocalDateHolder],
+  basicTime : LocalTimeHolder,
+  optionTime : Option[LocalTimeHolder],
+  basicDateTime : LocalDateTimeHolder,
+  optionDateTime : Option[LocalDateTimeHolder]
+)
+
+case class LocalDateVal(value: LocalDate) extends AnyVal
+case class LocalTimeVal(value: LocalTime) extends AnyVal
+case class LocalDateTimeVal(value: LocalDateTime) extends AnyVal
+@Entity
+@Table(name = "java_date")
+case class JavaDateValEntity(
+  id : Int,
+  basicDate : LocalDateVal,
+  optionDate : Option[LocalDateVal],
+  basicTime : LocalTimeVal,
+  optionTime : Option[LocalTimeVal],
+  basicDateTime : LocalDateTimeVal,
+  optionDateTime : Option[LocalDateTimeVal]
+)
 
 @Dao(config = TestConfig)
 trait JavaDateDao {
@@ -83,14 +149,23 @@ drop table java_date;
     """)
   def drop()
 
-  @Select(sql=
-    """
-select * from java_date where id = /* id */0
-"""
-  )
+  @Select("select * from java_date where id = /* id */0")
   def select(id: Int): JavaDateEntity
 
   @Insert
   def insert(entity: JavaDateEntity): Result[JavaDateEntity]
+
+  @Select("select * from java_date where id = /* id */0")
+  def selectHolder(id: Int): JavaDateHolderEntity
+
+  @Insert
+  def insertHolder(entity: JavaDateHolderEntity): Result[JavaDateHolderEntity]
+
+  @Select("select * from java_date where id = /* id */0")
+  def selectVal(id: Int): JavaDateValEntity
+
+  @Insert
+  def insertVal(entity: JavaDateValEntity): Result[JavaDateValEntity]
+
 }
 

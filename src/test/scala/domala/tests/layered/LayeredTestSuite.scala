@@ -6,6 +6,7 @@ import domala.tests.TestConfig
 import domala.tests.layered.repository.EmpRepository
 import org.scalatest.{BeforeAndAfter, FunSuite}
 import domala.tests.layered.repository.rdb.EmpDao
+import domala.tests.layered.domain.{ID, Name, Age, Version}
 
 class LayeredTestSuite  extends FunSuite with BeforeAndAfter {
   implicit val config: Config = TestConfig
@@ -51,7 +52,3 @@ case class Emp(
   age: Age,
   version: Version
 ) extends domain.Emp
-case class ID[T](value: Int) extends domain.ID[T]
-case class Name[T](value: String) extends domain.Name[T]
-case class Age(value: Int) extends domain.Age
-case class Version(value: Int) extends domain.Version

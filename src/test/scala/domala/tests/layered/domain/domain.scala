@@ -10,21 +10,10 @@ trait Emp {
 }
 
 // value object
-trait ID[T] {
-  val value: Int
-}
-
-trait  Name[T] {
-  val value: String
-}
-
-trait Age {
-  val value: Int
-}
-
-trait Version {
-  val value: Int
-}
+case class ID[T](value: Int) extends AnyVal
+case class Name[T](value: String) extends AnyVal
+case class Age(value: Int) extends AnyVal
+case class Version(value: Int) extends AnyVal
 
 class EmpService(empRepo: EmpRepository) {
   def findByID(id: ID[Emp]): Option[Emp] = {
@@ -34,9 +23,7 @@ class EmpService(empRepo: EmpRepository) {
   }
 
   def findAll: List[Emp] = {
-    empRepo.findAll {
-      _.toList
-    }
+    empRepo.findAll { _.toList }
   }
 
   def entry(entity: Emp): Int = empRepo.entry(entity)

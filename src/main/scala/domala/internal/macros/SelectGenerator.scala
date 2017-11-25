@@ -338,13 +338,10 @@ object SelectGenerator extends DaoMethodGenerator {
       //noinspection ScalaUnusedSymbol
       val paramTpe = p.decltpe.get match {
         case t"Option[$inner]" => inner
-        case t"$container[..$inner]" =>
-          val placeHolder = inner.map(_ => t"_")
-          t"${Type.Name(container.toString)}[..$placeHolder]"
-        case t"Stream[$_] => $_" =>
-          t"java.util.function.Function[_, _]"
-        case t"Iterator[$_] => $_" =>
-          t"java.util.function.Function[_, _]"
+        case t"Stream[$parameter] => $_" =>
+          t"java.util.function.Function[Stream[$parameter], _]"
+        case t"Iterator[$parameter] => $_" =>
+          t"java.util.function.Function[Iterator[$parameter], _]"
         case _ => TypeHelper.toType(p.decltpe.get)
       }
       val param = p.decltpe.get match {

@@ -82,18 +82,14 @@ object DaoGenerator {
       if(TypeHelper.isWildcardType(p.decltpe.get))
         MacrosHelper.abort(Message.DOMALA4209, p.decltpe.get.syntax, trtName.syntax, _def.name.syntax)
       p.decltpe.get match {
-        case t"$container[..$inner]" =>
-          val placeHolder = inner.map(_ => t"_")
-          q"classOf[${Type.Name(container.toString)}[..$placeHolder]]"
-        case t"$_ => $_" =>
-          q"classOf[(_) => _]"
+        case t"$parameter => $_" =>
+          q"classOf[${TypeHelper.toType(parameter)} => _]"
         case _ => q"classOf[${TypeHelper.toType(p.decltpe.get)}]"
       }
     }) ++ _def.tparams.map(_ => q"classOf[scala.reflect.ClassTag[_]]") // ClassTag型パラメータを付与した場合、実行時は実パラメータとなる
     q"""private[this] val ${Pat.Var.Term(internalMethodName)} =
-          org.seasar.doma.internal.jdbc.dao.AbstractDao.getDeclaredMethod(classOf[$trtName], ${_def.name.literal}..$paramClasses)"""
+          domala.internal.jdbc.dao.DaoUtil.getDeclaredMethod(classOf[$trtName], ${_def.name.literal}..$paramClasses)"""
   }
-
   protected def generateDef(trtName: Type.Name, _def: Decl.Def,  internalMethodName: Term.Name): Defn = {
     _def.paramss.flatten.foreach{p =>
       if(p.name.syntax.startsWith(MetaConstants.RESERVED_NAME_PREFIX)) {

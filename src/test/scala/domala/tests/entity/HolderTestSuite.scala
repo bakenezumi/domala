@@ -58,7 +58,7 @@ class HolderTestSuite extends FunSuite with BeforeAndAfter {
         Holders(id = None, name = Name("HHH"), optionName = Some(Name("III")), weight1 = Some(Weight(3)), weight2 = Weight(3000), nested = Holders.Inner("JJJ"), enum = EnumA, version = None)
       )
       dao.insertList(newEntities)
-      assert(dao.selectHeavierTHan(Weight(1)) == Seq(Name("EEE"), Name("HHH")))
+      assert(dao.selectHeavierThan(Weight(1)) == Seq(Name("EEE"), Name("HHH")))
     }
   }
 
@@ -75,7 +75,7 @@ class HolderTestSuite extends FunSuite with BeforeAndAfter {
 
       // use Ops
       import Numeric.Implicits._
-      val sum: Option[Weight[Kg]] = for {
+      val sum: Option[Weight[WeightType.Kg]] = for {
         x <- selected(1).weight1
         y <- selected(2).weight1
       } yield x + y
@@ -93,8 +93,8 @@ case class Holders(
   id : Option[ID] = None,
   name: Name,
   optionName: Option[Name],
-  weight1: Option[Weight[Kg]],
-  weight2: Weight[G],
+  weight1: Option[Weight[WeightType.Kg]],
+  weight2: Weight[WeightType.G],
   nested: Holders.Inner,
   enum: LikeEnum,
   @domala.Version
@@ -116,9 +116,10 @@ case class Name(value: String)
 case class Version(value: Long)
 
 sealed trait WeightType
-final class Kg extends WeightType
-final class G extends WeightType
-
+object WeightType {
+  final class Kg extends WeightType
+  final class G extends WeightType
+}
 @Holder
 case class Weight[T <: WeightType](underlying: Int)
 
@@ -159,12 +160,12 @@ select * from holders order by id
   @Select(sql="""
 select sum(weight1) from holders
   """)
-  def selectSumKg: Weight[Kg]
+  def selectSumKg: Weight[WeightType.Kg]
 
   @Select(sql="""
 select name from holders where weight1 > /* weight */0 order by name
   """)
-  def selectHeavierTHan(weight: Weight[Kg]): Seq[Name]
+  def selectHeavierThan(weight: Weight[WeightType.Kg]): Seq[Name]
 
   @Insert
   def insert(entity: Holders): Result[Holders]

@@ -1,21 +1,18 @@
 package domala.internal.jdbc.scalar
 
+import java.math.BigInteger
+import java.sql.{Blob, Clob, Date, NClob, SQLXML, Time, Timestamp}
+import java.time.{LocalDate, LocalDateTime, LocalTime}
+import java.util.function.Supplier
+
 import domala.jdbc.holder.AbstractHolderDesc
+import domala.wrapper.BigDecimalWrapper
+import org.seasar.doma.internal.jdbc.scalar.{BasicScalar, OptionalBasicScalar, Scalar, ScalarException}
 import org.seasar.doma.internal.util.AssertionUtil.{assertNotNull, assertTrue}
-import org.seasar.doma.internal.jdbc.scalar.{BasicScalar, OptionalBasicScalar, ScalarException}
 import org.seasar.doma.internal.util.ClassUtil
 import org.seasar.doma.jdbc.ClassHelper
 import org.seasar.doma.message.Message
-import org.seasar.doma.internal.jdbc.scalar.Scalar
 import org.seasar.doma.wrapper._
-import java.math.BigInteger
-import java.sql.{Blob, Clob, Date, NClob, SQLXML, Time, Timestamp}
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.util.function.Supplier
-
-import domala.wrapper.BigDecimalWrapper
 
 object Scalars {
 
@@ -32,7 +29,9 @@ object Scalars {
     if (result == null) {
       result = wrapDomainObject(value, boxedClass, optional, classHelper)
       if (result == null)
-        throw new ScalarException(Message.DOMA1007, valueClass.getName, value)
+        result = wrapAnyValObject(value, boxedClass, optional, classHelper)
+        if (result == null)
+          throw new ScalarException(Message.DOMA1007, valueClass.getName, value)
     }
     result
   }
@@ -166,4 +165,16 @@ object Scalars {
     if (optional) () => domainType.createOptionalScalar(domain)
     else () => domainType.createScalar(domain)
   }
+
+  protected def wrapAnyValObject[BASIC, DOMAIN](value: Object, valueClass: Class[DOMAIN], optional: Boolean, classHelper: ClassHelper): Supplier[Scalar[_, _]] = {
+    val constructors = valueClass.getConstructors
+    if(constructors.length != 1) return null
+    val parameterTypes = constructors.head.getParameterTypes
+    if(parameterTypes.length != 1) return null
+    val parameterType = parameterTypes.head
+    val fieldName = constructors.head.getParameters.head.getName
+    wrapBasicObject(valueClass.getMethod(fieldName).invoke(value), parameterType, optional, false)
+
+  }
+
 }

@@ -10,45 +10,21 @@ import scala.reflect.ClassTag
 case class Emp(
   @Id
   @GeneratedValue(GenerationType.IDENTITY)
-  id: Option[ID[domain.Emp]],
-  name: Name[domain.Emp],
-  age: Age,
+  id: Option[domain.ID[domain.Emp]],
+  name: domain.Name[domain.Emp],
+  age: domain.Age,
   @domala.Version
-  version: Version
+  version: domain.Version
 ) extends domain.Emp
 object Emp {
   def of(parent: domain.Emp): Emp = if (parent == null) null else Emp(
-    Option(ID.of(parent.id.orNull)),
-    Name.of(parent.name),
-    Age.of(parent.age),
-    Version.of(parent.version),
+    parent.id,
+    parent.name,
+    parent.age,
+    parent.version
   )
 }
 
-@Holder
-case class ID[T](value: Int) extends domain.ID[T]
-
-object ID {
-  def of[T](parent: domain.ID[T]): ID[T] = if (parent == null) null else ID[T](parent.value)
-}
-
-@Holder
-case class Name[T](value: String) extends domain.Name[T]
-object Name {
-  def of[T](parent: domain.Name[T]): Name[T] = if (parent == null) null else Name[T](parent.value)
-}
-
-@Holder
-case class Age(value: Int) extends domain.Age
-object Age {
-  def of(parent: domain.Age): Age = if (parent == null) null else Age(parent.value)
-}
-
-@Holder
-case class Version(value: Int) extends domain.Version
-object Version {
-  def of(parent: domain.Version): Version = if (parent == null) null else Version(parent.value)
-}
 
 @Dao
 trait EmpDao extends EmpRepository {
@@ -74,11 +50,11 @@ DROP TABLE emp;
   def loadImpl(entities: Seq[Emp]): Array[Int]
 
   def findByIds[R: ClassTag](id: Seq[domain.ID[domain.Emp]])(mapper: Iterator[domain.Emp] => R): R =
-    findByIdsImpl[R](id.map(ID.of))(mapper)
+    findByIdsImpl[R](id)(mapper)
   @Select("""
 SELECT * FROM emp WHERE id IN /* id */()
   """, strategy = SelectType.ITERATOR)
-  def findByIdsImpl[R: ClassTag](id: Seq[ID[domain.Emp]])(mapper: Iterator[Emp] => R): R
+  def findByIdsImpl[R: ClassTag](id: Seq[domain.ID[domain.Emp]])(mapper: Iterator[Emp] => R): R
 
   def findAll[R: ClassTag](mapper: Iterator[domain.Emp] => R): R = findAllImpl[R](mapper)
   @Select("""

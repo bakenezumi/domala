@@ -36,12 +36,7 @@ object SqlModifyQueryGenerator {
     })
 
     val addParameters = params.map { p =>
-      val paramTpe = p.decltpe.get match {
-        case t"$container[..$inner]" =>
-          val placeHolder = inner.map(_ => t"_")
-          t"${Type.Name(container.toString)}[..$placeHolder]"
-        case _ => t"${Type.Name(p.decltpe.get.toString)}"
-      }
+      val paramTpe = t"${Type.Name(p.decltpe.get.toString)}"
       q"__query.addParameter(${p.name.literal}, classOf[$paramTpe], ${Term.Name(p.name.syntax): Term.Arg})"
     }
 

@@ -15,7 +15,7 @@ trait Config extends org.seasar.doma.jdbc.Config {
   getSqlFileRepository.clearCache()
   getSqlNodeRepository.clearCache()
   override def getCommandImplementors: org.seasar.doma.jdbc.CommandImplementors = CommandImplementors
-  def getSqlNodeRepository: SqlNodeRepository = GreedyCacheSqlFileRepository
+  def getSqlNodeRepository: SqlNodeRepository = GreedyCacheSqlNodeRepository
 
 }
 

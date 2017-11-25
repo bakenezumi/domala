@@ -103,6 +103,22 @@ class IdTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  test("strategy = GenerationType.SEQUENCE and id type AnyVal") {
+    Required {
+      val Result(count, result) = dao.insertVal(GenerateVal(IDVal.notAssigned, "aaa"))
+      assert(count == 1)
+      assert(result == GenerateVal(IDVal(5), "aaa"))
+      val BatchResult(counts, results) = dao.batchInsertVal(Seq(GenerateVal(IDVal.notAssigned, "bbb"), GenerateVal(IDVal.notAssigned, "ccc")))
+      assert(counts sameElements Array(1, 1))
+      assert(results == Seq(GenerateVal(IDVal(6), "bbb"), GenerateVal(IDVal(7), "ccc")))
+      assert(dao.selectValAll == Seq(
+        GenerateVal(IDVal(5), "aaa"),
+        GenerateVal(IDVal(6), "bbb"),
+        GenerateVal(IDVal(7), "ccc")
+      ))
+    }
+  }
+
 }
 
 @Entity
@@ -161,7 +177,6 @@ object IDHolder {
   object NOT_ASSIGNED extends IDHolder[Nothing](-1)
 }
 
-
 @Entity
 @Table(name = "id_test")
 case class GenerateHolder (
@@ -171,6 +186,23 @@ case class GenerateHolder (
   id: IDHolder[GenerateHolder],
   data: String
 )
+
+case class IDVal[+T](value: Int) extends AnyVal
+
+object IDVal {
+  val notAssigned: IDVal[Nothing] = IDVal[Nothing](-1)
+}
+
+@Entity
+@Table(name = "id_test")
+case class GenerateVal (
+  @domala.Id
+  @GeneratedValue(strategy = GenerationType.SEQUENCE)
+  @SequenceGenerator(sequence = "seq")
+  id: IDVal[GenerateVal],
+  data: String
+)
+
 
 @Dao(config = TestConfig)
 trait IdDao {
@@ -259,9 +291,7 @@ select * from id_test
   @BatchInsert
   def batchInsertBasic(entity: Seq[GenerateBasic]): BatchResult[GenerateBasic]
 
-  @Select(sql="""
-select * from id_test
-  """)
+  @Select("select * from id_test")
   def selectHolderAll: Seq[GenerateHolder]
 
   @Insert
@@ -269,5 +299,14 @@ select * from id_test
 
   @BatchInsert
   def batchInsertHolder(entity: Seq[GenerateHolder]): BatchResult[GenerateHolder]
+
+  @Select("select * from id_test")
+  def selectValAll: Seq[GenerateVal]
+
+  @Insert
+  def insertVal(entity: GenerateVal): Result[GenerateVal]
+
+  @BatchInsert
+  def batchInsertVal(entity: Seq[GenerateVal]): BatchResult[GenerateVal]
 
 }

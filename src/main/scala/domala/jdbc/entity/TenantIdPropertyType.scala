@@ -3,7 +3,7 @@ package domala.jdbc.entity
 import java.util.function.Supplier
 
 import domala.jdbc.entity
-import domala.jdbc.holder.AbstractHolderDesc
+import domala.jdbc.holder.{AbstractAnyValHolderDesc, AbstractHolderDesc}
 import org.seasar.doma.jdbc.domain.DomainType
 import org.seasar.doma.jdbc.entity.EntityPropertyType
 import org.seasar.doma.jdbc.entity.NamingType
@@ -76,6 +76,29 @@ object TenantIdPropertyType {
       entityPropertyClass,
       holderType.getBasicClass.asInstanceOf[Class[BASIC]],
       holderType.wrapper,
+      null,
+      holderType,
+      name,
+      columnName,
+      namingType,
+      quoteRequired
+    )
+  }
+
+  def ofAnyVal[ENTITY, BASIC, HOLDER](
+    entityClass: Class[ENTITY],
+    entityPropertyClass: Class[_],
+    holderType: AbstractAnyValHolderDesc[BASIC, HOLDER],
+    name: String,
+    columnName: String,
+    namingType: NamingType,
+    quoteRequired: Boolean
+  ): TenantIdPropertyType[ENTITY, ENTITY, BASIC, HOLDER] = {
+    new TenantIdPropertyType[ENTITY, ENTITY, BASIC, HOLDER](
+      entityClass,
+      entityPropertyClass,
+      holderType.getBasicClass,
+      holderType.wrapperSupplier,
       null,
       holderType,
       name,

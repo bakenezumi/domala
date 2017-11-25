@@ -5,7 +5,7 @@ import java.util.function.Supplier
 import domala.internal.macros.reflect.util.ReflectionUtil.{extractionClassString, extractionQuotedString}
 import domala.internal.macros.reflect.util.{ReflectionUtil, TypeUtil}
 import domala.jdbc.entity.{AssignedIdPropertyType, DefaultPropertyType, GeneratedIdPropertyType, TenantIdPropertyType, VersionPropertyType}
-import domala.jdbc.holder.AbstractHolderDesc
+import domala.jdbc.holder.{AbstractAnyValHolderDesc, AbstractHolderDesc}
 import domala.message.Message
 import org.seasar.doma.jdbc.entity._
 import org.seasar.doma.jdbc.id.{IdGenerator, SequenceIdGenerator, TableIdGenerator}
@@ -93,8 +93,8 @@ object EntityReflectionMacros {
         prop
       }
     } else if (TypeUtil.isHolder(c)(nakedTpe)) {
-      val holder = reify(
-        ReflectionUtil.getHolderCompanion(nakedClassTag.splice))
+      val holder =
+          reify(ReflectionUtil.getHolderCompanion(nakedClassTag.splice))
       if (isIdLiteral) {
         if (isIdGenerateActualLiteral) {
           if (!TypeUtil.isNumberHolder(c)(nakedTpe)) {
@@ -163,7 +163,7 @@ object EntityReflectionMacros {
           val prop = TenantIdPropertyType.ofHolder(
             entityClass.splice,
             propertyClassTag.splice.runtimeClass,
-            holder.splice.asInstanceOf[AbstractHolderDesc[Number, _]],
+            holder.splice,
             paramName.splice,
             columnName.splice,
             namingType.splice,
@@ -178,6 +178,108 @@ object EntityReflectionMacros {
             entityClass.splice,
             propertyClassTag.splice.runtimeClass,
             holder.splice,
+            paramName.splice,
+            columnName.splice,
+            namingType.splice,
+            columnInsertable.splice,
+            columnUpdatable.splice,
+            columnQuote.splice
+          )
+          collections.splice.put(paramName.splice, prop)
+          prop
+        }
+      }
+    } else if (TypeUtil.isAnyVal(c)(nakedTpe)) {
+      val (basicType, holder) = TypeUtil.newAnyValHolderDesc[blackbox.Context, N](c)(nakedTpe)
+      if (!TypeUtil.isBasic(c)(basicType)) {
+        c.abort(c.enclosingPosition, Message.DOMALA6014.getMessage(
+          extractionClassString(entityClass.toString),
+          extractionQuotedString(paramName.toString())))
+      }
+      if (isIdLiteral) {
+        if (isIdGenerateActualLiteral) {
+          if (!TypeUtil.isNumber(c)(basicType)) {
+            c.abort(c.enclosingPosition, basicType.toString)
+            c.abort(
+              c.enclosingPosition,
+              Message.DOMALA4095.getMessage(
+                extractionClassString(entityClass.toString),
+                extractionQuotedString(paramName.toString()))
+            )
+          }
+          reify {
+            val prop = GeneratedIdPropertyType.ofAnyVal(
+              entityClass.splice,
+              propertyClassTag.splice.runtimeClass,
+              holder.get.splice.asInstanceOf[AbstractAnyValHolderDesc[Number, _]],
+              paramName.splice,
+              columnName.splice,
+              namingType.splice,
+              columnQuote.splice,
+              idGenerator.splice
+            )
+            collections.splice.putId(prop)
+            collections.splice.put(paramName.splice, prop)
+            prop
+          }
+        } else {
+          reify {
+            val prop = AssignedIdPropertyType.ofAnyVal(
+              entityClass.splice,
+              propertyClassTag.splice.runtimeClass,
+              holder.get.splice,
+              paramName.splice,
+              columnName.splice,
+              namingType.splice,
+              columnQuote.splice
+            )
+            collections.splice.putId(prop)
+            collections.splice.put(paramName.splice, prop)
+            prop
+          }
+        }
+      } else if (isVersionLiteral) {
+        if (!TypeUtil.isNumber(c)(basicType)) {
+          c.abort(
+            c.enclosingPosition,
+            Message.DOMALA4093.getMessage(
+              extractionClassString(entityClass.toString),
+              extractionQuotedString(paramName.toString()))
+          )
+        }
+        reify {
+          val prop = VersionPropertyType.ofAnyVal(
+            entityClass.splice,
+            propertyClassTag.splice.runtimeClass,
+            holder.get.splice.asInstanceOf[AbstractAnyValHolderDesc[Number, _]],
+            paramName.splice,
+            columnName.splice,
+            namingType.splice,
+            columnQuote.splice
+          )
+          collections.splice.put(paramName.splice, prop)
+          prop
+        }
+      } else if (isTenantIdLiteral) {
+        reify {
+          val prop = TenantIdPropertyType.ofAnyVal(
+            entityClass.splice,
+            propertyClassTag.splice.runtimeClass,
+            holder.get.splice,
+            paramName.splice,
+            columnName.splice,
+            namingType.splice,
+            columnQuote.splice
+          )
+          collections.splice.put(paramName.splice, prop)
+          prop
+        }
+      } else {
+        reify {
+          val prop = DefaultPropertyType.ofAnyVal(
+            entityClass.splice,
+            propertyClassTag.splice.runtimeClass,
+            holder.get.splice,
             paramName.splice,
             columnName.splice,
             namingType.splice,

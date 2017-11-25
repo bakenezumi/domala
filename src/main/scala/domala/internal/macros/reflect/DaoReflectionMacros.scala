@@ -37,9 +37,24 @@ object DaoReflectionMacros {
       }
     } else if (TypeUtil.isHolder(c)(tpe)) {
       reify {
-        val domain = ReflectionUtil.getHolderCompanion(classTag.splice)
+        val holder = ReflectionUtil.getHolderCompanion(classTag.splice)
         new DomainStreamHandler(
-          domain,
+          holder,
+          (p: java.util.stream.Stream[T]) => f.splice.apply(WrapStream.of(p)))
+      }
+    } else if (TypeUtil.isAnyVal(c)(tpe)) {
+      val (basicType, holderDesc) = TypeUtil.newAnyValHolderDesc[blackbox.Context, T](c)(tpe)
+      if(!TypeUtil.isBasic(c)(basicType)) {
+        val Literal(Constant(daoNameText: String)) = daoName.tree
+        val Literal(Constant(methodNameText: String)) = methodName.tree
+        c.abort(c.enclosingPosition,
+          Message.DOMALA4245
+            .getMessage(tpe.typeSymbol.name, daoNameText, methodNameText))
+      }
+      reify {
+        val holder = holderDesc.get.splice
+        new DomainStreamHandler(
+          holder,
           (p: java.util.stream.Stream[T]) => f.splice.apply(WrapStream.of(p)))
       }
     } else {
@@ -72,9 +87,24 @@ object DaoReflectionMacros {
       }
     } else if (TypeUtil.isHolder(c)(tpe)) {
       reify {
-        val domain = ReflectionUtil.getHolderCompanion(classTag.splice)
+        val holder = ReflectionUtil.getHolderCompanion(classTag.splice)
         new DomainStreamHandler(
-          domain,
+          holder,
+          (p: java.util.stream.Stream[T]) => f.splice.apply(WrapIterator.of(p)))
+      }
+    } else if (TypeUtil.isAnyVal(c)(tpe)) {
+      val (basicType, holderDesc) = TypeUtil.newAnyValHolderDesc[blackbox.Context, T](c)(tpe)
+      if(!TypeUtil.isBasic(c)(basicType)) {
+        val Literal(Constant(daoNameText: String)) = daoName.tree
+        val Literal(Constant(methodNameText: String)) = methodName.tree
+        c.abort(c.enclosingPosition,
+          Message.DOMALA6012
+            .getMessage(tpe.typeSymbol.name, daoNameText, methodNameText))
+      }
+      reify {
+        val holder = holderDesc.get.splice
+        new DomainStreamHandler(
+          holder,
           (p: java.util.stream.Stream[T]) => f.splice.apply(WrapIterator.of(p)))
       }
     } else {
@@ -103,8 +133,21 @@ object DaoReflectionMacros {
       }
     } else if (TypeUtil.isHolder(c)(tpe)) {
       reify {
-        val domain = ReflectionUtil.getHolderCompanion(classTag.splice)
-        new DomainResultListHandler(domain)
+        val holder = ReflectionUtil.getHolderCompanion(classTag.splice)
+        new DomainResultListHandler(holder)
+      }
+    } else if (TypeUtil.isAnyVal(c)(tpe)) {
+      val (basicType, holderDesc) = TypeUtil.newAnyValHolderDesc[blackbox.Context, T](c)(tpe)
+      if(!TypeUtil.isBasic(c)(basicType)) {
+        val Literal(Constant(daoNameText: String)) = daoName.tree
+        val Literal(Constant(methodNameText: String)) = methodName.tree
+        c.abort(c.enclosingPosition,
+          Message.DOMALA4007
+            .getMessage(tpe.typeSymbol.name, daoNameText, methodNameText))
+      }
+      reify {
+        val holder = holderDesc.get.splice
+        new DomainResultListHandler(holder)
       }
     } else {
       val Literal(Constant(daoNameText: String)) = daoName.tree
@@ -131,8 +174,21 @@ object DaoReflectionMacros {
       }
     } else if (TypeUtil.isHolder(c)(tpe)) {
       reify {
-        val domain = ReflectionUtil.getHolderCompanion(classTag.splice)
-        new OptionalDomainSingleResultHandler(domain)
+        val holder = ReflectionUtil.getHolderCompanion(classTag.splice)
+        new OptionalDomainSingleResultHandler(holder)
+      }
+    } else if (TypeUtil.isAnyVal(c)(tpe)) {
+      val (basicType, holderDesc) = TypeUtil.newAnyValHolderDesc[blackbox.Context, T](c)(tpe)
+      if(!TypeUtil.isBasic(c)(basicType)) {
+        val Literal(Constant(daoNameText: String)) = daoName.tree
+        val Literal(Constant(methodNameText: String)) = methodName.tree
+        c.abort(c.enclosingPosition,
+          Message.DOMALA4235
+            .getMessage(tpe.typeSymbol.name, daoNameText, methodNameText))
+      }
+      reify {
+        val holder = holderDesc.get.splice
+        new OptionalDomainSingleResultHandler(holder)
       }
     } else {
       val Literal(Constant(daoNameText: String)) = daoName.tree
@@ -162,8 +218,18 @@ object DaoReflectionMacros {
         }
       case ResultType.Holder(_, _) =>
         reify {
-          val domain = ReflectionUtil.getHolderCompanion(classTag.splice)
-          val handler = new DomainSingleResultHandler(domain)
+          val holder = ReflectionUtil.getHolderCompanion(classTag.splice)
+          val handler = new DomainSingleResultHandler(holder)
+          commandImplementors.splice.createSelectCommand(method.splice, query.splice, handler).execute()
+        }
+      case ResultType.AnyValHolder(_, _) =>
+        val (basicType, holderDesc) = TypeUtil.newAnyValHolderDesc[blackbox.Context, T](c)(tpe)
+        if(!TypeUtil.isBasic(c)(basicType)) {
+          c.abort(c.enclosingPosition,
+            Message.DOMALA4008.getMessage(tpe.toString, daoNameText, methodNameText))        }
+        reify {
+          val holder = holderDesc.get.splice
+          val handler = new DomainSingleResultHandler(holder)
           commandImplementors.splice.createSelectCommand(method.splice, query.splice, handler).execute()
         }
       case ResultType.Seq(_, t) =>
