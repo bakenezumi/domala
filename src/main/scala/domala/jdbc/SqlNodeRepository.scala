@@ -13,7 +13,7 @@ trait SqlNodeRepository {
 }
 
 object GreedyCacheSqlNodeRepository extends SqlNodeRepository {
-  private val cache = scala.collection.concurrent.TrieMap[String, SqlNode]()
+  private[this] val cache = scala.collection.concurrent.TrieMap[String, SqlNode]()
   override def get(sql: String): SqlNode = cache.getOrElseUpdate(sql, new SqlParser(sql).parse())
   override def clearCache(): Unit = cache.clear()
 }
