@@ -229,7 +229,7 @@ The implementation class of trait is automatically generated at compile time by 
     @Select(sql = """
   select *
   from employee
-  where identity = /*identity*/0
+  where employeeId = /*employeeId*/0
     """)
     def selectById(employeeId: Identity[Employee]): Employee
 
