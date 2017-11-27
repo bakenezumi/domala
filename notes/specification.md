@@ -137,7 +137,7 @@ If the element of the `Holder` is `Numeric`, the `Holder` can also be used as `N
 
 #### restrictions
   - One constructor, and one parameter.
-  - Only [`Basic types`](#basic-type) can be defined for parameter type.
+  - Only [`Basic types`](#basic-types) can be defined for parameter type.
   - Doma's `External holder` is currently not supported.
 
 ## Embeddable class

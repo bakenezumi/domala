@@ -195,10 +195,10 @@ public enum Message implements MessageResource {
     DOMALA6001("@Holderを注釈するclassのコンストラクタパラメータは1つでなければなりません。"),
     DOMALA6003("式[{0}]（[{1}]番目の文字付近）staticメソッドの呼び出しはサポートされていません。"),
     DOMALA6004("式[{0}]（[{1}]番目の文字付近）staticフィールドへのアクセスはサポートされていません。"),
-    DOMALA6005("@Holderはcase class、もしくはabstract sealed classにのみ注釈できます。"),
-    DOMALA6006("@Holderをabstract sealed classに注釈する場合、コンストラクタパラメータを(val value: ...)とし、immutableなフィールドとして公開しなければなりません。"),
-    DOMALA6007("@Holderをabstract sealed classに注釈する場合、1つ以上の継承したobjectが必要です。at {0}"),
-    DOMALA6008("@Holderをabstract sealed classに注釈する場合、全ての継承先はobjectにする必要があります。at {0}"),
+    DOMALA6005("@Holderはcase class、もしくはsealed abstract classにのみ注釈できます。"),
+    DOMALA6006("@Holderをsealed abstract classに注釈する場合、コンストラクタパラメータを(val value: ...)とし、immutableなフィールドとして公開しなければなりません。"),
+    DOMALA6007("@Holderをsealed abstract classに注釈する場合、1つ以上の継承したobjectが必要です。at {0}"),
+    DOMALA6008("@Holderをsealed abstract classに注釈する場合、全ての継承先はobjectにする必要があります。at {0}"),
     DOMALA6009("@Selectのstrategy要素にSelectStrategyType.ITERATORを設定した場合、Iterator[?] => ?型のパラメータが必要です。 at {0}.{1}"),
     DOMALA6010("Iterator[?] => ?型のパラメータは複数指定できません。"),
     DOMALA6011("Functionの1番目の実型引数の型は、Iteratorでなければいけません。 at {0}.{1}"),
@@ -206,7 +206,7 @@ public enum Message implements MessageResource {
     DOMALA6013("script\"...\"内での変数利用はできません。"),
     DOMALA6014("AnyValのサブクラスを永続対象とする場合、値の型は基本型でなければなりません。 at {0}.{1}"),
     DOMALA6015("sqlは文字列リテラルでなければなりません。 at {0}.{1}"),
-    DOMALA6016("@Holderをabstract sealed classに注釈する場合、継承するobjectは全て異なる値を持たなければなりません。at {0}"),
+    DOMALA6016("@Holderをsealed abstract classに注釈する場合、継承するobjectは全て異なる値を持たなければなりません。at {0}"),
     ;
 
     private final String messagePattern;
