@@ -363,7 +363,10 @@ object DaoReflectionMacros {
     val Literal(Constant(defNameLiteral: String)) = defName.tree
     val Literal(Constant(expandableLiteral: Boolean)) = expandable.tree
     val Literal(Constant(populatableLiteral: Boolean)) = populatable.tree
-    val Literal(Constant(sqlLiteral: String)) = sql.tree
+    val sqlLiteral: String = sql.tree match {
+      case Literal (Constant(sqlLiteral: String)) => sqlLiteral
+      case _ =>  c.abort(c.enclosingPosition, Message.DOMALA6015.getMessage(trtNameLiteral, defNameLiteral))
+    }
     import scala.language.existentials
     val paramTypes = new ReflectionHelper[c.type](c).paramTypes(params)
     paramTypes.foreach {
@@ -373,7 +376,6 @@ object DaoReflectionMacros {
             c.abort(c.enclosingPosition, Message.DOMALA4160.getMessage(trtNameLiteral, defNameLiteral))
           case _ => ()
         }
-
     }
     val sqlNode = new SqlParser(sqlLiteral).parse()
     val sqlValidator = new SqlValidator[c.type](c)(trtNameLiteral, defNameLiteral, expandableLiteral, populatableLiteral, paramTypes)

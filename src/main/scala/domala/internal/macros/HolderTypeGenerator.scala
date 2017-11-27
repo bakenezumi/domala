@@ -51,12 +51,15 @@ object HolderTypeGenerator {
         val paramss = cls.ctor.paramss.map(ps => ps.map(_.copy(mods = Nil)))
         val argss = paramss.map(ps => ps.map(p => Term.Name(p.name.syntax)))
         val typeNames = cls.tparams.map(tp => Type.Name(tp.name.syntax))
+        val assertSubclasses = q"domala.internal.macros.reflect.HolderReflectionMacros.assertSubclasses(classOf[${cls.name}])"
         val matchSubclasses = q"domala.internal.macros.reflect.HolderReflectionMacros.matchSubclasses(classOf[$basicTpe], classOf[${cls.name}])(...$argss)"
-        if (typeNames.nonEmpty)
-          q"private def apply[..{$tparams}](...$paramss): ${cls.name}[..{$typeNames}] = $matchSubclasses"
-        else
-          q"private def apply(...$paramss): ${cls.name} = $matchSubclasses"
-      } else CaseClassMacroHelper.generateApply(cls)
+        Seq(assertSubclasses,
+          if (typeNames.nonEmpty)
+            q"private def apply[..{$tparams}](...$paramss): ${cls.name}[..{$typeNames}] = $matchSubclasses"
+          else
+            q"private def apply(...$paramss): ${cls.name} = $matchSubclasses"
+        )
+      } else Seq(CaseClassMacroHelper.generateApply(cls))
 
     val numericImplicitVal =
       if(isNumeric && !isNumericDefined(companion)) Seq(generateNumericImplicitVal(cls.name, basicTpe, tparams, Term.Name(valueParam.name.syntax)))
@@ -67,7 +70,7 @@ object HolderTypeGenerator {
       domala.jdbc.holder.AbstractHolderDesc[
         $basicTpe, $erasedHolderType](
         $wrapperSupplier: java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$basicTpe]]) {
-      ..${Seq(applyDef, CaseClassMacroHelper.generateUnapply(cls))}
+      ..${applyDef ++ Seq(CaseClassMacroHelper.generateUnapply(cls))}
       ..$numericImplicitVal
       ..$methods
     }

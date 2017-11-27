@@ -8,13 +8,52 @@ import scala.reflect.macros.blackbox
 
 object HolderReflectionMacros {
 
+  def assertUnique(handler: () => Unit)(args: Any*) : Unit = {
+    if(args.size != args.toSet.size) handler()
+  }
+
+  def getSubclasses[HOLDER: c.WeakTypeTag](c: blackbox.Context)(holderType: c.Type): Set[c.universe.Symbol] = {
+    val subclasses: Set[c.universe.Symbol] = holderType.typeSymbol.asClass.knownDirectSubclasses
+    if(subclasses.isEmpty) MacrosHelper.abort(Message.DOMALA6007, holderType.typeSymbol.fullName)
+    subclasses.find(!_.isModuleClass).foreach(sub => MacrosHelper.abort(Message.DOMALA6008, sub.fullName))
+    subclasses
+  }
+
+  def assertSubclassesImpl[HOLDER: c.WeakTypeTag](c: blackbox.Context)(holderClass: c.Expr[Class[HOLDER]]): c.Expr[Unit] = {
+    import c.universe._
+    val holderType = weakTypeOf[HOLDER]
+    val subclasses: Set[c.universe.Symbol] = getSubclasses(c)(holderType)
+
+    // domala.internal.macros.reflect.HolderReflectionMacros.assertUnique(handler)(Child1.value, Child2.value, ...)
+    val holderTypeName = c.Expr(Literal(Constant(holderType.typeSymbol.fullName)))
+    val handler = reify {
+      () => MacrosHelper.abort(Message.DOMALA6016, holderTypeName.splice.toString)
+    }
+    val paramName = holderType.members.filter(m => m.isConstructor).head.asMethod.paramLists.head.head.name.toString
+
+    val assertParams = subclasses.map { classSymbol: c.universe.Symbol =>
+      val subclassName = classSymbol.name.toString
+      Select(
+        Ident(TermName(subclassName)),
+        TermName(paramName)
+      )
+    }.toList
+
+    val assertUnique =
+      q"""
+      domala.internal.macros.reflect.HolderReflectionMacros.assertUnique($handler)($assertParams : _*)
+      """
+    c.Expr(assertUnique).asInstanceOf[c.Expr[Unit]]
+  }
+
+  def assertSubclasses[HOLDER](holderClass: Class[HOLDER]): Unit = macro assertSubclassesImpl[HOLDER]
+
   def matchSubclassesImpl[BASIC: c.WeakTypeTag, HOLDER: c.WeakTypeTag](c: blackbox.Context)(basicClass: c.Expr[Class[BASIC]], holderClass: c.Expr[Class[HOLDER]]): c.Expr[BASIC => HOLDER] = {
     import c.universe._
     val basicType = weakTypeOf[BASIC]
     val holderType = weakTypeOf[HOLDER]
-    val subclasses: Set[c.universe.Symbol] = holderType.typeSymbol.asClass.knownDirectSubclasses
-    if(subclasses.isEmpty) MacrosHelper.abort(Message.DOMALA6007, holderType.typeSymbol.fullName)
-    subclasses.find(!_.isModuleClass).foreach(sub => MacrosHelper.abort(Message.DOMALA6008, sub.fullName))
+    val subclasses: Set[c.universe.Symbol] = getSubclasses(c)(holderType)
+
     // (value: BASIC) => value match {
     //   case Child1.value => Child1
     //   case Child2.value => Child2

@@ -205,6 +205,8 @@ public enum Message implements MessageResource {
     DOMALA6012("Iteratorの実型引数の型[{0}]はサポートされていません。 at {1}.{2}"),
     DOMALA6013("script\"...\"内での変数利用はできません。"),
     DOMALA6014("AnyValのサブクラスを永続対象とする場合、値の型は基本型でなければなりません。 at {0}.{1}"),
+    DOMALA6015("sqlは文字列リテラルでなければなりません。 at {0}.{1}"),
+    DOMALA6016("@Holderをabstract sealed classに注釈する場合、継承するobjectは全て異なる値を持たなければなりません。at {0}"),
     ;
 
     private final String messagePattern;
