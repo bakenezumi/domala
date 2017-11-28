@@ -24,19 +24,19 @@ javal.lang.Integer     |support    |
 Long                   |support    |
 java.lang.Long         |support    |
 Float                  |support    |
-javal.lang.Float       |support    |
+java.lang.Float       |support    |
 Double                 |support    |
-javal.lang.Double      |support    |
+java.lang.Double      |support    |
 Double                 |support    |
 ~~java.lang.Enum~~     |-          |use seald abstruct [Holder](#holder-class) instead
 Array[Byte]            |support|
 String                 |support    |
 AnyRef                 |support    |
-javal.lang.Object      |support    |
+java.lang.Object      |support    |
 BigDecimal             |support    |added by Domala
 java.math.BigDecimal   |support    |
 BigInt                 |support    |added by Domala
-javal.math.BigInteger  |support    |
+java.math.BigInteger  |support    |
 java.time.LocalDate    |support    |
 java.time.LocalTime    |support    |
 java.time.LocalDateTime|support    |
@@ -46,8 +46,8 @@ java.sql.Timestamp     |support    |
 java.sql.Array         |support    |
 java.sql.Blob          |support    |
 java.sql.Clob          |support    |
-javal.sql.SQLXML       |support    |
-javal.util.Date        |support    |
+java.sql.SQLXML       |support    |
+java.util.Date        |support    |
 
 ## Holder class
 
@@ -59,7 +59,7 @@ There are two ways to define a `Holder`:
   - to annotate `@Holder` to  `case class`
   - using [`value classes`](https://docs.scala-lang.org/overviews/core/value-classes.html).
 
-#### Example of definetion
+#### Example of definition
   ```scala
   // using the annotation
   @Holder
@@ -146,7 +146,7 @@ If the element of the `Holder` is `Numeric`, the `Holder` can also be used as `N
 
 `Embeddable` can be defined by to annote `@Embeddable` to `case class`.
 
-#### Example of definetion
+#### Example of definition
 
   ```scala
   @Embeddalbe
@@ -186,7 +186,7 @@ An `Entity` corresponds to a database table or a query result set.
 
 `Entity` can be defined by to annote `@Entity` to `case class`.
 
-#### Example of definetion
+#### Example of definition
 
   ```scala
   @Entity
@@ -222,7 +222,7 @@ Data Access Object (Dao) is an trait for database access.
 
 The implementation class of trait is automatically generated at compile time by the annotation macro.
 
-#### Example of definetion
+#### Example of definition
 
   ```scala
   @Dao
