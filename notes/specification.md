@@ -51,15 +51,15 @@ javal.util.Date        |support    |
 
 ## Holder class
 
-`Doma` can define a class wrapping a Basic type value as a `Holder`.
+`Doma` can define a class wrapping a Basic type value as `Holder`.
 
-`Holder` defines a semantic type.
+Using `Holder` can defines type for each semantic.
 
 There are two ways to define a `Holder`:
   - to annotate `@Holder` to  `case class`
-  - using the `value class`.
+  - using [`value classes`](https://docs.scala-lang.org/overviews/core/value-classes.html).
 
-#### example of definetion
+#### Example of definetion
   ```scala
   // using the annotation
   @Holder
@@ -69,25 +69,25 @@ There are two ways to define a `Holder`:
     def validate: Either[Cause, PhoneNumber] = ...
   }
 
-  // using value class
+  // using value classes
   case class Identity[ENTITY](value: Int) extends AnyVal
 
   ```
 
-Domala can not use `Enum` as a basic type, but can be expressed pseudo by `seald abstract class`.
+Domala can not use `java.lang.Enum` as a basic type, but can be expressed pseudo by `seald abstract class`.
 
   ```scala
-  // a contents of `value` are persisted in the database
+  // a contents of a element is persisted in the database
   @Holder
   sealed abstract class Sex(val value: String)
   object Sex {
     case object Male extends Sex("M")
     case object Female extends Sex("F")
     case object Other extends Sex("?")
-  }  
+  }
   ```
 
-#### example of using
+#### Example of using
 If the Holder class has a type parameter, the type parameter requires a concrete type. Specification of wildcards and type variables is not supported.
 
   ```scala
@@ -135,8 +135,8 @@ If the element of the `Holder` is `Numeric`, the `Holder` can also be used as `N
   ```
 
 
-#### restrictions
-  - One constructor, and one parameter.
+#### Restrictions
+  - One constructor, and one element.
   - Only [`Basic types`](#basic-types) can be defined for parameter type.
   - Doma's `External holder` is currently not supported.
 
@@ -144,9 +144,9 @@ If the element of the `Holder` is `Numeric`, the `Holder` can also be used as `N
 
 `Embeddable` is that groups database columns and result sets of queries into multiple columns.
 
-`Embeddable` is defined by to annote `@Embeddable` to `case class`.
+`Embeddable` can be defined by to annote `@Embeddable` to `case class`.
 
-#### example of definetion
+#### Example of definetion
 
   ```scala
   @Embeddalbe
@@ -158,7 +158,7 @@ If the element of the `Holder` is `Numeric`, the `Holder` can also be used as `N
   )
   ```
 
-#### example of using
+#### Example of using
 `Embeddable` classes are used as fields of `Entity` classes.
 
   ```scala
@@ -170,7 +170,7 @@ If the element of the `Holder` is `Numeric`, the `Holder` can also be used as `N
   )
   ```
 
-#### restrictions
+#### Restrictions
 
 The type of the field must be one of the following:
 
@@ -178,24 +178,26 @@ The type of the field must be one of the following:
   - [`Holder class`](#holder-class)
   - `Option` with element of either [`Basic type`](#basic-types) or [`Holder class`](#holder-class)
 
-#### further specification of Embeddable
+#### Further specification of Embeddable
 [See to the Doma guide.](http://doma.readthedocs.io/ja/2.19.0/embeddable/)
 
 ## Entity class
 An `Entity` corresponds to a database table or a query result set.
 
-`Entity` is defined by to annote `@Entity` to `case class`.
+`Entity` can be defined by to annote `@Entity` to `case class`.
 
-#### example of definetion
+#### Example of definetion
 
   ```scala
   @Entity
   case class Employee(
+    @Id
+    employeeId: Identity[Employee],
     ...
   )
   ```
 
-#### restrictions
+#### Restrictions
 The type of the field must be one of the following:
 
   - [`Basic types`](#basic-types)
@@ -203,12 +205,12 @@ The type of the field must be one of the following:
   - [`Embeddable class`](#embeddable-class)
   - `Option` with element of either [`Basic type`](#basic-types) or [`Holder class`](#holder-class)
 
-The following functions of Doma can not be used
+The following functions of Doma can not be used by Domala.
   - [`@Transient`](http://doma.readthedocs.io/ja/2.19.0/entity/#id16)
   - [`@OriginalStates`](http://doma.readthedocs.io/ja/2.19.0/entity/#id17)
   - Definition of an `Entity` that inherits an `Entity` class
 
-#### further specification of Entity
+#### Further specification of Entity
 [See to the Doma guide.](http://doma.readthedocs.io/ja/2.19.0/entity/)
 
 
@@ -216,11 +218,11 @@ The following functions of Doma can not be used
 
 Data Access Object (Dao) is an trait for database access.
 
-`Dao` is defined by to annote `@Dao` to `trait`.
+`Dao` can be defined by to annote `@Dao` to `trait`.
 
-The implementation class of trait is automatically generated at compile time by annotation macro.
+The implementation class of trait is automatically generated at compile time by the annotation macro.
 
-#### example of definetion
+#### Example of definetion
 
   ```scala
   @Dao
@@ -234,15 +236,15 @@ The implementation class of trait is automatically generated at compile time by 
     def selectById(employeeId: Identity[Employee]): Employee
 
     @Insert
-    def insert(person: Employee): Result[Employee]
+    def insert(employee: Employee): Result[Employee]
 
     @Update
-    def update(person: Employee): Result[Employee]
+    def update(employee: Employee): Result[Employee]
 
   }
   ```
 
-#### example of using
+#### Example of using
 When compiled, an implementation class is generated by the annotation macro. Instantiate the implementation class and use it. However, when managing the `Config` class with the DI container, please control the instantiation with the DI container.
 
   ```scala
@@ -251,24 +253,22 @@ When compiled, an implementation class is generated by the annotation macro. Ins
   val employee = employeeDao.selectById(Identity(1))
   ```
 
-The implementation class is included in the companion object of the trait annotating `@Dao`. Instantiate it using the `impl` method of companion object. This `impl` accepts the Config object as an implicit parameter.
+The implementation class is included in the companion object of the trait annotating `@Dao`. Instantiate it using the `impl` method of companion object. This `impl` accepts the `Config` instance as an implicit parameter.
 
-It is also possible to instantiate by specifying a specific `DataSource`.
+It is also possible to instantiate by specifying a specific `javax.sql.DataSource`.
 
   ```scala
   val dataSource: DataSource = ...
-  employeeDao: EmployeeDao = EmployeeDao.impl(dataSource)
+  val employeeDao: EmployeeDao = EmployeeDao.impl(dataSource)
   val employee = employeeDao.selectById(Identity(1))
   ```
 
-Likewise, it is possible to instantiate it by specifying `Connection`.
+Likewise, it is possible to instantiate it by specifying `java.sql.Connection`.
 
   ```scala
   val connection : Connection = ...
-  employeeDao: EmployeeDao = EmployeeDao.impl(connection)
+  val employeeDao: EmployeeDao = EmployeeDao.impl(connection)
   val employee = employeeDao.selectById(Identity(1))
   ```
 
-The Dao interface is not tied to entity class on a one-on-one basis. A single Dao interface can handle multiple entity classes.
-
-  
+`Dao trait` is not tied to entity class on a one-on-one basis. A single `Dao trait` can handle multiple `Entity` classes.
