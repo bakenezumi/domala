@@ -28,7 +28,7 @@ lazy val root = (project in file(".")).settings(
   )
 )
 
-lazy val sample = project.settings (
+lazy val example = project.settings (
   inThisBuild(List(
     scalaVersion := _scalaVersion,
     version      := _version

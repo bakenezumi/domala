@@ -104,9 +104,9 @@ from person where
 A configuration of a database
 
 ```scala
-object SampleConfig extends LocalTransactionConfig(
+object ExampleConfig extends LocalTransactionConfig(
   dataSource = new LocalTransactionDataSource(
-    "jdbc:h2:mem:sample;DB_CLOSE_DELAY=-1", "sa", null),
+    "jdbc:h2:mem:example;DB_CLOSE_DELAY=-1", "sa", null),
   dialect = new H2Dialect,
   naming = Naming.SNAKE_LOWER_CASE
 ) {
@@ -116,7 +116,7 @@ object SampleConfig extends LocalTransactionConfig(
 
 #### Usage
 ```scala  
-implicit val config = SampleConfig
+implicit val config = ExampleConfig
 
 // Dao implementation is auto generated.
 val dao: PersonDao = PersonDao.impl 
@@ -140,11 +140,11 @@ Required {
 }
 ```
 
-### Run sample
+### Run example
 
 ```sh
 sbt
->sample/run
+>example/run
 ```
 
 ### In REPL
@@ -159,9 +159,9 @@ import org.seasar.doma.jdbc.tx.LocalTransactionDataSource
 import org.seasar.doma.jdbc.dialect.H2Dialect
 
 // A configuration of database
-implicit object SampleConfig extends LocalTransactionConfig(
+implicit object ExampleConfig extends LocalTransactionConfig(
   dataSource = new LocalTransactionDataSource(
-    "jdbc:h2:mem:sample;DB_CLOSE_DELAY=-1", "sa", null),
+    "jdbc:h2:mem:example;DB_CLOSE_DELAY=-1", "sa", null),
   dialect = new H2Dialect
 ) {
   Class.forName("org.h2.Driver")

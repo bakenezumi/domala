@@ -1,4 +1,4 @@
-package sample
+package example
 
 import domala._
 import domala.jdbc.Result
@@ -7,13 +7,13 @@ import domala.jdbc.Result
 trait PersonDao {
   @Script(sql = """
 create table department(
-    id int not null identity primary key,
+    id int not null primary key,
     name varchar(20),
     version int not null
 );
 
 create table person(
-    id int not null identity primary key,
+    id int not null primary key,
     name varchar(20),
     age int,
     city varchar(20) not null,
@@ -28,6 +28,8 @@ insert into department (id, name, version) values(2, 'SALES', 0);
 
 insert into person (id, name, age, city, street, department_id, version) values(1, 'SMITH', 10, 'Tokyo', 'Yaesu', 1, 0);
 insert into person (id, name, age, city, street, department_id, version) values(2, 'ALLEN', 20, 'Kyoto', 'Karasuma', 2, 0);
+create sequence person_id_seq start with 3;
+
   """)
   def create(): Unit
 

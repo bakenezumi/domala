@@ -1,4 +1,4 @@
-package sample
+package example
 
 package object util {
   /**

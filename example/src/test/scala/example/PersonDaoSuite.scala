@@ -1,11 +1,11 @@
-package sample
+package example
 
 import domala.Required
 import domala.jdbc.Config
 import org.scalatest._
 
 class PersonDaoSuite extends FunSuite {
-  implicit val config: Config = SampleConfig
+  implicit val config: Config = ExampleConfig
 
   val dao: PersonDao = PersonDao.impl
 
@@ -14,12 +14,12 @@ class PersonDaoSuite extends FunSuite {
       dao.create()
       assert (dao.selectById(1) contains
          Person(
-           Some(1),
+           ID(1),
            Name("SMITH"),
            Some(10),
            Address("Tokyo", "Yaesu"),
-           Some(1),
-           Some(0)
+           Some(ID(1)),
+           0
          )
       )
     }

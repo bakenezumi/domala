@@ -1,12 +1,12 @@
-package sample.guild
+package example.guild
 
 import domala._
 import domala.jdbc.Config
 import org.scalatest.{BeforeAndAfter, FunSuite}
-import sample.SampleConfig
+import example.ExampleConfig
 
 class GuildTestSuite extends FunSuite with BeforeAndAfter {
-  implicit val config: Config = SampleConfig
+  implicit val config: Config = ExampleConfig
   implicit val guildDao: GuildDao = GuildDao.impl
   implicit val characterDao: CharacterDao = CharacterDao.impl
   implicit val guildHouseDao: GuildHouseDao = GuildHouseDao.impl
