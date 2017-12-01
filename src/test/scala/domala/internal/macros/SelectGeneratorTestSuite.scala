@@ -15,7 +15,7 @@ trait EmptySqlDao {
 }
 """
     val caught = intercept[MacrosException] {
-      DaoGenerator.generate(trt, null)
+      DaoGenerator.generate(trt, null, None)
     }
     assert(caught.message == Message.DOMALA4020)
   }
@@ -28,7 +28,7 @@ trait WildcardTypeReturnDao {
 }
 """
     val caught = intercept[MacrosException] {
-      DaoGenerator.generate(trt, null)
+      DaoGenerator.generate(trt, null, None)
     }
     assert(caught.message == Message.DOMALA4207)
   }
@@ -41,7 +41,7 @@ trait StreamNoFunctionParamDao {
 }
 """
     val caught = intercept[MacrosException] {
-      DaoGenerator.generate(trt, null)
+      DaoGenerator.generate(trt, null, None)
     }
     assert(caught.message == Message.DOMALA4247)
   }
@@ -54,7 +54,7 @@ trait StreamNoFunctionParamDao {
 }
 """
     val caught = intercept[MacrosException] {
-      DaoGenerator.generate(trt, null)
+      DaoGenerator.generate(trt, null, None)
     }
     assert(caught.message == Message.DOMALA4249)
   }

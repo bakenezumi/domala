@@ -3,6 +3,7 @@ package domala
 import domala.internal.macros.DaoGenerator
 import domala.jdbc.Config
 
+import scala.collection.immutable.Seq
 import scala.meta._
 
 /** Indicates a DAO trait.
@@ -38,7 +39,9 @@ class Dao(config: Config = null) extends scala.annotation.StaticAnnotation {
       case arg"$x" => x.syntax.parse[Term.Arg].get
     }.orNull
     defn match {
-      case trt: Defn.Trait => DaoGenerator.generate(trt, config)
+      case trt: Defn.Trait => DaoGenerator.generate(trt, config, None)
+      case Term.Block(Seq(trt: Defn.Trait, companion: Defn.Object)) =>
+        DaoGenerator.generate(trt, config, Some(companion))
       case _ => abort(domala.message.Message.DOMALA4014.getMessage())
     }
   }

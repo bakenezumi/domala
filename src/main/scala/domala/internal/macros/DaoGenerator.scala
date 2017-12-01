@@ -13,7 +13,7 @@ import scala.meta._
   */
 object DaoGenerator {
 
-  def generate(trt: Defn.Trait, config: Term.Arg): Term.Block = {
+  def generate(trt: Defn.Trait, config: Term.Arg, maybeOriginalCompanion: Option[Defn.Object]): Term.Block = {
     val factory: Seq[Stat] = (
       if(config == null)
         Nil
@@ -48,7 +48,7 @@ object DaoGenerator {
       }
     """
 
-    val companion =
+    val newCompanion =
     q"""
     object ${Term.Name(trt.name.syntax)} {
       ..$factory
@@ -56,6 +56,7 @@ object DaoGenerator {
       $internalClass
     }
     """
+
     //logger.debug(companion)
     Term.Block(Seq(
       trt.copy(templ = trt.templ.copy(stats = trt.templ.stats.map(stat => stat.map {
@@ -71,7 +72,11 @@ object DaoGenerator {
         )
         case x => x
       }))),
-      companion))
+      maybeOriginalCompanion.map(originalCompanion => originalCompanion.copy(
+        templ = newCompanion.templ.copy(
+          stats = Some(newCompanion.templ.stats.getOrElse(Nil) ++ originalCompanion.templ.stats.getOrElse(Nil))
+      ))).getOrElse(newCompanion)
+    ))
   }
 
   private def from(n: Int): Stream[Int] = n #:: from(n + 1)

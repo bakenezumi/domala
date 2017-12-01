@@ -11,16 +11,17 @@ import scala.meta._
   * @see [[https://github.com/domaframework/doma/blob/master/src/main/java/org/seasar/doma/internal/apt/EmbeddableTypeGenerator.java]]
   */
 object EmbeddableTypeGenerator {
-  def generate(cls: Defn.Class): Defn.Object = {
+  def generate(cls: Defn.Class, maybeOriginalCompanion: Option[Defn.Object]): Defn.Object = {
     if(cls.tparams.nonEmpty)
       MacrosHelper.abort(Message.DOMALA4285, cls.name.syntax)
     val methods = makeMethods(cls.name, cls.ctor)
-    q"""
+    val newCompanion = q"""
     object ${Term.Name(cls.name.syntax)} extends org.seasar.doma.jdbc.entity.EmbeddableType[${cls.name}] {
-      ..${Seq(CaseClassMacroHelper.generateApply(cls), CaseClassMacroHelper.generateUnapply(cls))}
+      ..${Seq(CaseClassMacroHelper.generateApply(cls, maybeOriginalCompanion), CaseClassMacroHelper.generateUnapply(cls, maybeOriginalCompanion))}
       ..$methods
     }
     """
+    MacrosHelper.mergeObject(maybeOriginalCompanion, newCompanion)
   }
 
   protected def makeMethods(clsName: Type.Name, ctor: Ctor.Primary): Seq[Defn.Def] = {

@@ -105,7 +105,7 @@ case class Person(
   override def getOriginalStates(__entity: Person): Person = null
   override def saveCurrentStates(__entity: Person): Unit = {}
 }"""
-    val ret = EntityTypeGenerator.generate(cls, Nil)
+    val ret = EntityTypeGenerator.generate(cls, None, Nil)
     assert(ret.syntax == expect)
   }
 
@@ -118,7 +118,7 @@ case class AnnotationConflictedEntity(
 )
 """
     val caught = intercept[MacrosException] {
-      EntityTypeGenerator.generate(cls, Nil)
+      EntityTypeGenerator.generate(cls, None, Nil)
     }
     assert(caught.message == Message.DOMALA4086)
   }
@@ -134,7 +134,7 @@ case class GeneratedValueWithCompositeIdEntity(
 )
 """
     val caught = intercept[MacrosException] {
-      EntityTypeGenerator.generate(cls, Nil)
+      EntityTypeGenerator.generate(cls, None, Nil)
     }
     assert(caught.message == Message.DOMALA4036)
   }
@@ -147,7 +147,7 @@ case class GeneratedValueWithoutIdEntity(
 )
 """
     val caught = intercept[MacrosException] {
-      EntityTypeGenerator.generate(cls, Nil)
+      EntityTypeGenerator.generate(cls, None, Nil)
     }
     assert(caught.message == Message.DOMALA4033)
   }
@@ -160,7 +160,7 @@ case class SequenceGeneratorWithoutGeneratedValueEntity(
 )
 """
     val caught = intercept[MacrosException] {
-      EntityTypeGenerator.generate(cls, Nil)
+      EntityTypeGenerator.generate(cls, None, Nil)
     }
     assert(caught.message == Message.DOMALA4030)
   }
@@ -173,7 +173,7 @@ case class TableGeneratorWithoutGeneratedValueEntity(
 )
 """
     val caught = intercept[MacrosException] {
-      EntityTypeGenerator.generate(cls, Nil)
+      EntityTypeGenerator.generate(cls, None, Nil)
     }
     assert(caught.message == Message.DOMALA4031)
   }
@@ -190,7 +190,7 @@ case class VersionDuplicatedEntity(
 )
 """
     val caught = intercept[MacrosException] {
-      EntityTypeGenerator.generate(cls, Nil)
+      EntityTypeGenerator.generate(cls, None, Nil)
     }
     assert(caught.message == Message.DOMALA4024)
   }
@@ -202,7 +202,7 @@ case class PropertyNameReservedEntity(
 )
 """
     val caught = intercept[MacrosException] {
-      EntityTypeGenerator.generate(cls, Nil)
+      EntityTypeGenerator.generate(cls, None, Nil)
     }
     assert(caught.message == Message.DOMALA4025)
   }
@@ -214,7 +214,7 @@ case class UnsupportedPropertyEntity(
 )
 """
     val caught = intercept[MacrosException] {
-      EntityTypeGenerator.generate(cls, Nil)
+      EntityTypeGenerator.generate(cls, None, Nil)
     }
     assert(caught.message == Message.DOMALA4096)
   }
@@ -226,7 +226,7 @@ case class WildcardPropertyEntity(
 )
 """
     val caught = intercept[MacrosException] {
-      EntityTypeGenerator.generate(cls, Nil)
+      EntityTypeGenerator.generate(cls, None, Nil)
     }
     assert(caught.message == Message.DOMALA4205)
   }
@@ -240,7 +240,7 @@ case class VarPropertyEntity(
 )
 """
     val caught = intercept[MacrosException] {
-      EntityTypeGenerator.generate(cls, Nil)
+      EntityTypeGenerator.generate(cls, None, Nil)
     }
     assert(caught.message == Message.DOMALA4225)
   }

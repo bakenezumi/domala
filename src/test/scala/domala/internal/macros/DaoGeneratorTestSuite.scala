@@ -282,7 +282,7 @@ trait PersonDao {
   }
 }
     """
-    val ret = DaoGenerator.generate(trt, null)
+    val ret = DaoGenerator.generate(trt, null, None)
     assert(ret.syntax == expect.syntax)
   }
 
@@ -294,7 +294,7 @@ trait IllegalParameterNameDao {
 }
 """
     val caught = intercept[MacrosException] {
-      DaoGenerator.generate(trt, null)
+      DaoGenerator.generate(trt, null, None)
     }
     assert(caught.message == Message.DOMALA4025)
   }
@@ -307,7 +307,7 @@ trait WildcardTypeParamDao {
 }
 """
     val caught = intercept[MacrosException] {
-      DaoGenerator.generate(trt, null)
+      DaoGenerator.generate(trt, null, None)
     }
     assert(caught.message == Message.DOMALA4209)
   }
@@ -320,7 +320,7 @@ trait AnnotationNotFoundDao {
 }
 """
     val caught = intercept[MacrosException] {
-      DaoGenerator.generate(trt, null)
+      DaoGenerator.generate(trt, null, None)
     }
     assert(caught.message == Message.DOMALA4005)
   }
@@ -334,7 +334,7 @@ trait AnnotationConflictedDao {
 }
 """
     val caught = intercept[MacrosException] {
-      DaoGenerator.generate(trt, null)
+      DaoGenerator.generate(trt, null, None)
     }
     assert(caught.message == Message.DOMALA4087)
   }
@@ -347,7 +347,7 @@ trait IllegalParameterDao {
 }
 """
     val caught = intercept[MacrosException] {
-      DaoGenerator.generate(trt, null)
+      DaoGenerator.generate(trt, null, None)
     }
     assert(caught.message == Message.DOMALA4222)
   }
@@ -360,7 +360,7 @@ trait IllegalBatchParameterDao {
 }
 """
     val caught = intercept[MacrosException] {
-      DaoGenerator.generate(trt, null)
+      DaoGenerator.generate(trt, null, None)
     }
     assert(caught.message == Message.DOMALA4223)
   }
@@ -373,9 +373,78 @@ trait NoTestLiteralDao {
 }
 """
     val caught = intercept[MacrosException] {
-      DaoGenerator.generate(trt, null)
+      DaoGenerator.generate(trt, null, None)
     }
     assert(caught.message == Message.DOMALA4069)
   }
+
+  test("companion merge") {
+    val trt = q"""
+trait PersonDao {
+  @Insert
+  def insert(person: Person): Result[Person]
+}
+"""
+    val companion = q"""
+object PersonDao {
+  def foo: Unit = println("bar")
+}
+"""
+
+    val expect = q"""
+{
+  trait PersonDao {
+    def insert(person: Person): Result[Person]
+  }
+  object PersonDao {
+    def impl(implicit config: domala.jdbc.Config): PersonDao = new Internal(config, Option(config).getOrElse(throw new org.seasar.doma.DomaNullPointerException("config")).getDataSource)
+    def impl(connection: java.sql.Connection)(implicit config: domala.jdbc.Config): PersonDao = new Internal(config, connection)
+    def impl(dataSource: javax.sql.DataSource)(implicit config: domala.jdbc.Config): PersonDao = new Internal(config, dataSource)
+    private[this] val __method0 = domala.internal.jdbc.dao.DaoUtil.getDeclaredMethod(classOf[PersonDao], "insert", classOf[Person])
+    class Internal(___config: domala.jdbc.Config, dataSource: javax.sql.DataSource) extends org.seasar.doma.internal.jdbc.dao.AbstractDao(___config, dataSource) with PersonDao {
+      def this(config: domala.jdbc.Config, connection: java.sql.Connection) = this(config, org.seasar.doma.internal.jdbc.dao.DomalaAbstractDaoHelper.toDataSource(connection))
+      import scala.collection.JavaConverters._
+      implicit val __sqlNodeRepository: domala.jdbc.SqlNodeRepository = ___config.getSqlNodeRepository
+      override def insert(person: Person): Result[Person] = {
+        domala.internal.macros.reflect.DaoReflectionMacros.validateAutoModifyParam("PersonDao", "insert", classOf[Person])
+        entering(classOf[PersonDao].getName, "insert", person)
+        try {
+          if (person == null) {
+            throw new org.seasar.doma.DomaNullPointerException("person")
+          }
+          val __query = getQueryImplementors.createAutoInsertQuery(__method0, Person)
+          __query.setMethod(__method0)
+          __query.setConfig(__config)
+          __query.setEntity(person)
+          __query.setCallerClassName(classOf[PersonDao].getName)
+          __query.setCallerMethodName("insert")
+          __query.setQueryTimeout(-1)
+          __query.setSqlLogType(org.seasar.doma.jdbc.SqlLogType.FORMATTED)
+          __query.setNullExcluded(false)
+          __query.setIncludedPropertyNames()
+          __query.setExcludedPropertyNames()
+          __query.prepare()
+          val __command = getCommandImplementors.createInsertCommand(__method0, __query)
+          val __count = __command.execute()
+          __query.complete()
+          val __result = domala.jdbc.Result[Person](__count, __query.getEntity)
+          exiting(classOf[PersonDao].getName, "insert", __result)
+          __result
+        } catch {
+          case __e: java.lang.RuntimeException =>
+            throwing(classOf[PersonDao].getName, "insert", __e)
+            throw __e
+        }
+      }
+    }
+    def foo: Unit = println("bar")
+  }
+}
+    """
+
+    val ret = DaoGenerator.generate(trt, null, Some(companion))
+    assert(ret.syntax == expect.syntax)
+  }
+
 
 }

@@ -20,7 +20,7 @@ case class EntitySetting(
   */
 object EntityTypeGenerator {
 
-  def generate(cls: Defn.Class, args: Seq[Term.Arg]): Defn.Object = {
+  def generate(cls: Defn.Class, maybeOriginalCompanion: Option[Defn.Object], args: Seq[Term.Arg]): Defn.Object = {
     if(cls.tparams.nonEmpty)
       MacrosHelper.abort(Message.DOMALA4051, cls.name.syntax)
     validateFieldAnnotation(cls.name, cls.ctor)
@@ -36,7 +36,7 @@ object EntityTypeGenerator {
     val constructor = generateConstructor(cls.name, cls.ctor, entitySetting, tableSetting)
     val methods = generateMethods(cls.name, cls.ctor, entitySetting)
 
-    q"""
+    val newCompanion = q"""
     object ${Term.Name(cls.name.syntax)} extends org.seasar.doma.jdbc.entity.AbstractEntityType[${cls.name}] {
 
       object ListenerHolder {
@@ -45,11 +45,12 @@ object EntityTypeGenerator {
           new ${entitySetting.listener.syntax.parse[Ctor.Call].get}()
       }
 
-      ..${Seq(CaseClassMacroHelper.generateApply(cls), CaseClassMacroHelper.generateUnapply(cls))}
+      ..${Seq(CaseClassMacroHelper.generateApply(cls, maybeOriginalCompanion), CaseClassMacroHelper.generateUnapply(cls, maybeOriginalCompanion))}
 
       ..${fields ++ constructor ++ methods}
     }
     """
+    MacrosHelper.mergeObject(maybeOriginalCompanion, newCompanion)
   }
 
   protected def validateFieldAnnotation(clsName: Type.Name, ctor: Ctor.Primary): Unit = {

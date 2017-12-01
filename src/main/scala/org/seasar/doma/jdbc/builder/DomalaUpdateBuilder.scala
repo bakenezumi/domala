@@ -9,7 +9,7 @@ import org.seasar.doma.jdbc.command.UpdateCommand
 // org.seasar.doma.jdbc.builder.UpdateBuilderを元にしており、
 // 独自拡張したSqlUpdateQueryを利用するように修正
 class DomalaUpdateBuilder(
-  config: Config,
+  val config: Config,
   val helper: BuildingHelper = new BuildingHelper(),
   query: SqlUpdateQuery = new SqlUpdateQuery(),
   paramIndex: ParamIndex = new ParamIndex()) {
@@ -39,7 +39,9 @@ class DomalaUpdateBuilder(
     appendParam(paramClass, param, literal = true)
   }
 
-  private def appendParam[P](paramClass: Class[P], param: P, literal: Boolean): DomalaUpdateBuilder = {
+  private def appendParam[P](paramClass: Class[P],
+                             param: P,
+                             literal: Boolean): DomalaUpdateBuilder = {
     helper.appendParam(new Param(paramClass, param, paramIndex, literal))
     paramIndex.increment()
     new SubsequentUpdateBuilder(config, helper, query, paramIndex)
@@ -56,7 +58,7 @@ class DomalaUpdateBuilder(
 
   private def prepare(): Unit = {
     query.clearParameters()
-    helper.getParams.forEach{ p =>
+    helper.getParams.forEach { p =>
       query.addParameter(p.name, p.paramClass, p.param)
     }
     query.setSqlNode(helper.getSqlNode)
@@ -90,7 +92,12 @@ class DomalaUpdateBuilder(
 
 }
 
-private class SubsequentUpdateBuilder(config: Config, builder: BuildingHelper, query: SqlUpdateQuery, parameterIndex: ParamIndex) extends DomalaUpdateBuilder(config, builder, query, parameterIndex) {
+private class SubsequentUpdateBuilder(
+  config: Config,
+  builder: BuildingHelper,
+  query: SqlUpdateQuery,
+  parameterIndex: ParamIndex)
+    extends DomalaUpdateBuilder(config, builder, query, parameterIndex) {
   override def sql(sql: String): DomalaUpdateBuilder = {
     if (sql == null) throw new DomaNullPointerException("sql")
     helper.appendSql(sql)
@@ -99,7 +106,7 @@ private class SubsequentUpdateBuilder(config: Config, builder: BuildingHelper, q
 }
 
 object DomalaUpdateBuilder {
-   def newInstance(config: Config): DomalaUpdateBuilder = {
+  def newInstance(config: Config): DomalaUpdateBuilder = {
     if (config == null) throw new DomaNullPointerException("config")
     new DomalaUpdateBuilder(config)
   }

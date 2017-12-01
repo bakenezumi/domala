@@ -33,6 +33,12 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
       assert(dao.selectBooleanOption(0) === None)
       assert(dao.selectBooleanOption(1) === Some(true))
       assert(dao.selectBooleanOption(5) === None)
+      assert(dao.selectBooleanHolder(0) === null)
+      assert(dao.selectBooleanHolder(1) === BooleanHolder(true))
+      assert(dao.selectBooleanHolder(5) === null)
+      assert(dao.selectBooleanVal(0) === BooleanVal(false))
+      assert(dao.selectBooleanVal(1) === BooleanVal(true))
+      assert(dao.selectBooleanVal(5) === BooleanVal(false))
       assert(dao.selectBooleanSeq(0) === Seq(false))
       assert(dao.selectBooleanSeq(1) === Seq(true))
       assert(dao.selectBooleanSeq(5) === Nil)
@@ -53,6 +59,12 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
       assert(dao.selectByteOption(0) === None)
       assert(dao.selectByteOption(1) === Some(1))
       assert(dao.selectByteOption(5) === None)
+      assert(dao.selectByteHolder(0) === null)
+      assert(dao.selectByteHolder(1) === ByteHolder(1))
+      assert(dao.selectByteHolder(5) === null)
+      assert(dao.selectByteVal(0) === ByteVal(0))
+      assert(dao.selectByteVal(1) === ByteVal(1))
+      assert(dao.selectByteVal(5) === ByteVal(0))
       assert(dao.selectByteSeq(0) === Seq(0))
       assert(dao.selectByteSeq(1) === Seq(1))
       assert(dao.selectByteSeq(5) === Nil)
@@ -73,6 +85,12 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
       assert(dao.selectShortOption(0) === None)
       assert(dao.selectShortOption(1) === Some(1))
       assert(dao.selectShortOption(5) === None)
+      assert(dao.selectShortHolder(0) === null)
+      assert(dao.selectShortHolder(1) === ShortHolder(1))
+      assert(dao.selectShortHolder(5) === null)
+      assert(dao.selectShortVal(0) === ShortVal(0))
+      assert(dao.selectShortVal(1) === ShortVal(1))
+      assert(dao.selectShortVal(5) === ShortVal(0))
       assert(dao.selectShortSeq(0) === Seq(0))
       assert(dao.selectShortSeq(1) === Seq(1))
       assert(dao.selectShortSeq(5) === Nil)
@@ -93,6 +111,12 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
       assert(dao.selectIntOption(0) === None)
       assert(dao.selectIntOption(1) === Some(1))
       assert(dao.selectIntOption(5) === None)
+      assert(dao.selectIntHolder(0) === null)
+      assert(dao.selectIntHolder(1) === IntHolder(1))
+      assert(dao.selectIntHolder(5) === null)
+      assert(dao.selectIntVal(0) === IntVal(0))
+      assert(dao.selectIntVal(1) === IntVal(1))
+      assert(dao.selectIntVal(5) === IntVal(0))
       assert(dao.selectIntSeq(0) === Seq(0))
       assert(dao.selectIntSeq(1) === Seq(1))
       assert(dao.selectIntSeq(5) === Nil)
@@ -113,6 +137,12 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
       assert(dao.selectLongOption(0) === None)
       assert(dao.selectLongOption(1) === Some(1))
       assert(dao.selectLongOption(5) === None)
+      assert(dao.selectLongHolder(0) === null)
+      assert(dao.selectLongHolder(1) === LongHolder(1))
+      assert(dao.selectLongHolder(5) === null)      
+      assert(dao.selectLongVal(0) === LongVal(0))
+      assert(dao.selectLongVal(1) === LongVal(1))
+      assert(dao.selectLongVal(5) === LongVal(0))      
       assert(dao.selectLongSeq(0) === Seq(0))
       assert(dao.selectLongSeq(1) === Seq(1))
       assert(dao.selectLongSeq(5) === Nil)
@@ -134,6 +164,12 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
       assert(dao.selectFloatOption(0) === None)
       assert(dao.selectFloatOption(1) === Some(1.1f))
       assert(dao.selectFloatOption(5) === None)
+      assert(dao.selectFloatHolder(0) === null)
+      assert(dao.selectFloatHolder(1) === FloatHolder(1.1f))
+      assert(dao.selectFloatHolder(5) === null)
+      assert(dao.selectFloatVal(0) === FloatVal(0f))
+      assert(dao.selectFloatVal(1) === FloatVal(1.1f))
+      assert(dao.selectFloatVal(5) === FloatVal(0f))
       assert(dao.selectFloatSeq(0) === Seq(0))
       assert(dao.selectFloatSeq(1) === Seq(1.1f))
       assert(dao.selectFloatSeq(5) === Nil)
@@ -155,6 +191,12 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
       assert(dao.selectDoubleOption(0) === None)
       assert(dao.selectDoubleOption(1) === Some(1.1))
       assert(dao.selectDoubleOption(5) === None)
+      assert(dao.selectDoubleHolder(0) === null)
+      assert(dao.selectDoubleHolder(1) === DoubleHolder(1.1))
+      assert(dao.selectDoubleHolder(5) === null)
+      assert(dao.selectDoubleVal(0) === DoubleVal(0d))
+      assert(dao.selectDoubleVal(1) === DoubleVal(1.1))
+      assert(dao.selectDoubleVal(5) === DoubleVal(0d))
       assert(dao.selectDoubleSeq(0) === Seq(0d))
       assert(dao.selectDoubleSeq(1) === Seq(1.1d))
       assert(dao.selectDoubleSeq(5) === Nil)
@@ -175,6 +217,12 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
       assert(dao.selectStringOption(0) === None)
       assert(dao.selectStringOption(1) === Some("abc"))
       assert(dao.selectStringOption(5) === None)
+      assert(dao.selectStringHolder(0) === null)
+      assert(dao.selectStringHolder(1) === StringHolder("abc"))
+      assert(dao.selectStringHolder(5) === null)
+      assert(dao.selectStringVal(0) === StringVal(null))
+      assert(dao.selectStringVal(1) === StringVal("abc"))
+      assert(dao.selectStringVal(5) === StringVal(null))
       assert(dao.selectStringSeq(0) === Seq(null))
       assert(dao.selectStringSeq(1) === Seq("abc"))
       assert(dao.selectStringSeq(5) === Nil)
@@ -195,6 +243,12 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
       assert(dao.selectBigDecimalOption(0) === None)
       assert(dao.selectBigDecimalOption(1) === Some(BigDecimal("1234567890.123456789")))
       assert(dao.selectBigDecimalOption(5) === None)
+      assert(dao.selectBigDecimalHolder(0) === null)
+      assert(dao.selectBigDecimalHolder(1) === BigDecimalHolder(BigDecimal("1234567890.123456789")))
+      assert(dao.selectBigDecimalHolder(5) === null)
+      assert(dao.selectBigDecimalVal(0) === BigDecimalVal(null))
+      assert(dao.selectBigDecimalVal(1) === BigDecimalVal(BigDecimal("1234567890.123456789")))
+      assert(dao.selectBigDecimalVal(5) === BigDecimalVal(null))
       assert(dao.selectBigDecimalSeq(0) === Seq(null))
       assert(dao.selectBigDecimalSeq(1) === Seq(BigDecimal("1234567890.123456789")))
       assert(dao.selectBigDecimalSeq(5) === Nil)
@@ -215,6 +269,12 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
       assert(dao.selectBigIntOption(0) === None)
       assert(dao.selectBigIntOption(1) === Some(BigInt("12345678901234567890")))
       assert(dao.selectBigIntOption(5) === None)
+      assert(dao.selectBigIntHolder(0) === null)
+      assert(dao.selectBigIntHolder(1) === BigIntHolder(BigInt("12345678901234567890")))
+      assert(dao.selectBigIntHolder(5) === null)
+      assert(dao.selectBigIntVal(0) === BigIntVal(null))
+      assert(dao.selectBigIntVal(1) === BigIntVal(BigInt("12345678901234567890")))
+      assert(dao.selectBigIntVal(5) === BigIntVal(null))
       assert(dao.selectBigIntSeq(0) === Seq(null))
       assert(dao.selectBigIntSeq(1) === Seq(BigInt("12345678901234567890")))
       assert(dao.selectBigIntSeq(5) === Nil)
@@ -235,6 +295,12 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
       assert(dao.selectLocalDateOption(0) === None)
       assert(dao.selectLocalDateOption(1) === Some(LocalDate.of(2017, 12, 31)))
       assert(dao.selectLocalDateOption(5) === None)
+      assert(dao.selectLocalDateHolder(0) === null)
+      assert(dao.selectLocalDateHolder(1) === LocalDateHolder(LocalDate.of(2017, 12, 31)))
+      assert(dao.selectLocalDateHolder(5) === null)
+      assert(dao.selectLocalDateVal(0) === LocalDateVal(null))
+      assert(dao.selectLocalDateVal(1) === LocalDateVal(LocalDate.of(2017, 12, 31)))
+      assert(dao.selectLocalDateVal(5) === LocalDateVal(null))
       assert(dao.selectLocalDateSeq(0) === Seq(null))
       assert(dao.selectLocalDateSeq(1) === Seq(LocalDate.of(2017, 12, 31)))
       assert(dao.selectLocalDateSeq(5) === Nil)
@@ -255,6 +321,12 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
       assert(dao.selectLocalTimeOption(0) === None)
       assert(dao.selectLocalTimeOption(1) === Some(LocalTime.of(11, 59, 59)))
       assert(dao.selectLocalTimeOption(5) === None)
+      assert(dao.selectLocalTimeHolder(0) === null)
+      assert(dao.selectLocalTimeHolder(1) === LocalTimeHolder(LocalTime.of(11, 59, 59)))
+      assert(dao.selectLocalTimeHolder(5) === null)
+      assert(dao.selectLocalTimeVal(0) === LocalTimeVal(null))
+      assert(dao.selectLocalTimeVal(1) === LocalTimeVal(LocalTime.of(11, 59, 59)))
+      assert(dao.selectLocalTimeVal(5) === LocalTimeVal(null))
       assert(dao.selectLocalTimeSeq(0) === Seq(null))
       assert(dao.selectLocalTimeSeq(1) === Seq(LocalTime.of(11, 59, 59)))
       assert(dao.selectLocalTimeSeq(5) === Nil)
@@ -275,6 +347,12 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
       assert(dao.selectLocalDateTimeOption(0) === None)
       assert(dao.selectLocalDateTimeOption(1) === Some(LocalDateTime.of(2017, 12, 31, 11, 59, 59, 999999999)))
       assert(dao.selectLocalDateTimeOption(5) === None)
+      assert(dao.selectLocalDateTimeHolder(0) === null)
+      assert(dao.selectLocalDateTimeHolder(1) === LocalDateTimeHolder(LocalDateTime.of(2017, 12, 31, 11, 59, 59, 999999999)))
+      assert(dao.selectLocalDateTimeHolder(5) === null)
+      assert(dao.selectLocalDateTimeVal(0) === LocalDateTimeVal(null))
+      assert(dao.selectLocalDateTimeVal(1) === LocalDateTimeVal(LocalDateTime.of(2017, 12, 31, 11, 59, 59, 999999999)))
+      assert(dao.selectLocalDateTimeVal(5) === LocalDateTimeVal(null))
       assert(dao.selectLocalDateTimeSeq(0) === Seq(null))
       assert(dao.selectLocalDateTimeSeq(1) === Seq(LocalDateTime.of(2017, 12, 31, 11, 59, 59, 999999999)))
       assert(dao.selectLocalDateTimeSeq(5) === Nil)
@@ -287,6 +365,47 @@ class SingleResultTestSuite  extends FunSuite with BeforeAndAfter {
     }
   }
 }
+
+@Holder
+case class BooleanHolder(value: Boolean)
+@Holder
+case class ByteHolder(id: Byte)
+@Holder
+case class ShortHolder(id: Short)
+@Holder
+case class IntHolder(id: Int)
+@Holder
+case class LongHolder(id: Long)
+@Holder
+case class FloatHolder(id: Float)
+@Holder
+case class DoubleHolder(id: Double)
+@Holder
+case class StringHolder(id: String)
+@Holder
+case class BigDecimalHolder(id: BigDecimal)
+@Holder
+case class BigIntHolder(id: BigInt)
+@Holder
+case class LocalDateHolder(id: LocalDate)
+@Holder
+case class LocalTimeHolder(id: LocalTime)
+@Holder
+case class LocalDateTimeHolder(id: LocalDateTime)
+
+case class BooleanVal(value: Boolean) extends AnyVal
+case class ByteVal(id: Byte) extends AnyVal
+case class ShortVal(id: Short) extends AnyVal
+case class IntVal(id: Int) extends AnyVal
+case class LongVal(id: Long) extends AnyVal
+case class FloatVal(id: Float) extends AnyVal
+case class DoubleVal(id: Double) extends AnyVal
+case class StringVal(id: String) extends AnyVal
+case class BigDecimalVal(id: BigDecimal) extends AnyVal
+case class BigIntVal(id: BigInt) extends AnyVal
+case class LocalDateVal(id: LocalDate) extends AnyVal
+case class LocalTimeVal(id: LocalTime) extends AnyVal
+case class LocalDateTimeVal(id: LocalDateTime) extends AnyVal
 
 @Dao(config = TestConfig)
 trait SingleResultTestDao {
@@ -401,6 +520,84 @@ values(1, true, 1, 1, 1, 1, 1.1, 1.1,
 
   @Select(sql ="select local_date_time from single_result where id = /* id */0")
   def selectLocalDateTimeOption(id: Int): Option[LocalDateTime]
+
+  @Select(sql ="select boolean from single_result where id = /* id */0")
+  def selectBooleanHolder(id: Int): BooleanHolder
+
+  @Select(sql ="select byte from single_result where id = /* id */0")
+  def selectByteHolder(id: Int): ByteHolder
+
+  @Select(sql ="select short from single_result where id = /* id */0")
+  def selectShortHolder(id: Int): ShortHolder
+
+  @Select(sql ="select int from single_result where id = /* id */0")
+  def selectIntHolder(id: Int): IntHolder
+
+  @Select(sql ="select long from single_result where id = /* id */0")
+  def selectLongHolder(id: Int): LongHolder
+
+  @Select(sql ="select float from single_result where id = /* id */0")
+  def selectFloatHolder(id: Int): FloatHolder
+
+  @Select(sql ="select double from single_result where id = /* id */0")
+  def selectDoubleHolder(id: Int): DoubleHolder
+
+  @Select(sql ="select string from single_result where id = /* id */0")
+  def selectStringHolder(id: Int): StringHolder
+
+  @Select(sql ="select big_decimal from single_result where id = /* id */0")
+  def selectBigDecimalHolder(id: Int): BigDecimalHolder
+
+  @Select(sql ="select bigint from single_result where id = /* id */0")
+  def selectBigIntHolder(id: Int): BigIntHolder
+
+  @Select(sql ="select local_date from single_result where id = /* id */0")
+  def selectLocalDateHolder(id: Int): LocalDateHolder
+
+  @Select(sql ="select localtime from single_result where id = /* id */0")
+  def selectLocalTimeHolder(id: Int): LocalTimeHolder
+
+  @Select(sql ="select local_date_time from single_result where id = /* id */0")
+  def selectLocalDateTimeHolder(id: Int): LocalDateTimeHolder
+
+  @Select(sql ="select boolean from single_result where id = /* id */0")
+  def selectBooleanVal(id: Int): BooleanVal
+
+  @Select(sql ="select byte from single_result where id = /* id */0")
+  def selectByteVal(id: Int): ByteVal
+
+  @Select(sql ="select short from single_result where id = /* id */0")
+  def selectShortVal(id: Int): ShortVal
+
+  @Select(sql ="select int from single_result where id = /* id */0")
+  def selectIntVal(id: Int): IntVal
+
+  @Select(sql ="select long from single_result where id = /* id */0")
+  def selectLongVal(id: Int): LongVal
+
+  @Select(sql ="select float from single_result where id = /* id */0")
+  def selectFloatVal(id: Int): FloatVal
+
+  @Select(sql ="select double from single_result where id = /* id */0")
+  def selectDoubleVal(id: Int): DoubleVal
+
+  @Select(sql ="select string from single_result where id = /* id */0")
+  def selectStringVal(id: Int): StringVal
+
+  @Select(sql ="select big_decimal from single_result where id = /* id */0")
+  def selectBigDecimalVal(id: Int): BigDecimalVal
+
+  @Select(sql ="select bigint from single_result where id = /* id */0")
+  def selectBigIntVal(id: Int): BigIntVal
+
+  @Select(sql ="select local_date from single_result where id = /* id */0")
+  def selectLocalDateVal(id: Int): LocalDateVal
+
+  @Select(sql ="select localtime from single_result where id = /* id */0")
+  def selectLocalTimeVal(id: Int): LocalTimeVal
+
+  @Select(sql ="select local_date_time from single_result where id = /* id */0")
+  def selectLocalDateTimeVal(id: Int): LocalDateTimeVal
 
   @Select(sql ="select boolean from single_result where id = /* id */0")
   def selectBooleanSeq(id: Int): Seq[Boolean]

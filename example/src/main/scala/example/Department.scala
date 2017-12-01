@@ -10,4 +10,3 @@ case class Department(
   @Version
   version: Int = -1
 )
-

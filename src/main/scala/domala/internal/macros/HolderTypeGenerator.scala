@@ -10,7 +10,7 @@ import scala.meta._
   * @see [[https://github.com/domaframework/doma/blob/master/src/main/java/org/seasar/doma/internal/apt/DomainTypeGenerator.java]]
   */
 object HolderTypeGenerator {
-  def generate(cls: Defn.Class, companion: Option[Defn.Object]): Defn.Object = {
+  def generate(cls: Defn.Class, maybeOriginalCompanion: Option[Defn.Object]): Defn.Object = {
 
     if (cls.ctor.paramss.flatten.length != 1)  MacrosHelper.abort(Message.DOMALA6001)
     val valueParam = cls.ctor.paramss.flatten.headOption.getOrElse(MacrosHelper.abort(Message.DOMALA6001))
@@ -47,7 +47,7 @@ object HolderTypeGenerator {
     val tparams = TypeHelper.convertDefTypeParams(cls.tparams)
 
     val applyDef =
-      if(isEnum) {
+      if(isEnum && !CaseClassMacroHelper.hasApplyDef(cls, maybeOriginalCompanion)) {
         val paramss = cls.ctor.paramss.map(ps => ps.map(_.copy(mods = Nil)))
         val argss = paramss.map(ps => ps.map(p => Term.Name(p.name.syntax)))
         val typeNames = cls.tparams.map(tp => Type.Name(tp.name.syntax))
@@ -59,22 +59,23 @@ object HolderTypeGenerator {
           else
             q"private def apply(...$paramss): ${cls.name} = $matchSubclasses"
         )
-      } else Seq(CaseClassMacroHelper.generateApply(cls))
+      } else Seq(CaseClassMacroHelper.generateApply(cls, maybeOriginalCompanion))
 
     val numericImplicitVal =
-      if(isNumeric && !isNumericDefined(companion)) Seq(generateNumericImplicitVal(cls.name, basicTpe, tparams, Term.Name(valueParam.name.syntax)))
+      if(isNumeric && !isNumericDefined(maybeOriginalCompanion)) Seq(generateNumericImplicitVal(cls.name, basicTpe, tparams, Term.Name(valueParam.name.syntax)))
       else Nil
 
-    q"""
+    val newCompanion = q"""
     object ${Term.Name(cls.name.syntax) } extends
       domala.jdbc.holder.AbstractHolderDesc[
         $basicTpe, $erasedHolderType](
         $wrapperSupplier: java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$basicTpe]]) {
-      ..${applyDef ++ Seq(CaseClassMacroHelper.generateUnapply(cls))}
+      ..${applyDef ++ Seq(CaseClassMacroHelper.generateUnapply(cls, maybeOriginalCompanion))}
       ..$numericImplicitVal
       ..$methods
     }
     """
+    MacrosHelper.mergeObject(maybeOriginalCompanion, newCompanion)
   }
 
   protected def makeMethods(clsName: Type.Name, ctor: Ctor.Primary, basicTpe: Type, erasedHolderType: Type, valueParam: Term.Param): Seq[Stat] = {

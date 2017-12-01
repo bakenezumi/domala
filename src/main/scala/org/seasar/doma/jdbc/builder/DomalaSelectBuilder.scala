@@ -23,7 +23,7 @@ import scala.collection.JavaConverters._
 // - 独自拡張したSqlSelectQueryを利用する
 // - getXXにてOption, Seq, IteratorなどScalaの標準コレクションを返す
 class DomalaSelectBuilder(
-    config: Config,
+    val config: Config,
     val helper: BuildingHelper = new BuildingHelper(),
     query: SqlSelectQuery = new SqlSelectQuery,
     paramIndex: ParamIndex = new ParamIndex()) {
@@ -124,9 +124,9 @@ class DomalaSelectBuilder(
     if (resultClass == null) throw new DomaNullPointerException("resultClass")
     if (query.getMethodName == null)
       query.setCallerMethodName("getScalarSingleResult")
-    val supplier = createScalarSupplier("resultClass", resultClass, false).asInstanceOf[Supplier[Scalar[Any, Any]]]
+    val supplier = createScalarSupplier("resultClass", resultClass, false).asInstanceOf[Supplier[Scalar[Any, RESULT]]]
     val handler = new ScalarSingleResultHandler(supplier)
-    execute(handler).asInstanceOf[RESULT]
+    execute(handler)
   }
 
   @SuppressWarnings(Array("unchecked", "rawtypes"))
@@ -134,9 +134,9 @@ class DomalaSelectBuilder(
     if (resultClass == null) throw new DomaNullPointerException("resultClass")
     if (query.getMethodName == null)
       query.setCallerMethodName("getOptionScalarSingleResult")
-    val supplier = createScalarSupplier("resultClass", resultClass, true).asInstanceOf[Supplier[Scalar[Any, Any]]]
+    val supplier = createScalarSupplier("resultClass", resultClass, true).asInstanceOf[Supplier[Scalar[Any, RESULT]]]
     val handler = new ScalarSingleResultHandler(supplier)
-    OptionConverters.asScala(execute(handler).asInstanceOf[java.util.Optional[RESULT]])
+    execute(handler).asInstanceOf[Option[RESULT]]
   }
 
   def getMapSingleResult(mapKeyNamingType: MapKeyNamingType = MapKeyNamingType.NONE): Map[String, AnyRef] = {
@@ -372,24 +372,24 @@ class DomalaSelectBuilder(
     query.getSql
   }
 
-   def createScalarSupplier(parameterName: String,
-                                   clazz: Class[_],
-                                   optional: Boolean): Supplier[Scalar[_, _]] =
-    try Scalars.wrap(null, clazz, optional, config.getClassHelper)
-    catch {
-      case e: ScalarException =>
-        throw new DomaIllegalArgumentException(
-          parameterName,
-          Message.DOMA2204.getMessage(clazz, e))
-    }
+ def createScalarSupplier(parameterName: String,
+                                 clazz: Class[_],
+                                 optional: Boolean): Supplier[Scalar[_, _]] =
+  try Scalars.wrap(null, clazz, optional, config.getClassHelper)
+  catch {
+    case e: ScalarException =>
+      throw new DomaIllegalArgumentException(
+        parameterName,
+        Message.DOMA2204.getMessage(clazz, e))
+  }
 
 }
 
 private class SubsequentSelectBuilder (
-  val config: Config,
-  val builder: BuildingHelper,
-  val query: SqlSelectQuery,
-  val paramIndex: ParamIndex)
+  config: Config,
+  builder: BuildingHelper,
+  query: SqlSelectQuery,
+  paramIndex: ParamIndex)
   extends DomalaSelectBuilder(config, builder, query, paramIndex) {
 
   override def sql(fragment: String): DomalaSelectBuilder = {

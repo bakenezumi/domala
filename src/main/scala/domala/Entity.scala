@@ -49,14 +49,9 @@ class Entity(listener: Class[_ <: EntityListener[_ <: Any]] = classOf[NullEntity
     val q"new $_(..$params)" = this
     val (cls, newCompanion) = defn match {
       case Term.Block(Seq(cls: Defn.Class, companion: Defn.Object)) =>
-        val newCompanion = EntityTypeGenerator.generate(cls, params)
-        (
-          cls,
-          newCompanion.copy(templ = newCompanion.templ.copy(
-            stats = Some(newCompanion.templ.stats.getOrElse(Nil) ++ companion.templ.stats.getOrElse(Nil))
-          ))
-        )
-      case cls: Defn.Class => (cls, EntityTypeGenerator.generate(cls, params))
+        (cls, EntityTypeGenerator.generate(cls, Some(companion), params))
+      case cls: Defn.Class =>
+        (cls, EntityTypeGenerator.generate(cls, None, params))
       case _ => MacrosHelper.abort(domala.message.Message.DOMALA4015)
     }
     //logger.debug(newCompanion)

@@ -49,14 +49,9 @@ class Embeddable extends scala.annotation.StaticAnnotation {
   inline def apply(defn: Any): Any = meta {
     val (cls, newCompanion) = defn match {
       case Term.Block(Seq(cls: Defn.Class, companion: Defn.Object)) =>
-        val newCompanion = EmbeddableTypeGenerator.generate(cls)
-        (
-          cls,
-          newCompanion.copy(templ = newCompanion.templ.copy(
-            stats = Some(newCompanion.templ.stats.getOrElse(Nil) ++ companion.templ.stats.getOrElse(Nil))
-          ))
-        )
-      case cls: Defn.Class => (cls, EmbeddableTypeGenerator.generate(cls))
+        (cls, EmbeddableTypeGenerator.generate(cls, Some(companion)))
+      case cls: Defn.Class =>
+        (cls, EmbeddableTypeGenerator.generate(cls, None))
       case _ => abort(domala.message.Message.DOMALA4283.getMessage())
     }
     //logger.debug(newCompanion)

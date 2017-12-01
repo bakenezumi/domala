@@ -87,7 +87,7 @@ class IdTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("strategy = GenerationType.SEQUENCE and id type holder") {
+  test("Holder id") {
     Required {
       val Result(count, result) = dao.insertHolder(GenerateHolder(IDHolder.notAssigned, "aaa"))
       assert(count == 1)
@@ -100,10 +100,17 @@ class IdTestSuite extends FunSuite with BeforeAndAfter {
         GenerateHolder(IDHolder(6), "bbb"),
         GenerateHolder(IDHolder(7), "ccc")
       ))
+      val ret = select"select id from id_test where id = ${IDHolder(5)} ".getSingle[IDHolder[GenerateHolder]]
+      assert(ret == IDHolder[GenerateHolder](5))
+      val caught = intercept[IllegalArgumentException] {
+        IDHolder(-1)
+      }
+      assert(caught.getMessage == "value should be positive. -1")
+
     }
   }
 
-  test("strategy = GenerationType.SEQUENCE and id type AnyVal") {
+  test("AnyVal id") {
     Required {
       val Result(count, result) = dao.insertVal(GenerateVal(IDVal.notAssigned, "aaa"))
       assert(count == 1)
@@ -116,6 +123,12 @@ class IdTestSuite extends FunSuite with BeforeAndAfter {
         GenerateVal(IDVal(6), "bbb"),
         GenerateVal(IDVal(7), "ccc")
       ))
+      val ret = select"select id from id_test where id = ${IDVal(5)} ".getSingle[IDVal[GenerateVal]]
+      assert(ret == IDVal[GenerateVal](5))
+      val caught = intercept[IllegalArgumentException] {
+        IDVal[GenerateVal](-1)
+      }
+      assert(caught.getMessage == "value should be positive. -1")
     }
   }
 
@@ -170,11 +183,16 @@ case class GenerateBasic (
 )
 
 @Holder
-case class IDHolder[+T](value: Int)
+case class IDHolder[T] private (value: Int)
 
 object IDHolder {
-  def notAssigned: IDHolder[Nothing] = NOT_ASSIGNED
-  object NOT_ASSIGNED extends IDHolder[Nothing](-1)
+  def apply[T](value: Int): IDHolder[T] = {
+    if (value < 0) throw new IllegalArgumentException(
+      "value should be positive. " + value
+    )
+    new IDHolder[T](value)
+  }
+  def notAssigned[T]: IDHolder[T] = new IDHolder[T](-1)
 }
 
 @Entity
@@ -187,10 +205,16 @@ case class GenerateHolder (
   data: String
 )
 
-case class IDVal[+T](value: Int) extends AnyVal
+class IDVal[T] private (val value: Int) extends AnyVal
 
 object IDVal {
-  val notAssigned: IDVal[Nothing] = IDVal[Nothing](-1)
+  def apply[T](value: Int): IDVal[T] = {
+    if (value < 0) throw new IllegalArgumentException(
+      "value should be positive. " + value
+    )
+    new IDVal[T](value)
+  }
+  def notAssigned[T]: IDVal[T] = new IDVal[T](-1)
 }
 
 @Entity

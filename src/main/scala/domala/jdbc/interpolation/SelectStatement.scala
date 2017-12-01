@@ -18,7 +18,7 @@ class SelectStatement(builder: SelectBuilder) {
     if (TypeUtil.isEntity(tpe)) {
       builder.getEntitySingleResult[T](cTag.runtimeClass.asInstanceOf[Class[T]])
     } else if (TypeUtil.isHolder(tpe) || TypeUtil.isBasic(tpe) || TypeUtil.isAnyVal(tpe)) {
-        builder.getScalarSingleResult[T](cTag.runtimeClass.asInstanceOf[Class[T]])
+      builder.getScalarSingleResult[T](cTag.runtimeClass.asInstanceOf[Class[T]])
     } else if (TypeUtil.isMap(tpe)) {
       getMapSingle.asInstanceOf[T]
     } else {

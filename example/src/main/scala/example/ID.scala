@@ -3,9 +3,14 @@ package example
 import domala.Holder
 
 @Holder
-case class ID[+ENTITY](value: Int)
+case class ID[T] private (value: Int)
 
 object ID {
-  def notAssigned: ID[Nothing] = NOT_ASSIGNED
-  object NOT_ASSIGNED extends ID[Nothing](-1)
+  def apply[T](value: Int): ID[T] = {
+    if (value < 0) throw new IllegalArgumentException (
+      "value should be positive. " + value
+    )
+    new ID[T](value)
+  }
+  def notAssigned[T]: ID[T] = new ID[T](-1)
 }

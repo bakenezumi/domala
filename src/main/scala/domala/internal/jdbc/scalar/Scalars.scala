@@ -7,6 +7,7 @@ import java.util.function.Supplier
 
 import domala.jdbc.holder.{AbstractAnyValHolderDesc, AbstractHolderDesc}
 import domala.wrapper.{BigDecimalWrapper, BigIntWrapper}
+import org.seasar.doma.internal.WrapException
 import org.seasar.doma.internal.jdbc.scalar.{BasicScalar, OptionalBasicScalar, Scalar, ScalarException}
 import org.seasar.doma.internal.util.AssertionUtil.{assertNotNull, assertTrue}
 import org.seasar.doma.internal.util.ClassUtil
@@ -28,13 +29,12 @@ object Scalars {
     if (classOf[Scalar[_, _]].isAssignableFrom(boxedClass))
       return () => value.asInstanceOf[Scalar[_, _]]
     var result = wrapBasicObject(value, boxedClass, optional, valueClass.isPrimitive)
-    if (result == null) {
+    if (result == null)
       result = wrapHolderObject(value, boxedClass, optional, classHelper)
-      if (result == null)
-        result = wrapAnyValObject(value, boxedClass, optional, classHelper)
-        if (result == null)
-          throw new ScalarException(Message.DOMA1007, valueClass.getName, value)
-    }
+    if (result == null)
+      result = wrapAnyValObject(value, boxedClass, optional, classHelper)
+    if (result == null)
+      throw new ScalarException(Message.DOMA1007, valueClass.getName, value)
     result
   }
 
@@ -155,134 +155,139 @@ object Scalars {
       wrapperSupplier: () => Wrapper[BASIC],
       optional: Boolean,
       primitive: Boolean): Supplier[Scalar[_, _]] =
-    if (optional)() => new OptionalBasicScalar[BASIC](() => wrapperSupplier())
+    if (optional)() => new OptionBasicScalar[BASIC](() => wrapperSupplier())
     else () => new BasicScalar[BASIC](() => wrapperSupplier(), primitive)
 
-  protected def wrapHolderObject[BASIC, HOLDER](value: Object, valueClass: Class[HOLDER], optional: Boolean, classHelper: ClassHelper): Supplier[Scalar[_, _]] = {
+  protected def wrapHolderObject[BASIC, HOLDER](value: Object, holderClass: Class[HOLDER], optional: Boolean, classHelper: ClassHelper): Supplier[Scalar[_, _]] = {
     val companionClass = try {
-      classHelper.forName(valueClass.getName + "$")
+      classHelper.forName(holderClass.getName + "$")
     } catch {
-      case _: ClassNotFoundException => return null
+      case e: WrapException => e.getCause match {
+          case _: ClassNotFoundException => return null
+          case _ => throw e
+        }
     }
     val holderDesc = if(classOf[AbstractHolderDesc[_, _]].isAssignableFrom(companionClass)) {
       companionClass
         .getField("MODULE$")
         .get(null)
-        .asInstanceOf[AbstractHolderDesc[_, HOLDER]]
+        .asInstanceOf[AbstractHolderDesc[BASIC, HOLDER]]
     } else return null
     if (holderDesc == null) return null
-    val holder = valueClass.cast(value)
-    if (optional) () => holderDesc.createOptionalScalar(holder)
+    val holder = holderClass.cast(value)
+    if (optional) () => new OptionDomainBridgeScalar(holderDesc.createOptionalScalar(holder))
     else () => holderDesc.createScalar(holder)
   }
 
   protected def wrapAnyValObject[BASIC <: Object, HOLDER](value: Object, valueClass: Class[HOLDER], optional: Boolean, classHelper: ClassHelper)(implicit bTag: ClassTag[BASIC], hTag: ClassTag[HOLDER]): Supplier[Scalar[_, _]] = {
-    val holderDesc = AnyValHolderDescRepository.get(valueClass, classHelper)(bTag, hTag)
+    val holderDesc = AnyValHolderDescCache.get(valueClass, classHelper)(bTag, hTag)
     if (holderDesc == null) return null
     val holder = valueClass.cast(value)
-    if (optional) () => holderDesc.createOptionalScalar(holder)
+    if (optional) () => new OptionDomainBridgeScalar(holderDesc.createOptionalScalar(holder))
     else () => holderDesc.createScalar(holder)
   }
 
-  object AnyValHolderDescRepository {
+  object AnyValHolderDescCache {
 
     private[this] val cache = scala.collection.concurrent.TrieMap[String, AbstractAnyValHolderDesc[_,_]]()
 
-    def get[BASIC <: Object, HOLDER](valueClass: Class[HOLDER], classHelper: ClassHelper)(implicit bTag: ClassTag[BASIC], hTag: ClassTag[HOLDER]): AbstractAnyValHolderDesc[BASIC, HOLDER] =
-      cache.getOrElseUpdate(valueClass.getName, {
-        val constructors = valueClass.getConstructors
+    def get[BASIC <: Object, HOLDER](holderClass: Class[HOLDER], classHelper: ClassHelper)(implicit bTag: ClassTag[BASIC], hTag: ClassTag[HOLDER]): AbstractAnyValHolderDesc[BASIC, HOLDER] =
+      cache.getOrElseUpdate(holderClass.getName, {
+        val constructors = holderClass.getConstructors
         if (constructors.length != 1) return null
         val parameterTypes = constructors.head.getParameterTypes
         if (parameterTypes.length != 1) return null
-        val parameterType = parameterTypes.head
+        val elementType = parameterTypes.head
         val fieldName = constructors.head.getParameters.head.getName
         val wrapperSupplier: Supplier[Wrapper[BASIC]] =
-          if (parameterType eq classOf[String]) {
+          if (elementType eq classOf[String]) {
             () => new StringWrapper().asInstanceOf[Wrapper[BASIC]]
 
-          } else if ((parameterType eq classOf[Int]) || (parameterType eq classOf[Integer])) {
+          } else if ((elementType eq classOf[Int]) || (elementType eq classOf[Integer])) {
             () => new IntegerWrapper().asInstanceOf[Wrapper[BASIC]]
 
-          } else if ((parameterType eq classOf[Long]) || (parameterType eq classOf[java.lang.Long])) {
+          } else if ((elementType eq classOf[Long]) || (elementType eq classOf[java.lang.Long])) {
             () => new LongWrapper().asInstanceOf[Wrapper[BASIC]]
 
-          } else if (parameterType eq classOf[BigDecimal]) {
+          } else if (elementType eq classOf[BigDecimal]) {
             () => new domala.wrapper.BigDecimalWrapper().asInstanceOf[Wrapper[BASIC]]
 
-          } else if (parameterType eq classOf[java.math.BigDecimal]) {
+          } else if (elementType eq classOf[java.math.BigDecimal]) {
             () => new BigDecimalWrapper().asInstanceOf[Wrapper[BASIC]]
 
-          } else if (parameterType eq classOf[java.util.Date]) {
+          } else if (elementType eq classOf[java.util.Date]) {
             () => new UtilDateWrapper().asInstanceOf[Wrapper[BASIC]]
 
-          } else if (parameterType eq classOf[LocalDate]) {
+          } else if (elementType eq classOf[LocalDate]) {
             () => new LocalDateWrapper().asInstanceOf[Wrapper[BASIC]]
 
-          } else if (parameterType eq classOf[LocalTime]) {
+          } else if (elementType eq classOf[LocalTime]) {
             () => new LocalTimeWrapper().asInstanceOf[Wrapper[BASIC]]
 
-          } else if (parameterType eq classOf[LocalDateTime]) {
+          } else if (elementType eq classOf[LocalDateTime]) {
             () => new LocalDateTimeWrapper().asInstanceOf[Wrapper[BASIC]]
 
-          } else if (parameterType eq classOf[Date]) {
+          } else if (elementType eq classOf[Date]) {
             () => new DateWrapper().asInstanceOf[Wrapper[BASIC]]
 
-          } else if (parameterType eq classOf[Timestamp]) {
+          } else if (elementType eq classOf[Timestamp]) {
             () => new TimestampWrapper().asInstanceOf[Wrapper[BASIC]]
 
-          } else if (parameterType eq classOf[Time]) {
+          } else if (elementType eq classOf[Time]) {
             () => new TimeWrapper().asInstanceOf[Wrapper[BASIC]]
 
-          } else if ((parameterType eq classOf[Boolean]) || (parameterType eq classOf[java.lang.Boolean])) {
+          } else if ((elementType eq classOf[Boolean]) || (elementType eq classOf[java.lang.Boolean])) {
             () => new BooleanWrapper().asInstanceOf[Wrapper[BASIC]]
 
-          } else if (parameterType eq classOf[java.sql.Array]) {
+          } else if (elementType eq classOf[java.sql.Array]) {
             () => new ArrayWrapper().asInstanceOf[Wrapper[BASIC]]
 
-          } else if (parameterType eq classOf[BigInt]) {
+          } else if (elementType eq classOf[BigInt]) {
             () => new BigIntWrapper().asInstanceOf[Wrapper[BASIC]]
 
-          } else if (parameterType eq classOf[BigInteger]) {
+          } else if (elementType eq classOf[BigInteger]) {
             () => new BigIntegerWrapper().asInstanceOf[Wrapper[BASIC]]
 
-          } else if (parameterType eq classOf[Blob]) {
+          } else if (elementType eq classOf[Blob]) {
             () => new BlobWrapper().asInstanceOf[Wrapper[BASIC]]
 
-          } else if ((parameterType eq classOf[Array[Byte]]) || (parameterType eq classOf[Array[java.lang.Byte]]))  {
+          } else if ((elementType eq classOf[Array[Byte]]) || (elementType eq classOf[Array[java.lang.Byte]]))  {
             () => new BytesWrapper().asInstanceOf[Wrapper[BASIC]]
 
-          } else if ((parameterType eq classOf[Byte]) || (parameterType eq classOf[java.lang.Byte])) {
+          } else if ((elementType eq classOf[Byte]) || (elementType eq classOf[java.lang.Byte])) {
             () => new ByteWrapper().asInstanceOf[Wrapper[BASIC]]
 
-          } else if (parameterType eq classOf[Clob]) {
+          } else if (elementType eq classOf[Clob]) {
             () => new ClobWrapper().asInstanceOf[Wrapper[BASIC]]
 
-          } else if ((parameterType eq classOf[Double]) || (parameterType eq classOf[java.lang.Double])) {
+          } else if ((elementType eq classOf[Double]) || (elementType eq classOf[java.lang.Double])) {
             () => new DoubleWrapper().asInstanceOf[Wrapper[BASIC]]
 
-          } else if ((parameterType eq classOf[Float]) || (parameterType eq classOf[java.lang.Float])) {
+          } else if ((elementType eq classOf[Float]) || (elementType eq classOf[java.lang.Float])) {
             () => new FloatWrapper().asInstanceOf[Wrapper[BASIC]]
 
-          } else if (parameterType eq classOf[NClob]) {
+          } else if (elementType eq classOf[NClob]) {
             () => new NClobWrapper().asInstanceOf[Wrapper[BASIC]]
 
-          } else if ((parameterType eq classOf[Short]) || (parameterType eq classOf[java.lang.Short])) {
+          } else if ((elementType eq classOf[Short]) || (elementType eq classOf[java.lang.Short])) {
             () => new ShortWrapper().asInstanceOf[Wrapper[BASIC]]
 
-          } else if (parameterType eq classOf[SQLXML]) {
+          } else if (elementType eq classOf[SQLXML]) {
             () => new SQLXMLWrapper().asInstanceOf[Wrapper[BASIC]]
 
-          } else if (parameterType eq classOf[Object]) {
+          } else if (elementType eq classOf[Object]) {
             () => new ObjectWrapper().asInstanceOf[Wrapper[BASIC]]
 
           } else {
             return null
           }
         val holderDesc = new AbstractAnyValHolderDesc[BASIC, HOLDER](wrapperSupplier) {
-          override protected def newHolder(value: BASIC): HOLDER =
-            constructors.head.newInstance(value.asInstanceOf[BASIC]).asInstanceOf[HOLDER]
-          override protected def getBasicValue(holder: HOLDER): BASIC =
-            (if (holder == null) null else valueClass.getMethod(fieldName).invoke(holder)).asInstanceOf[BASIC]
+
+          override def newHolder(value: BASIC): HOLDER = {
+            constructors.head.newInstance((if (value == null && elementType.isPrimitive) 0 else value).asInstanceOf[BASIC]).asInstanceOf[HOLDER]
+          }
+          override def getBasicValue(holder: HOLDER): BASIC =
+            (if (holder == null) null else holderClass.getMethod(fieldName).invoke(holder)).asInstanceOf[BASIC]
         }
         holderDesc
       }).asInstanceOf[AbstractAnyValHolderDesc[BASIC, HOLDER]]

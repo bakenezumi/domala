@@ -32,9 +32,9 @@ abstract class AbstractAnyValHolderDesc[BASIC, HOLDER](val wrapperSupplier: Supp
 
   override def getBasicClass: Class[BASIC] = basicTag.runtimeClass.asInstanceOf[Class[BASIC]]
 
-  protected def newHolder(value: BASIC): HOLDER
+  def newHolder(value: BASIC): HOLDER
 
-  protected def getBasicValue(holder: HOLDER): BASIC
+  def getBasicValue(holder: HOLDER): BASIC
 
   class HolderScalar private[holder](val wrapper: Wrapper[BASIC]) extends Scalar[BASIC, HOLDER] {
     override def getDomainClass: Optional[Class[_]] = {
@@ -43,7 +43,10 @@ abstract class AbstractAnyValHolderDesc[BASIC, HOLDER](val wrapperSupplier: Supp
     }
 
     override def cast(value: Any): HOLDER = {
-      self.newHolder(value.asInstanceOf[BASIC])
+      value match {
+        case holder: HOLDER => holder
+        case _ => value.asInstanceOf[HOLDER]
+      }
     }
 
     override def get: HOLDER = newHolder(wrapper.get)
@@ -51,7 +54,13 @@ abstract class AbstractAnyValHolderDesc[BASIC, HOLDER](val wrapperSupplier: Supp
     override def getDefault: HOLDER = self.newHolder(null.asInstanceOf[BASIC])
 
     override def set(domain: HOLDER): Unit = {
-      val value = getBasicValue(domain)
+
+      val value = if(domain.getClass == getBasicClass) {
+        domain.asInstanceOf[BASIC]
+      } else {
+        getBasicValue(domain)
+
+      }
       wrapper.set(value)
     }
 

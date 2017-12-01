@@ -196,6 +196,10 @@ object EntityReflectionMacros {
           extractionClassString(entityClass.toString),
           extractionQuotedString(paramName.toString())))
       }
+      if (holder.isEmpty) {
+        c.abort(c.enclosingPosition, Message.DOMALA6017.getMessage(
+          extractionClassString(entityClass.toString)))
+      }
       if (isIdLiteral) {
         if (isIdGenerateActualLiteral) {
           if (!TypeUtil.isNumber(c)(basicType)) {

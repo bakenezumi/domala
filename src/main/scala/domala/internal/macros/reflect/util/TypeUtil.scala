@@ -242,26 +242,42 @@ object TypeUtil {
     val holder: c.Expr[AbstractAnyValHolderDesc[Any, T]] = {
       val holderTypeName = tpe.typeSymbol.name.toTypeName
       val basicTypeName = basicType.typeSymbol.name.toTypeName
-      val holderValueName  = TermName(tpe.members.find(_.isConstructor).get.asMethod.paramLists.flatten.head.name.toString)
+      val holderConstructor = tpe.members.find(_.isConstructor).get.asMethod
+      val useApply =
+        if (holderConstructor.isPublic) false
+        else {
+          val applyMethod = tpe.companion.member(TermName("apply"))
+          if (applyMethod.typeSignature =:= NoType || !applyMethod.isPublic) {
+            return (basicType, None)
+          } else true
+        }
+      val holderValueName  = TermName(holderConstructor.paramLists.flatten.head.name.toString)
       val basicImport = generateImport(c)(basicType)
       val holderImport = generateImport(c)(tpe)
       c.Expr[AbstractAnyValHolderDesc[Any, T]](
-        if (tpe.typeArgs.isEmpty)
+        if (tpe.typeArgs.isEmpty) {
+          val holderFactory =
+            if(useApply)  q"${tpe.typeSymbol.name.toTermName}.apply (value)"
+            else q"new $holderTypeName (value)"
           q""" {
             ${basicImport.getOrElse(q"()")}
             ${holderImport.getOrElse(q"()")}
             new domala.jdbc.holder.AbstractAnyValHolderDesc[$basicTypeName, $holderTypeName](${generateWrapperSupplier(c)(basicType)}) {
-              override protected def newHolder(value: $basicTypeName): $holderTypeName = new $holderTypeName (value)
-              override protected def getBasicValue(holder: $holderTypeName) = holder.$holderValueName
+              override def newHolder(value: $basicTypeName): $holderTypeName = $holderFactory
+              override def getBasicValue(holder: $holderTypeName) = holder.$holderValueName
             }
           } """
-        else {
+        } else {
+          val holderFactory =
+            if(useApply)  q"${tpe.typeSymbol.name.toTermName}.apply [..${tpe.typeArgs}] (value)"
+            else q"new $holderTypeName [..${tpe.typeArgs}] (value)"
+
           q""" {
             ${basicImport.getOrElse(q"()")}
             ${holderImport.getOrElse(q"()")}
             new domala.jdbc.holder.AbstractAnyValHolderDesc[$basicTypeName, $holderTypeName [..${tpe.typeArgs}]](${generateWrapperSupplier(c)(basicType)}) {
-              override protected def newHolder(value: $basicTypeName): $holderTypeName [..${tpe.typeArgs}] = new $holderTypeName [..${tpe.typeArgs}](value)
-              override protected def getBasicValue(holder: $holderTypeName [..${tpe.typeArgs}]) = holder.$holderValueName
+              override def newHolder(value: $basicTypeName): $holderTypeName [..${tpe.typeArgs}] = $holderFactory
+              override def getBasicValue(holder: $holderTypeName [..${tpe.typeArgs}]) = holder.$holderValueName
             }
           } """
         }
