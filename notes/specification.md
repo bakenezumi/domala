@@ -24,19 +24,19 @@ javal.lang.Integer     |support    |
 Long                   |support    |
 java.lang.Long         |support    |
 Float                  |support    |
-java.lang.Float       |support    |
+java.lang.Float        |support    |
 Double                 |support    |
-java.lang.Double      |support    |
+java.lang.Double       |support    |
 Double                 |support    |
 ~~java.lang.Enum~~     |-          |use seald abstruct [Holder](#holder-class) instead
 Array[Byte]            |support|
 String                 |support    |
 AnyRef                 |support    |
-java.lang.Object      |support    |
+java.lang.Object       |support    |
 BigDecimal             |support    |added by Domala
 java.math.BigDecimal   |support    |
 BigInt                 |support    |added by Domala
-java.math.BigInteger  |support    |
+java.math.BigInteger   |support    |
 java.time.LocalDate    |support    |
 java.time.LocalTime    |support    |
 java.time.LocalDateTime|support    |
@@ -46,8 +46,8 @@ java.sql.Timestamp     |support    |
 java.sql.Array         |support    |
 java.sql.Blob          |support    |
 java.sql.Clob          |support    |
-java.sql.SQLXML       |support    |
-java.util.Date        |support    |
+java.sql.SQLXML        |support    |
+java.util.Date         |support    |
 
 ## Holder class
 
@@ -77,7 +77,7 @@ There are two ways to define a `Holder`:
 Domala can not use `java.lang.Enum` as a basic type, but can be expressed pseudo by `seald abstract class`.
 
   ```scala
-  // a contents of a element is persisted in the database
+  // a value of a element is persisted in the database
   @Holder
   sealed abstract class Sex(val value: String)
   object Sex {
@@ -137,7 +137,7 @@ If the element of the `Holder` is `Numeric`, the `Holder` can also be used as `N
 
 #### Restrictions
   - One constructor, and one element.
-  - Only [`Basic types`](#basic-types) can be defined for parameter type.
+  - Only [`Basic types`](#basic-types) can be defined for element type.
   - Doma's `External holder` is currently not supported.
 
 ## Embeddable class
