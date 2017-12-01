@@ -16,18 +16,18 @@ import scala.meta._
   * The entity class must be defined as immutable.
   *
   * {{{
-  *@literal @Entity
+  * @Entity
   * case class Employee (
   *
-  *  @literal @Id
-  *  @literal @Column(name = "ID")
+  *   @Id
+  *   @Column(name = "ID")
   *   id: Int,
   *
-  *  @literal @Column(name = "EMPLOYEE_NAME")
+  *   @Column(name = "EMPLOYEE_NAME")
   *   employeeName: String,
   *
-  *  @literal @Version
-  *  @literal @Column(name = "VERSION")
+  *   @Version
+  *   @Column(name = "VERSION")
   *   version: Int,
   *
   *   ...

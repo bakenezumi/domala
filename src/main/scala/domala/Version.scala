@@ -5,12 +5,12 @@ package domala
   * The annotated field must be a member of an [[domala.Entity Entity]] annotated class.
   *
   * {{{
-  *@literal @Entity
+  * @Entity
   * case class Employee(
   *   ...
   *
-  *  @literal @Version
-  *  @literal @Column(name = "VERSION_NO")
+  *   @Version
+  *   @Column(name = "VERSION_NO")
   *   versionNo: Int
   * )
   * }}}

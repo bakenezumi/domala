@@ -13,30 +13,30 @@ import scala.meta._
   * properties of the class as arguments.
   *
   * {{{
-  *@literal @Embeddable
+  * @Embeddable
   * case class Address (
   *
-  *  @literal @Column(name = "CITY")
+  *   @Column(name = "CITY")
   *   city: String,
   *
-  *  @literal @Column(name = "STREET")
+  *   @Column(name = "STREET")
   *   street: String
   *
   * )
   * }}}
   *
   * {{{
-  *@literal @Entity
+  * @Entity
   * case class Employee(
   *
-  *  @literal @Id
-  *  @literal @Column(name = "ID")
+  *   @Id
+  *   @Column(name = "ID")
   *   id: Int,
   *
   *   address: Address,
   *
-  *  @literal @Version
-  *  @literal @Column(name = "VERSION")
+  *   @Version
+  *   @Column(name = "VERSION")
   *   version: Int,
   *
   *   ...

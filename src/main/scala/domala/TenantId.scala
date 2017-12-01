@@ -8,10 +8,10 @@ package domala
   * are included in the WHERE clause as search condition.
   *
   * {{{
-  *@literal @Entity
+  * @Entity
   * case class Employee(
   *   ...
-  *  @literal @TenantId
+  *   @TenantId
   *   tenantId: String,
   *
   *   ...

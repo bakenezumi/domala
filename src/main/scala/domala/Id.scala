@@ -98,12 +98,12 @@ class SequenceGenerator(
   * and the [[domala.GeneratedValue GeneratedValue]] annotation.
   *
   * {{{
-  *@literal @Entity
+  * @Entity
   * case class Employee(
   *
-  *  @literal @Id
-  *  @literal @GeneratedValue(strategy = GenerationType.TABLE)
-  *  @literal @TableGenerator(pkColumnValue = "EMPLOYEE_ID")
+  *   @Id
+  *   @GeneratedValue(strategy = GenerationType.TABLE)
+  *   @TableGenerator(pkColumnValue = "EMPLOYEE_ID")
   *   id: Integer,
   *
   *   ...

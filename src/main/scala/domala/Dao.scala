@@ -12,10 +12,10 @@ import scala.meta._
   *
   *
   * {{{
-  *@literal @Dao
+  * @Dao
   * trait EmployeeDao {
   *
-  *  @literal @Insert
+  *   @Insert
   *   def insert(Employee employee): Int
   * }
   * }}}

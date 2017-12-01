@@ -13,7 +13,7 @@ import scala.meta._
   * Instantiation by constructor:
   *
   * {{{
-  *@literal @Holder
+  * @Holder
   * case class PhoneNumber(value: String)
   * }}}
   *

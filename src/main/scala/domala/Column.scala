@@ -6,13 +6,13 @@ package domala
   * annotated class.
   *
   * {{{
-  *@literal @Entity
+  * @Entity
   * case class Employee(
   *
-  *  @literal @Column(name = "EMPLOYEE_NAME")
+  *   @Column(name = "EMPLOYEE_NAME")
   *   employeeName: String,
   *
-  *  @literal @Column(name = "SALARY")
+  *   @Column(name = "SALARY")
   *   salary: BigDecimal,
   *
   *   ...

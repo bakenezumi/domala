@@ -6,8 +6,8 @@ package domala
   * annotation.
   *
   * {{{
-  *@literal @Entity
-  *@literal @Table(name = "EMP")
+  * @Entity
+  * @Table(name = "EMP")
   * case class Employee {
   *   ...
   * }

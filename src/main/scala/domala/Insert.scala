@@ -7,14 +7,14 @@ import org.seasar.doma.jdbc.SqlLogType
   * The annotated method must be a member of a [[domala.Dao Dao]] annotated trait.
   *
   * {{{
-  *@literal @Entity
+  * @Entity
   * case class Employee(
   *   ...
   * )
   *
-  *@literal @Dao
+  * @Dao
   * trait EmployeeDao {
-  *  @literal @Insert
+  *  @Insert
   *   def insert(employee: Employee): Result[Employee]
   * }
   * }}}

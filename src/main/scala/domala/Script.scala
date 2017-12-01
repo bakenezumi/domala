@@ -7,10 +7,10 @@ import org.seasar.doma.jdbc.SqlLogType
   * The annotated method must be a member of a [[domala.Dao Dao]] annotated trait.
   *
   * {{{
-  *@literal @Dao
+  * @Dao
   * trait EmployeeDao {
   *
-  *  @literal @Script("""
+  *   @Script("""
   *   create table employee ...
   *   """)
   *   def createTables(): Unit
