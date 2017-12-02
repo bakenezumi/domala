@@ -1,36 +1,11 @@
-package domala.internal.macros.helper
+package domala.internal.macros.util
 
-import domala.internal.macros.{DaoMethodCommonBatchSetting, DaoMethodCommonSetting, QueryDefDecl}
-import org.seasar.doma.internal.jdbc.sql.SqlParser
-import org.seasar.doma.jdbc.JdbcException
+import domala.internal.macros.QueryDefDecl
 
 import scala.collection.immutable.Seq
 import scala.meta._
 
 object DaoMacroHelper {
-  def readCommonSetting(args: Seq[Term.Arg], traitName: String, methodName: String): DaoMethodCommonSetting = {
-    val (hasSql, sql) =  args.collectFirst{
-      case arg"sql = $x" => x
-      case arg"$x" if x.syntax.startsWith("\"") => x.syntax.parse[Term.Arg].get
-    }.map { x =>
-      try {
-        new SqlParser(x.syntax).parse()
-      } catch {
-        case e: JdbcException =>
-          MacrosHelper.abort(domala.message.Message.DOMALA4069, traitName, methodName, e)
-      }
-      (true, x)
-    }.getOrElse((false, arg""""""""))
-    val queryTimeOut =  args.collectFirst{ case arg"queryTimeOut = $x" => x }.getOrElse(arg"-1")
-    val sqlLog =  args.collectFirst{ case arg"sqlLog = $x" => x }.getOrElse(arg"org.seasar.doma.jdbc.SqlLogType.FORMATTED")
-    DaoMethodCommonSetting(hasSql, sql, queryTimeOut, sqlLog)
-  }
-
-  def readCommonBatchSetting(args: Seq[Term.Arg], traitName: String, methodName: String): DaoMethodCommonBatchSetting = {
-    val commonSetting = readCommonSetting(args, traitName, methodName)
-    val batchSize = args.collectFirst{ case arg"batchSize = $x" => x }.getOrElse(arg"-1")
-    DaoMethodCommonBatchSetting(commonSetting.hasSql, commonSetting.sql, commonSetting.queryTimeOut, commonSetting.sqlLogType, batchSize)
-  }
 
   private def hasEntityParameter(defDecl: QueryDefDecl, resultEntityType: Type, paramTypes: Seq[Term.Param]): Boolean = {
     paramTypes.map(_.decltpe.get.syntax).exists {

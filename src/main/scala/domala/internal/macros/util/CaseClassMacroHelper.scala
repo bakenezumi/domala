@@ -1,4 +1,4 @@
-package domala.internal.macros.helper
+package domala.internal.macros.util
 
 import scala.meta._
 
@@ -28,7 +28,7 @@ object CaseClassMacroHelper {
     } else {
       val paramss = cls.ctor.paramss.map(ps => ps.map(_.copy(mods = Nil)))
       val argss = paramss.map(ps => ps.map(p => Term.Name(p.name.syntax)))
-      val tparams = TypeHelper.convertDefTypeParams(cls.tparams)
+      val tparams = TypeUtil.convertDefTypeParams(cls.tparams)
       val typeNames = cls.tparams.map(tp => Type.Name(tp.name.syntax))
       if (typeNames.nonEmpty)
         q"def apply[..{$tparams}](...$paramss): ${cls.name}[..{$typeNames}] = new ${Ctor.Ref.Name(cls.name.syntax)}[..{$typeNames}](...$argss)"
@@ -43,7 +43,7 @@ object CaseClassMacroHelper {
       q"()" // no op
     } else {
       val params = cls.ctor.paramss.head.map(_.copy(mods = Nil))
-      val tparams = TypeHelper.convertDefTypeParams(cls.tparams)
+      val tparams = TypeUtil.convertDefTypeParams(cls.tparams)
       val typeNames = cls.tparams.map(tp => Type.Name(tp.name.syntax))
       if (params.size > 1) {
         val typeTuple =

@@ -1,4 +1,4 @@
-package domala.internal.macros.helper
+package domala.internal.macros.util
 
 import scala.meta._
 object LiteralConverters {

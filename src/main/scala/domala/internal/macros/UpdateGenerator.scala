@@ -1,7 +1,8 @@
 package domala.internal.macros
 
 import domala.Update
-import domala.internal.macros.helper.DaoMacroHelper
+import domala.internal.macros.args.DaoMethodCommonArgs
+import domala.internal.macros.util.DaoMacroHelper
 
 import scala.collection.immutable.Seq
 import scala.meta._
@@ -10,11 +11,11 @@ object UpdateGenerator extends DaoMethodGenerator {
   override def annotationClass: Class[Update] = classOf[Update]
   override def generate(trtName: Type.Name, _def: Decl.Def, internalMethodName: Term.Name, args: Seq[Term.Arg]): Defn.Def = {
     val defDecl = QueryDefDecl.of(trtName, _def)
-    val commonSetting = DaoMacroHelper.readCommonSetting(args, trtName.syntax, _def.name.syntax)
+    val commonArgs = DaoMethodCommonArgs.read(args, trtName.syntax, _def.name.syntax)
     val excludeNull = args.collectFirst { case arg"excludeNull = $x" => x }.getOrElse(q"false")
     val ignoreVersion = args.collectFirst { case arg"ignoreVersion = $x" => x }.getOrElse(q"false")
-    val include = args.collectFirst { case arg"include = $x" => Some(x) }.getOrElse(None)
-    val exclude = args.collectFirst { case arg"exclude = $x" => Some(x) }.getOrElse(None)
+    val include = args.collectFirst { case arg"include = $x" => Some(x) }.flatten
+    val exclude = args.collectFirst { case arg"exclude = $x" => Some(x) }.flatten
     val includedPropertyNames = include match {
       case Some(x: Term.Apply) => x.args
       case _ => Nil
@@ -25,26 +26,26 @@ object UpdateGenerator extends DaoMethodGenerator {
     }
     val suppressOptimisticLockException = args.collectFirst { case arg"suppressOptimisticLockException = $x" => x }.getOrElse(q"false")
 
-    if (commonSetting.hasSql) {
+    if (commonArgs.hasSql) {
       val query: Term => Term.New = (entityAndEntityType) =>
         q"""new domala.jdbc.query.SqlAnnotationUpdateQuery(
-          ${commonSetting.sql},
+          ${commonArgs.sql},
           $excludeNull,
           $ignoreVersion,
           $suppressOptimisticLockException,
           Seq(..$includedPropertyNames).toArray,
           Seq(..$excludedPropertyNames).toArray)($entityAndEntityType)
         """
-      val otherQuerySettings = Seq[Stat]()
+      val otherQueryArgs = Seq[Stat]()
       val command = q"getCommandImplementors.createUpdateCommand($internalMethodName, __query)"
-      SqlModifyQueryGenerator.generate(defDecl, commonSetting, internalMethodName, query, otherQuerySettings, command, q"true")
+      SqlModifyQueryGenerator.generate(defDecl, commonArgs, internalMethodName, query, otherQueryArgs, command, q"true")
 
     } else {
       val (paramName, paramTpe) = AutoModifyQueryGenerator.extractParameter(defDecl)
       val query = q"getQueryImplementors.createAutoUpdateQuery($internalMethodName, ${Term.Name(paramTpe.syntax)})"
       val command = q"getCommandImplementors.createUpdateCommand($internalMethodName, __query)"
       val validateEntityPropertyNames = DaoMacroHelper.validateEntityPropertyNames(defDecl, paramTpe, includedPropertyNames, excludedPropertyNames)
-      val otherQuerySettings = validateEntityPropertyNames ++ Seq[Stat](
+      val otherQueryArgs = validateEntityPropertyNames ++ Seq[Stat](
         q"__query.setNullExcluded($excludeNull)",
         q"__query.setVersionIgnored($ignoreVersion)",
         q"__query.setIncludedPropertyNames(..$includedPropertyNames)",
@@ -52,7 +53,7 @@ object UpdateGenerator extends DaoMethodGenerator {
         q"__query.setUnchangedPropertyIncluded(false)", //TODO: 未実装
         q"__query.setOptimisticLockExceptionSuppressed($suppressOptimisticLockException)"
       )
-      AutoModifyQueryGenerator.generate(defDecl, commonSetting, paramName, paramTpe, internalMethodName, query, otherQuerySettings, command)
+      AutoModifyQueryGenerator.generate(defDecl, commonArgs, paramName, paramTpe, internalMethodName, query, otherQueryArgs, command)
     }
   }
 }

@@ -1,7 +1,8 @@
 package domala.internal.macros
 
 import domala.Insert
-import domala.internal.macros.helper.DaoMacroHelper
+import domala.internal.macros.args.DaoMethodCommonArgs
+import domala.internal.macros.util.DaoMacroHelper
 
 import scala.collection.immutable.Seq
 import scala.meta._
@@ -10,16 +11,17 @@ object InsertGenerator extends DaoMethodGenerator {
   override def annotationClass: Class[Insert] = classOf[Insert]
   override def generate(trtName: Type.Name, _def: Decl.Def, internalMethodName: Term.Name, args: Seq[Term.Arg]): Defn.Def = {
     val defDecl = QueryDefDecl.of(trtName, _def)
-    val commonSetting = DaoMacroHelper.readCommonSetting(args, trtName.syntax, _def.name.syntax)
+    val commonArgs = DaoMethodCommonArgs.read(args, trtName.syntax, _def.name.syntax)
     val excludeNull = args.collectFirst { case arg"excludeNull = $x" => x }.getOrElse(q"false")
-    val include = args.collectFirst { case arg"include = $x" => Some(x) }.getOrElse(None)
-    val exclude = args.collectFirst { case arg"exclude = $x" => Some(x) }.getOrElse(None)
+    val include = args.collectFirst { case arg"include = $x" => Some(x) }.flatten
+    val exclude = args.collectFirst { case arg"exclude = $x" => Some(x) }.flatten
 
-    if (commonSetting.hasSql) {
-      val query: Term => Term.New = (entityAndEntityType) => q"new domala.jdbc.query.SqlAnnotationInsertQuery(${commonSetting.sql})($entityAndEntityType)"
+    if (commonArgs.hasSql) {
+      val query: Term => Term.New = (entityAndEntityType) =>
+        q"new domala.jdbc.query.SqlAnnotationInsertQuery(${commonArgs.sql})($entityAndEntityType)"
       val otherQuerySettings = Seq[Stat]()
       val command = q"getCommandImplementors.createInsertCommand($internalMethodName, __query)"
-      SqlModifyQueryGenerator.generate(defDecl, commonSetting, internalMethodName, query, otherQuerySettings, command, q"false")
+      SqlModifyQueryGenerator.generate(defDecl, commonArgs, internalMethodName, query, otherQuerySettings, command, q"false")
     } else {
       val includedPropertyNames = include match {
         case Some(x: Term.Apply) => x.args
@@ -33,12 +35,12 @@ object InsertGenerator extends DaoMethodGenerator {
       val query = q"getQueryImplementors.createAutoInsertQuery($internalMethodName, ${Term.Name(paramTpe.syntax)})"
       val command = q"getCommandImplementors.createInsertCommand($internalMethodName, __query)"
       val validateEntityPropertyNames = DaoMacroHelper.validateEntityPropertyNames(defDecl, paramTpe, includedPropertyNames, excludedPropertyNames)
-      val otherQuerySettings = validateEntityPropertyNames ++ Seq[Stat](
+      val otherQueryArgs = validateEntityPropertyNames ++ Seq[Stat](
         q"__query.setNullExcluded($excludeNull)",
         q"__query.setIncludedPropertyNames(..$includedPropertyNames)",
         q"__query.setExcludedPropertyNames(..$excludedPropertyNames)"
       )
-      AutoModifyQueryGenerator.generate(defDecl, commonSetting, paramName, paramTpe, internalMethodName, query, otherQuerySettings, command)
+      AutoModifyQueryGenerator.generate(defDecl, commonArgs, paramName, paramTpe, internalMethodName, query, otherQueryArgs, command)
     }
   }
 }

@@ -1,7 +1,7 @@
 package domala.internal.macros
 
-import domala.internal.macros.helper.LiteralConverters._
-import domala.internal.macros.helper.{MacrosHelper, TypeHelper}
+import domala.internal.macros.util.LiteralConverters._
+import domala.internal.macros.util.{MacrosHelper, TypeUtil}
 import domala.message.Message
 import org.seasar.doma.internal.apt.meta.MetaConstants
 
@@ -84,12 +84,12 @@ object DaoGenerator {
   protected def generateMethodVal(trtName: Type.Name, _def: Decl.Def, internalMethodName: Term.Name): Defn.Val = {
     //noinspection ScalaUnusedSymbol
     val paramClasses: Seq[Term.ApplyType] = _def.paramss.flatten.map(p => {
-      if(TypeHelper.isWildcardType(p.decltpe.get))
+      if(TypeUtil.isWildcardType(p.decltpe.get))
         MacrosHelper.abort(Message.DOMALA4209, p.decltpe.get.syntax, trtName.syntax, _def.name.syntax)
       p.decltpe.get match {
         case t"$parameter => $_" =>
-          q"classOf[${TypeHelper.toType(parameter)} => _]"
-        case _ => q"classOf[${TypeHelper.toType(p.decltpe.get)}]"
+          q"classOf[${TypeUtil.toType(parameter)} => _]"
+        case _ => q"classOf[${TypeUtil.toType(p.decltpe.get)}]"
       }
     }) ++ _def.tparams.map(_ => q"classOf[scala.reflect.ClassTag[_]]") // ClassTag型パラメータを付与した場合、実行時は実パラメータとなる
     q"""private[this] val ${Pat.Var.Term(internalMethodName)} =

@@ -1,19 +1,19 @@
-package domala.internal.macros
+package domala.internal.macros.args
 
 import scala.meta._
 
-case class TableSetting(
+case class TableArgs(
   catalog: Term.Arg,
   schema: Term.Arg,
   name: Term.Arg,
   quote: Term
 )
 
-object TableSetting {
-  def read(mods: Seq[Mod]): TableSetting = {
-    val table = mods.collect {
+object TableArgs {
+  def read(mods: Seq[Mod]): TableArgs = {
+    val table = mods.collectFirst {
       case mod"@Table(..$args)" => args
-    }.headOption
+    }
     val blank = q""" "" """
     table match {
       case Some(args) =>
@@ -21,8 +21,8 @@ object TableSetting {
         val schema = args.collectFirst { case arg"schema = $x" => x }.getOrElse(blank)
         val name = args.collectFirst { case arg"name = $x" => x }.getOrElse(blank)
         val quote = args.collectFirst { case arg"quote = $x" => x.syntax.parse[Term].get }.getOrElse("false".parse[Term].get)
-        TableSetting(catalog, schema, name, quote)
-      case None => TableSetting(blank, blank, blank, "false".parse[Term].get)
+        TableArgs(catalog, schema, name, quote)
+      case None => TableArgs(blank, blank, blank, "false".parse[Term].get)
     }
   }
 }

@@ -1,7 +1,8 @@
 package domala.internal.macros
 
-import domala.internal.macros.helper.LiteralConverters._
-import domala.internal.macros.helper.{DaoMacroHelper, MacrosHelper}
+import domala.internal.macros.args.DaoMethodCommonBatchArgs
+import domala.internal.macros.util.LiteralConverters._
+import domala.internal.macros.util.{DaoMacroHelper, MacrosHelper}
 import domala.message.Message
 
 import scala.collection.immutable.Seq
@@ -25,13 +26,13 @@ object AutoBatchModifyQueryGenerator {
   }
 
   def generate(defDecl: QueryDefDecl,
-               commonSetting: DaoMethodCommonBatchSetting,
+               commonArgs: DaoMethodCommonBatchArgs,
                paramName: Term.Name,
                paramType: Type.Name,
                internalType: Type.Name,
                internalMethodName: Term.Name,
                query: Term.Apply,
-               otherQuerySettings: Seq[Stat],
+               otherQueryArgs: Seq[Stat],
                command: Term.Apply): Defn.Def = {
 
     val (isReturnBatchResult, entityType) =
@@ -56,10 +57,10 @@ object AutoBatchModifyQueryGenerator {
         __query.setEntities($paramName.asJava)
         __query.setCallerClassName(${defDecl.trtName.className})
         __query.setCallerMethodName(${defDecl.name.literal})
-        __query.setBatchSize(${commonSetting.batchSize})
-        __query.setQueryTimeout(${commonSetting.queryTimeOut})
-        __query.setSqlLogType(${commonSetting.sqlLogType})
-        ..$otherQuerySettings
+        __query.setBatchSize(${commonArgs.batchSize})
+        __query.setQueryTimeout(${commonArgs.queryTimeOut})
+        __query.setSqlLogType(${commonArgs.sqlLogType})
+        ..$otherQueryArgs
         __query.prepare()
         val __command = $command
         val __count = __command.execute()

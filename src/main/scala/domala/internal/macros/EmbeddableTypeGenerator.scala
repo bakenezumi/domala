@@ -1,7 +1,8 @@
 package domala.internal.macros
 
-import domala.internal.macros.helper.LiteralConverters._
-import domala.internal.macros.helper.{CaseClassMacroHelper, MacrosHelper, TypeHelper}
+import domala.internal.macros.args.ColumnArgs
+import domala.internal.macros.util.LiteralConverters._
+import domala.internal.macros.util.{CaseClassMacroHelper, MacrosHelper, TypeUtil}
 import domala.message.Message
 
 import scala.collection.immutable.Seq
@@ -15,21 +16,21 @@ object EmbeddableTypeGenerator {
     if(cls.tparams.nonEmpty)
       MacrosHelper.abort(Message.DOMALA4285, cls.name.syntax)
     val methods = makeMethods(cls.name, cls.ctor)
-    val newCompanion = q"""
+    val generatedCompanion = q"""
     object ${Term.Name(cls.name.syntax)} extends org.seasar.doma.jdbc.entity.EmbeddableType[${cls.name}] {
       ..${Seq(CaseClassMacroHelper.generateApply(cls, maybeOriginalCompanion), CaseClassMacroHelper.generateUnapply(cls, maybeOriginalCompanion))}
       ..$methods
     }
     """
-    MacrosHelper.mergeObject(maybeOriginalCompanion, newCompanion)
+    MacrosHelper.mergeObject(maybeOriginalCompanion, generatedCompanion)
   }
 
   protected def makeMethods(clsName: Type.Name, ctor: Ctor.Primary): Seq[Defn.Def] = {
     val properties: Seq[EmbeddableProperties] = ctor.paramss.head.map { p =>
       val Term.Param(mods, name, Some(decltpe), _) = p
       val tpe = Type.Name(decltpe.toString)
-      val columnSetting = ColumnSetting.read(mods)
-      val (isBasic, isOption, nakedTpe, newWrapperExpr) = TypeHelper.convertToEntityDomaType(decltpe) match {
+      val columnArgs = ColumnArgs.read(mods)
+      val (isBasic, isOption, nakedTpe, newWrapperExpr) = TypeUtil.convertToEntityDomaType(decltpe) match {
         case DomaType.Basic(_, convertedType, wrapperSupplier, _) => (true, false, convertedType, wrapperSupplier)
         case DomaType.Option(DomaType.Basic(_, convertedType, wrapperSupplier, _), _) => (true, true, convertedType, wrapperSupplier)
         case DomaType.EntityOrHolderOrEmbeddable(otherType) => (false, false, otherType, q"null")
@@ -57,7 +58,7 @@ object EmbeddableTypeGenerator {
         case mod"@TenantId" | mod"@domala.TenantId" | mod"@TenantId()" | mod"@domala.TenantId()"=>
           MacrosHelper.abort(Message.DOMALA4443, decltpe.syntax, name.syntax)
       }
-      EmbeddableProperties(name, columnSetting, isBasic, isOption, tpe, nakedTpe, newWrapperExpr)
+      EmbeddableProperties(name, columnArgs, isBasic, isOption, tpe, nakedTpe, newWrapperExpr)
     }
 
     Seq({
@@ -69,10 +70,10 @@ object EmbeddableTypeGenerator {
         namingType,
         ${if(p.isBasic) q"true" else q"false"},
         ${p.newWrapperExpr},
-        ${p.columnSetting.name},
-        ${p.columnSetting.insertable},
-        ${p.columnSetting.updatable},
-        ${p.columnSetting.quote},
+        ${p.columnArgs.name},
+        ${p.columnArgs.insertable},
+        ${p.columnArgs.updatable},
+        ${p.columnArgs.quote},
         domala.internal.macros.reflect.EntityCollections[ENTITY]()
       ).asInstanceOf[org.seasar.doma.jdbc.entity.EntityPropertyType[ENTITY, _]]
       """
@@ -98,7 +99,7 @@ object EmbeddableTypeGenerator {
 
   private[macros] case class EmbeddableProperties(
     name: Term.Param.Name,
-    columnSetting: ColumnSetting,
+    columnArgs: ColumnArgs,
     isBasic: Boolean,
     isOption: Boolean,
     tpe: Type,

@@ -1,14 +1,19 @@
 package domala.internal.macros
 
 import domala.Select
-import domala.internal.macros.helper.LiteralConverters._
-import domala.internal.macros.helper.{DaoMacroHelper, MacrosHelper, TypeHelper}
+import domala.internal.macros.args.DaoMethodCommonArgs
+import domala.internal.macros.util.LiteralConverters._
+import domala.internal.macros.util.{MacrosHelper, TypeUtil}
 import domala.message.Message
 
 import scala.collection.immutable.Seq
 import scala.meta._
 
-case class SelectSetting(
+object SelectGenerator extends DaoMethodGenerator {
+
+  override def annotationClass: Class[Select] = classOf[Select]
+
+  case class SelectArgs(
     fetchSize: Term.Arg,
     maxRows: Term.Arg,
     strategy: Term.Arg,
@@ -16,37 +21,37 @@ case class SelectSetting(
     ensureResult: Term.Arg,
     ensureResultMapping: Term.Arg,
     mapKeyNaming: Term.Arg
-)
+  )
 
-object SelectGenerator extends DaoMethodGenerator {
-  override def annotationClass: Class[Select] = classOf[Select]
-  def readSelectSetting(args: Seq[Term.Arg]): SelectSetting = {
-    val fetchSize =
-      args.collectFirst { case arg"fetchSize = $x" => x }.getOrElse(q"-1")
-    val maxRows =
-      args.collectFirst { case arg"maxRows = $x" => x }.getOrElse(q"-1")
-    val strategy = args
-      .collectFirst { case arg"strategy = $x" => x }
-      .getOrElse(q"SelectType.RETURN")
-    val fetch = args
-      .collectFirst { case arg"fetch = $x" => x }
-      .getOrElse(q"org.seasar.doma.FetchType.LAZY")
-    val ensureResult =
-      args.collectFirst { case arg"ensureResult = $x" => x }.getOrElse(q"false")
-    val ensureResultMapping = args
-      .collectFirst { case arg"ensureResultMapping = $x" => x }
-      .getOrElse(q"false")
-    val mapKeyNaming = args
-      .collectFirst { case arg"mapKeyNaming = $x" => x }
-      .getOrElse(q"org.seasar.doma.MapKeyNamingType.NONE")
-    SelectSetting(
-      fetchSize,
-      maxRows,
-      strategy,
-      fetch,
-      ensureResult,
-      ensureResultMapping,
-      mapKeyNaming)
+  object SelectArgs {
+    def read(args: Seq[Term.Arg]): SelectArgs = {
+      val fetchSize =
+        args.collectFirst { case arg"fetchSize = $x" => x }.getOrElse(q"-1")
+      val maxRows =
+        args.collectFirst { case arg"maxRows = $x" => x }.getOrElse(q"-1")
+      val strategy = args
+        .collectFirst { case arg"strategy = $x" => x }
+        .getOrElse(q"SelectType.RETURN")
+      val fetch = args
+        .collectFirst { case arg"fetch = $x" => x }
+        .getOrElse(q"org.seasar.doma.FetchType.LAZY")
+      val ensureResult =
+        args.collectFirst { case arg"ensureResult = $x" => x }.getOrElse(q"false")
+      val ensureResultMapping = args
+        .collectFirst { case arg"ensureResultMapping = $x" => x }
+        .getOrElse(q"false")
+      val mapKeyNaming = args
+        .collectFirst { case arg"mapKeyNaming = $x" => x }
+        .getOrElse(q"org.seasar.doma.MapKeyNamingType.NONE")
+      SelectArgs(
+        fetchSize,
+        maxRows,
+        strategy,
+        fetch,
+        ensureResult,
+        ensureResultMapping,
+        mapKeyNaming)
+    }
   }
 
   override def generate(
@@ -55,18 +60,18 @@ object SelectGenerator extends DaoMethodGenerator {
     internalMethodName: Term.Name,
     args: Seq[Term.Arg]): Defn.Def = {
     val defDecl = QueryDefDecl.of(trtName, _def)
-    val commonSetting = DaoMacroHelper.readCommonSetting(
+    val commonArgs = DaoMethodCommonArgs.read(
       args,
       trtName.syntax,
       defDecl.name.syntax)
-    if (commonSetting.sql.syntax == """""""")
+    if (commonArgs.sql.syntax == """""""")
       MacrosHelper.abort(Message.DOMALA4020, trtName.syntax, defDecl.name.syntax)
-    val selectSetting = readSelectSetting(args)
-    if(TypeHelper.isWildcardType(defDecl.tpe))
+    val selectArgs = SelectArgs.read(args)
+    if(TypeUtil.isWildcardType(defDecl.tpe))
       MacrosHelper.abort(Message.DOMALA4207, defDecl.tpe, trtName.syntax, defDecl.name.syntax)
 
     val (checkParameter: Seq[Stat], isStream: Boolean, isIterator: Boolean) =
-      selectSetting.strategy match {
+      selectArgs.strategy match {
         case q"SelectType.RETURN" | q"RETURN" => (Nil, false, false)
         case q"SelectType.STREAM" | q"STREAM" =>
           (Seq {
@@ -137,7 +142,7 @@ object SelectGenerator extends DaoMethodGenerator {
             //noinspection ScalaUnusedSymbol
             p.decltpe.get match {
               case t"Stream[$_] => $_" => true
-              case x if TypeHelper.isWildcardType(x) =>
+              case x if TypeUtil.isWildcardType(x) =>
                 MacrosHelper.abort(Message.DOMALA4243, x.children.head.syntax, trtName.syntax, defDecl.name.syntax)
               case _ => false
             }
@@ -156,11 +161,11 @@ object SelectGenerator extends DaoMethodGenerator {
             trtName.syntax,
             defDecl.name.syntax)
         }
-        TypeHelper.convertToDomaType(internalTpe) match {
+        TypeUtil.convertToDomaType(internalTpe) match {
           case DomaType.Map =>
             val command = commandTemplate(
               q"""
-              new org.seasar.doma.internal.jdbc.command.MapStreamHandler[$retTpe](${selectSetting.mapKeyNaming},
+              new org.seasar.doma.internal.jdbc.command.MapStreamHandler[$retTpe](${selectArgs.mapKeyNaming},
                 (p: java.util.stream.Stream[java.util.Map[String, Object]]) => $functionParamTerm(domala.internal.WrapStream.of(p).map(_.asScala.toMap))
               )""")
             (
@@ -195,7 +200,7 @@ object SelectGenerator extends DaoMethodGenerator {
             //noinspection ScalaUnusedSymbol
             p.decltpe.get match {
               case t"Iterator[$_] => $_" => true
-              case x if TypeHelper.isWildcardType(x) =>
+              case x if TypeUtil.isWildcardType(x) =>
                 MacrosHelper.abort(Message.DOMALA4243, x.children.head.syntax, trtName.syntax, defDecl.name.syntax)
               case _  => false
             }
@@ -214,11 +219,11 @@ object SelectGenerator extends DaoMethodGenerator {
             trtName.syntax,
             defDecl.name.syntax)
         }
-        TypeHelper.convertToDomaType(internalTpe) match {
+        TypeUtil.convertToDomaType(internalTpe) match {
           case DomaType.Map =>
             val command = commandTemplate(
               q"""
-              new org.seasar.doma.internal.jdbc.command.MapStreamHandler[$retTpe](${selectSetting.mapKeyNaming},
+              new org.seasar.doma.internal.jdbc.command.MapStreamHandler[$retTpe](${selectArgs.mapKeyNaming},
                 (p: java.util.stream.Stream[java.util.Map[String, Object]]) => $functionParamTerm(domala.internal.WrapIterator.of(p).map(_.asScala.toMap))
               )""")
             (
@@ -248,10 +253,10 @@ object SelectGenerator extends DaoMethodGenerator {
               Message.DOMALA4008, defDecl.tpe, trtName.syntax, defDecl.name.syntax)
         }
       } else
-        TypeHelper.convertToDomaType(defDecl.tpe) match {
+        TypeUtil.convertToDomaType(defDecl.tpe) match {
           case DomaType.Option(DomaType.Map, _) =>
             val command = commandTemplate(
-              q"new org.seasar.doma.internal.jdbc.command.OptionalMapSingleResultHandler(${selectSetting.mapKeyNaming})")
+              q"new org.seasar.doma.internal.jdbc.command.OptionalMapSingleResultHandler(${selectArgs.mapKeyNaming})")
             (
               q"domala.internal.OptionConverters.asScala($command.execute()).map(x => x.asScala.toMap)",
               Nil
@@ -278,7 +283,7 @@ object SelectGenerator extends DaoMethodGenerator {
 
           case DomaType.Seq(DomaType.Map, _) =>
             val command = commandTemplate(
-              q"new org.seasar.doma.internal.jdbc.command.MapResultListHandler(${selectSetting.mapKeyNaming})")
+              q"new org.seasar.doma.internal.jdbc.command.MapResultListHandler(${selectArgs.mapKeyNaming})")
             (
               q"$command.execute().asScala.map(_.asScala.toMap)",
               Nil
@@ -304,7 +309,7 @@ object SelectGenerator extends DaoMethodGenerator {
 
           case DomaType.Map =>
             val command = commandTemplate(
-              q"new org.seasar.doma.internal.jdbc.command.MapSingleResultHandler(${selectSetting.mapKeyNaming})")
+              q"new org.seasar.doma.internal.jdbc.command.MapSingleResultHandler(${selectArgs.mapKeyNaming})")
             (
               q"Option($command.execute()).map(_.asScala.toMap).getOrElse(Map.empty)",
               Nil
@@ -342,7 +347,7 @@ object SelectGenerator extends DaoMethodGenerator {
           t"java.util.function.Function[Stream[$parameter], _]"
         case t"Iterator[$parameter] => $_" =>
           t"java.util.function.Function[Iterator[$parameter], _]"
-        case _ => TypeHelper.toType(p.decltpe.get)
+        case _ => TypeUtil.toType(p.decltpe.get)
       }
       val param = p.decltpe.get match {
         case t"Option[$_]" => q"${Term.Name(p.name.syntax)}.orNull": Term.Arg
@@ -359,7 +364,7 @@ object SelectGenerator extends DaoMethodGenerator {
       case _ => true
     }).map { p =>
       val pType: Type = p.decltpe.get match {
-        case tpe => TypeHelper.toType(tpe)
+        case tpe => TypeUtil.toType(tpe)
       }
       q"domala.internal.macros.DaoParamClass.apply(${p.name.literal}, classOf[$pType])"
     }
@@ -372,10 +377,10 @@ object SelectGenerator extends DaoMethodGenerator {
 
     q"""
     override def ${defDecl.name}= {
-      domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql(${trtName.literal}, ${defDecl.name.literal}, true, false, ${commonSetting.sql}, ..$daoParamTypes)
+      domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql(${trtName.literal}, ${defDecl.name.literal}, true, false, ${commonArgs.sql}, ..$daoParamTypes)
       entering(${trtName.className}, ${defDecl.name.literal} ..$enteringParam)
       try {
-        val __query = new domala.jdbc.query.SqlAnnotationSelectQuery(${commonSetting.sql})
+        val __query = new domala.jdbc.query.SqlAnnotationSelectQuery(${commonArgs.sql})
         ..$checkParameter
         __query.setMethod($internalMethodName)
         __query.setConfig(__config)
@@ -384,13 +389,13 @@ object SelectGenerator extends DaoMethodGenerator {
         ..$addParameters
         __query.setCallerClassName(${trtName.className})
         __query.setCallerMethodName(${defDecl.name.literal})
-        __query.setResultEnsured(${selectSetting.ensureResult})
-        __query.setResultMappingEnsured(${selectSetting.ensureResultMapping})
-        __query.setFetchType(${selectSetting.fetch})
-        __query.setQueryTimeout(${commonSetting.queryTimeOut})
-        __query.setMaxRows(${selectSetting.maxRows})
-        __query.setFetchSize(${selectSetting.fetchSize})
-        __query.setSqlLogType(${commonSetting.sqlLogType})
+        __query.setResultEnsured(${selectArgs.ensureResult})
+        __query.setResultMappingEnsured(${selectArgs.ensureResultMapping})
+        __query.setFetchType(${selectArgs.fetch})
+        __query.setQueryTimeout(${commonArgs.queryTimeOut})
+        __query.setMaxRows(${selectArgs.maxRows})
+        __query.setFetchSize(${selectArgs.fetchSize})
+        __query.setSqlLogType(${commonArgs.sqlLogType})
         ..$setResultStream
         __query.prepare()
         val __result: ${defDecl.tpe} = $result
@@ -406,4 +411,5 @@ object SelectGenerator extends DaoMethodGenerator {
     }
     """
   }
+
 }

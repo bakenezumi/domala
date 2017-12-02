@@ -1,7 +1,8 @@
 package domala.internal.macros
 
 import domala.Delete
-import domala.internal.macros.helper.DaoMacroHelper
+import domala.internal.macros.args.DaoMethodCommonArgs
+import domala.internal.macros.util.DaoMacroHelper
 
 import scala.collection.immutable.Seq
 import scala.meta._
@@ -14,8 +15,8 @@ object DeleteGenerator extends DaoMethodGenerator {
     internalMethodName: Term.Name,
     args: Seq[Term.Arg]): Defn.Def = {
     val defDecl = QueryDefDecl.of(trtName, _def)
-    val commonSetting =
-      DaoMacroHelper.readCommonSetting(args, trtName.syntax, _def.name.syntax)
+    val commonArgs =
+      DaoMethodCommonArgs.read(args, trtName.syntax, _def.name.syntax)
     val ignoreVersion = args
       .collectFirst { case arg"ignoreVersion = $x" => x }
       .getOrElse(q"false")
@@ -23,18 +24,18 @@ object DeleteGenerator extends DaoMethodGenerator {
       .collectFirst { case arg"suppressOptimisticLockException = $x" => x }
       .getOrElse(q"false")
 
-    if (commonSetting.hasSql) {
+    if (commonArgs.hasSql) {
       val query: Term => Term.New = (entityAndEntityType) =>
-        q"new domala.jdbc.query.SqlAnnotationDeleteQuery(${commonSetting.sql}, $ignoreVersion, $suppressOptimisticLockException)($entityAndEntityType)"
-      val otherQuerySettings = Seq[Stat]()
+        q"new domala.jdbc.query.SqlAnnotationDeleteQuery(${commonArgs.sql}, $ignoreVersion, $suppressOptimisticLockException)($entityAndEntityType)"
+      val otherQueryArgs = Seq[Stat]()
       val command =
         q"getCommandImplementors.createDeleteCommand($internalMethodName, __query)"
       SqlModifyQueryGenerator.generate(
         defDecl,
-        commonSetting,
+        commonArgs,
         internalMethodName,
         query,
-        otherQuerySettings,
+        otherQueryArgs,
         command,
         q"false")
     } else {
@@ -45,18 +46,18 @@ object DeleteGenerator extends DaoMethodGenerator {
           .Name(paramTpe.syntax)})"
       val command =
         q"getCommandImplementors.createDeleteCommand($internalMethodName, __query)"
-      val otherQuerySettings = Seq[Stat](
+      val otherQueryArgs = Seq[Stat](
         q"__query.setVersionIgnored($ignoreVersion)",
         q"__query.setOptimisticLockExceptionSuppressed($suppressOptimisticLockException)"
       )
       AutoModifyQueryGenerator.generate(
         defDecl,
-        commonSetting,
+        commonArgs,
         paramName,
         paramTpe,
         internalMethodName,
         query,
-        otherQuerySettings,
+        otherQueryArgs,
         command)
     }
   }

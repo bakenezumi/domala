@@ -1,7 +1,8 @@
 package domala.internal.macros
 
-import domala.internal.macros.helper.LiteralConverters._
-import domala.internal.macros.helper.DaoMacroHelper
+import domala.internal.macros.args.DaoMethodCommonBatchArgs
+import domala.internal.macros.util.LiteralConverters._
+import domala.internal.macros.util.DaoMacroHelper
 
 import scala.collection.immutable.Seq
 import scala.meta._
@@ -10,13 +11,13 @@ object SqlBatchModifyQueryGenerator {
 
   def generate(
     defDecl: QueryDefDecl,
-    commonSetting: DaoMethodCommonBatchSetting,
+    commonArgs: DaoMethodCommonBatchArgs,
     paramName: Term.Name,
     paramType: Type.Name,
     internalType: Type.Name,
     internalMethodName: Term.Name,
     query: Term => Term.New,
-    otherQuerySettings: Seq[Stat],
+    otherQueryArgs: Seq[Stat],
     command: Term.Apply,
     populatable: Term
   ): Defn.Def = {
@@ -55,7 +56,7 @@ object SqlBatchModifyQueryGenerator {
 
     q"""
     override def ${defDecl.name} = {
-      domala.internal.macros.reflect.DaoReflectionMacros.validateBatchParameterAndSql(${defDecl.trtName.literal}, ${defDecl.name.literal}, false, $populatable, ${commonSetting.sql}, $daoParamType, ..$suppress)
+      domala.internal.macros.reflect.DaoReflectionMacros.validateBatchParameterAndSql(${defDecl.trtName.literal}, ${defDecl.name.literal}, false, $populatable, ${commonArgs.sql}, $daoParamType, ..$suppress)
       entering(${defDecl.trtName.className}, ${defDecl.name.literal}, $paramName)
       try {
         val __query = ${query(entityTypeOption)}
@@ -66,10 +67,10 @@ object SqlBatchModifyQueryGenerator {
         __query.setParameterName(${paramName.literal})
         __query.setCallerClassName(${defDecl.trtName.className})
         __query.setCallerMethodName(${defDecl.name.literal})
-        __query.setQueryTimeout(${commonSetting.queryTimeOut})
-        __query.setBatchSize(${commonSetting.batchSize})
-        __query.setSqlLogType(${commonSetting.sqlLogType})
-        ..$otherQuerySettings
+        __query.setQueryTimeout(${commonArgs.queryTimeOut})
+        __query.setBatchSize(${commonArgs.batchSize})
+        __query.setSqlLogType(${commonArgs.sqlLogType})
+        ..$otherQueryArgs
         __query.prepare()
         val __command = $command
         val __counts = __command.execute()

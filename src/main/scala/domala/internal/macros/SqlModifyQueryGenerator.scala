@@ -1,7 +1,8 @@
 package domala.internal.macros
 
-import domala.internal.macros.helper.LiteralConverters._
-import domala.internal.macros.helper.{DaoMacroHelper, TypeHelper}
+import domala.internal.macros.args.DaoMethodCommonArgs
+import domala.internal.macros.util.LiteralConverters._
+import domala.internal.macros.util.{DaoMacroHelper, TypeUtil}
 
 import scala.collection.immutable.Seq
 import scala.meta._
@@ -10,10 +11,10 @@ object SqlModifyQueryGenerator {
 
   def generate(
     defDecl: QueryDefDecl,
-    commonSetting: DaoMethodCommonSetting,
+    commonArgs: DaoMethodCommonArgs,
     internalMethodName: Term.Name,
     query: Term => Term.New,
-    otherQuerySettings: Seq[Stat],
+    otherQueryArgs: Seq[Stat],
     command: Term.Apply,
     populatable: Term
   ): Defn.Def = {
@@ -24,7 +25,7 @@ object SqlModifyQueryGenerator {
     )
 
     val checkNullParameter = params.map(p => {
-      TypeHelper.convertToDomaType(p.decltpe.get) match {
+      TypeUtil.convertToDomaType(p.decltpe.get) match {
         case DomaType.Basic(_, _, _, _) => q"()"
         case _ =>
           q"""
@@ -43,7 +44,7 @@ object SqlModifyQueryGenerator {
     val (isReturnResult, entityType) = DaoMacroHelper.getResultType(defDecl)
 
     val daoParams = defDecl.paramss.flatten.map { p =>
-      q"domala.internal.macros.DaoParam.apply(${p.name.literal}, ${Term.Name(p.name.syntax)}, classOf[${TypeHelper.toType(p.decltpe.get)}])"
+      q"domala.internal.macros.DaoParam.apply(${p.name.literal}, ${Term.Name(p.name.syntax)}, classOf[${TypeUtil.toType(p.decltpe.get)}])"
     }
 
     val entityAndEntityType = q"""
@@ -57,14 +58,14 @@ object SqlModifyQueryGenerator {
 
     val daoParamTypes = defDecl.paramss.flatten.map { p =>
       val pType: Type = p.decltpe.get match {
-        case tpe => TypeHelper.toType(tpe)
+        case tpe => TypeUtil.toType(tpe)
       }
       q"domala.internal.macros.DaoParamClass.apply(${p.name.literal}, classOf[$pType])"
     }
 
     q"""
     override def ${defDecl.name} = {
-      domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql(${defDecl.trtName.literal}, ${defDecl.name.literal}, false, $populatable, ${commonSetting.sql}, ..$daoParamTypes)
+      domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql(${defDecl.trtName.literal}, ${defDecl.name.literal}, false, $populatable, ${commonArgs.sql}, ..$daoParamTypes)
       entering(${defDecl.trtName.className}, ${defDecl.name.literal}, ..$enteringParam)
       try {
         val __query = ${query(entityAndEntityType)}
@@ -74,9 +75,9 @@ object SqlModifyQueryGenerator {
         ..$addParameters
         __query.setCallerClassName(${defDecl.trtName.className})
         __query.setCallerMethodName(${defDecl.name.literal})
-        __query.setQueryTimeout(${commonSetting.queryTimeOut})
-        __query.setSqlLogType(${commonSetting.sqlLogType})
-        ..$otherQuerySettings
+        __query.setQueryTimeout(${commonArgs.queryTimeOut})
+        __query.setSqlLogType(${commonArgs.sqlLogType})
+        ..$otherQueryArgs
         __query.prepare()
         val __command = $command
         val __count = __command.execute()

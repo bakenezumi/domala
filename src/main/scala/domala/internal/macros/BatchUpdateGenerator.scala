@@ -1,6 +1,6 @@
 package domala.internal.macros
 
-import domala.internal.macros.helper.DaoMacroHelper
+import domala.internal.macros.args.DaoMethodCommonBatchArgs
 import org.seasar.doma.BatchUpdate
 
 import scala.collection.immutable.Seq
@@ -14,7 +14,7 @@ object BatchUpdateGenerator extends DaoMethodGenerator {
     internalMethodName: Term.Name,
     args: Seq[Term.Arg]): Defn.Def = {
     val defDecl = QueryDefDecl.of(trtName, _def)
-    val commonSetting = DaoMacroHelper.readCommonBatchSetting(
+    val commonArgs = DaoMethodCommonBatchArgs.read(
       args,
       trtName.syntax,
       _def.name.syntax)
@@ -24,17 +24,17 @@ object BatchUpdateGenerator extends DaoMethodGenerator {
     val suppressOptimisticLockException = args
       .collectFirst { case arg"suppressOptimisticLockException = $x" => x }
       .getOrElse(q"false")
-    if (commonSetting.hasSql) {
+    if (commonArgs.hasSql) {
       val (paramName, paramTpe, internalTpe) = AutoBatchModifyQueryGenerator.extractParameter(defDecl)
-      val query: Term => Term.New = (entityType) => q"new domala.jdbc.query.SqlAnnotationBatchUpdateQuery(classOf[$internalTpe], ${commonSetting.sql}, $ignoreVersion, $suppressOptimisticLockException)($entityType)"
-      val otherQuerySettings = Seq[Stat]()
+      val query: Term => Term.New = (entityType) => q"new domala.jdbc.query.SqlAnnotationBatchUpdateQuery(classOf[$internalTpe], ${commonArgs.sql}, $ignoreVersion, $suppressOptimisticLockException)($entityType)"
+      val otherQueryArgs = Seq[Stat]()
       val command = q"getCommandImplementors.createBatchUpdateCommand($internalMethodName, __query)"
-      SqlBatchModifyQueryGenerator.generate(defDecl, commonSetting, paramName, paramTpe, internalTpe, internalMethodName, query, otherQuerySettings, command, q"true")
+      SqlBatchModifyQueryGenerator.generate(defDecl, commonArgs, paramName, paramTpe, internalTpe, internalMethodName, query, otherQueryArgs, command, q"true")
     } else {
       val include =
-        args.collectFirst { case arg"include = $x" => Some(x) }.getOrElse(None)
+        args.collectFirst { case arg"include = $x" => Some(x) }.flatten
       val exclude =
-        args.collectFirst { case arg"exclude = $x" => Some(x) }.getOrElse(None)
+        args.collectFirst { case arg"exclude = $x" => Some(x) }.flatten
       val includedPropertyNames = include match {
         case Some(x: Term.Apply) => x.args
         case _ => Nil
@@ -52,7 +52,7 @@ object BatchUpdateGenerator extends DaoMethodGenerator {
         })"
       val command =
         q"getCommandImplementors.createBatchUpdateCommand($internalMethodName, __query)"
-      val otherQuerySettings = Seq[Stat](
+      val otherQueryArgs = Seq[Stat](
         q"__query.setVersionIgnored($ignoreVersion)",
         q"__query.setIncludedPropertyNames(..$includedPropertyNames)",
         q"__query.setExcludedPropertyNames(..$excludedPropertyNames)",
@@ -60,13 +60,13 @@ object BatchUpdateGenerator extends DaoMethodGenerator {
       )
       AutoBatchModifyQueryGenerator.generate(
         defDecl,
-        commonSetting,
+        commonArgs,
         paramName,
         paramTpe,
         internalTpe,
         internalMethodName,
         query,
-        otherQuerySettings,
+        otherQueryArgs,
         command)
     }
   }

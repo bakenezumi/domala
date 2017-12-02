@@ -1,7 +1,8 @@
 package domala.internal.macros
 
-import domala.internal.macros.helper.LiteralConverters._
-import domala.internal.macros.helper.{DaoMacroHelper, MacrosHelper}
+import domala.internal.macros.args.DaoMethodCommonArgs
+import domala.internal.macros.util.LiteralConverters._
+import domala.internal.macros.util.{DaoMacroHelper, MacrosHelper}
 import domala.message.Message
 
 import scala.meta._
@@ -20,12 +21,12 @@ object AutoModifyQueryGenerator {
 
   def generate(
     defDecl: QueryDefDecl,
-    commonSetting: DaoMethodCommonSetting,
+    commonArgs: DaoMethodCommonArgs,
     paramName: Term.Name,
     paramType: Type.Name,
     internalMethodName: Term.Name,
     query: Term.Apply,
-    otherQuerySettings: Seq[Stat],
+    otherQueryArgs: Seq[Stat],
     command: Term.Apply): Defn.Def = {
 
     val (isReturnResult, entityType) = DaoMacroHelper.getResultType(defDecl)
@@ -49,9 +50,9 @@ object AutoModifyQueryGenerator {
         __query.setEntity($paramName)
         __query.setCallerClassName(${defDecl.trtName.className})
         __query.setCallerMethodName(${defDecl.name.literal})
-        __query.setQueryTimeout(${commonSetting.queryTimeOut})
-        __query.setSqlLogType(${commonSetting.sqlLogType})
-        ..$otherQuerySettings
+        __query.setQueryTimeout(${commonArgs.queryTimeOut})
+        __query.setSqlLogType(${commonArgs.sqlLogType})
+        ..$otherQueryArgs
         __query.prepare()
         val __command = $command
         val __count = __command.execute()

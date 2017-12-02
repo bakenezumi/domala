@@ -1,6 +1,6 @@
 package domala.internal.macros
 
-import domala.internal.macros.helper.{CaseClassMacroHelper, MacrosHelper, TypeHelper}
+import domala.internal.macros.util.{CaseClassMacroHelper, MacrosHelper, TypeUtil}
 import domala.message.Message
 
 import scala.collection.immutable.Seq
@@ -14,7 +14,7 @@ object HolderTypeGenerator {
 
     if (cls.ctor.paramss.flatten.length != 1)  MacrosHelper.abort(Message.DOMALA6001)
     val valueParam = cls.ctor.paramss.flatten.headOption.getOrElse(MacrosHelper.abort(Message.DOMALA6001))
-    val (basicTpe: Type, wrapperSupplier: Term.Function, isNumeric) = TypeHelper.convertToDomaType(valueParam.decltpe.get) match {
+    val (basicTpe: Type, wrapperSupplier: Term.Function, isNumeric) = TypeUtil.convertToDomaType(valueParam.decltpe.get) match {
       case DomaType.Basic(_, convertedType, function, numeric) => (convertedType, function, numeric)
       case _ => MacrosHelper.abort(Message.DOMALA4102, valueParam.decltpe.get.toString(), cls.name.syntax, valueParam.name.syntax)
     }
@@ -44,7 +44,7 @@ object HolderTypeGenerator {
       }
 
     val methods = makeMethods(cls.name, cls.ctor, basicTpe, erasedHolderType, valueParam)
-    val tparams = TypeHelper.convertDefTypeParams(cls.tparams)
+    val tparams = TypeUtil.convertDefTypeParams(cls.tparams)
 
     val applyDef =
       if(isEnum && !CaseClassMacroHelper.hasApplyDef(cls, maybeOriginalCompanion)) {
@@ -65,7 +65,7 @@ object HolderTypeGenerator {
       if(isNumeric && !isNumericDefined(maybeOriginalCompanion)) Seq(generateNumericImplicitVal(cls.name, basicTpe, tparams, Term.Name(valueParam.name.syntax)))
       else Nil
 
-    val newCompanion = q"""
+    val generatedCompanion = q"""
     object ${Term.Name(cls.name.syntax) } extends
       domala.jdbc.holder.AbstractHolderDesc[
         $basicTpe, $erasedHolderType](
@@ -75,7 +75,7 @@ object HolderTypeGenerator {
       ..$methods
     }
     """
-    MacrosHelper.mergeObject(maybeOriginalCompanion, newCompanion)
+    MacrosHelper.mergeObject(maybeOriginalCompanion, generatedCompanion)
   }
 
   protected def makeMethods(clsName: Type.Name, ctor: Ctor.Primary, basicTpe: Type, erasedHolderType: Type, valueParam: Term.Param): Seq[Stat] = {

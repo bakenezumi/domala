@@ -1,4 +1,4 @@
-package domala.internal.macros.helper
+package domala.internal.macros.util
 
 import domala.internal.macros.MacrosException
 import org.seasar.doma.message.MessageResource

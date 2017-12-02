@@ -1,7 +1,7 @@
 package domala.internal.macros
 
 import domala.BatchDelete
-import domala.internal.macros.helper.DaoMacroHelper
+import domala.internal.macros.args.DaoMethodCommonBatchArgs
 
 import scala.collection.immutable.Seq
 import scala.meta._
@@ -14,7 +14,7 @@ object BatchDeleteGenerator extends DaoMethodGenerator {
     internalMethodName: Term.Name,
     args: Seq[Term.Arg]): Defn.Def = {
     val defDecl = QueryDefDecl.of(trtName, _def)
-    val commonSetting = DaoMacroHelper.readCommonBatchSetting(
+    val commonArgs = DaoMethodCommonBatchArgs.read(
       args,
       trtName.syntax,
       _def.name.syntax)
@@ -24,12 +24,12 @@ object BatchDeleteGenerator extends DaoMethodGenerator {
     val suppressOptimisticLockException = args
       .collectFirst { case arg"suppressOptimisticLockException = $x" => x }
       .getOrElse(q"false")
-    if (commonSetting.hasSql) {
+    if (commonArgs.hasSql) {
       val (paramName, paramTpe, internalTpe) = AutoBatchModifyQueryGenerator.extractParameter(defDecl)
-      val query: Term => Term.New = (entityType) => q"new domala.jdbc.query.SqlAnnotationBatchDeleteQuery(classOf[$internalTpe], ${commonSetting.sql}, $ignoreVersion, $suppressOptimisticLockException)($entityType)"
-      val otherQuerySettings = Seq[Stat]()
+      val query: Term => Term.New = (entityType) => q"new domala.jdbc.query.SqlAnnotationBatchDeleteQuery(classOf[$internalTpe], ${commonArgs.sql}, $ignoreVersion, $suppressOptimisticLockException)($entityType)"
+      val otherQueryArgs = Seq[Stat]()
       val command = q"getCommandImplementors.createBatchDeleteCommand($internalMethodName, __query)"
-      SqlBatchModifyQueryGenerator.generate(defDecl, commonSetting, paramName, paramTpe, internalTpe, internalMethodName, query, otherQuerySettings, command, q"false")
+      SqlBatchModifyQueryGenerator.generate(defDecl, commonArgs, paramName, paramTpe, internalTpe, internalMethodName, query, otherQueryArgs, command, q"false")
     } else {
       val (paramName, paramTpe, internalTpe) =
         AutoBatchModifyQueryGenerator.extractParameter(defDecl)
@@ -40,19 +40,19 @@ object BatchDeleteGenerator extends DaoMethodGenerator {
         })"
       val command =
         q"getCommandImplementors.createBatchDeleteCommand($internalMethodName, __query)"
-      val otherQuerySettings = Seq[Stat](
+      val otherQueryArgs = Seq[Stat](
         q"__query.setVersionIgnored($ignoreVersion)",
         q"__query.setOptimisticLockExceptionSuppressed($suppressOptimisticLockException)"
       )
       AutoBatchModifyQueryGenerator.generate(
         defDecl,
-        commonSetting,
+        commonArgs,
         paramName,
         paramTpe,
         internalTpe,
         internalMethodName,
         query,
-        otherQuerySettings,
+        otherQueryArgs,
         command)
     }
   }

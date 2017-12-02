@@ -1,10 +1,10 @@
-package domala.internal.macros.helper
+package domala.internal.macros.util
 
 import domala.internal.macros.DomaType
 
 import scala.meta._
 
-object TypeHelper {
+object TypeUtil {
 
   def convertToDomaType(tpe: Type.Arg): DomaType = {
     //noinspection ScalaUnusedSymbol

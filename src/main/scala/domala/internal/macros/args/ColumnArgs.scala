@@ -1,19 +1,19 @@
-package domala.internal.macros
+package domala.internal.macros.args
 
 import scala.meta._
 
-case class ColumnSetting(
+case class ColumnArgs(
   name: Term.Arg,
   insertable: Term.Arg,
   updatable: Term.Arg,
   quote: Term.Arg
 )
 
-object ColumnSetting {
-  def read(mods: Seq[Mod]): ColumnSetting = {
-    val column = mods.collect {
+object ColumnArgs {
+  def read(mods: Seq[Mod]): ColumnArgs = {
+    val column = mods.collectFirst {
       case mod"@Column(..$args)" => args
-    }.headOption
+    }
     val blank = q""" "" """
     column match {
       case Some(args) =>
@@ -30,8 +30,8 @@ object ColumnSetting {
           args.collectFirst { case arg"updatable = $x" => x }.getOrElse(q"true")
         val quote =
           args.collectFirst { case arg"quote = $x" => x }.getOrElse(q"false")
-        ColumnSetting(name, insertable, updatable, quote)
-      case None => ColumnSetting(blank, q"true", q"true", q"false")
+        ColumnArgs(name, insertable, updatable, quote)
+      case None => ColumnArgs(blank, q"true", q"true", q"false")
     }
   }
 }

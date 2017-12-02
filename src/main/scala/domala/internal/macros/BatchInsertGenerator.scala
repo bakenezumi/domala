@@ -1,6 +1,6 @@
 package domala.internal.macros
 
-import domala.internal.macros.helper.DaoMacroHelper
+import domala.internal.macros.args.DaoMethodCommonBatchArgs
 import org.seasar.doma.BatchInsert
 
 import scala.collection.immutable.Seq
@@ -13,21 +13,21 @@ object BatchInsertGenerator extends DaoMethodGenerator {
                internalMethodName: Term.Name,
                args: Seq[Term.Arg]): Defn.Def = {
     val defDecl = QueryDefDecl.of(trtName, _def)
-    val commonSetting = DaoMacroHelper.readCommonBatchSetting(
+    val commonArgs = DaoMethodCommonBatchArgs.read(
       args,
       trtName.syntax,
       _def.name.syntax)
-    if (commonSetting.hasSql) {
+    if (commonArgs.hasSql) {
       val (paramName, paramTpe, internalTpe) = AutoBatchModifyQueryGenerator.extractParameter(defDecl)
-      val query: Term => Term.New = (entityType) => q"new domala.jdbc.query.SqlAnnotationBatchInsertQuery(classOf[$internalTpe], ${commonSetting.sql})($entityType)"
-      val otherQuerySettings = Seq[Stat]()
+      val query: Term => Term.New = (entityType) => q"new domala.jdbc.query.SqlAnnotationBatchInsertQuery(classOf[$internalTpe], ${commonArgs.sql})($entityType)"
+      val otherQueryArgs = Seq[Stat]()
       val command = q"getCommandImplementors.createBatchInsertCommand($internalMethodName, __query)"
-      SqlBatchModifyQueryGenerator.generate(defDecl, commonSetting, paramName, paramTpe, internalTpe, internalMethodName, query, otherQuerySettings, command, q"false")
+      SqlBatchModifyQueryGenerator.generate(defDecl, commonArgs, paramName, paramTpe, internalTpe, internalMethodName, query, otherQueryArgs, command, q"false")
     } else {
       val include =
-        args.collectFirst { case arg"include = $x" => Some(x) }.getOrElse(None)
+        args.collectFirst { case arg"include = $x" => Some(x) }.flatten
       val exclude =
-        args.collectFirst { case arg"exclude = $x" => Some(x) }.getOrElse(None)
+        args.collectFirst { case arg"exclude = $x" => Some(x) }.flatten
       val includedPropertyNames = include match {
         case Some(x: Term.Apply) => x.args
         case _ => Nil
@@ -46,19 +46,19 @@ object BatchInsertGenerator extends DaoMethodGenerator {
         })"
       val command =
         q"getCommandImplementors.createBatchInsertCommand($internalMethodName, __query)"
-      val otherQuerySettings = Seq[Stat](
+      val otherQueryArgs = Seq[Stat](
         q"__query.setIncludedPropertyNames(..$includedPropertyNames)",
         q"__query.setExcludedPropertyNames(..$excludedPropertyNames)"
       )
       AutoBatchModifyQueryGenerator.generate(
         defDecl,
-        commonSetting,
+        commonArgs,
         paramName,
         paramTpe,
         internalTpe,
         internalMethodName,
         query,
-        otherQuerySettings,
+        otherQueryArgs,
         command)
     }
   }

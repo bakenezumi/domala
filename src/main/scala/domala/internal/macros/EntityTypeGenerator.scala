@@ -1,48 +1,49 @@
 package domala.internal.macros
 
 import domala.GenerationType
-import domala.internal.macros.helper.LiteralConverters._
-import domala.internal.macros.helper.TypeHelper.toType
-import domala.internal.macros.helper.{CaseClassMacroHelper, MacrosHelper, TypeHelper}
+import domala.internal.macros.args.{ColumnArgs, SequenceGeneratorArgs, TableArgs, TableGeneratorArgs}
+import domala.internal.macros.util.LiteralConverters._
+import domala.internal.macros.util.TypeUtil.toType
+import domala.internal.macros.util.{CaseClassMacroHelper, MacrosHelper, TypeUtil}
 import domala.message.Message
 import org.seasar.doma.internal.apt.meta.MetaConstants
 
 import scala.collection.immutable.Seq
 import scala.meta._
 
-case class EntitySetting(
-  listener: Type,
-  naming: Term with Pat
-)
-
 /**
   * @see [[https://github.com/domaframework/doma/tree/master/src/main/java/org/seasar/doma/internal/apt/EntityTypeGenerator.java]]
   */
 object EntityTypeGenerator {
 
-  def generate(cls: Defn.Class, maybeOriginalCompanion: Option[Defn.Object], args: Seq[Term.Arg]): Defn.Object = {
+  case class EntityArgs(
+    listener: Type,
+    naming: Term with Pat
+  )
+
+  def generate(cls: Defn.Class, maybeOriginalCompanion: Option[Defn.Object], args: Seq[Term.Arg]): Term.Block = {
     if(cls.tparams.nonEmpty)
       MacrosHelper.abort(Message.DOMALA4051, cls.name.syntax)
     validateFieldAnnotation(cls.name, cls.ctor)
-    val entitySetting = EntitySetting(
+    val entityArgs = EntityArgs(
       args.collectFirst {
         case arg"listener = classOf[$x]" => x
         case arg"classOf[$x]" => x
       }.getOrElse(t"org.seasar.doma.jdbc.entity.NullEntityListener[${cls.name}]"),
       args.collectFirst { case arg"naming = $x" => Term.Name(x.syntax) }.getOrElse(q"null")
     )
-    val tableSetting = TableSetting.read(cls.mods)
-    val fields = generateFields(cls.name, cls.ctor, entitySetting)
-    val constructor = generateConstructor(cls.name, cls.ctor, entitySetting, tableSetting)
-    val methods = generateMethods(cls.name, cls.ctor, entitySetting)
+    val tableSetting = TableArgs.read(cls.mods)
+    val fields = generateFields(cls.name, cls.ctor, entityArgs)
+    val constructor = generateConstructor(cls.name, cls.ctor, entityArgs, tableSetting)
+    val methods = generateMethods(cls.name, cls.ctor, entityArgs)
 
-    val newCompanion = q"""
+    val generatedCompanion = q"""
     object ${Term.Name(cls.name.syntax)} extends org.seasar.doma.jdbc.entity.AbstractEntityType[${cls.name}] {
 
       object ListenerHolder {
-        domala.internal.macros.reflect.EntityReflectionMacros.validateListener(classOf[${cls.name}], classOf[${entitySetting.listener}])
+        domala.internal.macros.reflect.EntityReflectionMacros.validateListener(classOf[${cls.name}], classOf[${entityArgs.listener}])
         val listener =
-          new ${entitySetting.listener.syntax.parse[Ctor.Call].get}()
+          new ${entityArgs.listener.syntax.parse[Ctor.Call].get}()
       }
 
       ..${Seq(CaseClassMacroHelper.generateApply(cls, maybeOriginalCompanion), CaseClassMacroHelper.generateUnapply(cls, maybeOriginalCompanion))}
@@ -50,7 +51,29 @@ object EntityTypeGenerator {
       ..${fields ++ constructor ++ methods}
     }
     """
-    MacrosHelper.mergeObject(maybeOriginalCompanion, newCompanion)
+    val newCompanion = MacrosHelper.mergeObject(maybeOriginalCompanion, generatedCompanion)
+
+    //logger.debug(newCompanion)
+
+    Term.Block(Seq(
+      // 警告抑制のため一部アノテーションを除去
+      // https://github.com/scala/bug/issues/9612
+      cls.copy(
+        mods = cls.mods.filter {
+          case mod"@Table(..$_)" => false
+          case _ => true
+        },
+        ctor = cls.ctor.copy(paramss = cls.ctor.paramss.map(ps => ps.map(p => p.copy(mods = p.mods.filter {
+          case mod"@Column(..$_)" => false
+          case mod"@GeneratedValue(..$_)" => false
+          case mod"@SequenceGenerator(..$_)" => false
+          case mod"@TableGenerator(..$_)" => false
+          case _ => true
+        }))))
+      ),
+      newCompanion
+    ))
+
   }
 
   protected def validateFieldAnnotation(clsName: Type.Name, ctor: Ctor.Primary): Unit = {
@@ -67,7 +90,7 @@ object EntityTypeGenerator {
     }
   }
 
-  protected def generateFields(clsName: Type.Name, ctor: Ctor.Primary, entitySetting: EntitySetting): Seq[Stat] = {
+  protected def generateFields(clsName: Type.Name, ctor: Ctor.Primary, entitySetting: EntityArgs): Seq[Stat] = {
     val propertySize = ctor.paramss.flatten.size
 
     val namingTypeField =
@@ -142,7 +165,7 @@ object EntityTypeGenerator {
     strategy.map {
       case GenerationType.IDENTITY => Seq(q"private[this] val __idGenerator = new org.seasar.doma.jdbc.id.BuiltinIdentityIdGenerator()")
       case GenerationType.SEQUENCE =>
-        val sequenceGeneratorSetting = SequenceGeneratorSetting.read(idParams.head.mods, clsName.syntax)
+        val sequenceGeneratorSetting = SequenceGeneratorArgs.read(idParams.head.mods, clsName.syntax)
           .getOrElse(MacrosHelper.abort(Message.DOMALA4034, clsName.syntax, idParams.head.name.syntax))
         q"""
           domala.internal.macros.reflect.EntityReflectionMacros.validateSequenceIdGenerator(classOf[${sequenceGeneratorSetting.implementer}])
@@ -153,7 +176,7 @@ object EntityTypeGenerator {
           __idGenerator.initialize()
           """.stats
       case GenerationType.TABLE =>
-        val tableGeneratorSetting = TableGeneratorSetting.read(idParams.head.mods, clsName.syntax)
+        val tableGeneratorSetting = TableGeneratorArgs.read(idParams.head.mods, clsName.syntax)
           .getOrElse(MacrosHelper.abort(Message.DOMALA4035, clsName.syntax, idParams.head.name.syntax))
         q"""
           domala.internal.macros.reflect.EntityReflectionMacros.validateTableIdGenerator(classOf[${tableGeneratorSetting.implementer}])
@@ -174,14 +197,14 @@ object EntityTypeGenerator {
   protected def generatePropertyTypeFields(clsName: Type.Name, ctor: Ctor.Primary): Seq[Defn.Val] = {
     ctor.paramss.flatten.map { p =>
       val Term.Param(mods, name, Some(decltpe), _) = p
-      val columnSetting = ColumnSetting.read(mods)
+      val columnSetting = ColumnArgs.read(mods)
       val tpe = Type.Name(decltpe.toString)
       if(name.syntax.startsWith(MetaConstants.RESERVED_NAME_PREFIX)) {
         MacrosHelper.abort(Message.DOMALA4025, MetaConstants.RESERVED_NAME_PREFIX, clsName.syntax, name.syntax)
       }
       val propertyName = Pat.Var.Term(Term.Name("$" + name.syntax))
 
-      val (isBasic, nakedTpe, newWrapperExpr) = TypeHelper.convertToEntityDomaType(decltpe) match {
+      val (isBasic, nakedTpe, newWrapperExpr) = TypeUtil.convertToEntityDomaType(decltpe) match {
         case DomaType.Basic(_, convertedType, wrapperSupplier, _) => (true, convertedType, wrapperSupplier)
         case DomaType.Option(DomaType.Basic(_, convertedType, wrapperSupplier, _), _) => (true, convertedType, wrapperSupplier)
         case DomaType.EntityOrHolderOrEmbeddable(otherType) => (false, otherType, q"null")
@@ -189,7 +212,7 @@ object EntityTypeGenerator {
         case _ => MacrosHelper.abort(Message.DOMALA4096, decltpe.syntax, clsName.syntax, name.syntax)
       }
 
-      if(TypeHelper.isWildcardType(nakedTpe)) MacrosHelper.abort(Message.DOMALA4205, nakedTpe.children.head, clsName.syntax, name.syntax)
+      if(TypeUtil.isWildcardType(nakedTpe)) MacrosHelper.abort(Message.DOMALA4205, nakedTpe.children.head, clsName.syntax, name.syntax)
       if(mods.exists {
         case Mod.VarParam() => true
         case _ => false
@@ -244,7 +267,7 @@ object EntityTypeGenerator {
     }
   }
 
-  protected def generateConstructor(clsName: Type.Name, ctor: Ctor.Primary, entitySetting: EntitySetting, tableSetting: TableSetting): Seq[Stat] = {
+  protected def generateConstructor(clsName: Type.Name, ctor: Ctor.Primary, entitySetting: EntityArgs, tableSetting: TableArgs): Seq[Stat] = {
     q"""
     private[this] val __listenerSupplier: java.util.function.Supplier[${entitySetting.listener}] =
       () => ListenerHolder.listener
@@ -290,7 +313,7 @@ object EntityTypeGenerator {
     ).getOrElse(q"null")
   }
 
-  protected def generateMethods(clsName: Type.Name, ctor: Ctor.Primary, entitySetting: EntitySetting): Seq[Stat] = {
+  protected def generateMethods(clsName: Type.Name, ctor: Ctor.Primary, entitySetting: EntityArgs): Seq[Stat] = {
     q"""
 
     override def getNamingType: org.seasar.doma.jdbc.entity.NamingType = __namingType
