@@ -3,7 +3,7 @@ import org.scalatest.{BeforeAndAfter, FunSuite}
 
 class ElementUtilTestSuite extends FunSuite with BeforeAndAfter {
   test("getTypeElement") {
-    assert(ElementUtilTestDriver.getTypeElement("java.lang.String").contains("java.lang.String"))
+    assert(ElementUtilTestDriver.getTypeElement("java.lang.String")== Some("java.lang.String"))
     assert(ElementUtilTestDriver.getTypeElement("String").isEmpty)
     assert(ElementUtilTestDriver.getTypeElement("domala.internal.macros.reflect.util.Outer").contains("domala.internal.macros.reflect.util.Outer"))
     assert(ElementUtilTestDriver.getTypeElement("domala.internal.macros.reflect.util.Outer$Inner").contains("domala.internal.macros.reflect.util.Outer.Inner"))

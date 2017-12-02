@@ -24,27 +24,27 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
   test("select by 1 basic parameter to return optional entity") {
     Required {
       assert(
-        dao.selectById(1) === Some(
+        dao.selectById(1) == Some(
           Person(Some(ID(1)),
                  Some(Name("SMITH")),
                  Some(10),
                  Address("Tokyo", "Yaesu"),
                  Some(2),
                  Some(0))))
-      assert(dao.selectById(5) === None)
+      assert(dao.selectById(5) == None)
     }
   }
 
   test("select to return Int") {
     Required {
-      assert(dao.selectCount === 2)
+      assert(dao.selectCount == 2)
     }
   }
 
   test("select to return Seq") {
     Required {
       assert(
-        dao.selectAll === Seq(
+        dao.selectAll == Seq(
           Person(
             Some(ID(1)),
             Some(Name("SMITH")),
@@ -66,7 +66,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
   test("select to return nullable entity") {
     Required {
       assert(
-        dao.selectByIdNullable(1) ===
+        dao.selectByIdNullable(1) ==
           Person(
             Some(ID(1)),
             Some(Name("SMITH")),
@@ -74,14 +74,14 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
             Address("Tokyo", "Yaesu"),
             Some(2),
             Some(0)))
-      assert(dao.selectByIdNullable(5) === null)
+      assert(dao.selectByIdNullable(5) == null)
     }
   }
 
   test("join select") {
     Required {
       assert(
-        dao.selectWithDepartmentById(1) ===
+        dao.selectWithDepartmentById(1) ==
           Some(
             PersonDepartment(
               ID(1),
@@ -94,7 +94,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
   test("join select to embedded entity") {
     Required {
       assert(
-        dao.selectWithDepartmentEmbeddedById(1) ===
+        dao.selectWithDepartmentEmbeddedById(1) ==
           Some(PersonDepartmentEmbedded(1, "SMITH", Department(ID(2), "SALES"))))
     }
   }
@@ -119,7 +119,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       assert(dao.selectByIdStream(1) { stream =>
         stream.headOption.map(_.address)
-      }.contains(Address("Tokyo", "Yaesu")))
+      } == Some(Address("Tokyo", "Yaesu")))
       assert(dao.selectByIdStream(5) { stream =>
         stream.headOption.map(_.address)
       }.isEmpty)
@@ -130,7 +130,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       assert(dao.selectByIdIterator(1) { it =>
         it.toStream.headOption.map(_.address)
-      }.contains(Address("Tokyo", "Yaesu")))
+      } == Some(Address("Tokyo", "Yaesu")))
       assert(dao.selectByIdIterator(5) { it =>
         it.toStream.headOption.map(_.address)
       }.isEmpty)
@@ -156,14 +156,14 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
 
   test("select Option Map") {
     Required {
-      assert(dao.selectByIdOptionMap(1).contains(Map("ID" -> 1, "NAME" -> "SMITH", "AGE" -> 10, "CITY" -> "Tokyo", "STREET" -> "Yaesu", "DEPARTMENT_ID" -> 2, "VERSION" -> 0)))
+      assert(dao.selectByIdOptionMap(1) == Some(Map("ID" -> 1, "NAME" -> "SMITH", "AGE" -> 10, "CITY" -> "Tokyo", "STREET" -> "Yaesu", "DEPARTMENT_ID" -> 2, "VERSION" -> 0)))
       assert(dao.selectByIdOptionMap(5).isEmpty)
     }
   }
 
   test("select option domain") {
     Required {
-      assert(dao.selectNameById(1).contains(Name("SMITH")))
+      assert(dao.selectNameById(1) == Some(Name("SMITH")))
       assert(dao.selectNameById(99).isEmpty)
     }
   }
@@ -218,7 +218,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
 
   test("select by builder") {
     Required {
-      assert(dao.selectByIDBuilder(1) === "SMITH")
+      assert(dao.selectByIDBuilder(1) == "SMITH")
     }
   }
 
@@ -230,9 +230,9 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
           age = Some(5),
           address = Address("bbb", "ccc"),
           departmentId = Some(1)))
-      assert(dao.selectCount === 3)
+      assert(dao.selectCount == 3)
       assert(
-        dao.selectById(3) === Some(
+        dao.selectById(3) == Some(
           Person(
             Some(ID(3)),
             Some(Name("aaa")),
@@ -254,7 +254,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
           departmentId = Some(2),
           version = Some(0)))
       assert(
-        dao.selectById(1) === Some(
+        dao.selectById(1) == Some(
           Person(
             Some(ID(1)),
             Some(Name("SMITH")), // @Column(updatable = false)
@@ -268,7 +268,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
   test("delete by entity") {
     Required {
       dao.selectById(1).foreach(dao.delete)
-      assert(dao.selectCount() === 1)
+      assert(dao.selectCount() == 1)
     }
   }
 
@@ -285,9 +285,9 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
           age = Some(10),
           address = Address("eee", "fff"),
           departmentId = Some(2))))
-      assert(dao.selectCount === 4)
+      assert(dao.selectCount == 4)
       assert(
-        dao.selectById(3) === Some(
+        dao.selectById(3) == Some(
           Person(
             Some(ID(3)),
             Some(Name("aaa")),
@@ -296,7 +296,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
             Some(1),
             Some(1))))
       assert(
-        dao.selectById(4) === Some(
+        dao.selectById(4) == Some(
           Person(
             Some(ID(4)),
             Some(Name("ddd")),
@@ -311,7 +311,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       dao.batchUpdate(dao.selectAll().map(entity => entity.copy(age = entity.age.map(_ + 1))))
       assert(
-        dao.selectAll === Seq(
+        dao.selectAll == Seq(
           Person(
             Some(ID(1)),
             Some(Name("SMITH")),
@@ -334,7 +334,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
   test("batch delete") {
     Required {
       dao.batchDelete(dao.selectAll())
-      assert(dao.selectCount() === 0)
+      assert(dao.selectCount() == 0)
     }
   }
 
@@ -357,9 +357,9 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
           Some(2)),
         3
       )
-      assert(dao.selectCount === 3)
+      assert(dao.selectCount == 3)
       assert(
-        dao.selectById(3).contains(Person(
+        dao.selectById(3) == Some(Person(
           Some(ID(3)),
           Some(Name("aaa")),
           Some(5),
@@ -389,7 +389,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
         0
       )
       assert(
-        dao.selectById(1).contains(Person(
+        dao.selectById(1) == Some(Person(
           Some(ID(1)),
           Some(Name("aaa")),
           Some(5),
@@ -478,7 +478,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
       ))
       assert(dao.selectCount == 5)
       assert(
-        dao.selectById(3).contains(Person(
+        dao.selectById(3) == Some(Person(
           Some(ID(3)),
           Some(Name("aaa")),
           Some(5),
@@ -486,7 +486,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
           Some(2),
           Some(1))))
       assert(
-        dao.selectById(4).contains(Person(
+        dao.selectById(4) == Some(Person(
           Some(ID(4)),
           Some(Name("ddd")),
           Some(10),
@@ -494,7 +494,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
           Some(2),
           Some(1))))
       assert(
-        dao.selectById(5).contains(Person(
+        dao.selectById(5) == Some(Person(
           Some(ID(5)),
           Some(Name("ggg")),
           Some(15),
@@ -509,7 +509,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
       val entities = for(e <- dao.selectAll()) yield e.copy(age = e.age.map(_ + 10))
       dao.batchUpdateSql(entities)
       assert(
-        dao.selectAll === Seq(
+        dao.selectAll == Seq(
           Person(
             Some(ID(1)),
             Some(Name("SMITH")),

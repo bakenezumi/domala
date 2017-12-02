@@ -44,7 +44,7 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
   test("literal") {
     Required {
       assert(
-        dao.literalSelect(1).contains(
+        dao.literalSelect(1) == Some(
         Person(
           Some(ID(1)),
           Some(Name("SMITH")),
@@ -186,7 +186,7 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
   test("function parameter") {
     Required {
       assert(
-        dao.functionSelect("2").contains(
+        dao.functionSelect("2") == Some(
           Person(Some(ID(1)),
             Some(Name("SMITH")),
             Some(10),
@@ -216,7 +216,7 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
 
     Required {
       assert(
-        dao.entityParameterSelect(entity1).contains(
+        dao.entityParameterSelect(entity1) == Some(
           Person(
             Some(ID(1)),
             Some(Name("SMITH")),
@@ -225,7 +225,7 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
             Some(2),
             Some(0))))
       assert(
-        dao.entityParameterSelect(entity2).contains(
+        dao.entityParameterSelect(entity2) == Some(
           Person(
             Some(ID(2)),
             Some(Name("ALLEN")),
@@ -234,7 +234,7 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
             Some(1),
             Some(0))))
       assert(
-        dao.entityParameterSelect(entity3).contains(
+        dao.entityParameterSelect(entity3) == Some(
           Person(Some(ID(2)),
             Some(Name("ALLEN")),
             Some(20),

@@ -17,11 +17,11 @@ case class Emp(
   version: domain.Version
 ) extends domain.Emp
 object Emp {
-  def of(parent: domain.Emp): Emp = if (parent == null) null else Emp(
-    parent.id,
-    parent.name,
-    parent.age,
-    parent.version
+  def of(source: domain.Emp): Emp = if (source == null) null else Emp(
+    source.id,
+    source.name,
+    source.age,
+    source.version
   )
 }
 
@@ -45,9 +45,9 @@ DROP TABLE emp;
     """)
   def drop(): Unit
 
-  def load(entities: Seq[domain.Emp]): Array[Int] = loadImpl(entities.map(Emp.of))
+  def save(entities: Seq[domain.Emp]): Array[Int] = saveImpl(entities.map(Emp.of))
   @BatchInsert
-  def loadImpl(entities: Seq[Emp]): Array[Int]
+  def saveImpl(entities: Seq[Emp]): Array[Int]
 
   def findByIds[R: ClassTag](id: Seq[domain.ID[domain.Emp]])(mapper: Iterator[domain.Emp] => R): R =
     findByIdsImpl[R](id)(mapper)
@@ -62,6 +62,6 @@ SELECT * FROM emp
   """, strategy = SelectType.ITERATOR)
   def findAllImpl[R: ClassTag](mapper: Iterator[Emp] => R): R
 
-  def entry(entity: domain.Emp): Int = loadImpl(Seq(Emp.of(entity))).head
+  def entry(entity: domain.Emp): Int = saveImpl(Seq(Emp.of(entity))).head
 
 }

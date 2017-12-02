@@ -16,7 +16,7 @@ class LayeredTestSuite  extends FunSuite with BeforeAndAfter {
   before {
     Required {
       repo.create()
-      repo.load(Seq(
+      repo.save(Seq(
         Emp(None, Name("AAA"), Age(10), Version(1)),
         Emp(None, Name("BBB"), Age(15), Version(1)),
         Emp(None, Name("CCC"), Age(20), Version(1)),

@@ -33,7 +33,7 @@ class FunctionTestSuite extends FunSuite with BeforeAndAfter {
   test("2 parameter") {
     Required {
       assert(
-        dao.twoParameterFunctionSelect("2", "3",  (x, y) => x.toInt + y.toInt).contains(emp1)
+        dao.twoParameterFunctionSelect("2", "3",  (x, y) => x.toInt + y.toInt) contains emp1
       )
     }
   }
@@ -41,7 +41,7 @@ class FunctionTestSuite extends FunSuite with BeforeAndAfter {
   test("default parameter") {
     Required {
       assert(
-        dao.defaultParameterFunctionSelect(1).contains(emp2)
+        dao.defaultParameterFunctionSelect(1) contains emp2
       )
     }
   }

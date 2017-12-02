@@ -45,9 +45,9 @@ class GuildTestSuite extends FunSuite with BeforeAndAfter {
         }
       val houses =
         (1 to 5).map(i => GuildHouse(ID(i), Name("gh" + i), ID(i * 2)))
-      guildDao.load(guilds)
-      characterDao.load(characters)
-      guildHouseDao.load(houses)
+      guildDao.save(guilds)
+      characterDao.save(characters)
+      guildHouseDao.save(houses)
       val views = app.getAllGuildViews
       assert(
         views == List(

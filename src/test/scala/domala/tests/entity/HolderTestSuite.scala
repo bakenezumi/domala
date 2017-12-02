@@ -80,7 +80,7 @@ class HolderTestSuite extends FunSuite with BeforeAndAfter {
         y <- selected(2).weight1
       } yield x + y
 
-      assert(sum.contains(Weight(5)))
+      assert(sum == Some(Weight(5)))
     }
   }
 

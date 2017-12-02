@@ -51,14 +51,14 @@ class DaoReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
     val entity1 = DummyEntity(1, null, "aa", 2)
     val entity2 = DummyEntity(2, null, "bb", 3)
     val ret = DaoReflectionMacros.getEntityAndEntityType("Test1", "method1", classOf[Int], DaoParam("aaa", 1, classOf[Int]), DaoParam("bbb", entity1, classOf[DummyEntity]), DaoParam("ccc", entity2, classOf[DummyEntity]))
-    assert(ret.contains(EntityAndEntityType("bbb", entity1, DummyEntity)))
+    assert(ret == Some(EntityAndEntityType("bbb", entity1, DummyEntity)))
   }
 
   test("getEntityAndEntityType has entity and return Result") {
     val entity1 = DummyEntity(1, null, "aa", 2)
     val entity2 = DummyEntity(2, null, "bb", 3)
     val ret = DaoReflectionMacros.getEntityAndEntityType("Test1", "method1", classOf[Result[DummyEntity]], DaoParam("aaa", 1, classOf[Int]), DaoParam("bbb", entity1, classOf[DummyEntity]), DaoParam("ccc", entity2, classOf[DummyEntity]))
-    assert(ret.contains(EntityAndEntityType("bbb", entity1, DummyEntity)))
+    assert(ret == Some(EntityAndEntityType("bbb", entity1, DummyEntity)))
   }
 
 
@@ -67,7 +67,7 @@ class DaoReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
 //    val entity1 = DummyEntity(1, null, "aa", 2)
 //    val entity2 = DummyEntity(2, null, "bb", 3)
 //    val ret = DaoReflectionMacros.getEntityAndEntityType("Test1", "method1", classOf[Long], DaoParam("aaa", 1, classOf[Int]), DaoParam("bbb", entity1, classOf[DummyEntity]), DaoParam("ccc", entity2, classOf[DummyEntity]))
-//    assert(ret.contains(EntityAndEntityType("bbb", entity1, DummyEntity)))
+//    assert(ret == Some(EntityAndEntityType("bbb", entity1, DummyEntity)))
   }
 
   test("getEntityAndEntityType no entity") {

@@ -75,7 +75,7 @@ SELECT /*%expand*/* FROM guild WHERE deleted_time IS NULL
   def findAll[R](opt: SelectOptions, mapper: Stream[Guild] => R): R
 
   @BatchInsert
-  def load(entity: Seq[Guild]): BatchResult[Guild]
+  def save(entity: Seq[Guild]): BatchResult[Guild]
 }
 
 @Dao
@@ -92,7 +92,7 @@ WHERE
   def findByGuildIds[R](guildIds: Iterable[ID[Guild]], mapper: Stream[Character] => R): R
 
   @BatchInsert
-  def load(entity: Seq[Character]): BatchResult[Character]
+  def save(entity: Seq[Character]): BatchResult[Character]
 }
 
 @Dao
@@ -109,7 +109,7 @@ WHERE
   def findByGuildIds[R](guildIds: Iterable[ID[Guild]], mapper: Stream[GuildHouse] => R): R
 
   @BatchInsert
-  def load(entity: Seq[GuildHouse]): BatchResult[GuildHouse]
+  def save(entity: Seq[GuildHouse]): BatchResult[GuildHouse]
 }
 
 object GuildApp {
@@ -151,9 +151,9 @@ object GuildApp {
 
     // 2 houses
     val houses = (1 to 2).map(i => GuildHouse(ID(i), Name("gh" + i), ID(i * 2 - 1)))
-    guildDao.load(guilds)
-    characterDao.load(characters)
-    guildHouseDao.load(houses)
+    guildDao.save(guilds)
+    characterDao.save(characters)
+    guildHouseDao.save(houses)
   }
 
   def terminate(): Unit = {
