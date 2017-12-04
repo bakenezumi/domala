@@ -25,7 +25,7 @@ lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(
 lazy val yourProject = project.settings(
   metaMacroSettings,
   libraryDependencies ++= Seq(
-    "com.github.domala" %% "domala" % "0.1.0-beta.5",
+    "com.github.domala" %% "domala" % "0.1.0-beta.6",
     // ... your other library dependencies
   ),
   // ... your other project settings
