@@ -6,7 +6,6 @@ import org.seasar.doma.internal.WrapException
 import org.seasar.doma.internal.util.AssertionUtil.assertNotNull
 
 object ClassUtil {
-  @throws[WrapException]
   def getDeclaredMethod[T](clazz: Class[T], name: String, parameterTypes: Class[_]*): Method = {
     assertNotNull(clazz, name, parameterTypes, "", "", "")
     try {
