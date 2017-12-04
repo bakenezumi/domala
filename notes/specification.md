@@ -1,8 +1,37 @@
+- [Mapable types](#basic-types)
 - [Basic types](#basic-types)
 - [Holder class](#holder-class)
 - [Embeddable class](#embeddable-class)
 - [Entity class](#entity-class)
 - [Dao trait](#dao-trait)
+
+## Mapable types
+> - Select results
+>> - [Basic types](#basic-types)
+>> - [Holder class](#holder-class)
+>> - [Entity class](#entity-class)
+>> - Map[String, Any]
+>> - Option[[Basic types](#basic-types)]
+>> - Option[[Holder class](#holder-class)]
+>> - Option[[Entity class](#entity-class)]
+>> - Option[Map[String, Any]]
+>> - Seq[[Basic types](#basic-types)]
+>> - Seq[[Holder class](#holder-class)]
+>> - Seq[[Entity class](#entity-class)]
+>> - Seq[Map[String, Any]]
+>> - Iterator[[Basic types](#basic-types)]
+>> - Iterator[[Holder class](#holder-class)]
+>> - Iterator[[Entity class](#entity-class)]
+>> - Iterator[Map[String, Any]]
+> - SQL statement parameters
+>> - [Basic types](#basic-types)
+>> - [Holder class](#holder-class)
+>> - Option [[Basic types](#basic-types)]
+>> - Option [[Holder class](#holder-class)]
+>> - Iterable [[Basic types](#basic-types)] // for like phrase
+>> - Iterable [[Holder class](#holder-class)] // for like phrase
+> - Parameters of automatically generated [Dao](#dao-trait) method(Insert, Update, Delete)
+>> - [Entity class](#entity-class)
 
 
 ## Basic types

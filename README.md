@@ -8,7 +8,7 @@ Domala is a database access library for Scala. This wraps [Doma2](https://github
 
 - Domala uses [scalameta](http://scalameta.org/paradise/) to generate code and validate sql mappings at **compile time**.
 
-- Select statements are write by yourself. It is automatically mapped to `Option[`*`Entity`*`]`, `Seq[`*`Entity`*`]`, `Stream[`*`Entity`*`]`, `Seq[Map[String, Any]]`, and more.
+- Select statements are write by yourself. It is automatically mapped to `Option[`*`Entity`*`]`, `Seq[`*`Entity`*`]`, `Stream[`*`Entity`*`]`, `Seq[Map[String, Any]]`, and [more](./notes/specification.md#mapable-types).
 
 - Other statements are automatically generated from Entity. It can also write SQL.
 
