@@ -330,7 +330,7 @@ The following functions of Doma can not be used by Domala.
 
 ## Dao trait
 
-Data Access Object (Dao) is an trait for database access.
+Data Access Object (Dao) is an interface for database access.
 
 `Dao` can be defined by to annote `@Dao` to `trait`.
 
