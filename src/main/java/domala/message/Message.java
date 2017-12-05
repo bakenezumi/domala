@@ -208,6 +208,7 @@ public enum Message implements MessageResource {
     DOMALA6015("sqlは文字列リテラルでなければなりません。 at {0}.{1}"),
     DOMALA6016("@Holderをsealed abstract classに注釈する場合、継承するobjectは全て異なる値を持たなければなりません。at {0}"),
     DOMALA6017("AnyValのサブクラスを永続対象とする場合、コンストラクタ、コンパニオンオブジェクトのapplyメソッドのどちらかはpublicでなければなりません。 at {0}"),
+    DOMALA6018("{0} はDaoトレイトでないため実装クラスを取得できません。"),
     ;
 
     private final String messagePattern;
