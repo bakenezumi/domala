@@ -1,12 +1,12 @@
 package domala.internal.macros.util
 
-import domala.internal.macros.MacrosException
+import domala.internal.macros.MacrosAbortException
 import org.seasar.doma.message.MessageResource
 
 import scala.meta.Defn
 
 object MacrosHelper {
-  def abort(message: MessageResource, args: AnyRef*): Nothing = throw new MacrosException(message, null, args: _*)
+  def abort(message: MessageResource, args: AnyRef*): Nothing = throw new MacrosAbortException(message, null, args: _*)
 
   def mergeObject(maybeOriginal: Option[Defn.Object], generated: Defn.Object): Defn.Object = {
     maybeOriginal.map { original =>

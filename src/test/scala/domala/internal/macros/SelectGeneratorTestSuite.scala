@@ -14,7 +14,7 @@ trait EmptySqlDao {
   def select(id: Int): Emp
 }
 """
-    val caught = intercept[MacrosException] {
+    val caught = intercept[MacrosAbortException] {
       DaoGenerator.generate(trt, null, None)
     }
     assert(caught.message == Message.DOMALA4020)
@@ -27,7 +27,7 @@ trait WildcardTypeReturnDao {
   def select: Height[_]
 }
 """
-    val caught = intercept[MacrosException] {
+    val caught = intercept[MacrosAbortException] {
       DaoGenerator.generate(trt, null, None)
     }
     assert(caught.message == Message.DOMALA4207)
@@ -40,7 +40,7 @@ trait StreamNoFunctionParamDao {
   def select(mapper: Int => Int): Int
 }
 """
-    val caught = intercept[MacrosException] {
+    val caught = intercept[MacrosAbortException] {
       DaoGenerator.generate(trt, null, None)
     }
     assert(caught.message == Message.DOMALA4247)
@@ -53,7 +53,7 @@ trait StreamNoFunctionParamDao {
   def select(mapper1: Stream[Emp] => Int, mapper2: Stream[Emp] => Int): Int
 }
 """
-    val caught = intercept[MacrosException] {
+    val caught = intercept[MacrosAbortException] {
       DaoGenerator.generate(trt, null, None)
     }
     assert(caught.message == Message.DOMALA4249)

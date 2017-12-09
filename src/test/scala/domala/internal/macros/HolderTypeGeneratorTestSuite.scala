@@ -37,7 +37,7 @@ object Name extends domala.jdbc.holder.AbstractHolderDesc[String, Name]((() => n
     val cls = q"""
 case class UnsupportedValueTypeHolder(value: Seq[String])
 """
-    val caught = intercept[MacrosException] {
+    val caught = intercept[MacrosAbortException] {
       HolderTypeGenerator.generate(cls, None)
     }
     assert(caught.message == Message.DOMALA4102)

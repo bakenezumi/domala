@@ -7,7 +7,6 @@ import java.util.OptionalLong
 import domala.internal.macros.reflect.decl.{MethodDeclaration, TypeDeclaration}
 import domala.message.Message
 import org.seasar.doma.expr.ExpressionFunctions
-import org.seasar.doma.internal.apt.AptIllegalStateException
 import org.seasar.doma.internal.expr.node._
 
 import scala.collection.mutable

@@ -120,7 +120,7 @@ case class AnnotationConflictedEntity(
   id: Int
 )
 """
-    val caught = intercept[MacrosException] {
+    val caught = intercept[MacrosAbortException] {
       EntityTypeGenerator.generate(cls, None, Nil)
     }
     assert(caught.message == Message.DOMALA4086)
@@ -136,7 +136,7 @@ case class GeneratedValueWithCompositeIdEntity(
   id2: Int
 )
 """
-    val caught = intercept[MacrosException] {
+    val caught = intercept[MacrosAbortException] {
       EntityTypeGenerator.generate(cls, None, Nil)
     }
     assert(caught.message == Message.DOMALA4036)
@@ -149,7 +149,7 @@ case class GeneratedValueWithoutIdEntity(
   id: Int
 )
 """
-    val caught = intercept[MacrosException] {
+    val caught = intercept[MacrosAbortException] {
       EntityTypeGenerator.generate(cls, None, Nil)
     }
     assert(caught.message == Message.DOMALA4033)
@@ -162,7 +162,7 @@ case class SequenceGeneratorWithoutGeneratedValueEntity(
   id: Int
 )
 """
-    val caught = intercept[MacrosException] {
+    val caught = intercept[MacrosAbortException] {
       EntityTypeGenerator.generate(cls, None, Nil)
     }
     assert(caught.message == Message.DOMALA4030)
@@ -175,7 +175,7 @@ case class TableGeneratorWithoutGeneratedValueEntity(
   id: Int
 )
 """
-    val caught = intercept[MacrosException] {
+    val caught = intercept[MacrosAbortException] {
       EntityTypeGenerator.generate(cls, None, Nil)
     }
     assert(caught.message == Message.DOMALA4031)
@@ -192,7 +192,7 @@ case class VersionDuplicatedEntity(
   version2: Int
 )
 """
-    val caught = intercept[MacrosException] {
+    val caught = intercept[MacrosAbortException] {
       EntityTypeGenerator.generate(cls, None, Nil)
     }
     assert(caught.message == Message.DOMALA4024)
@@ -204,7 +204,7 @@ case class PropertyNameReservedEntity(
   __name: String
 )
 """
-    val caught = intercept[MacrosException] {
+    val caught = intercept[MacrosAbortException] {
       EntityTypeGenerator.generate(cls, None, Nil)
     }
     assert(caught.message == Message.DOMALA4025)
@@ -216,7 +216,7 @@ case class UnsupportedPropertyEntity(
   intMap: Map[Int, AnyRef]
 )
 """
-    val caught = intercept[MacrosException] {
+    val caught = intercept[MacrosAbortException] {
       EntityTypeGenerator.generate(cls, None, Nil)
     }
     assert(caught.message == Message.DOMALA4096)
@@ -228,7 +228,7 @@ case class WildcardPropertyEntity(
   wight: Weight[_]
 )
 """
-    val caught = intercept[MacrosException] {
+    val caught = intercept[MacrosAbortException] {
       EntityTypeGenerator.generate(cls, None, Nil)
     }
     assert(caught.message == Message.DOMALA4205)
@@ -242,7 +242,7 @@ case class VarPropertyEntity(
   ccc: Int
 )
 """
-    val caught = intercept[MacrosException] {
+    val caught = intercept[MacrosAbortException] {
       EntityTypeGenerator.generate(cls, None, Nil)
     }
     assert(caught.message == Message.DOMALA4225)

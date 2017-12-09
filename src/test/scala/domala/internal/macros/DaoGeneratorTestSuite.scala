@@ -293,7 +293,7 @@ trait IllegalParameterNameDao {
   def select(__name: String): Emp
 }
 """
-    val caught = intercept[MacrosException] {
+    val caught = intercept[MacrosAbortException] {
       DaoGenerator.generate(trt, null, None)
     }
     assert(caught.message == Message.DOMALA4025)
@@ -306,7 +306,7 @@ trait WildcardTypeParamDao {
   def select(height: Height[_]): Emp
 }
 """
-    val caught = intercept[MacrosException] {
+    val caught = intercept[MacrosAbortException] {
       DaoGenerator.generate(trt, null, None)
     }
     assert(caught.message == Message.DOMALA4209)
@@ -319,7 +319,7 @@ trait AnnotationNotFoundDao {
   def aaa(): Unit
 }
 """
-    val caught = intercept[MacrosException] {
+    val caught = intercept[MacrosAbortException] {
       DaoGenerator.generate(trt, null, None)
     }
     assert(caught.message == Message.DOMALA4005)
@@ -333,7 +333,7 @@ trait AnnotationConflictedDao {
   def delete(): Int
 }
 """
-    val caught = intercept[MacrosException] {
+    val caught = intercept[MacrosAbortException] {
       DaoGenerator.generate(trt, null, None)
     }
     assert(caught.message == Message.DOMALA4087)
@@ -346,7 +346,7 @@ trait IllegalParameterDao {
   def insert(dept: Dept): Result[Emp]
 }
 """
-    val caught = intercept[MacrosException] {
+    val caught = intercept[MacrosAbortException] {
       DaoGenerator.generate(trt, null, None)
     }
     assert(caught.message == Message.DOMALA4222)
@@ -359,7 +359,7 @@ trait IllegalBatchParameterDao {
   def insert(dept: Seq[Dept]): BatchResult[Emp]
 }
 """
-    val caught = intercept[MacrosException] {
+    val caught = intercept[MacrosAbortException] {
       DaoGenerator.generate(trt, null, None)
     }
     assert(caught.message == Message.DOMALA4223)
@@ -372,7 +372,7 @@ trait NoTestLiteralDao {
   def selectById(id: Int): Emp
 }
 """
-    val caught = intercept[MacrosException] {
+    val caught = intercept[MacrosAbortException] {
       DaoGenerator.generate(trt, null, None)
     }
     assert(caught.message == Message.DOMALA4069)
