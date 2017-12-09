@@ -168,7 +168,7 @@ object EntityTypeGenerator {
         val sequenceGeneratorSetting = SequenceGeneratorArgs.read(idParams.head.mods, clsName.syntax)
           .getOrElse(MacrosHelper.abort(Message.DOMALA4034, clsName.syntax, idParams.head.name.syntax))
         q"""
-          domala.internal.macros.reflect.EntityReflectionMacros.validateSequenceIdGenerator(classOf[${sequenceGeneratorSetting.implementer}])
+          domala.internal.macros.reflect.EntityReflectionMacros.validateSequenceIdGenerator(classOf[$clsName], classOf[${sequenceGeneratorSetting.implementer}])
           private[this] val __idGenerator = new ${sequenceGeneratorSetting.implementer.syntax.parse[Ctor.Call].get}()
           __idGenerator.setQualifiedSequenceName(${sequenceGeneratorSetting.sequence})
           __idGenerator.setInitialValue(${sequenceGeneratorSetting.initialValue})
@@ -179,7 +179,7 @@ object EntityTypeGenerator {
         val tableGeneratorSetting = TableGeneratorArgs.read(idParams.head.mods, clsName.syntax)
           .getOrElse(MacrosHelper.abort(Message.DOMALA4035, clsName.syntax, idParams.head.name.syntax))
         q"""
-          domala.internal.macros.reflect.EntityReflectionMacros.validateTableIdGenerator(classOf[${tableGeneratorSetting.implementer}])
+          domala.internal.macros.reflect.EntityReflectionMacros.validateTableIdGenerator(classOf[$clsName], classOf[${tableGeneratorSetting.implementer}])
           private[this] val __idGenerator = new ${tableGeneratorSetting.implementer.syntax.parse[Ctor.Call].get}()
           __idGenerator.setQualifiedTableName(${tableGeneratorSetting.table})
           __idGenerator.setInitialValue(${tableGeneratorSetting.initialValue})

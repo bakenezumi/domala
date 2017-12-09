@@ -2,7 +2,7 @@ package domala.tests
 
 import org.scalatest._
 import domala.Required
-import domala.jdbc.{Config, SelectOptions}
+import domala.jdbc.{BatchResult, Config, SelectOptions}
 
 class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
   implicit val config: Config = TestConfig
@@ -274,7 +274,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
 
   test("batch insert") {
     Required {
-      dao.batchInsert(List(
+      val BatchResult(counts, entitys) = dao.batchInsert(List(
         Person(
           name = Some(Name("aaa")),
           age = Some(5),
@@ -285,6 +285,22 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
           age = Some(10),
           address = Address("eee", "fff"),
           departmentId = Some(2))))
+      assert(counts sameElements Array(1, 1))
+      assert(entitys == Seq(
+        Person(
+          Some(ID(3)),
+          Some(Name("aaa")),
+          Some(5),
+          Address("bbb", "ccc"),
+          Some(1),
+          Some(1)),
+        Person(
+          Some(ID(4)),
+          Some(Name("ddd")),
+          Some(10),
+          Address("eee","fff"),
+          Some(2),
+          Some(1))))
       assert(dao.selectCount == 4)
       assert(
         dao.selectById(3) == Some(
@@ -309,7 +325,24 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
 
   test("batch update") {
     Required {
-      dao.batchUpdate(dao.selectAll().map(entity => entity.copy(age = entity.age.map(_ + 1))))
+      val BatchResult(counts, entitys) = dao.batchUpdate(dao.selectAll().map(entity => entity.copy(age = entity.age.map(_ + 1))))
+      assert(counts sameElements Array(1, 1))
+      assert(entitys ==  Seq(
+        Person(
+          Some(ID(1)),
+          Some(Name("SMITH")),
+          Some(11),
+          Address("Tokyo", "Yaesu"),
+          Some(2),
+          Some(1)),
+        Person(
+          Some(ID(2)),
+          Some(Name("ALLEN")),
+          Some(21),
+          Address("Kyoto", "Karasuma"),
+          Some(1),
+          Some(1))
+      ))
       assert(
         dao.selectAll == Seq(
           Person(
@@ -325,7 +358,7 @@ class StandardUseCaseTestSuite extends FunSuite with BeforeAndAfter {
             Some(21),
             Address("Kyoto", "Karasuma"),
             Some(1),
-            Some(1)),
+            Some(1))
         )
       )
     }

@@ -64,8 +64,8 @@ public enum Message implements MessageResource {
     DOMALA4072(org.seasar.doma.message.Message.DOMA4072.getMessagePattern()),
     DOMALA4073(org.seasar.doma.message.Message.DOMA4073.getMessagePattern()),
     // TODO: ファクトリ系未実装 DOMA4076, DOMA4078
-    DOMALA4084(org.seasar.doma.message.Message.DOMA4084.getMessagePattern()),
-    DOMALA4085(org.seasar.doma.message.Message.DOMA4085.getMessagePattern()),
+    DOMALA4084("include指定されているプロパティ[{0}]が、エンティティクラス[{1}]に見つかりません。 at {2}.{3}"),
+    DOMALA4085("exclude指定されているプロパティ[{0}]が、エンティティクラス[{1}]に見つかりません。 at {2}.{3}"),
     DOMALA4086(org.seasar.doma.message.Message.DOMA4086.getMessagePattern()),
     DOMALA4087(org.seasar.doma.message.Message.DOMA4087.getMessagePattern()),
     DOMALA4088(org.seasar.doma.message.Message.DOMA4088.getMessagePattern()),

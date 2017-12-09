@@ -21,9 +21,8 @@ object DaoProviderMacro {
       .find(m =>
         m.isMethod && m.asMethod.name.toString == "impl" && m.asMethod.returnType <:< tpe
           && m.asMethod.paramLists.flatten.head.typeSignature <:< typeOf[Config])
-      .getOrElse(c.abort(c.enclosingPosition,
-                         Message.DOMALA6018
-                          .getMessage(tpe.toString)))
+      .getOrElse(ReflectionUtil.abort(
+                         Message.DOMALA6018, tpe))
     reify {
       val companion = ReflectionUtil.getCompanion(classTag.splice)
       val implMethod = companion.getClass.getMethod("impl", classOf[Config])
@@ -42,10 +41,7 @@ object DaoProviderMacro {
       .find(m =>
         m.isMethod && m.asMethod.name.toString == "impl" && m.asMethod.returnType <:< tpe
           && m.asMethod.paramLists.flatten.head.typeSignature <:< typeOf[Connection])
-      .getOrElse(c.abort(c.enclosingPosition,
-                         Message.DOMALA6018
-                           .getMessage(tpe.toString)))
-
+      .getOrElse(ReflectionUtil.abort(Message.DOMALA6018, tpe))
     reify {
       val companion =
         ReflectionUtil.getCompanion(classTag.splice)
@@ -69,9 +65,8 @@ object DaoProviderMacro {
       .find(m =>
         m.isMethod && m.asMethod.name.toString == "impl" && m.asMethod.returnType <:< tpe
           && m.asMethod.paramLists.flatten.head.typeSignature <:< typeOf[DataSource])
-      .getOrElse(c.abort(c.enclosingPosition,
-                         Message.DOMALA6018
-                           .getMessage(tpe.toString)))
+      .getOrElse(ReflectionUtil.abort(
+        Message.DOMALA6018,tpe))
     reify {
       val companion =
         ReflectionUtil.getCompanion(classTag.splice)

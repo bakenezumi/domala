@@ -21,12 +21,23 @@ import scala.reflect.macros.blackbox
 
 object DaoReflectionMacros {
 
-  def getStreamHandlerImpl[T: c.WeakTypeTag, R: c.WeakTypeTag](
+  private def handle[D: c.WeakTypeTag, R](c: blackbox.Context)(daoClass: c.Expr[Class[D]], methodName: c.Expr[String])(block: => R): R = try {
+    block
+  } catch {
+    case e: ReflectAbortException =>
+      import c.universe._
+      val Literal(Constant(methodNameLiteral: String)) = methodName.tree
+      c.abort(weakTypeOf[D].member(TermName(methodNameLiteral)).pos, e.getLocalizedMessage)
+  }
+
+  def getStreamHandlerImpl[D: c.WeakTypeTag, T: c.WeakTypeTag, R: c.WeakTypeTag](
       c: blackbox.Context)(f: c.Expr[Stream[T] => R],
-                           daoName: c.Expr[String],
+                           daoClass: c.Expr[Class[D]],
                            methodName: c.Expr[String])(
-      classTag: c.Expr[ClassTag[T]]): c.Expr[AbstractStreamHandler[T, R]] = {
+      classTag: c.Expr[ClassTag[T]]): c.Expr[AbstractStreamHandler[T, R]] = handle(c)(daoClass, methodName) {
     import c.universe._
+    val daoTpe = weakTypeOf[D]
+    val Literal(Constant(methodNameLiteral: String)) = methodName.tree
     val tpe = weakTypeOf[T]
     if (TypeUtil.isEntity(c)(tpe)) {
       reify {
@@ -45,11 +56,8 @@ object DaoReflectionMacros {
     } else if (TypeUtil.isAnyVal(c)(tpe)) {
       val (basicType, holderDesc) = TypeUtil.newAnyValHolderDesc[blackbox.Context, T](c)(tpe)
       if(!TypeUtil.isBasic(c)(basicType)) {
-        val Literal(Constant(daoNameText: String)) = daoName.tree
-        val Literal(Constant(methodNameText: String)) = methodName.tree
-        c.abort(c.enclosingPosition,
-          Message.DOMALA4245
-            .getMessage(tpe.typeSymbol.name, daoNameText, methodNameText))
+        ReflectionUtil.abort(Message.DOMALA4245,
+            tpe, daoTpe, methodNameLiteral)
       }
       reify {
         val holder = holderDesc.get.splice
@@ -58,25 +66,24 @@ object DaoReflectionMacros {
           (p: java.util.stream.Stream[T]) => f.splice.apply(WrapStream.of(p)))
       }
     } else {
-      val Literal(Constant(daoNameText: String)) = daoName.tree
-      val Literal(Constant(methodNameText: String)) = methodName.tree
-      c.abort(c.enclosingPosition,
-              Message.DOMALA4245
-                .getMessage(tpe.typeSymbol.name, daoNameText, methodNameText))
+      ReflectionUtil.abort(Message.DOMALA4245,
+                tpe, daoTpe, methodNameLiteral)
     }
   }
-  def getStreamHandler[T, R](f: Stream[T] => R,
-                             daoName: String,
+  def getStreamHandler[D, T, R](f: Stream[T] => R,
+                             daoClass: Class[D],
                              methodName: String)(
       implicit classTag: ClassTag[T]): AbstractStreamHandler[T, R] =
-    macro getStreamHandlerImpl[T, R]
+    macro getStreamHandlerImpl[D, T, R]
 
-  def getIteratorHandlerImpl[T: c.WeakTypeTag, R: c.WeakTypeTag](
+  def getIteratorHandlerImpl[D: c.WeakTypeTag, T: c.WeakTypeTag, R: c.WeakTypeTag](
     c: blackbox.Context)(f: c.Expr[Iterator[T] => R],
-    daoName: c.Expr[String],
+    daoClass: c.Expr[Class[D]],
     methodName: c.Expr[String])(
-    classTag: c.Expr[ClassTag[T]]): c.Expr[AbstractStreamHandler[T, R]] = {
+    classTag: c.Expr[ClassTag[T]]): c.Expr[AbstractStreamHandler[T, R]] = handle(c)(daoClass, methodName) {
     import c.universe._
+    val daoTpe = weakTypeOf[D]
+    val Literal(Constant(methodNameLiteral: String)) = methodName.tree
     val tpe = weakTypeOf[T]
     if (TypeUtil.isEntity(c)(tpe)) {
       reify {
@@ -95,11 +102,8 @@ object DaoReflectionMacros {
     } else if (TypeUtil.isAnyVal(c)(tpe)) {
       val (basicType, holderDesc) = TypeUtil.newAnyValHolderDesc[blackbox.Context, T](c)(tpe)
       if(!TypeUtil.isBasic(c)(basicType)) {
-        val Literal(Constant(daoNameText: String)) = daoName.tree
-        val Literal(Constant(methodNameText: String)) = methodName.tree
-        c.abort(c.enclosingPosition,
-          Message.DOMALA6012
-            .getMessage(tpe.typeSymbol.name, daoNameText, methodNameText))
+        ReflectionUtil.abort(Message.DOMALA6012,
+            tpe, daoTpe, methodNameLiteral)
       }
       reify {
         val holder = holderDesc.get.splice
@@ -108,23 +112,23 @@ object DaoReflectionMacros {
           (p: java.util.stream.Stream[T]) => f.splice.apply(WrapIterator.of(p)))
       }
     } else {
-      val Literal(Constant(daoNameText: String)) = daoName.tree
       val Literal(Constant(methodNameText: String)) = methodName.tree
-      c.abort(c.enclosingPosition,
-        Message.DOMALA6012
-          .getMessage(tpe.typeSymbol.name, daoNameText, methodNameText))
+      ReflectionUtil.abort(Message.DOMALA6012,
+          tpe, daoTpe, methodNameText)
     }
   }
-  def getIteratorHandler[T, R](f: Iterator[T] => R,
-    daoName: String,
+  def getIteratorHandler[D, T, R](f: Iterator[T] => R,
+    daoClass: Class[D],
     methodName: String)(
     implicit classTag: ClassTag[T]): AbstractStreamHandler[T, R] =
-    macro getIteratorHandlerImpl[T, R]
+    macro getIteratorHandlerImpl[D, T, R]
 
-  def getResultListHandlerImpl[T: c.WeakTypeTag](
-      c: blackbox.Context)(daoName: c.Expr[String], methodName: c.Expr[String])(
-      classTag: c.Expr[ClassTag[T]]): c.Expr[AbstractResultListHandler[T]] = {
+  def getResultListHandlerImpl[D: c.WeakTypeTag, T: c.WeakTypeTag](
+      c: blackbox.Context)(daoClass: c.Expr[Class[D]], methodName: c.Expr[String])(
+      classTag: c.Expr[ClassTag[T]]): c.Expr[AbstractResultListHandler[T]] = handle(c)(daoClass, methodName) {
     import c.universe._
+    val daoTpe = weakTypeOf[D]
+    val Literal(Constant(methodNameLiteral: String)) = methodName.tree
     val tpe = weakTypeOf[T]
     if (TypeUtil.isEntity(c)(tpe)) {
       reify {
@@ -139,33 +143,29 @@ object DaoReflectionMacros {
     } else if (TypeUtil.isAnyVal(c)(tpe)) {
       val (basicType, holderDesc) = TypeUtil.newAnyValHolderDesc[blackbox.Context, T](c)(tpe)
       if(!TypeUtil.isBasic(c)(basicType)) {
-        val Literal(Constant(daoNameText: String)) = daoName.tree
-        val Literal(Constant(methodNameText: String)) = methodName.tree
-        c.abort(c.enclosingPosition,
-          Message.DOMALA4007
-            .getMessage(tpe.typeSymbol.name, daoNameText, methodNameText))
+        ReflectionUtil.abort(Message.DOMALA4007,
+            tpe, daoTpe, methodNameLiteral)
       }
       reify {
         val holder = holderDesc.get.splice
         new DomainResultListHandler(holder)
       }
     } else {
-      val Literal(Constant(daoNameText: String)) = daoName.tree
-      val Literal(Constant(methodNameText: String)) = methodName.tree
-      c.abort(c.enclosingPosition,
-              Message.DOMALA4007
-                .getMessage(tpe.typeSymbol.name, daoNameText, methodNameText))
+      ReflectionUtil.abort(Message.DOMALA4007,
+                tpe, daoTpe, methodNameLiteral)
     }
   }
-  def getResultListHandler[T](daoName: String, methodName: String)(
+  def getResultListHandler[D, T](daoClass: Class[D], methodName: String)(
       implicit classTag: ClassTag[T]): AbstractResultListHandler[T] =
-    macro getResultListHandlerImpl[T]
+    macro getResultListHandlerImpl[D, T]
 
-  def getOptionalSingleResultHandlerImpl[T: c.WeakTypeTag](c: blackbox.Context)(
-      daoName: c.Expr[String],
+  def getOptionalSingleResultHandlerImpl[D: c.WeakTypeTag, T: c.WeakTypeTag](c: blackbox.Context)(
+      daoClass: c.Expr[Class[D]],
       methodName: c.Expr[String])(classTag: c.Expr[ClassTag[T]])
-    : c.Expr[AbstractSingleResultHandler[Optional[T]]] = {
+    : c.Expr[AbstractSingleResultHandler[Optional[T]]] = handle(c)(daoClass, methodName) {
     import c.universe._
+    val daoTpe = weakTypeOf[D]
+    val Literal(Constant(methodNameText: String)) = methodName.tree
     val tpe = weakTypeOf[T]
     if (TypeUtil.isEntity(c)(tpe)) {
       reify {
@@ -180,34 +180,28 @@ object DaoReflectionMacros {
     } else if (TypeUtil.isAnyVal(c)(tpe)) {
       val (basicType, holderDesc) = TypeUtil.newAnyValHolderDesc[blackbox.Context, T](c)(tpe)
       if(!TypeUtil.isBasic(c)(basicType)) {
-        val Literal(Constant(daoNameText: String)) = daoName.tree
-        val Literal(Constant(methodNameText: String)) = methodName.tree
-        c.abort(c.enclosingPosition,
-          Message.DOMALA4235
-            .getMessage(tpe.typeSymbol.name, daoNameText, methodNameText))
+        ReflectionUtil.abort(Message.DOMALA4235,
+            tpe, daoTpe, methodNameText)
       }
       reify {
         val holder = holderDesc.get.splice
         new OptionalDomainSingleResultHandler(holder)
       }
     } else {
-      val Literal(Constant(daoNameText: String)) = daoName.tree
-      val Literal(Constant(methodNameText: String)) = methodName.tree
-      c.abort(c.enclosingPosition,
-              Message.DOMALA4235
-                .getMessage(tpe.typeSymbol.name, daoNameText, methodNameText))
+      ReflectionUtil.abort(Message.DOMALA4235,
+                tpe, daoTpe, methodNameText)
     }
   }
-  def getOptionalSingleResultHandler[T](daoName: String, methodName: String)(
+  def getOptionalSingleResultHandler[D, T](daoClass: Class[D], methodName: String)(
       implicit classTag: ClassTag[T]): AbstractSingleResultHandler[
-    Optional[T]] = macro getOptionalSingleResultHandlerImpl[T]
+    Optional[T]] = macro getOptionalSingleResultHandlerImpl[D, T]
 
-  def getOtherResultImpl[T: c.WeakTypeTag](
-      c: blackbox.Context)(daoName: c.Expr[String], methodName: c.Expr[String], commandImplementors: c.Expr[CommandImplementors], query: c.Expr[AbstractSelectQuery], method: c.Expr[Method])(
-      classTag: c.Expr[ClassTag[T]]): c.Expr[T] = {
+  def getOtherResultImpl[D: c.WeakTypeTag, T: c.WeakTypeTag](
+      c: blackbox.Context)(daoClass: c.Expr[Class[D]], methodName: c.Expr[String], commandImplementors: c.Expr[CommandImplementors], query: c.Expr[AbstractSelectQuery], method: c.Expr[Method])(
+      classTag: c.Expr[ClassTag[T]]): c.Expr[T] = handle(c)(daoClass, methodName) {
     import c.universe._
-    val Literal(Constant(daoNameText: String)) = daoName.tree
-    val Literal(Constant(methodNameText: String)) = methodName.tree
+    val daoTpe = weakTypeOf[D]
+    val Literal(Constant(methodNameLiteral: String)) = methodName.tree
     val tpe = weakTypeOf[T]
     ResultType.convert(c)(tpe) match {
       case ResultType.Entity(_, _) =>
@@ -225,8 +219,9 @@ object DaoReflectionMacros {
       case ResultType.AnyValHolder(_, _) =>
         val (basicType, holderDesc) = TypeUtil.newAnyValHolderDesc[blackbox.Context, T](c)(tpe)
         if(!TypeUtil.isBasic(c)(basicType)) {
-          c.abort(c.enclosingPosition,
-            Message.DOMALA4008.getMessage(tpe.toString, daoNameText, methodNameText))        }
+          ReflectionUtil.abort(Message.DOMALA4008,
+            tpe, daoTpe, methodNameLiteral)
+        }
         reify {
           val holder = holderDesc.get.splice
           val handler = new DomainSingleResultHandler(holder)
@@ -235,22 +230,20 @@ object DaoReflectionMacros {
       case ResultType.Seq(_, t) =>
         t match {
           case ResultType.UnSupport(_, tt) if tt =:= typeOf[Any] =>
-            c.abort(c.enclosingPosition,
-            Message.DOMALA4113.getMessage(tpe.toString, daoNameText, methodNameText))
+            ReflectionUtil.abort(
+              Message.DOMALA4113, tpe, daoTpe, methodNameLiteral)
           case _ =>
             // TODO: 処理できる可能性はまだあるが現在未検査
-            c.abort(c.enclosingPosition,
-              Message.DOMALA4008.getMessage(tpe.toString, daoNameText, methodNameText))
+            ReflectionUtil.abort(Message.DOMALA4008, tpe, daoTpe, methodNameLiteral)
         }
       case _ =>
         // TODO: 処理できる可能性はまだあるが現在未検査
-        c.abort(c.enclosingPosition,
-          Message.DOMALA4008.getMessage(tpe.toString, daoNameText, methodNameText))
+        ReflectionUtil.abort(Message.DOMALA4008, tpe, daoTpe, methodNameLiteral)
     }
   }
-  def getOtherResult[T](daoName: String, methodName: String, commandImplementors: CommandImplementors, query: AbstractSelectQuery, method: Method)(
+  def getOtherResult[D, T](daoClass: Class[D], methodName: String, commandImplementors: CommandImplementors, query: AbstractSelectQuery, method: Method)(
       implicit classTag: ClassTag[T]): T =
-    macro getOtherResultImpl[T]
+    macro getOtherResultImpl[D, T]
 
   def setEntityTypeImpl[T: c.WeakTypeTag](c: blackbox.Context)(
       query: c.Expr[AbstractSelectQuery])(
@@ -267,12 +260,14 @@ object DaoReflectionMacros {
   def setEntityType[T](query: AbstractSelectQuery)(
       implicit classTag: ClassTag[T]): Unit = macro setEntityTypeImpl[T]
 
-  def getEntityAndEntityTypeImpl[T: c.WeakTypeTag](c: blackbox.Context)(
-      traitName: c.Expr[String],
+  def getEntityAndEntityTypeImpl[D: c.WeakTypeTag, T: c.WeakTypeTag](c: blackbox.Context)(
+      daoClass: c.Expr[Class[D]],
       methodName: c.Expr[String],
       resultClass: c.Expr[Class[T]],
-      params: c.Expr[DaoParam[_]]*): c.Expr[Option[EntityAndEntityType[Any]]] = {
+      params: c.Expr[DaoParam[_]]*): c.Expr[Option[EntityAndEntityType[Any]]] = handle(c)(daoClass, methodName) {
     import c.universe._
+    val daoTpe = weakTypeOf[D]
+    val Literal(Constant(methodNameLiteral: String)) = methodName.tree
     params
       .map {
         case param if TypeUtil.isEntity(c)(param.actualType.typeArgs.head) =>
@@ -282,10 +277,9 @@ object DaoReflectionMacros {
               Some(param)
             else None
           } else
-            c.abort(c.enclosingPosition,
-                    Message.DOMALA4222
-                      .getMessage(traitName.tree.toString().tail.init,
-                                  methodName.tree.toString().tail.init))
+            ReflectionUtil.abort(Message.DOMALA4222,
+              daoTpe,
+              methodNameLiteral)
         case _ => None
       }
       .collectFirst {
@@ -305,27 +299,28 @@ object DaoReflectionMacros {
       .getOrElse(
         if (weakTypeOf[T] =:= weakTypeOf[Int]) reify(None)
         else
-          c.abort(c.enclosingPosition,
-                 Message.DOMALA4001
-                    .getMessage(traitName.tree.toString().tail.init,
-                                methodName.tree.toString().tail.init))
+          ReflectionUtil.abort(Message.DOMALA4001,
+            daoTpe,
+            methodNameLiteral)
       )
   }
-  def getEntityAndEntityType[T](
-      traitName: String,
+  def getEntityAndEntityType[D, T](
+      daoClass: Class[D],
       methodName: String,
       resultClass: Class[T],
       params: (DaoParam[_])*): Option[EntityAndEntityType[Any]] =
-    macro getEntityAndEntityTypeImpl[T]
+    macro getEntityAndEntityTypeImpl[D, T]
 
-  def getBatchEntityTypeImpl[T: c.WeakTypeTag](c: blackbox.Context)(
-    traitName: c.Expr[String],
+  def getBatchEntityTypeImpl[D: c.WeakTypeTag, T: c.WeakTypeTag](c: blackbox.Context)(
+    daoClass: c.Expr[Class[D]],
     methodName: c.Expr[String],
     resultClass: c.Expr[Class[T]],
-    param: c.Expr[DaoParam[_]]): c.Expr[Option[EntityType[Any]]] = {
+    param: c.Expr[DaoParam[_]]): c.Expr[Option[EntityType[Any]]] = handle(c)(daoClass, methodName) {
     import c.universe._
-    if (TypeUtil.isEntity(c)(param.actualType.typeArgs.head)) {
-      if (weakTypeOf[T] =:= weakTypeOf[Int]) reify(None)
+    val daoTpe = weakTypeOf[D]
+    val Literal(Constant(methodNameLiteral: String)) = methodName.tree
+    if (TypeUtil.isEntity(c)(param.actualType.typeArgs.head.typeArgs.head)) {
+      if (weakTypeOf[T] =:= weakTypeOf[Array[Int]]) reify(None)
       else if (weakTypeOf[T] <:< weakTypeOf[BatchResult[_]]) {
         if (weakTypeOf[T].typeArgs.head =:= param.actualType.typeArgs.head)
           reify {
@@ -338,34 +333,42 @@ object DaoReflectionMacros {
           }
         else reify(None)
       } else
-        c.abort(c.enclosingPosition,
-          Message.DOMALA4223
-            .getMessage(traitName.tree.toString().tail.init,
-              methodName.tree.toString().tail.init))
-    } else reify(None)
+        ReflectionUtil.abort(
+          Message.DOMALA4223,
+          daoTpe,
+          methodNameLiteral)
+    } else {
+      if (weakTypeOf[T] =:= weakTypeOf[Array[Int]]) reify(None)
+      else {
+        ReflectionUtil.abort(
+          Message.DOMALA4040,
+          param.actualType.typeArgs.head.typeArgs.head,
+          methodNameLiteral)
+      }
+    }
   }
-  def getBatchEntityType[T](
-    traitName: String,
+  def getBatchEntityType[D, T](
+    daoClass: Class[D],
     methodName: String,
     resultClass: Class[T],
     param: (DaoParam[_])): Option[EntityType[Any]] =
-  macro getBatchEntityTypeImpl[T]
+  macro getBatchEntityTypeImpl[D, T]
 
-  def validateParameterAndSqlImpl(c: blackbox.Context)(
-    trtName: c.Expr[String],
-    defName: c.Expr[String],
+  def validateParameterAndSqlImpl[D: c.WeakTypeTag](c: blackbox.Context)(
+    daoClass: c.Expr[Class[D]],
+    methodName: c.Expr[String],
     expandable: c.Expr[Boolean],
     populatable: c.Expr[Boolean],
     sql: c.Expr[String],
-    params: c.Expr[DaoParamClass[_]]*): c.Expr[Unit] = {
+    params: c.Expr[DaoParamClass[_]]*): c.Expr[Unit] = handle(c)(daoClass, methodName) {
     import c.universe._
-    val Literal(Constant(trtNameLiteral: String)) = trtName.tree
-    val Literal(Constant(defNameLiteral: String)) = defName.tree
+    val daoTpe = weakTypeOf[D]
+    val Literal(Constant(methodNameLiteral: String)) = methodName.tree
     val Literal(Constant(expandableLiteral: Boolean)) = expandable.tree
     val Literal(Constant(populatableLiteral: Boolean)) = populatable.tree
     val sqlLiteral: String = sql.tree match {
       case Literal (Constant(sqlLiteral: String)) => sqlLiteral
-      case _ =>  c.abort(c.enclosingPosition, Message.DOMALA6015.getMessage(trtNameLiteral, defNameLiteral))
+      case _ =>  ReflectionUtil.abort(Message.DOMALA6015, daoTpe, methodNameLiteral)
     }
     import scala.language.existentials
     val paramTypes = new ReflectionHelper[c.type](c).paramTypes(params)
@@ -373,28 +376,28 @@ object DaoReflectionMacros {
       case (_, tpe) =>
         ParamType.convert(c)(tpe) match {
           case ParamType.Iterable(_, ParamType.Other(_, t)) if t =:= typeOf[Any] =>
-            c.abort(c.enclosingPosition, Message.DOMALA4160.getMessage(trtNameLiteral, defNameLiteral))
+            ReflectionUtil.abort(Message.DOMALA4160, daoTpe, methodNameLiteral)
           case _ => ()
         }
     }
     val sqlNode = new SqlParser(sqlLiteral).parse()
-    val sqlValidator = new SqlValidator[c.type](c)(trtNameLiteral, defNameLiteral, expandableLiteral, populatableLiteral, paramTypes)
+    val sqlValidator = new SqlValidator[c.type](c)(daoTpe, methodNameLiteral, expandableLiteral, populatableLiteral, paramTypes)
     sqlValidator.validate(sqlNode)
     reify(())
   }
-  def validateParameterAndSql(trtName: String, defName: String, expandable: Boolean, populatable: Boolean, sql: String, params: (DaoParamClass[_])*): Unit = macro validateParameterAndSqlImpl
+  def validateParameterAndSql[D](daoClass: Class[D], methodName: String, expandable: Boolean, populatable: Boolean, sql: String, params: (DaoParamClass[_])*): Unit = macro validateParameterAndSqlImpl[D]
 
-  def validateBatchParameterAndSqlImpl(c: blackbox.Context)(
-    trtName: c.Expr[String],
-    defName: c.Expr[String],
+  def validateBatchParameterAndSqlImpl[D: c.WeakTypeTag](c: blackbox.Context)(
+    daoClass: c.Expr[Class[D]],
+    methodName: c.Expr[String],
     expandable: c.Expr[Boolean],
     populatable: c.Expr[Boolean],
     sql: c.Expr[String],
     param: c.Expr[DaoParamClass[_]],
-    suppress: c.Expr[String]*): c.Expr[Unit] = {
+    suppress: c.Expr[String]*): c.Expr[Unit] = handle(c)(daoClass, methodName) {
     import c.universe._
-    val Literal(Constant(trtNameLiteral: String)) = trtName.tree
-    val Literal(Constant(defNameLiteral: String)) = defName.tree
+    val daoTpe = weakTypeOf[D]
+    val Literal(Constant(methodNameLiteral: String)) = methodName.tree
     val Literal(Constant(expandableLiteral: Boolean)) = expandable.tree
     val Literal(Constant(populatableLiteral: Boolean)) = populatable.tree
     val Literal(Constant(sqlLiteral: String)) = sql.tree
@@ -410,80 +413,85 @@ object DaoReflectionMacros {
       case (_, tpe) =>
         ParamType.convert(c)(tpe) match {
           case ParamType.Iterable(_, ParamType.Other(_, t)) if t =:= typeOf[Any] =>
-            c.abort(c.enclosingPosition, Message.DOMALA4160.getMessage(trtNameLiteral, defNameLiteral))
+            ReflectionUtil.abort(Message.DOMALA4160, daoTpe, methodNameLiteral)
           case _ => ()
         }
 
     }
     val sqlNode = new SqlParser(sqlLiteral).parse()
-    val sqlValidator = new BatchSqlValidator[c.type](c)(trtNameLiteral, defNameLiteral, expandableLiteral, populatableLiteral, paramTypes, suppressLiterals)
+    val sqlValidator = new BatchSqlValidator[c.type](c)(daoTpe, methodNameLiteral, expandableLiteral, populatableLiteral, paramTypes, suppressLiterals)
     sqlValidator.validate(sqlNode)
     reify(())
   }
-  def validateBatchParameterAndSql(trtName: String, defName: String, expandable: Boolean, populatable: Boolean, sql: String, param: DaoParamClass[_], suppress: String*): Unit = macro validateBatchParameterAndSqlImpl
+  def validateBatchParameterAndSql[D](daoClass: Class[D], methodName: String, expandable: Boolean, populatable: Boolean, sql: String, param: DaoParamClass[_], suppress: String*): Unit = macro validateBatchParameterAndSqlImpl[D]
 
 
-  def validateAutoModifyParamImpl[T: c.WeakTypeTag](c: blackbox.Context)(
-    trtName: c.Expr[String],
-    defName: c.Expr[String],
-    paramClass: c.Expr[Class[T]]): c.Expr[Unit] = {
+  def validateAutoModifyParamImpl[D: c.WeakTypeTag, T: c.WeakTypeTag](c: blackbox.Context)(
+    daoClass: c.Expr[Class[D]],
+    methodName: c.Expr[String],
+    paramClass: c.Expr[Class[T]]): c.Expr[Unit] = handle(c)(daoClass, methodName) {
     import c.universe._
+    val daoTpe = weakTypeOf[D]
+    val Literal(Constant(methodNameLiteral: String)) = methodName.tree
     val tpe = weakTypeOf[T]
     if (TypeUtil.isEntity(c)(tpe)) {
       reify(())
     } else {
-      c.abort(c.enclosingPosition,
-        Message.DOMALA4003
-          .getMessage(trtName.tree.toString().tail.init,
-            defName.tree.toString().tail.init))
+      ReflectionUtil.abort(
+        Message.DOMALA4003,
+        daoTpe,
+        methodNameLiteral)
     }
   }
-  def validateAutoModifyParam[T](trtName: String, defName: String, paramClass: Class[T]): Unit = macro validateAutoModifyParamImpl[T]
+  def validateAutoModifyParam[D, T](daoClass: Class[D], methodName: String, paramClass: Class[T]): Unit = macro validateAutoModifyParamImpl[D, T]
 
-  def validateAutoBatchModifyParamImpl[C: c.WeakTypeTag, T: c.WeakTypeTag](c: blackbox.Context)(
-    trtName: c.Expr[String],
-    defName: c.Expr[String],
+  def validateAutoBatchModifyParamImpl[D: c.WeakTypeTag, C: c.WeakTypeTag, T: c.WeakTypeTag](c: blackbox.Context)(
+    daoClass: c.Expr[Class[D]],
+    methodName: c.Expr[String],
     paramClass: c.Expr[Class[C]],
-    internalClass: c.Expr[Class[T]]): c.Expr[Unit] = {
+    internalClass: c.Expr[Class[T]]): c.Expr[Unit] = handle(c)(daoClass, methodName) {
     import c.universe._
+    val daoTpe = weakTypeOf[D]
+    val Literal(Constant(methodNameLiteral: String)) = methodName.tree
     val containerTpe = weakTypeOf[C]
     if (TypeUtil.isIterable(c)(containerTpe)) {
       val tpe = weakTypeOf[T]
       if (tpe.companion <:< typeOf[AbstractEntityType[_]]) {
         reify(())
       } else {
-        c.abort(c.enclosingPosition,
-          Message.DOMALA4043
-            .getMessage(trtName.tree.toString().tail.init,
-              defName.tree.toString().tail.init))
+        ReflectionUtil.abort(
+          Message.DOMALA4043,
+          daoTpe,
+          methodNameLiteral)
       }
     } else {
-      c.abort(c.enclosingPosition,
-        Message.DOMALA4042
-          .getMessage(trtName.tree.toString().tail.init,
-            defName.tree.toString().tail.init))
+      ReflectionUtil.abort(
+        Message.DOMALA4042,
+        daoTpe,
+        methodNameLiteral)
     }
   }
-  def validateAutoBatchModifyParam[C, T](trtName: String, defName: String, paramClass: Class[C], internalClass: Class[T]): Unit = macro validateAutoBatchModifyParamImpl[C, T]
+  def validateAutoBatchModifyParam[D, C, T](daoClass: Class[D], methodName: String, paramClass: Class[C], internalClass: Class[T]): Unit = macro validateAutoBatchModifyParamImpl[D, C, T]
 
-  private def validatePropertyName[T: c.WeakTypeTag](c: blackbox.Context)(tpe: c.universe.Type, namess: Seq[List[String]], errorMessage: domala.message.Message): c.Expr[Unit] = {
+  private def validatePropertyName[D: c.WeakTypeTag, T: c.WeakTypeTag](c: blackbox.Context)(daoTpe: c.universe.Type, defName: c.Expr[String], tpe: c.universe.Type, namess: Seq[List[String]], errorMessage: domala.message.Message): c.Expr[Unit] = {
     import c.universe._
     val terms = tpe.members.filter(_.isTerm)
+    val Literal(Constant(defNameLiteral: String)) = defName.tree
     namess.foreach { names =>
-      if(names.isEmpty) c.abort(c.enclosingPosition, namess.toString)
+      if(names.isEmpty) c.abort(daoTpe.typeSymbol.pos, namess.toString)
       val term = terms.find(_.name.toString == names.head)
       if(term.isEmpty)
-        c.abort(c.enclosingPosition,
-          errorMessage.getMessage(names.head, tpe.toString))
+        c.abort(daoTpe.member(TermName(defNameLiteral)).pos,
+          errorMessage.getMessage(names.head, tpe.toString, daoTpe, defNameLiteral))
       else if(names.length > 1) {
-        validatePropertyName(c)(term.get.typeSignature, Seq(names.tail), errorMessage)
+        validatePropertyName[D, T](c)(daoTpe, defName, term.get.typeSignature, Seq(names.tail), errorMessage)
       }
     }
     reify(())
   }
 
-  def validateIncludeImpl[T: c.WeakTypeTag](c: blackbox.Context)(
-    trtName: c.Expr[String],
+  def validateIncludeImpl[D: c.WeakTypeTag, T: c.WeakTypeTag](c: blackbox.Context)(
+    daoTrt: c.Expr[Class[D]],
     defName: c.Expr[String],
     paramClass: c.Expr[Class[T]],
     includes: c.Expr[String]*): c.Expr[Unit] = {
@@ -492,12 +500,12 @@ object DaoReflectionMacros {
       val Literal(Constant(nameLiteral: String)) = name.tree
       nameLiteral.split('.').toList
     }
-    validatePropertyName(c)(weakTypeOf[T], includeNames, Message.DOMALA4084)
+    validatePropertyName[D, T](c)(weakTypeOf[D], defName, weakTypeOf[T], includeNames, Message.DOMALA4084)
   }
-  def validateInclude[T](trtName: String, defName: String, paramClass: Class[T], includes: String*): Unit = macro validateIncludeImpl[T]
+  def validateInclude[D, T](daoTrt: Class[D], defName: String, paramClass: Class[T], includes: String*): Unit = macro validateIncludeImpl[D, T]
 
-  def validateExcludeImpl[T: c.WeakTypeTag](c: blackbox.Context)(
-    trtName: c.Expr[String],
+  def validateExcludeImpl[D: c.WeakTypeTag, T: c.WeakTypeTag](c: blackbox.Context)(
+    daoTrt: c.Expr[Class[D]],
     defName: c.Expr[String],
     paramClass: c.Expr[Class[T]],
     excludes: c.Expr[String]*): c.Expr[Unit] = {
@@ -506,8 +514,8 @@ object DaoReflectionMacros {
       val Literal(Constant(nameLiteral: String)) = name.tree
       nameLiteral.split('.').toList
     }
-    validatePropertyName(c)(weakTypeOf[T], excludeNames, Message.DOMALA4085)
+    validatePropertyName[D, T](c)(weakTypeOf[D], defName, weakTypeOf[T], excludeNames, Message.DOMALA4085)
   }
-  def validateExclude[T](trtName: String, defName: String, paramClass: Class[T], excludes: String*): Unit = macro validateExcludeImpl[T]
+  def validateExclude[D, T](daoTrt: Class[D], defName: String, paramClass: Class[T], excludes: String*): Unit = macro validateExcludeImpl[D, T]
 
 }

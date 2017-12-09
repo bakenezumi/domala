@@ -60,7 +60,7 @@ trait PersonDao {
       import scala.collection.JavaConverters._
       implicit val __sqlNodeRepository: domala.jdbc.SqlNodeRepository = ___config.getSqlNodeRepository
       override def selectById(id: Int): Option[Person] = {
-        domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql("PersonDao", "selectById", true, false, "select * from person where id = /*id*/0", domala.internal.macros.DaoParamClass.apply("id", classOf[Int]))
+        domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql(classOf[PersonDao], "selectById", true, false, "select * from person where id = /*id*/0", domala.internal.macros.DaoParamClass.apply("id", classOf[Int]))
         entering(classOf[PersonDao].getName, "selectById", id.asInstanceOf[Object])
         try {
           val __query = new domala.jdbc.query.SqlAnnotationSelectQuery("select * from person where id = /*id*/0")
@@ -78,7 +78,7 @@ trait PersonDao {
           __query.setFetchSize(-1)
           __query.setSqlLogType(org.seasar.doma.jdbc.SqlLogType.FORMATTED)
           __query.prepare()
-          val __result: Option[Person] = domala.internal.OptionConverters.asScala(getCommandImplementors.createSelectCommand(__method0, __query, domala.internal.macros.reflect.DaoReflectionMacros.getOptionalSingleResultHandler[Person]("PersonDao", "selectById")).execute())
+          val __result: Option[Person] = domala.internal.OptionConverters.asScala(getCommandImplementors.createSelectCommand(__method0, __query, domala.internal.macros.reflect.DaoReflectionMacros.getOptionalSingleResultHandler[PersonDao, Person](classOf[PersonDao], "selectById")).execute())
           __query.complete()
           exiting(classOf[PersonDao].getName, "selectById", __result)
           __result
@@ -89,7 +89,7 @@ trait PersonDao {
         }
       }
       override def insert(person: Person): Result[Person] = {
-        domala.internal.macros.reflect.DaoReflectionMacros.validateAutoModifyParam("PersonDao", "insert", classOf[Person])
+        domala.internal.macros.reflect.DaoReflectionMacros.validateAutoModifyParam(classOf[PersonDao], "insert", classOf[Person])
         entering(classOf[PersonDao].getName, "insert", person)
         try {
           if (person == null) {
@@ -120,7 +120,7 @@ trait PersonDao {
         }
       }
       override def update(person: Person): Result[Person] = {
-        domala.internal.macros.reflect.DaoReflectionMacros.validateAutoModifyParam("PersonDao", "update", classOf[Person])
+        domala.internal.macros.reflect.DaoReflectionMacros.validateAutoModifyParam(classOf[PersonDao], "update", classOf[Person])
         entering(classOf[PersonDao].getName, "update", person)
         try {
           if (person == null) {
@@ -154,7 +154,7 @@ trait PersonDao {
         }
       }
       override def delete(person: Person): Int = {
-        domala.internal.macros.reflect.DaoReflectionMacros.validateAutoModifyParam("PersonDao", "delete", classOf[Person])
+        domala.internal.macros.reflect.DaoReflectionMacros.validateAutoModifyParam(classOf[PersonDao], "delete", classOf[Person])
         entering(classOf[PersonDao].getName, "delete", person)
         try {
           if (person == null) {
@@ -184,7 +184,7 @@ trait PersonDao {
         }
       }
       override def batchInsert(persons: Seq[Person]): BatchResult[Person] = {
-        domala.internal.macros.reflect.DaoReflectionMacros.validateAutoBatchModifyParam("PersonDao", "batchInsert", classOf[Seq[Person]], classOf[Person])
+        domala.internal.macros.reflect.DaoReflectionMacros.validateAutoBatchModifyParam(classOf[PersonDao], "batchInsert", classOf[Seq[Person]], classOf[Person])
         entering(classOf[PersonDao].getName, "batchInsert", persons)
         try {
           if (persons == null) {
@@ -215,7 +215,7 @@ trait PersonDao {
         }
       }
       override def batchUpdate(persons: Seq[Person]): BatchResult[Person] = {
-        domala.internal.macros.reflect.DaoReflectionMacros.validateAutoBatchModifyParam("PersonDao", "batchUpdate", classOf[Seq[Person]], classOf[Person])
+        domala.internal.macros.reflect.DaoReflectionMacros.validateAutoBatchModifyParam(classOf[PersonDao], "batchUpdate", classOf[Seq[Person]], classOf[Person])
         entering(classOf[PersonDao].getName, "batchUpdate", persons)
         try {
           if (persons == null) {
@@ -248,7 +248,7 @@ trait PersonDao {
         }
       }
       override def batchDelete(persons: Seq[Person]): Array[Int] = {
-        domala.internal.macros.reflect.DaoReflectionMacros.validateAutoBatchModifyParam("PersonDao", "batchDelete", classOf[Seq[Person]], classOf[Person])
+        domala.internal.macros.reflect.DaoReflectionMacros.validateAutoBatchModifyParam(classOf[PersonDao], "batchDelete", classOf[Seq[Person]], classOf[Person])
         entering(classOf[PersonDao].getName, "batchDelete", persons)
         try {
           if (persons == null) {
@@ -406,7 +406,7 @@ object PersonDao {
       import scala.collection.JavaConverters._
       implicit val __sqlNodeRepository: domala.jdbc.SqlNodeRepository = ___config.getSqlNodeRepository
       override def insert(person: Person): Result[Person] = {
-        domala.internal.macros.reflect.DaoReflectionMacros.validateAutoModifyParam("PersonDao", "insert", classOf[Person])
+        domala.internal.macros.reflect.DaoReflectionMacros.validateAutoModifyParam(classOf[PersonDao], "insert", classOf[Person])
         entering(classOf[PersonDao].getName, "insert", person)
         try {
           if (person == null) {

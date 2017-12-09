@@ -52,10 +52,10 @@ object DaoMacroHelper {
 
   def validateEntityPropertyNames(defDecl: QueryDefDecl, paramTpe: Type.Name, includedPropertyNames: Seq[Term.Arg], excludedPropertyNames: Seq[Term.Arg]): Seq[Term.Apply] = {
     val validateInclude = if(includedPropertyNames.nonEmpty) {
-      Seq(q"domala.internal.macros.reflect.DaoReflectionMacros.validateInclude(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, classOf[$paramTpe], ..$includedPropertyNames)")
+      Seq(q"domala.internal.macros.reflect.DaoReflectionMacros.validateInclude(classOf[${defDecl.trtName}], ${defDecl.name.syntax}, classOf[$paramTpe], ..$includedPropertyNames)")
     } else Nil
     val validateExclude = if(excludedPropertyNames.nonEmpty) {
-      Seq(q"domala.internal.macros.reflect.DaoReflectionMacros.validateExclude(${defDecl.trtName.syntax}, ${defDecl.name.syntax}, classOf[$paramTpe], ..$excludedPropertyNames)")
+      Seq(q"domala.internal.macros.reflect.DaoReflectionMacros.validateExclude(classOf[${defDecl.trtName}], ${defDecl.name.syntax}, classOf[$paramTpe], ..$excludedPropertyNames)")
     } else Nil
     validateInclude ++ validateExclude
   }

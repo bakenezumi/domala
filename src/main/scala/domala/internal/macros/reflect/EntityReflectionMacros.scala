@@ -17,10 +17,18 @@ import scala.reflect.macros.blackbox
 
 object EntityReflectionMacros {
 
+  private def handle[E: c.WeakTypeTag, R](c: blackbox.Context)(entityClass: c.Expr[Class[E]])(block: => R): R = try {
+    block
+  } catch {
+    case e: ReflectAbortException =>
+      import c.universe._
+      c.abort(weakTypeOf[E].typeSymbol.pos, e.getLocalizedMessage)
+  }
+
   def generatePropertyTypeImpl[T: c.WeakTypeTag,
                                E: c.WeakTypeTag,
                                N: c.WeakTypeTag](c: blackbox.Context)(
-      entityClass: c.Expr[Class[E]],
+    entityClass: c.Expr[Class[E]],
       paramName: c.Expr[String],
       namingType: c.Expr[NamingType],
       isId: c.Expr[Boolean],
@@ -38,7 +46,7 @@ object EntityReflectionMacros {
   )(
       propertyClassTag: c.Expr[ClassTag[T]],
       nakedClassTag: c.Expr[ClassTag[N]]
-  ): c.Expr[Object] = {
+  ): c.Expr[Object] = handle(c)(entityClass) {
     import c.universe._
     val Literal(Constant(isBasicLiteral: Boolean)) = isBasic.tree
     val Literal(Constant(isIdLiteral: Boolean)) = isId.tree
@@ -49,35 +57,31 @@ object EntityReflectionMacros {
     val nakedTpe = weakTypeOf[N]
     if (TypeUtil.isEmbeddable(c)(tpe)) {
       if (isIdLiteral) {
-        c.abort(
-          c.enclosingPosition,
-          Message.DOMALA4302.getMessage(
-            extractionClassString(entityClass.toString),
-            extractionQuotedString(paramName.toString()))
+        ReflectionUtil.abort(
+          Message.DOMALA4302,
+          extractionClassString(entityClass.toString),
+          extractionQuotedString(paramName.toString())
         )
       }
       if (isIdGenerateActualLiteral) {
-        c.abort(
-          c.enclosingPosition,
-          Message.DOMALA4303.getMessage(
-            extractionClassString(entityClass.toString),
-            extractionQuotedString(paramName.toString()))
+        ReflectionUtil.abort(
+          Message.DOMALA4303,
+          extractionClassString(entityClass.toString),
+          extractionQuotedString(paramName.toString())
         )
       }
       if (isVersionLiteral) {
-        c.abort(
-          c.enclosingPosition,
-          Message.DOMALA4304.getMessage(
-            extractionClassString(entityClass.toString),
-            extractionQuotedString(paramName.toString()))
+        ReflectionUtil.abort(
+          Message.DOMALA4304,
+          extractionClassString(entityClass.toString),
+          extractionQuotedString(paramName.toString())
         )
       }
       if (isTenantIdLiteral) {
-        c.abort(
-          c.enclosingPosition,
-          Message.DOMALA4443.getMessage(
-            extractionClassString(entityClass.toString),
-            extractionQuotedString(paramName.toString()))
+        ReflectionUtil.abort(
+          Message.DOMALA4443,
+          extractionClassString(entityClass.toString),
+          extractionQuotedString(paramName.toString())
         )
       }      
       reify {
@@ -98,11 +102,10 @@ object EntityReflectionMacros {
       if (isIdLiteral) {
         if (isIdGenerateActualLiteral) {
           if (!TypeUtil.isNumberHolder(c)(nakedTpe)) {
-            c.abort(
-              c.enclosingPosition,
-              Message.DOMALA4095.getMessage(
-                extractionClassString(entityClass.toString),
-                extractionQuotedString(paramName.toString()))
+            ReflectionUtil.abort(
+              Message.DOMALA4095,
+              extractionClassString(entityClass.toString),
+              extractionQuotedString(paramName.toString())
             )
           }
           reify {
@@ -138,11 +141,10 @@ object EntityReflectionMacros {
         }
       } else if (isVersionLiteral) {
         if (!TypeUtil.isNumberHolder(c)(nakedTpe)) {
-          c.abort(
-            c.enclosingPosition,
-            Message.DOMALA4093.getMessage(
-              extractionClassString(entityClass.toString),
-              extractionQuotedString(paramName.toString()))
+          ReflectionUtil.abort(
+            Message.DOMALA4093,
+            extractionClassString(entityClass.toString),
+            extractionQuotedString(paramName.toString())
           )
         }
         reify {
@@ -192,23 +194,21 @@ object EntityReflectionMacros {
     } else if (TypeUtil.isAnyVal(c)(nakedTpe)) {
       val (basicType, holder) = TypeUtil.newAnyValHolderDesc[blackbox.Context, N](c)(nakedTpe)
       if (!TypeUtil.isBasic(c)(basicType)) {
-        c.abort(c.enclosingPosition, Message.DOMALA6014.getMessage(
+        ReflectionUtil.abort(Message.DOMALA6014,
           extractionClassString(entityClass.toString),
-          extractionQuotedString(paramName.toString())))
+          extractionQuotedString(paramName.toString()))
       }
       if (holder.isEmpty) {
-        c.abort(c.enclosingPosition, Message.DOMALA6017.getMessage(
-          extractionClassString(entityClass.toString)))
+        ReflectionUtil.abort(Message.DOMALA6017,
+          extractionClassString(entityClass.toString))
       }
       if (isIdLiteral) {
         if (isIdGenerateActualLiteral) {
           if (!TypeUtil.isNumber(c)(basicType)) {
-            c.abort(c.enclosingPosition, basicType.toString)
-            c.abort(
-              c.enclosingPosition,
-              Message.DOMALA4095.getMessage(
-                extractionClassString(entityClass.toString),
-                extractionQuotedString(paramName.toString()))
+            ReflectionUtil.abort(
+              Message.DOMALA4095,
+              extractionClassString(entityClass.toString),
+              extractionQuotedString(paramName.toString())
             )
           }
           reify {
@@ -244,11 +244,10 @@ object EntityReflectionMacros {
         }
       } else if (isVersionLiteral) {
         if (!TypeUtil.isNumber(c)(basicType)) {
-          c.abort(
-            c.enclosingPosition,
-            Message.DOMALA4093.getMessage(
-              extractionClassString(entityClass.toString),
-              extractionQuotedString(paramName.toString()))
+          ReflectionUtil.abort(
+            Message.DOMALA4093,
+            extractionClassString(entityClass.toString),
+            extractionQuotedString(paramName.toString())
           )
         }
         reify {
@@ -297,22 +296,20 @@ object EntityReflectionMacros {
       }
     } else {
       if (!isBasicLiteral) {
-        c.abort(
-          c.enclosingPosition,
-          Message.DOMALA4096.getMessage(
-            extractionClassString(propertyClassTag.toString()),
-            extractionClassString(entityClass.toString),
-            extractionQuotedString(paramName.toString()))
+        ReflectionUtil.abort(
+          Message.DOMALA4096,
+          extractionClassString(propertyClassTag.toString()),
+          extractionClassString(entityClass.toString),
+          extractionQuotedString(paramName.toString())
         )
       }
       if (isIdLiteral) {
         if (isIdGenerateActualLiteral) {
           if (!TypeUtil.isNumber(c)(nakedTpe)) {
-            c.abort(
-              c.enclosingPosition,
-              Message.DOMALA4095.getMessage(
-                extractionClassString(entityClass.toString),
-                extractionQuotedString(paramName.toString()))
+            ReflectionUtil.abort(
+              Message.DOMALA4095,
+              extractionClassString(entityClass.toString),
+              extractionQuotedString(paramName.toString())
             )
           }
           reify {
@@ -350,11 +347,10 @@ object EntityReflectionMacros {
         }
       } else if (isVersionLiteral) {
         if (!TypeUtil.isNumber(c)(nakedTpe)) {
-          c.abort(
-            c.enclosingPosition,
-            Message.DOMALA4093.getMessage(
-              extractionClassString(entityClass.toString),
-              extractionQuotedString(paramName.toString()))
+          ReflectionUtil.abort(
+            Message.DOMALA4093,
+            extractionClassString(entityClass.toString),
+            extractionQuotedString(paramName.toString())
           )
         }
         reify {
@@ -432,7 +428,7 @@ object EntityReflectionMacros {
       entityClass: c.Expr[Class[E]],
       args: c.Expr[java.util.Map[String, Property[E, _]]],
       propertyName: c.Expr[String])(
-      propertyClassTag: c.Expr[ClassTag[T]]): c.Expr[T] = {
+      propertyClassTag: c.Expr[ClassTag[T]]): c.Expr[T] = handle(c)(entityClass) {
     import c.universe._
     val wtt = weakTypeOf[T]
     if (TypeUtil.isEmbeddable(c)(wtt)) {
@@ -458,69 +454,68 @@ object EntityReflectionMacros {
       propertyName: String)(implicit propertyClassTag: ClassTag[T]): T = macro readPropertyImpl[T, E]
 
 
-  def validateListenerImpl[E: c.WeakTypeTag, T: c.WeakTypeTag](c: blackbox.Context)(entityClass: c.Expr[Class[E]], listenerClass: c.Expr[Class[T]]): c.Expr[Unit] = {
+  def validateListenerImpl[E: c.WeakTypeTag, T: c.WeakTypeTag](c: blackbox.Context)(
+    entityClass: c.Expr[Class[E]],
+    listenerClass: c.Expr[Class[T]]): c.Expr[Unit] = handle(c)(entityClass) {
     import c.universe._
     val tpe = weakTypeOf[T]
     if(tpe.typeSymbol.isAbstract)
-      c.abort(
-        c.enclosingPosition,
-        Message.DOMALA4166.getMessage(
-          extractionClassString(tpe.toString)))
+      ReflectionUtil.abort(
+        Message.DOMALA4166,
+        extractionClassString(tpe.toString))
     val ctor = tpe.typeSymbol.asClass.primaryConstructor
     if(!ctor.isPublic || ctor.asMethod.paramLists.flatten.nonEmpty)
-      c.abort(
-        c.enclosingPosition,
-        Message.DOMALA4167.getMessage(
-          extractionClassString(tpe.toString)))
+      ReflectionUtil.abort(
+        Message.DOMALA4167,
+        extractionClassString(tpe.toString))
     val entityType =  tpe.baseType(typeOf[EntityListener[_]].typeSymbol.asClass).typeArgs.head
     // TODO: 互換性がある場合は通す
     if(!(weakTypeOf[E] =:= entityType))
-      c.abort(
-        c.enclosingPosition,
-        Message.DOMALA4229.getMessage(
-          typeOf[EntityListener[_]].typeSymbol.typeSignature.typeParams.head.name,
-          entityType.toString,
-          weakTypeOf[E].toString
-      ))
+      ReflectionUtil.abort(
+        Message.DOMALA4229,
+        typeOf[EntityListener[_]].typeSymbol.typeSignature.typeParams.head.name,
+        entityType.toString,
+        weakTypeOf[E].toString
+      )
     reify(())
   }
   def validateListener[E, T <: EntityListener[_]](entityClass: Class[E], listenerClass: Class[T]): Unit = macro validateListenerImpl[E, T]
 
-  def validateTableIdGeneratorImpl[T: c.WeakTypeTag](c: blackbox.Context)(listenerClass: c.Expr[Class[T]]): c.Expr[Unit] = {
+  def validateTableIdGeneratorImpl[E: c.WeakTypeTag, G: c.WeakTypeTag](c: blackbox.Context)(
+    entityClass: c.Expr[Class[E]],
+    generatorClass: c.Expr[Class[G]]): c.Expr[Unit] = handle(c)(entityClass) {
     import c.universe._
-    val tpe = weakTypeOf[T]
+    val tpe = weakTypeOf[G]
     if(tpe.typeSymbol.isAbstract)
-      c.abort(
-        c.enclosingPosition,
-        Message.DOMALA4168.getMessage(
-          extractionClassString(tpe.toString)))
+      ReflectionUtil.abort(
+        Message.DOMALA4168,
+        extractionClassString(tpe.toString))
     val ctor = tpe.typeSymbol.asClass.primaryConstructor
     if(!ctor.isPublic || ctor.asMethod.paramLists.flatten.nonEmpty)
-      c.abort(
-        c.enclosingPosition,
-        Message.DOMALA4169.getMessage(
-          extractionClassString(tpe.toString)))
+      ReflectionUtil.abort(
+        Message.DOMALA4169,
+        extractionClassString(tpe.toString))
     reify(())
   }
-  def validateTableIdGenerator[T <: TableIdGenerator](listenerClass: Class[T]): Unit = macro validateTableIdGeneratorImpl[T]
+  def validateTableIdGenerator[E, G <: TableIdGenerator](entityClass: Class[E], generatorClass: Class[G]): Unit = macro validateTableIdGeneratorImpl[E, G]
 
-  def validateSequenceIdGeneratorImpl[T: c.WeakTypeTag](c: blackbox.Context)(listenerClass: c.Expr[Class[T]]): c.Expr[Unit] = {
+  def validateSequenceIdGeneratorImpl[E: c.WeakTypeTag, G: c.WeakTypeTag](c: blackbox.Context)(
+    entityClass: c.Expr[Class[E]],
+    generatorClass: c.Expr[Class[G]]): c.Expr[Unit] = handle(c)(entityClass) {
     import c.universe._
-    val tpe = weakTypeOf[T]
+    val tpe = weakTypeOf[G]
     if(tpe.typeSymbol.isAbstract)
-      c.abort(
-        c.enclosingPosition,
-        Message.DOMALA4170.getMessage(
-          extractionClassString(tpe.toString)))
+      ReflectionUtil.abort(
+        Message.DOMALA4170,
+        extractionClassString(tpe.toString))
     val ctor = tpe.typeSymbol.asClass.primaryConstructor
     if(!ctor.isPublic || ctor.asMethod.paramLists.flatten.nonEmpty)
-      c.abort(
-        c.enclosingPosition,
-        Message.DOMALA4171.getMessage(
-          extractionClassString(tpe.toString)))
+      ReflectionUtil.abort(
+        Message.DOMALA4171,
+        extractionClassString(tpe.toString))
     reify(())
   }
-  def validateSequenceIdGenerator[T <: SequenceIdGenerator](listenerClass: Class[T]): Unit = macro validateSequenceIdGeneratorImpl[T]
+  def validateSequenceIdGenerator[E, G <: SequenceIdGenerator](entityClass: Class[E], generatorClass: Class[G]): Unit = macro validateSequenceIdGeneratorImpl[E, G]
 
 }
 

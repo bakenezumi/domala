@@ -64,7 +64,9 @@ object EmbeddableTypeGenerator {
     Seq({
       val params = properties.map { p =>
         q"""
-      domala.internal.macros.reflect.EmbeddableReflectionMacros.generatePropertyType[${p.tpe}, ENTITY, ${p.nakedTpe}](
+      domala.internal.macros.reflect.EmbeddableReflectionMacros.generatePropertyType[$clsName, ${p.tpe}, ENTITY, ${p.nakedTpe}](
+        classOf[$clsName],
+        ${p.name.literal},
         entityClass,
         embeddedPropertyName + "." + ${p.name.literal},
         namingType,

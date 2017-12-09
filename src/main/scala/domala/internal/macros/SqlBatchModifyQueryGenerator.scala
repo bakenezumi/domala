@@ -37,7 +37,7 @@ object SqlBatchModifyQueryGenerator {
       q"domala.internal.macros.DaoParam.apply(${paramName.literal}, $paramName, classOf[$paramType])"
 
     val entityTypeOption = q"""
-    domala.internal.macros.reflect.DaoReflectionMacros.getBatchEntityType(${defDecl.trtName.className}, ${defDecl.name.literal}, classOf[$internalType], $daoParam)
+    domala.internal.macros.reflect.DaoReflectionMacros.getBatchEntityType(classOf[${defDecl.trtName}], ${defDecl.name.literal}, classOf[${defDecl._def.decltpe}], $daoParam)
     """
     val result = if(isReturnResult) {
       q"domala.jdbc.BatchResult(__counts, __query.getEntities.asScala)"
@@ -56,7 +56,7 @@ object SqlBatchModifyQueryGenerator {
 
     q"""
     override def ${defDecl.name} = {
-      domala.internal.macros.reflect.DaoReflectionMacros.validateBatchParameterAndSql(${defDecl.trtName.literal}, ${defDecl.name.literal}, false, $populatable, ${commonArgs.sql}, $daoParamType, ..$suppress)
+      domala.internal.macros.reflect.DaoReflectionMacros.validateBatchParameterAndSql(classOf[${defDecl.trtName}], ${defDecl.name.literal}, false, $populatable, ${commonArgs.sql}, $daoParamType, ..$suppress)
       entering(${defDecl.trtName.className}, ${defDecl.name.literal}, $paramName)
       try {
         val __query = ${query(entityTypeOption)}

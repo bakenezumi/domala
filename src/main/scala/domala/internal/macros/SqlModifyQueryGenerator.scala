@@ -48,7 +48,7 @@ object SqlModifyQueryGenerator {
     }
 
     val entityAndEntityType = q"""
-    domala.internal.macros.reflect.DaoReflectionMacros.getEntityAndEntityType(${defDecl.trtName.literal}, ${defDecl.name.literal}, classOf[${defDecl.tpe}], ..$daoParams)
+    domala.internal.macros.reflect.DaoReflectionMacros.getEntityAndEntityType(classOf[${defDecl.trtName}], ${defDecl.name.literal}, classOf[${defDecl.tpe}], ..$daoParams)
     """
     val result = if(isReturnResult) {
       q"domala.jdbc.Result(__count, __query.getEntity.asInstanceOf[$entityType])"
@@ -65,7 +65,7 @@ object SqlModifyQueryGenerator {
 
     q"""
     override def ${defDecl.name} = {
-      domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql(${defDecl.trtName.literal}, ${defDecl.name.literal}, false, $populatable, ${commonArgs.sql}, ..$daoParamTypes)
+      domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql(classOf[${defDecl.trtName}], ${defDecl.name.literal}, false, $populatable, ${commonArgs.sql}, ..$daoParamTypes)
       entering(${defDecl.trtName.className}, ${defDecl.name.literal}, ..$enteringParam)
       try {
         val __query = ${query(entityAndEntityType)}

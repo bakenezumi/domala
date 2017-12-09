@@ -185,7 +185,7 @@ object SelectGenerator extends DaoMethodGenerator {
           case DomaType.EntityOrHolderOrEmbeddable(_) =>
             // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
             val command = commandTemplate(
-              q"domala.internal.macros.reflect.DaoReflectionMacros.getStreamHandler($functionParamTerm, ${trtName.className}, ${defDecl.name.literal})")
+              q"domala.internal.macros.reflect.DaoReflectionMacros.getStreamHandler($functionParamTerm, classOf[$trtName], ${defDecl.name.literal})")
             (
               q"$command.execute()",
               Seq(q"domala.internal.macros.reflect.DaoReflectionMacros.setEntityType[$internalTpe](__query)")
@@ -243,7 +243,7 @@ object SelectGenerator extends DaoMethodGenerator {
           case DomaType.EntityOrHolderOrEmbeddable(_) =>
             // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
             val command = commandTemplate(
-              q"domala.internal.macros.reflect.DaoReflectionMacros.getIteratorHandler($functionParamTerm, ${trtName.literal}, ${defDecl.name.literal})")
+              q"domala.internal.macros.reflect.DaoReflectionMacros.getIteratorHandler($functionParamTerm, classOf[$trtName], ${defDecl.name.literal})")
             (
               q"$command.execute()",
               Seq(q"domala.internal.macros.reflect.DaoReflectionMacros.setEntityType[$internalTpe](__query)")
@@ -272,7 +272,7 @@ object SelectGenerator extends DaoMethodGenerator {
                 .Option(DomaType.EntityOrHolderOrEmbeddable(elementType), _) =>
             // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
             val command = commandTemplate(
-              q"domala.internal.macros.reflect.DaoReflectionMacros.getOptionalSingleResultHandler[$elementType](${trtName.literal}, ${defDecl.name.literal})")
+              q"domala.internal.macros.reflect.DaoReflectionMacros.getOptionalSingleResultHandler[$trtName, $elementType](classOf[$trtName], ${defDecl.name.literal})")
             (
               q"domala.internal.OptionConverters.asScala($command.execute())",
               Seq(q"domala.internal.macros.reflect.DaoReflectionMacros.setEntityType[$elementType](__query)")
@@ -301,7 +301,7 @@ object SelectGenerator extends DaoMethodGenerator {
                 .Seq(DomaType.EntityOrHolderOrEmbeddable(internalTpe), _) =>
             val command = commandTemplate(
               // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
-              q"domala.internal.macros.reflect.DaoReflectionMacros.getResultListHandler[$internalTpe](${trtName.literal}, ${defDecl.name.literal})")
+              q"domala.internal.macros.reflect.DaoReflectionMacros.getResultListHandler[$trtName, $internalTpe](classOf[$trtName], ${defDecl.name.literal})")
             (
               q"$command.execute().asScala",
               Seq(q"domala.internal.macros.reflect.DaoReflectionMacros.setEntityType[$internalTpe](__query)")
@@ -326,7 +326,7 @@ object SelectGenerator extends DaoMethodGenerator {
           case DomaType.EntityOrHolderOrEmbeddable(tpe) =>
             // 注釈マクロ時は型のメタ情報が見れないためもう一段マクロをかます
             (
-              q"domala.internal.macros.reflect.DaoReflectionMacros.getOtherResult[$tpe](${trtName.literal}, ${defDecl.name.literal}, getCommandImplementors, __query, $internalMethodName)",
+              q"domala.internal.macros.reflect.DaoReflectionMacros.getOtherResult[$trtName, $tpe](classOf[$trtName], ${defDecl.name.literal}, getCommandImplementors, __query, $internalMethodName)",
               Seq(q"domala.internal.macros.reflect.DaoReflectionMacros.setEntityType[$tpe](__query)")
             )
 
@@ -377,7 +377,7 @@ object SelectGenerator extends DaoMethodGenerator {
 
     q"""
     override def ${defDecl.name}= {
-      domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql(${trtName.literal}, ${defDecl.name.literal}, true, false, ${commonArgs.sql}, ..$daoParamTypes)
+      domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql(classOf[$trtName], ${defDecl.name.literal}, true, false, ${commonArgs.sql}, ..$daoParamTypes)
       entering(${trtName.className}, ${defDecl.name.literal} ..$enteringParam)
       try {
         val __query = new domala.jdbc.query.SqlAnnotationSelectQuery(${commonArgs.sql})

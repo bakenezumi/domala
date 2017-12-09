@@ -5,6 +5,7 @@ import java.util.OptionalInt
 import java.util.OptionalLong
 
 import domala.internal.macros.reflect.decl.{MethodDeclaration, TypeDeclaration}
+import domala.internal.macros.reflect.util.ReflectionUtil
 import domala.message.Message
 import org.seasar.doma.expr.ExpressionFunctions
 import org.seasar.doma.internal.expr.node._
@@ -13,7 +14,7 @@ import scala.collection.mutable
 import scala.reflect.macros.blackbox
 
 class ExpressionValidator[C <: blackbox.Context](c: C)(
-  trtName: String,
+  daoTpe: C#Type,
   defName: String,
   originalParamTypeMap: ReflectionHelper[C]#ParamMap) extends ExpressionNodeVisitor[TypeDeclaration[C], Void] {
   import c.universe._
@@ -56,7 +57,7 @@ class ExpressionValidator[C <: blackbox.Context](c: C)(
     if (left.isNullType || right.isNullType || left.isSameType(right)) TypeDeclaration.newBooleanTypeDeclaration[C](c)
     else {
       val location = node.getLocation
-      c.abort(c.enclosingPosition, Message.DOMALA4116.getMessage(location.getExpression, Integer.valueOf(location.getPosition), node.getExpression, node.getLeftNode.toString, left.getBinaryName, node.getRightNode.toString, right.getBinaryName))
+      ReflectionUtil.abort(Message.DOMALA4116 , location.getExpression, Integer.valueOf(location.getPosition), node.getExpression, node.getLeftNode, left.getBinaryName, node.getRightNode, right.getBinaryName)
     }
   }
 
@@ -65,12 +66,12 @@ class ExpressionValidator[C <: blackbox.Context](c: C)(
     val right = node.getRightNode.accept(this, p)
     if (left.isNullType || right.isNullType) {
       val location = node.getLocation
-      c.abort(c.enclosingPosition, Message.DOMALA4139.getMessage(location.getExpression, Integer.valueOf(location.getPosition), node.getExpression))
+      ReflectionUtil.abort(Message.DOMALA4139, location.getExpression, Integer.valueOf(location.getPosition), node.getExpression)
     }
     if (left.isSameType(right))  TypeDeclaration.newBooleanTypeDeclaration[C](c)
     else {
       val location = node.getLocation
-      c.abort(c.enclosingPosition, Message.DOMALA4116.getMessage(location.getExpression, Integer.valueOf(location.getPosition), node.getExpression, node.getLeftNode.toString, left.getBinaryName, node.getRightNode.toString, right.getBinaryName))
+      ReflectionUtil.abort(Message.DOMALA4116, location.getExpression, Integer.valueOf(location.getPosition), node.getExpression, node.getLeftNode, left.getBinaryName, node.getRightNode, right.getBinaryName)
     }
   }
 
@@ -83,11 +84,11 @@ class ExpressionValidator[C <: blackbox.Context](c: C)(
     val right = node.getRightNode.accept(this, p)
     if (!left.isBooleanType) {
       val location = node.getLocation
-      c.abort(c.enclosingPosition, Message.DOMALA4117.getMessage(location.getExpression, Integer.valueOf(location.getPosition), node.getExpression, node.getLeftNode.toString, left.getBinaryName))
+      ReflectionUtil.abort(Message.DOMALA4117, location.getExpression, Integer.valueOf(location.getPosition), node.getExpression, node.getLeftNode, left.getBinaryName)
     }
     if (!right.isBooleanType) {
       val location = node.getLocation
-      c.abort(c.enclosingPosition, Message.DOMALA4118.getMessage(location.getExpression, Integer.valueOf(location.getPosition), node.getExpression, node.getRightNode.toString, right.getBinaryName))
+      ReflectionUtil.abort(Message.DOMALA4118, location.getExpression, Integer.valueOf(location.getPosition), node.getExpression, node.getRightNode, right.getBinaryName)
     }
     TypeDeclaration.newBooleanTypeDeclaration[C](c)
   }
@@ -97,7 +98,7 @@ class ExpressionValidator[C <: blackbox.Context](c: C)(
     if (result.isBooleanType) TypeDeclaration.newBooleanTypeDeclaration[C](c)
     else {
       val location = node.getLocation
-      c.abort(c.enclosingPosition, Message.DOMALA4119.getMessage(location.getExpression, Integer.valueOf(location.getPosition), node.getExpression, node.getNode.toString, result.getBinaryName))
+      ReflectionUtil.abort(Message.DOMALA4119, location.getExpression, Integer.valueOf(location.getPosition), node.getExpression, node.getNode, result.getBinaryName)
     }
   }
 
@@ -108,7 +109,7 @@ class ExpressionValidator[C <: blackbox.Context](c: C)(
       if (right.isTextType) left.emulateConcatOperation(right)
       else {
         val location = node.getLocation
-        c.abort(c.enclosingPosition, Message.DOMALA4126.getMessage(location.getExpression, Integer.valueOf(location.getPosition), node.getExpression, node.getLeftNode.toString, left.getBinaryName))
+        ReflectionUtil.abort(Message.DOMALA4126, location.getExpression, Integer.valueOf(location.getPosition), node.getExpression, node.getLeftNode, left.getBinaryName)
       }
     } else {
       handleArithmeticOperatorNode(node, left, right, p)
@@ -142,11 +143,11 @@ class ExpressionValidator[C <: blackbox.Context](c: C)(
   protected def handleArithmeticOperatorNode(node: ArithmeticOperatorNode, left: TypeDeclaration[C], right: TypeDeclaration[C], p: Void): TypeDeclaration[C] = {
     if (!left.isNumberType) {
       val location = node.getLocation
-      c.abort(c.enclosingPosition, Message.DOMALA4120.getMessage(location.getExpression, Integer.valueOf(location.getPosition), node.getExpression, node.getLeftNode.toString, left.getBinaryName))
+      ReflectionUtil.abort(Message.DOMALA4120, location.getExpression, Integer.valueOf(location.getPosition), node.getExpression, node.getLeftNode, left.getBinaryName)
     }
     if (!right.isNumberType) {
       val location = node.getLocation
-      c.abort(c.enclosingPosition, Message.DOMALA4121.getMessage(location.getExpression, Integer.valueOf(location.getPosition), node.getExpression, node.getRightNode.toString, right.getBinaryName))
+      ReflectionUtil.abort(Message.DOMALA4121, location.getExpression, Integer.valueOf(location.getPosition), node.getExpression, node.getRightNode, right.getBinaryName)
     }
     left.emulateArithmeticOperation(right)
   }
@@ -192,7 +193,7 @@ class ExpressionValidator[C <: blackbox.Context](c: C)(
     if (methodDeclarations.isEmpty) {
       val location = node.getLocation
       val methodSignature = createMethodSignature(methodName, parameterTypeDeclarations)
-      c.abort(c.enclosingPosition, Message.DOMALA4071.getMessage(location.getExpression, Integer.valueOf(location.getPosition), node.getTargetObjectNode.getExpression, typeDeclaration.getBinaryName, methodSignature))
+      ReflectionUtil.abort(Message.DOMALA4071, location.getExpression, Integer.valueOf(location.getPosition), node.getTargetObjectNode.getExpression, typeDeclaration.getBinaryName, methodSignature)
     }
     if (methodDeclarations.size == 1) {
       val methodDeclaration = methodDeclarations.head
@@ -201,12 +202,12 @@ class ExpressionValidator[C <: blackbox.Context](c: C)(
     }
     val location = node.getLocation
     val methodSignature = createMethodSignature(methodName, parameterTypeDeclarations)
-    c.abort(c.enclosingPosition, Message.DOMALA4073.getMessage(location.getExpression, Integer.valueOf(location.getPosition), node.getTargetObjectNode.getExpression, typeDeclaration.getBinaryName, methodSignature))
+    ReflectionUtil.abort(Message.DOMALA4073, location.getExpression, Integer.valueOf(location.getPosition), node.getTargetObjectNode.getExpression, typeDeclaration.getBinaryName, methodSignature)
   }
 
   override def visitStaticMethodOperatorNode(node: StaticMethodOperatorNode, p: Void): TypeDeclaration[C] = {
     val location = node.getLocation
-    c.abort(c.enclosingPosition, Message.DOMALA6003.getMessage(location.getExpression, Integer.valueOf(location.getPosition)))
+    ReflectionUtil.abort(Message.DOMALA6003, location.getExpression, Integer.valueOf(location.getPosition))
 
 // Scala reflection: cannot invoke Java static methods and fields
 // https://issues.scala-lang.org/browse/SI-6459
@@ -244,7 +245,7 @@ class ExpressionValidator[C <: blackbox.Context](c: C)(
       if (methodDeclarations.isEmpty) {
         val location = node.getLocation
         val methodSignature = createMethodSignature(methodName, parameterTypeDeclarations)
-        c.abort(c.enclosingPosition, Message.DOMALA4072.getMessage(location.getExpression, Integer.valueOf(location.getPosition), methodSignature))
+        ReflectionUtil.abort(Message.DOMALA4072, location.getExpression, Integer.valueOf(location.getPosition), methodSignature)
       }
       if (methodDeclarations.size == 1) {
         val methodDeclaration = methodDeclarations.head
@@ -267,7 +268,7 @@ class ExpressionValidator[C <: blackbox.Context](c: C)(
     }
     val location = node.getLocation
     val methodSignature = createMethodSignature(methodName, parameterTypeDeclarations)
-    c.abort(c.enclosingPosition, Message.DOMALA4072.getMessage(location.getExpression, Integer.valueOf(location.getPosition), methodSignature))
+    ReflectionUtil.abort(Message.DOMALA4072, location.getExpression, Integer.valueOf(location.getPosition), methodSignature)
   }
 
   // TODO exprFunctions
@@ -305,12 +306,12 @@ class ExpressionValidator[C <: blackbox.Context](c: C)(
       if (returnTypeDeclaration != null) return convertIfOptional(returnTypeDeclaration)
     }
     val location = node.getLocation
-    c.abort(c.enclosingPosition, Message.DOMALA4114.getMessage(location.getExpression, Integer.valueOf(location.getPosition), node.getTargetObjectNode.getExpression, typeDeclaration.getBinaryName, fieldName))
+    ReflectionUtil.abort(Message.DOMALA4114, location.getExpression, Integer.valueOf(location.getPosition), node.getTargetObjectNode.getExpression, typeDeclaration.getBinaryName, fieldName)
   }
 
   override def visitStaticFieldOperatorNode(node: StaticFieldOperatorNode, p: Void): TypeDeclaration[C] = {
     val location = node.getLocation
-    c.abort(c.enclosingPosition, domala.message.Message.DOMALA6004.getMessage(location.getExpression, Integer.valueOf(location.getPosition)))
+    ReflectionUtil.abort(domala.message.Message.DOMALA6004, location.getExpression, Integer.valueOf(location.getPosition))
 
 // Scala reflection: cannot invoke Java static methods and fields
 // https://issues.scala-lang.org/browse/SI-6459
@@ -336,7 +337,7 @@ class ExpressionValidator[C <: blackbox.Context](c: C)(
     val tpe = parameterTypeMap.get(variableName)
     if (tpe.isEmpty) {
       val location = node.getLocation
-      c.abort(c.enclosingPosition, Message.DOMALA4067.getMessage(variableName, Integer.valueOf(location.getPosition)))
+      ReflectionUtil.abort(Message.DOMALA4067, variableName, Integer.valueOf(location.getPosition))
     }
     validatedParameterNames.add(variableName)
     // TODO: feed back
@@ -494,6 +495,5 @@ class ExpressionValidator[C <: blackbox.Context](c: C)(
     }
 
   }
-
 
 }

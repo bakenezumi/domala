@@ -1,7 +1,9 @@
 package domala.internal.macros.reflect.util
 
+import domala.internal.macros.reflect.ReflectAbortException
 import domala.jdbc.holder.AbstractHolderDesc
 import org.seasar.doma.jdbc.entity.{AbstractEntityType, EmbeddableType}
+import org.seasar.doma.message.MessageResource
 
 import scala.reflect.ClassTag
 
@@ -46,4 +48,6 @@ object ReflectionUtil {
       case _    => str
     }
   }
+
+  def abort(message: MessageResource, args: AnyRef*): Nothing = throw new ReflectAbortException(message, null, args: _*)
 }

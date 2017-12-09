@@ -9,11 +9,11 @@ import org.seasar.doma.internal.jdbc.command._
 class DaoReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
 
   test("getOptionalSingleResultHandler for Entity") {
-    assert(DaoReflectionMacros.getOptionalSingleResultHandler[DummyEntity]("DaoReflectionMacrosTestSuite", "get Handler for Entity").isInstanceOf[OptionalEntitySingleResultHandler[_]])
+    assert(DaoReflectionMacros.getOptionalSingleResultHandler[DaoReflectionMacrosTestSuite, DummyEntity](classOf[DaoReflectionMacrosTestSuite], "get Handler for Entity").isInstanceOf[OptionalEntitySingleResultHandler[_]])
   }
 
   test("getOptionalSingleResultHandler for Domain") {
-    assert(DaoReflectionMacros.getOptionalSingleResultHandler[DummyDomain]("DaoReflectionMacrosTestSuite", "get Handler for Domain").isInstanceOf[OptionalDomainSingleResultHandler[_, _]])
+    assert(DaoReflectionMacros.getOptionalSingleResultHandler[DaoReflectionMacrosTestSuite, DummyDomain](classOf[DaoReflectionMacrosTestSuite], "get Handler for Domain").isInstanceOf[OptionalDomainSingleResultHandler[_, _]])
   }
 
   test("getOptionalSingleResultHandler for Other") {
@@ -22,11 +22,11 @@ class DaoReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
   }
 
   test("getResultListHandler for Entity") {
-    assert(DaoReflectionMacros.getResultListHandler[DummyEntity]("DaoReflectionMacrosTestSuite", "get Handler for Entity").isInstanceOf[EntityResultListHandler[_]])
+    assert(DaoReflectionMacros.getResultListHandler[DaoReflectionMacrosTestSuite, DummyEntity](classOf[DaoReflectionMacrosTestSuite], "get Handler for Entity").isInstanceOf[EntityResultListHandler[_]])
   }
 
   test("getResultListHandler for Domain") {
-    assert(DaoReflectionMacros.getResultListHandler[DummyDomain]("DaoReflectionMacrosTestSuite", "get Handler for Domain").isInstanceOf[DomainResultListHandler[_, _]])
+    assert(DaoReflectionMacros.getResultListHandler[DaoReflectionMacrosTestSuite, DummyDomain](classOf[DaoReflectionMacrosTestSuite], "get Handler for Domain").isInstanceOf[DomainResultListHandler[_, _]])
   }
 
   test("getResultListHandler for Other") {
@@ -35,11 +35,11 @@ class DaoReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
   }
 
   test("getStreamHandler for Entity") {
-    assert(DaoReflectionMacros.getStreamHandler((p: Stream[DummyEntity]) => p.toString, "DaoReflectionMacrosTestSuite", "get Handler for Entity").isInstanceOf[EntityStreamHandler[_, _]])
+    assert(DaoReflectionMacros.getStreamHandler((p: Stream[DummyEntity]) => p.toString, classOf[DaoReflectionMacrosTestSuite], "get Handler for Entity").isInstanceOf[EntityStreamHandler[_, _]])
   }
 
   test("getStreamHandler for Domain") {
-    assert(DaoReflectionMacros.getStreamHandler((p: Stream[DummyDomain]) => p.toString, "DaoReflectionMacrosTestSuite", "get Handler for Entity").isInstanceOf[DomainStreamHandler[_, _, _]])
+    assert(DaoReflectionMacros.getStreamHandler((p: Stream[DummyDomain]) => p.toString, classOf[DaoReflectionMacrosTestSuite], "get Handler for Entity").isInstanceOf[DomainStreamHandler[_, _, _]])
   }
 
   test("getStreamHandler for Other") {
@@ -50,14 +50,14 @@ class DaoReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
   test("getEntityAndEntityType has entity") {
     val entity1 = DummyEntity(1, null, "aa", 2)
     val entity2 = DummyEntity(2, null, "bb", 3)
-    val ret = DaoReflectionMacros.getEntityAndEntityType("Test1", "method1", classOf[Int], DaoParam("aaa", 1, classOf[Int]), DaoParam("bbb", entity1, classOf[DummyEntity]), DaoParam("ccc", entity2, classOf[DummyEntity]))
+    val ret = DaoReflectionMacros.getEntityAndEntityType(classOf[DummyEntity], "method1", classOf[Int], DaoParam("aaa", 1, classOf[Int]), DaoParam("bbb", entity1, classOf[DummyEntity]), DaoParam("ccc", entity2, classOf[DummyEntity]))
     assert(ret == Some(EntityAndEntityType("bbb", entity1, DummyEntity)))
   }
 
   test("getEntityAndEntityType has entity and return Result") {
     val entity1 = DummyEntity(1, null, "aa", 2)
     val entity2 = DummyEntity(2, null, "bb", 3)
-    val ret = DaoReflectionMacros.getEntityAndEntityType("Test1", "method1", classOf[Result[DummyEntity]], DaoParam("aaa", 1, classOf[Int]), DaoParam("bbb", entity1, classOf[DummyEntity]), DaoParam("ccc", entity2, classOf[DummyEntity]))
+    val ret = DaoReflectionMacros.getEntityAndEntityType(classOf[DummyEntity], "method1", classOf[Result[DummyEntity]], DaoParam("aaa", 1, classOf[Int]), DaoParam("bbb", entity1, classOf[DummyEntity]), DaoParam("ccc", entity2, classOf[DummyEntity]))
     assert(ret == Some(EntityAndEntityType("bbb", entity1, DummyEntity)))
   }
 
@@ -71,7 +71,7 @@ class DaoReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
   }
 
   test("getEntityAndEntityType no entity") {
-    val ret = DaoReflectionMacros.getEntityAndEntityType("Test1", "method1", classOf[Int], DaoParam("aaa", 1, classOf[Int]), DaoParam("bbb", "aaa", classOf[String]))
+    val ret = DaoReflectionMacros.getEntityAndEntityType(classOf[Int], "method1", classOf[Int], DaoParam("aaa", 1, classOf[Int]), DaoParam("bbb", "aaa", classOf[String]))
     assert(ret.isEmpty)
   }
 

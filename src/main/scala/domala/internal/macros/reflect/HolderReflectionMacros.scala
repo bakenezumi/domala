@@ -1,5 +1,6 @@
 package domala.internal.macros.reflect
 
+import domala.internal.macros.reflect.util.ReflectionUtil
 import domala.internal.macros.util.MacrosHelper
 import domala.message.Message
 
@@ -8,18 +9,27 @@ import scala.reflect.macros.blackbox
 
 object HolderReflectionMacros {
 
+  private def handle[HOLDER: c.WeakTypeTag, R](c: blackbox.Context)(holderClass: c.Expr[Class[HOLDER]])(block: => R): R = try {
+    block
+  } catch {
+    case e: ReflectAbortException =>
+      import c.universe._
+      c.abort(weakTypeOf[HOLDER].typeSymbol.pos, e.getLocalizedMessage)
+  }
+
   def assertUnique(handler: () => Unit)(args: Any*) : Unit = {
     if(args.size != args.toSet.size) handler()
   }
 
   def getSubclasses[HOLDER: c.WeakTypeTag](c: blackbox.Context)(holderType: c.Type): Set[c.universe.Symbol] = {
     val subclasses: Set[c.universe.Symbol] = holderType.typeSymbol.asClass.knownDirectSubclasses
-    if(subclasses.isEmpty) MacrosHelper.abort(Message.DOMALA6007, holderType.typeSymbol.fullName)
-    subclasses.find(!_.isModuleClass).foreach(sub => MacrosHelper.abort(Message.DOMALA6008, sub.fullName))
+    if(subclasses.isEmpty) ReflectionUtil.abort(Message.DOMALA6007, holderType.typeSymbol.fullName)
+    subclasses.find(!_.isModuleClass).foreach(sub => ReflectionUtil.abort(Message.DOMALA6008, sub.fullName))
     subclasses
   }
 
-  def assertSubclassesImpl[HOLDER: c.WeakTypeTag](c: blackbox.Context)(holderClass: c.Expr[Class[HOLDER]]): c.Expr[Unit] = {
+  def assertSubclassesImpl[HOLDER: c.WeakTypeTag](c: blackbox.Context)(
+    holderClass: c.Expr[Class[HOLDER]]): c.Expr[Unit] = handle(c)(holderClass) {
     import c.universe._
     val holderType = weakTypeOf[HOLDER]
     val subclasses: Set[c.universe.Symbol] = getSubclasses(c)(holderType)
