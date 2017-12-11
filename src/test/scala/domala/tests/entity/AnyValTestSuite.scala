@@ -112,7 +112,7 @@ object Values {
   case class Inner(value: String) extends AnyVal
 }
 
-case class IDValue[E](value: Int) extends AnyVal
+case class IDValue[E](value: Long) extends AnyVal
 
 case class NameValue(value: String) extends AnyVal
 

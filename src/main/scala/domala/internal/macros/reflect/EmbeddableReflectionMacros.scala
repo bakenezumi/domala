@@ -2,7 +2,7 @@ package domala.internal.macros.reflect
 
 import java.util.function.Supplier
 
-import domala.internal.macros.reflect.util.{ReflectionUtil, TypeUtil}
+import domala.internal.macros.reflect.util.{PropertyTypeUtil, ReflectionUtil, TypeUtil}
 import domala.message.Message
 import org.seasar.doma.jdbc.entity.NamingType
 import org.seasar.doma.wrapper.Wrapper
@@ -17,9 +17,8 @@ object EmbeddableReflectionMacros {
   } catch {
     case e: ReflectAbortException =>
       import c.universe._
-      c.abort(weakTypeOf[E].typeSymbol.pos, e.getLocalizedMessage)
+      c.abort(weakTypeOf[E].typeSymbol.pos, e.getLocalizedMessage.replace("Nothing", weakTypeOf[E].toString))
   }
-
 
   def generatePropertyTypeImpl[
     EM: c.WeakTypeTag,
@@ -50,7 +49,7 @@ object EmbeddableReflectionMacros {
         Message.DOMALA4297,
         tpe, weakTypeOf[EM], propertyNameLiteral)
     }
-    EntityReflectionMacros.generatePropertyTypeImpl[T, E, N](c)(
+    PropertyTypeUtil.generatePropertyTypeImpl[T, E, N](c)(
       entityClass,
       paramName,
       namingType,
@@ -67,7 +66,6 @@ object EmbeddableReflectionMacros {
       columnQuote,
       collections
     )(propertyClassTag, nakedClassTag)
-
   }
 
   def generatePropertyType[EM, T, E, N](

@@ -183,7 +183,7 @@ case class GenerateBasic (
 )
 
 @Holder
-case class IDHolder[T] private (value: Int)
+case class IDHolder[T] private (value: BigInt)
 
 object IDHolder {
   def apply[T](value: Int): IDHolder[T] = {
@@ -205,10 +205,10 @@ case class GenerateHolder (
   data: String
 )
 
-class IDVal[T] private (val value: Int) extends AnyVal
+class IDVal[T] private (val value: Long) extends AnyVal
 
 object IDVal {
-  def apply[T](value: Int): IDVal[T] = {
+  def apply[T](value: Long): IDVal[T] = {
     if (value < 0) throw new IllegalArgumentException(
       "value should be positive. " + value
     )
@@ -226,7 +226,6 @@ case class GenerateVal (
   id: IDVal[GenerateVal],
   data: String
 )
-
 
 @Dao(config = TestConfig)
 trait IdDao {

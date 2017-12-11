@@ -121,7 +121,7 @@ object WeightType {
   final class G extends WeightType
 }
 @Holder
-case class Weight[T <: WeightType](underlying: Int)
+case class Weight[T <: WeightType] private (underlying: BigInt)
 
 @Holder
 sealed abstract class LikeEnum(val underlying: String)

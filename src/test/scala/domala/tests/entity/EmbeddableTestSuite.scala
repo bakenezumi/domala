@@ -1,6 +1,7 @@
 package domala.tests.entity
 
 import java.time.LocalDateTime
+import java.util.Calendar
 
 import domala._
 import domala.jdbc.{Config, Result}
