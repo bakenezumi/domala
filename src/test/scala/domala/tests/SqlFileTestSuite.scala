@@ -337,4 +337,36 @@ class SqlFileTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  test("batch update by Sql") {
+    Required {
+      val entities = for(e <- dao.selectAll) yield e.copy(age = e.age.map(_ + 10))
+      dao.batchUpdateSql(entities)
+      assert(
+        dao.selectAll == Seq(
+          Person(
+            Some(ID(1)),
+            Some(Name("SMITH")),
+            Some(20),
+            Address("Tokyo", "Yaesu"),
+            Some(2),
+            Some(1)),
+          Person(
+            Some(ID(2)),
+            Some(Name("ALLEN")),
+            Some(30),
+            Address("Kyoto", "Karasuma"),
+            Some(2),
+            Some(1)),
+        )
+      )
+    }
+  }
+
+  test("batch delete by Sql") {
+    Required {
+      dao.batchDeleteSql(dao.selectAll)
+      assert(dao.selectCount == 0)
+    }
+  }
+
 }

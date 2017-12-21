@@ -58,6 +58,12 @@ trait PersonSqlFileDao {
   @BatchInsert(sqlFile = true, batchSize = 100)
   def batchInsertSql(persons: Seq[Person]): BatchResult[Person]
 
+  @BatchUpdate(sqlFile=true, batchSize = 100)
+  def batchUpdateSql(persons: Seq[Person]): BatchResult[Person]
+
+  @BatchDelete(sqlFile = true, batchSize = 100)
+  def batchDeleteSql(persons: Seq[Person]): Array[Int]
+
 }
 
 
