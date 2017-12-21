@@ -4,7 +4,7 @@ import domala.internal.macros.reflect.decl.TypeDeclaration
 import domala.internal.macros.reflect.util.{ReflectionUtil, TypeUtil}
 import domala.message.Message
 import org.seasar.doma.internal.expr.node.ExpressionNode
-import org.seasar.doma.internal.expr.{ExpressionException, ExpressionParser}
+import org.seasar.doma.internal.expr.ExpressionException
 import org.seasar.doma.internal.jdbc.sql.SimpleSqlNodeVisitor
 import org.seasar.doma.internal.jdbc.sql.node._
 import org.seasar.doma.jdbc.SqlNode
@@ -12,21 +12,20 @@ import org.seasar.doma.jdbc.SqlNode
 import scala.reflect.macros.blackbox
 
 class SqlValidator[C <: blackbox.Context](val c: C)(
-  daoTpe: C#Type,
-  defName: String,
+  targetName: String,
   expandable: Boolean,
   populatable: Boolean,
   paramTypeMap: ReflectionHelper[C]#ParamMap
 ) extends SimpleSqlNodeVisitor[Void, Void]{
   val SQL_MAX_LENGTH = 5000
-  val expressionValidator = new ExpressionValidator[C](c)(daoTpe, defName, paramTypeMap)
+  val expressionValidator = new ExpressionValidator[C](c)(paramTypeMap)
 
   def validate(sqlNode: SqlNode): Unit = {
     sqlNode.accept(this, null)
     val validatedParameterNames = expressionValidator.validatedParameterNames
     paramTypeMap.keys.foreach{ parameterName =>
       if (!validatedParameterNames.contains(parameterName)) {
-        ReflectionUtil.abort(Message.DOMALA4122, daoTpe, defName, parameterName)
+        ReflectionUtil.abort(Message.DOMALA4122, targetName, parameterName)
       }
     }
   }
@@ -42,12 +41,12 @@ class SqlValidator[C <: blackbox.Context](val c: C)(
     if (node.getWordNode != null) {
       if (!isScalar(typeDeclaration)) {
         val sql = getSql(location)
-        ReflectionUtil.abort(Message.DOMALA4153, daoTpe, defName, sql, Integer.valueOf(location.getLineNumber), Integer.valueOf(location.getPosition), variableName, typeDeclaration.getBinaryName)
+        ReflectionUtil.abort(Message.DOMALA4153, targetName, sql, Integer.valueOf(location.getLineNumber), Integer.valueOf(location.getPosition), variableName, typeDeclaration.getBinaryName)
       }
     } else {
       if (!isScalarIterable(typeDeclaration)) {
         val sql = getSql(location)
-        ReflectionUtil.abort(Message.DOMALA4161, daoTpe, defName, sql, Integer.valueOf(location.getLineNumber), Integer.valueOf(location.getPosition), variableName, typeDeclaration.getBinaryName)
+        ReflectionUtil.abort(Message.DOMALA4161, targetName, sql, Integer.valueOf(location.getLineNumber), Integer.valueOf(location.getPosition), variableName, typeDeclaration.getBinaryName)
       }
     }
     visitNode(node, p)
@@ -83,7 +82,7 @@ class SqlValidator[C <: blackbox.Context](val c: C)(
     val typeDeclaration = validateExpressionVariable(location, expression)
     if (!typeDeclaration.isBooleanType) {
       val sql = getSql(location)
-      ReflectionUtil.abort(Message.DOMALA4140, daoTpe, defName, sql, Integer.valueOf(location.getLineNumber), Integer.valueOf(location.getPosition), expression, typeDeclaration.getBinaryName)
+      ReflectionUtil.abort(Message.DOMALA4140, targetName, sql, Integer.valueOf(location.getLineNumber), Integer.valueOf(location.getPosition), expression, typeDeclaration.getBinaryName)
     }
     visitNode(node, p)
     null
@@ -95,7 +94,7 @@ class SqlValidator[C <: blackbox.Context](val c: C)(
     val typeDeclaration = validateExpressionVariable(location, expression)
     if (!typeDeclaration.isBooleanType) {
       val sql = getSql(location)
-      ReflectionUtil.abort(Message.DOMALA4141, daoTpe, defName, sql, Integer.valueOf(location.getLineNumber), Integer.valueOf(location.getPosition), expression, typeDeclaration.getBinaryName)
+      ReflectionUtil.abort(Message.DOMALA4141, targetName, sql, Integer.valueOf(location.getLineNumber), Integer.valueOf(location.getPosition), expression, typeDeclaration.getBinaryName)
     }
     visitNode(node, p)
     null
@@ -110,12 +109,12 @@ class SqlValidator[C <: blackbox.Context](val c: C)(
     val tpe: C#Type = typeDeclaration.tpe
     if (!(tpe <:< typeOf[Iterable[_]])) {
       val sql = getSql(location)
-      ReflectionUtil.abort(Message.DOMALA4149, daoTpe, defName, sql, Integer.valueOf(location.getLineNumber), Integer.valueOf(location.getPosition), expression, typeDeclaration.getBinaryName)
+      ReflectionUtil.abort(Message.DOMALA4149, targetName, sql, Integer.valueOf(location.getLineNumber), Integer.valueOf(location.getPosition), expression, typeDeclaration.getBinaryName)
     }
     val typeArgs = tpe.typeArgs
     if (typeArgs.isEmpty) {
       val sql = getSql(location)
-      ReflectionUtil.abort(Message.DOMALA4150, daoTpe, defName, sql, Integer.valueOf(location.getLineNumber), Integer.valueOf(location.getPosition), expression, typeDeclaration.getBinaryName)
+      ReflectionUtil.abort(Message.DOMALA4150, targetName, sql, Integer.valueOf(location.getLineNumber), Integer.valueOf(location.getPosition), expression, typeDeclaration.getBinaryName)
     }
     val originalIdentifierType: C#Type = expressionValidator.removeParameterType(identifier)
     expressionValidator.putParameterType(identifier, typeArgs.asInstanceOf[List[C#Type]].head)
@@ -139,7 +138,7 @@ class SqlValidator[C <: blackbox.Context](val c: C)(
     if (!expandable) {
       val location = node.getLocation
       val sql = getSql(location)
-      ReflectionUtil.abort(Message.DOMALA4257, daoTpe, defName, sql, Integer.valueOf(location.getLineNumber), Integer.valueOf(location.getPosition))
+      ReflectionUtil.abort(Message.DOMALA4257, targetName, sql, Integer.valueOf(location.getLineNumber), Integer.valueOf(location.getPosition))
     }
     visitNode(node, p)
   }
@@ -148,7 +147,7 @@ class SqlValidator[C <: blackbox.Context](val c: C)(
     if (!populatable) {
       val location = node.getLocation
       val sql = getSql(location)
-      ReflectionUtil.abort(Message.DOMALA4270, daoTpe, defName, sql, Integer.valueOf(location.getLineNumber), Integer.valueOf(location.getPosition))
+      ReflectionUtil.abort(Message.DOMALA4270, targetName, sql, Integer.valueOf(location.getLineNumber), Integer.valueOf(location.getPosition))
     }
     paramTypeMap.keys.foreach(name => expressionValidator.addValidatedParameterName(name))
     visitNode(node, p)
@@ -166,7 +165,7 @@ class SqlValidator[C <: blackbox.Context](val c: C)(
   } catch {
     case e: ReflectAbortException =>
       val sql = getSql(location)
-      ReflectionUtil.abort(Message.DOMALA4092, daoTpe, defName, sql, Integer.valueOf(location.getLineNumber), Integer.valueOf(location.getPosition), e.getMessage)
+      ReflectionUtil.abort(Message.DOMALA4092, targetName, sql, Integer.valueOf(location.getLineNumber), Integer.valueOf(location.getPosition), e.getMessage)
   }
 
   protected def parseExpression(location: SqlLocation, expression: String): ExpressionNode = try {
@@ -175,7 +174,7 @@ class SqlValidator[C <: blackbox.Context](val c: C)(
   } catch {
     case e: ExpressionException =>
       val sql = getSql(location)
-      ReflectionUtil.abort(Message.DOMALA4092, daoTpe, defName, sql, Integer.valueOf(location.getLineNumber), Integer.valueOf(location.getPosition), e.getMessage)
+      ReflectionUtil.abort(Message.DOMALA4092, targetName, sql, Integer.valueOf(location.getLineNumber), Integer.valueOf(location.getPosition), e.getMessage)
   }
 
   protected def getSql(location: SqlLocation): String = {

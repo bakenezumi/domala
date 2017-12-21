@@ -104,6 +104,7 @@ object DaoGenerator {
 
     val defImpl = _def.mods.collect {
       case mod"@Script(..$modParams)" => (ScriptGenerator, modParams)
+      case mod"@Select" => (SelectGenerator, Nil)
       case mod"@Select(..$modParams)" => (SelectGenerator, modParams)
       case mod"@Insert" => (InsertGenerator, Nil)
       case mod"@Insert(..$modParams)" => (InsertGenerator, modParams)

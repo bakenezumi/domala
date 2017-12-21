@@ -1,24 +1,33 @@
 package domala.jdbc.query
 
-import java.util
-import java.util.function.{BiFunction, Function}
 
-import domala.internal.expr.ExpressionEvaluator
 import domala.internal.jdbc.sql.NodePreparedSqlBuilder
-import org.seasar.doma.internal.jdbc.sql.node.ExpandNode
-import org.seasar.doma.jdbc.{PreparedSql, SqlKind, SqlNode}
+import org.seasar.doma.internal.util.AssertionUtil.assertNotNull
+import org.seasar.doma.jdbc.{SelectOptionsAccessor, SqlKind, SqlNode}
 
-class SqlSelectQuery extends org.seasar.doma.jdbc.query.SqlSelectQuery {
-  private def buildSqlDomala(sqlBuilder: BiFunction[ExpressionEvaluator, Function[ExpandNode, util.List[String]], PreparedSql]): Unit = {
-    val evaluator: ExpressionEvaluator = new ExpressionEvaluator(this.parameters, this.config.getDialect.getExpressionFunctions, this.config.getClassHelper)
-    this.sql = sqlBuilder.apply(evaluator, this.expandColumns _)
+class SqlSelectQuery extends AbstractSelectQuery {
+
+  protected var sqlNode: SqlNode = _
+
+  override def prepare(): Unit = {
+    super.prepare()
+    assertNotNull(sqlNode, "")
+  }
+
+  override def complete(): Unit = {
+    if (SelectOptionsAccessor.isCount(options)) executeCount(sqlNode)
+  }
+
+  def setSqlNode(sqlNode: SqlNode): Unit = {
+    this.sqlNode = sqlNode
   }
 
   override protected def prepareSql(): Unit = {
     val transformedSqlNode: SqlNode = getConfig.getDialect.transformSelectSqlNode(this.sqlNode, this.options)
     buildSqlDomala((evaluator, expander) => {
-      val sqlBuilder: NodePreparedSqlBuilder = new NodePreparedSqlBuilder(this.config, SqlKind.SELECT, evaluator, this.sqlLogType, expander)
+      val sqlBuilder = new NodePreparedSqlBuilder(this.config, SqlKind.SELECT, evaluator, this.sqlLogType, expander)
       sqlBuilder.build(transformedSqlNode, this.comment _)
     })
   }
+
 }

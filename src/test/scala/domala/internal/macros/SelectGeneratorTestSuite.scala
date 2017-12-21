@@ -7,19 +7,6 @@ import scala.meta._
 
 class SelectGeneratorTestSuite extends FunSuite{
 
-  test("empty sql") {
-    val trt = q"""
-trait EmptySqlDao {
-  @Select("")
-  def select(id: Int): Emp
-}
-"""
-    val caught = intercept[MacrosAbortException] {
-      DaoGenerator.generate(trt, null, None)
-    }
-    assert(caught.message == Message.DOMALA4020)
-  }
-
   test("wildcard type return") {
     val trt = q"""
 trait WildcardTypeReturnDao {

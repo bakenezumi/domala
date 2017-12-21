@@ -14,8 +14,6 @@ import scala.collection.mutable
 import scala.reflect.macros.blackbox
 
 class ExpressionValidator[C <: blackbox.Context](c: C)(
-  daoTpe: C#Type,
-  defName: String,
   originalParamTypeMap: ReflectionHelper[C]#ParamMap) extends ExpressionNodeVisitor[TypeDeclaration[C], Void] {
   import c.universe._
 

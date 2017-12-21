@@ -64,8 +64,7 @@ object SelectGenerator extends DaoMethodGenerator {
       args,
       trtName.syntax,
       defDecl.name.syntax)
-    if (commonArgs.sql.syntax == """""""")
-      MacrosHelper.abort(Message.DOMALA4020, trtName.syntax, defDecl.name.syntax)
+    val useSqlAnnotation = commonArgs.sql.syntax != """"""""
     val selectArgs = SelectArgs.read(args)
     if(TypeUtil.isWildcardType(defDecl.tpe))
       MacrosHelper.abort(Message.DOMALA4207, defDecl.tpe, trtName.syntax, defDecl.name.syntax)
@@ -109,6 +108,20 @@ object SelectGenerator extends DaoMethodGenerator {
           }, false, true)
         case _ => abort(_def.pos, "error")
       }
+
+    if (defDecl.paramss.flatten.exists(p => p.decltpe.get match {
+      case t"Stream[$_] => $_" => true
+      case _ => false
+    }) && !isStream) {
+      MacrosHelper.abort(Message.DOMALA6019, trtName.syntax, defDecl.name.syntax)
+    }
+    if (defDecl.paramss.flatten.exists(p => p.decltpe.get match {
+      case t"Iterator[$_] => $_" => true
+      case _ => false
+    }) && !isIterator) {
+      MacrosHelper.abort(Message.DOMALA6020, trtName.syntax, defDecl.name.syntax)
+    }
+
     val setOptions = {
       val optionParameters = defDecl.paramss.flatten.filter { p =>
         p.decltpe.get match {
@@ -366,7 +379,7 @@ object SelectGenerator extends DaoMethodGenerator {
       val pType: Type = p.decltpe.get match {
         case tpe => TypeUtil.toType(tpe)
       }
-      q"domala.internal.macros.DaoParamClass.apply(${p.name.literal}, classOf[$pType])"
+      q"domala.internal.macros.DaoParamClass(${p.name.literal}, classOf[$pType])"
     }
 
     val setResultStream = if(isStream || isIterator) {
@@ -375,12 +388,25 @@ object SelectGenerator extends DaoMethodGenerator {
       Nil
     }
 
+
+    val sqlValidator =
+      if (useSqlAnnotation) {
+        q"domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql(classOf[$trtName], ${defDecl.name.literal}, true, false, ${commonArgs.sql}, ..$daoParamTypes)"
+      } else q"()"
+
+
+    val query = if(useSqlAnnotation) {
+      q"new domala.jdbc.query.SqlAnnotationSelectQuery(${commonArgs.sql})"
+    } else {
+      q"""new domala.jdbc.query.SqlFileSelectQuery(domala.internal.macros.reflect.DaoReflectionMacros.getSqlFilePath(classOf[$trtName], ${defDecl.name.literal}, true, false, ..$daoParamTypes))"""
+    }
+
     q"""
     override def ${defDecl.name}= {
-      domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql(classOf[$trtName], ${defDecl.name.literal}, true, false, ${commonArgs.sql}, ..$daoParamTypes)
+      $sqlValidator
       entering(${trtName.className}, ${defDecl.name.literal} ..$enteringParam)
       try {
-        val __query = new domala.jdbc.query.SqlAnnotationSelectQuery(${commonArgs.sql})
+        val __query = $query
         ..$checkParameter
         __query.setMethod($internalMethodName)
         __query.setConfig(__config)

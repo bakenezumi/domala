@@ -101,7 +101,7 @@ import org.seasar.doma.{FetchType, MapKeyNamingType}
   * @see [[domala.jdbc.SelectOptions]]
   */
 class Select(
-  sql: String,
+  sql: String = "",
   queryTimeOut: Int = -1,
   fetchSize: Int = -1,
   maxRows: Int = -1,

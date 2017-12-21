@@ -48,7 +48,7 @@ abstract class SqlAnnotationBatchModifyQuery[ELEMENT](
   protected def prepareSql(): Unit = {
     val value = new Value(elementClass, currentEntity)
     val evaluator = new ExpressionEvaluator(Collections.singletonMap(parameterName, value), this.config.getDialect.getExpressionFunctions, this.config.getClassHelper)
-    val sqlBuilder = new NodePreparedSqlBuilder(this.config, this.kind, evaluator, this.sqlLogType, this.expandColumns _, this.populateValues _)
+    val sqlBuilder = new NodePreparedSqlBuilder(this.config, this.kind, evaluator, this.sqlLogType, this.expandColumns _, this.populateValues _, null)
     val sql = sqlBuilder.build(this.sqlNode, this.comment _)
     sqls.add(sql)
   }

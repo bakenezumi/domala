@@ -41,7 +41,8 @@ public enum Message implements MessageResource {
     DOMALA4008(org.seasar.doma.message.Message.DOMA4008.getMessagePattern()),
     DOMALA4014("@Daoはトレイト以外には注釈できません。"),
     DOMALA4015("クラス以外には注釈できません。"),
-    DOMALA4020("[{0}.{1}]のSQLが空です。"),
+    DOMALA4019(org.seasar.doma.message.Message.DOMA4019.getMessagePattern()),
+    DOMALA4020("{0}が空です。"),
     DOMALA4024(org.seasar.doma.message.Message.DOMA4024.getMessagePattern()),
     DOMALA4025(org.seasar.doma.message.Message.DOMA4025.getMessagePattern()),
     DOMALA4030(org.seasar.doma.message.Message.DOMA4030.getMessagePattern()),
@@ -59,7 +60,7 @@ public enum Message implements MessageResource {
     DOMALA4053(org.seasar.doma.message.Message.DOMA4053.getMessagePattern()),
     // TODO: ストアド系未実装 DOMA4059 - DOMA4066
     DOMALA4067(org.seasar.doma.message.Message.DOMA4067.getMessagePattern()),
-    DOMALA4069("[{0}.{1}]のSQLの解析に失敗しました。原因は次のものです。{2}"),
+    DOMALA4069("{0}の解析に失敗しました。原因は次のものです。{1}"),
     DOMALA4071(org.seasar.doma.message.Message.DOMA4071.getMessagePattern()),
     DOMALA4072(org.seasar.doma.message.Message.DOMA4072.getMessagePattern()),
     DOMALA4073(org.seasar.doma.message.Message.DOMA4073.getMessagePattern()),
@@ -72,7 +73,7 @@ public enum Message implements MessageResource {
     DOMALA4089(org.seasar.doma.message.Message.DOMA4089.getMessagePattern()),
     //DOMALA4090
     //DOMALA4091
-    DOMALA4092("[{0}.{1}]のSQLの妥当検査に失敗しました（[{3}]行目[{4}]番目の文字付近）。詳細は次のものです。{5} SQL[{2}]。"),
+    DOMALA4092("{0}の妥当検査に失敗しました（[{2}]行目[{3}]番目の文字付近）。詳細は次のものです。{4} SQL[{1}]。"),
     DOMALA4093(org.seasar.doma.message.Message.DOMA4093.getMessagePattern()),
     DOMALA4095(org.seasar.doma.message.Message.DOMA4095.getMessagePattern()),
     // @ExternalDomainは未対応
@@ -95,7 +96,7 @@ public enum Message implements MessageResource {
     DOMALA4119(org.seasar.doma.message.Message.DOMA4119.getMessagePattern()),
     DOMALA4120(org.seasar.doma.message.Message.DOMA4120.getMessagePattern()),
     DOMALA4121(org.seasar.doma.message.Message.DOMA4121.getMessagePattern()),
-    DOMALA4122("[{0}.{1}]のSQLの妥当検査に失敗しました。メソッドのパラメータ[{2}]がSQLで参照されていません。"),
+    DOMALA4122("{0}の妥当検査に失敗しました。メソッドのパラメータ[{1}]がSQLで参照されていません。"),
 
     // OriginalStates未実装 DOMA4125
     DOMALA4126(org.seasar.doma.message.Message.DOMA4126.getMessagePattern()),
@@ -104,20 +105,20 @@ public enum Message implements MessageResource {
     // OriginalStates未実装 DOMA4135
     // 式内のConstructor未実装 DOMA4138
     DOMALA4139(org.seasar.doma.message.Message.DOMA4139.getMessagePattern()),
-    DOMALA4140("[{0}.{1}]のSQLの妥当検査に失敗しました（[{3}]行目[{4}]番目の文字付近）。/*%if ...*/の式[{5}]が型[{6}]として評価されましたが、Boolean型でなければいけません。SQL[{2}]"),
-    DOMALA4141("[{0}.{1}]のSQLの妥当検査に失敗しました（[{3}]行目[{4}]番目の文字付近）。/*%elseif ...*/の式[{5}]が型[{6}]として評価されましたが、Boolean型でなければいけません。SQL[{2}]"),
+    DOMALA4140("{0}の妥当検査に失敗しました（[{2}]行目[{3}]番目の文字付近）。/*%if ...*/の式[{4}]が型[{5}]として評価されましたが、Boolean型でなければいけません。SQL[{1}]"),
+    DOMALA4141("{0}の妥当検査に失敗しました（[{2}]行目[{3}]番目の文字付近）。/*%elseif ...*/の式[{4}]が型[{5}]として評価されましたが、Boolean型でなければいけません。SQL[{1}]"),
 
     DOMALA4145(org.seasar.doma.message.Message.DOMA4145.getMessagePattern()),
     DOMALA4146(org.seasar.doma.message.Message.DOMA4146.getMessagePattern()),
     DOMALA4147(org.seasar.doma.message.Message.DOMA4147.getMessagePattern()),
     // 式内のstaticフィールド参照未対応 DOMA4148
-    DOMALA4149("[{0}.{1}]のSQLの妥当検査に失敗しました（[{3}]行目[{4}]番目の文字付近）。/*%for ...*/の式[{5}]が型[{6}]として評価されましたが、scala.collection.Iterable型でなければいけません。SQL[{2}]"),
-    DOMALA4150("[{0}.{1}]のSQLの妥当検査に失敗しました（[{3}]行目[{4}]番目の文字付近）。/*%for ...*/の式[{5}]の型[{6}]の実型引数が不明です。SQL[{2}]"),
-    DOMALA4153("[{0}.{1}]のSQLの妥当検査に失敗しました（[{3}]行目[{4}]番目の文字付近）。バインド変数もしくはリテラル変数[{5}]に対応するパラメータの型は基本型もしくはホルダークラスでなければいけません。しかし、実際の型は[{6}]です。型を間違えていませんか？もしくはフィールドアクセスやメソッド呼び出しの記述を忘れていませんか？SQL[{2}]"),
+    DOMALA4149("{0}の妥当検査に失敗しました（[{2}]行目[{3}]番目の文字付近）。/*%for ...*/の式[{4}]が型[{5}]として評価されましたが、scala.collection.Iterable型でなければいけません。SQL[{1}]"),
+    DOMALA4150("{0}の妥当検査に失敗しました（[{2}]行目[{3}]番目の文字付近）。/*%for ...*/の式[{4}]の型[{5}]の実型引数が不明です。SQL[{1}]"),
+    DOMALA4153("{0}の妥当検査に失敗しました（[{2}]行目[{3}]番目の文字付近）。バインド変数もしくはリテラル変数[{4}]に対応するパラメータの型は基本型もしくはホルダークラスでなければいけません。しかし、実際の型は[{6}]です。型を間違えていませんか？もしくはフィールドアクセスやメソッド呼び出しの記述を忘れていませんか？SQL[{1}]"),
     // 抽象型Entity未実装 DOMA4154-4157
 
     DOMALA4160("scala.collection.Iterableのサブタイプをワイルカード型にしてはいけません。 at {0}.{1}"),
-    DOMALA4161("[{0}.{1}]のSQLの妥当検査に失敗しました（[{3}]行目[{4}]番目の文字付近）。括弧の前に位置するバインド変数もしくはリテラル変数[{5}]に対応するパラメータの型は基本型もしくはホルダークラスを要素としたscala.collection.Iterableのサブタイプでなければいけません。しかし、実際の型は[{6}]です。型を間違えていませんか？もしくはフィールドアクセスやメソッド呼び出しの記述を忘れていませんか？。SQL[{2}]"),
+    DOMALA4161("{0}の妥当検査に失敗しました（[{2}]行目[{3}]番目の文字付近）。括弧の前に位置するバインド変数もしくはリテラル変数[{4}]に対応するパラメータの型は基本型もしくはホルダークラスを要素としたscala.collection.Iterableのサブタイプでなければいけません。しかし、実際の型は[{5}]です。型を間違えていませんか？もしくはフィールドアクセスやメソッド呼び出しの記述を忘れていませんか？。SQL[{1}]"),
     // DOMALA4163, DOMALA4164 抽象型Configは未チェック
     DOMALA4166(org.seasar.doma.message.Message.DOMA4166.getMessagePattern()),
     DOMALA4167(org.seasar.doma.message.Message.DOMA4167.getMessagePattern()),
@@ -128,11 +129,11 @@ public enum Message implements MessageResource {
     DOMALA4172("戻り値の型はUnitでなければいけません。 at {0}.{1}"),
     DOMALA4173(org.seasar.doma.message.Message.DOMA4173.getMessagePattern()),
     /** SQLファイルに埋め込み変数コメントが含まれていることを示す警告メッセージ */
-    DOMALA4181("[{0}.{1}]のSQLに埋め込み変数コメントが含まれています。バッチの中で実行されるSQLは一定であるため、埋め込み変数コメントにより動的なSQLを発行しようとしても意図したSQLにならない可能性があります。この警告を抑制するには、メソッドに@Suppress(messages = Seq(Message.DOMALA4181))と注釈してください。"),
+    DOMALA4181("{0}に埋め込み変数コメントが含まれています。バッチの中で実行されるSQLは一定であるため、埋め込み変数コメントにより動的なSQLを発行しようとしても意図したSQLにならない可能性があります。この警告を抑制するには、メソッドに@Suppress(messages = Seq(Message.DOMALA4181))と注釈してください。"),
     /** SQLファイルに条件コメントが含まれていることを示す警告メッセージ */
-    DOMALA4182("[{0}.{1}]のSQLに条件コメントが含まれています。バッチの中で実行されるSQLは一定であるため、条件コメントにより動的なSQLを発行しようとしても意図したSQLにならない可能性があります。この警告を抑制するには、メソッドに@Suppress(messages = Seq(Message.DOMALA4182))と注釈してください。"),
+    DOMALA4182("{0}に条件コメントが含まれています。バッチの中で実行されるSQLは一定であるため、条件コメントにより動的なSQLを発行しようとしても意図したSQLにならない可能性があります。この警告を抑制するには、メソッドに@Suppress(messages = Seq(Message.DOMALA4182))と注釈してください。"),
     /** SQLファイルに繰り返しコメントが含まれていることを示す警告メッセージ */
-    DOMALA4183("[{0}.{1}]のSQLに繰り返しコメントが含まれています。バッチの中で実行されるSQLは一定であるため、繰り返しコメントにより動的なSQLを発行しようとしても意図したSQLにならない可能性があります。この警告を抑制するには、メソッドに@Suppress(messages = Seq(Message.DOMALA4183))と注釈してください。"),
+    DOMALA4183("{0}に繰り返しコメントが含まれています。バッチの中で実行されるSQLは一定であるため、繰り返しコメントにより動的なSQLを発行しようとしても意図したSQLにならない可能性があります。この警告を抑制するには、メソッドに@Suppress(messages = Seq(Message.DOMALA4183))と注釈してください。"),
     // DOMALA4184 列挙型Holderは未対応
     DOMALA4185(org.seasar.doma.message.Message.DOMA4185.getMessagePattern()),
     // TODO: ストアド系未実装 DOMA4186
@@ -167,11 +168,11 @@ public enum Message implements MessageResource {
     // acceptNull非対応 DOMA4251
     // 未検査 DOMA4252
     // @SingletonConfig非対応（object推奨） DOMA4253 - DOMA4256
-    DOMALA4257("[{0}.{1}]のSQLの妥当検査に失敗しました（[{3}]行目[{4}]番目の文字付近）。/*%expand ...*/の式が使用されていますが、カラムの自動展開ができません。メソッドに@Selectが注釈され、結果セットのレコードがエンティティクラスにマッピングされていることを確認してください。SQL[{2}]"),
+    DOMALA4257("{0}の妥当検査に失敗しました（[{2}]行目[{3}]番目の文字付近）。/*%expand ...*/の式が使用されていますが、カラムの自動展開ができません。メソッドに@Selectが注釈され、結果セットのレコードがエンティティクラスにマッピングされていることを確認してください。SQL[{1}]"),
     // SelectStrategyType.COLLECT 非対応 DOMA4258 - DOMA4266
     // TODO: 戻り値Stream未対応 DOMA4267
     // trait Holder未対応 DOMA4268
-    DOMALA4270("[{0}.{1}]のSQLの妥当検査に失敗しました（[{3}]行目[{4}]番目の文字付近）。/*%populate */の式が使用されていますが、SET句の自動生成ができません。メソッドに@Updateまたは@BatchUpdateが注釈され、第一引数がエンティティクラスにマッピングされていることを確認してください。SQL[{2}]"),
+    DOMALA4270("{0}の妥当検査に失敗しました（[{2}]行目[{3}]番目の文字付近）。/*%populate */の式が使用されていますが、SET句の自動生成ができません。メソッドに@Updateまたは@BatchUpdateが注釈され、第一引数がエンティティクラスにマッピングされていることを確認してください。SQL[{1}]"),
     // TODO: 戻り値Stream未対応 DOMA4271 - DOMA4274
     // TODO: 囲む型未チェック DOMA4275 - DOMA4277
     // @ExternalDomainは未対応 DOMA4278 - DOMA4280
@@ -209,6 +210,12 @@ public enum Message implements MessageResource {
     DOMALA6016("@Holderをsealed abstract classに注釈する場合、継承するobjectは全て異なる値を持たなければなりません。at {0}"),
     DOMALA6017("AnyValのサブクラスを永続対象とする場合、コンストラクタ、コンパニオンオブジェクトのapplyメソッドのどちらかはpublicでなければなりません。 at {0}"),
     DOMALA6018("{0} はDaoトレイトでないため実装クラスを取得できません。"),
+    DOMALA6019("Stream[?] => ?型のパラメータは@Selectのstrategy要素にSelectStrategyType.STREAMを設定した場合のみ使用できます。at {0}.{1}"),
+    DOMALA6020("Iterator[?] => ?型のパラメータは@Selectのstrategy要素にSelectStrategyType.ITERATORを設定した場合のみ使用できます。at {0}.{1}"),
+
+    // a part of message
+    DOMALA9901("[{0}.{1}]のSQL"),
+    DOMALA9902("SQLファイル[{0}]"),
     ;
 
     private final String messagePattern;

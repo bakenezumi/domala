@@ -60,7 +60,7 @@ trait PersonDao {
       import scala.collection.JavaConverters._
       implicit val __sqlNodeRepository: domala.jdbc.SqlNodeRepository = ___config.getSqlNodeRepository
       override def selectById(id: Int): Option[Person] = {
-        domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql(classOf[PersonDao], "selectById", true, false, "select * from person where id = /*id*/0", domala.internal.macros.DaoParamClass.apply("id", classOf[Int]))
+        domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql(classOf[PersonDao], "selectById", true, false, "select * from person where id = /*id*/0", domala.internal.macros.DaoParamClass("id", classOf[Int]))
         entering(classOf[PersonDao].getName, "selectById", id.asInstanceOf[Object])
         try {
           val __query = new domala.jdbc.query.SqlAnnotationSelectQuery("select * from person where id = /*id*/0")

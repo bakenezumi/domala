@@ -32,7 +32,7 @@ class SqlAnnotationModifyQuery(protected val kind: SqlKind, sqlString: String)
 
   protected def prepareSql(): Unit = {
     val evaluator = new ExpressionEvaluator(this.parameters, this.config.getDialect.getExpressionFunctions, this.config.getClassHelper)
-    val sqlBuilder = new NodePreparedSqlBuilder(this.config, this.kind, evaluator, this.sqlLogType, this.expandColumns _, this.populateValues _)
+    val sqlBuilder = new NodePreparedSqlBuilder(this.config, this.kind, evaluator, this.sqlLogType, this.expandColumns _, this.populateValues _, null)
     this.sql = sqlBuilder.build(this.sqlNode, this.comment _)
   }
 

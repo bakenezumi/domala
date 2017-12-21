@@ -129,18 +129,24 @@ public class NodePreparedSqlBuilder implements
                 SqlLogType.FORMATTED);
     }
 
-    public NodePreparedSqlBuilder(Config config, SqlKind kind, ExpressionEvaluator evaluator,
-            SqlLogType sqlLogType) {
+    public NodePreparedSqlBuilder(
+        Config config,
+        SqlKind kind,
+        ExpressionEvaluator evaluator,
+        SqlLogType sqlLogType) {
         this(config, kind, evaluator, sqlLogType,
                 node -> {
                     throw new UnsupportedOperationException();
                 });
     }
 
-    public NodePreparedSqlBuilder(Config config, SqlKind kind,
-            ExpressionEvaluator evaluator,
-            SqlLogType sqlLogType,
-            Function<ExpandNode, List<String>> columnsExpander) {
+    public NodePreparedSqlBuilder(
+        Config config,
+        SqlKind kind,
+        ExpressionEvaluator evaluator,
+        SqlLogType sqlLogType,
+        Function<ExpandNode,
+        List<String>> columnsExpander) {
         this(config, kind, evaluator, sqlLogType, columnsExpander,
                 (node, context) -> {
                     throw new UnsupportedOperationException();
@@ -148,14 +154,35 @@ public class NodePreparedSqlBuilder implements
     }
 
     public NodePreparedSqlBuilder(Config config, SqlKind kind,
+                                  ExpressionEvaluator evaluator,
+                                  SqlLogType sqlLogType,
+                                  Function<ExpandNode,
+                                  List<String>> columnsExpander,
+                                  String sqlFilePath) {
+        this(config, kind, evaluator, sqlLogType, columnsExpander,
+                (node, context) -> {
+                    throw new UnsupportedOperationException();
+                }, sqlFilePath);
+    }
+
+    public NodePreparedSqlBuilder(Config config, SqlKind kind,
             ExpressionEvaluator evaluator,
             SqlLogType sqlLogType,
             Function<ExpandNode, List<String>> columnsExpander,
             BiConsumer<PopulateNode, SqlContext> valuesPopulater) {
+        this(config, kind, evaluator, sqlLogType, columnsExpander, valuesPopulater, null);
+    }
+
+    public NodePreparedSqlBuilder(Config config, SqlKind kind,
+                                  ExpressionEvaluator evaluator,
+                                  SqlLogType sqlLogType,
+                                  Function<ExpandNode, List<String>> columnsExpander,
+                                  BiConsumer<PopulateNode, SqlContext> valuesPopulater,
+                                  String sqlFilePath) {
         assertNotNull(config, kind, evaluator, columnsExpander, valuesPopulater);
         this.config = config;
         this.kind = kind;
-        this.sqlFilePath = null;
+        this.sqlFilePath = sqlFilePath;
         this.evaluator = evaluator;
         this.sqlLogType = sqlLogType;
         this.columnsExpander = columnsExpander;

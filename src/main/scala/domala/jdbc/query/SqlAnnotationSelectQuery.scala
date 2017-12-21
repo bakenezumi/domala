@@ -8,12 +8,12 @@ class SqlAnnotationSelectQuery(sql: String)(implicit sqlNodeRepository: SqlNodeR
 
   setSqlNode(sqlNodeRepository.get(sql))
 
-  override def addParameter(name: String, `type`: Class[_], value: Any): Unit = {
+  override def addParameter(name: String, tpe: Class[_], value: Any): Unit = {
     value match {
       case x: Seq[_] =>
         val converted = x.asJava
         super.addParameter(name, converted.getClass, converted)
-      case _ => super.addParameter(name, `type`, value)
+      case _ => super.addParameter(name, tpe, value)
     }
   }
 

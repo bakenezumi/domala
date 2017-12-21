@@ -7,14 +7,13 @@ import scala.reflect.macros.blackbox
 
 class BatchSqlValidator[C <: blackbox.Context](c: C)(
   daoTpe: C#Type,
-  defName: String,
+  targetName: String,
   expandable: Boolean,
   populatable: Boolean,
   paramTypeMap: ReflectionHelper[C]#ParamMap,
   suppress: Seq[String]
 ) extends SqlValidator(c)(
-  daoTpe,
-  defName,
+  targetName,
   expandable,
   populatable,
   paramTypeMap
@@ -22,21 +21,21 @@ class BatchSqlValidator[C <: blackbox.Context](c: C)(
 
   override def visitEmbeddedVariableNode(node: EmbeddedVariableNode, p: Void): Void = {
     if (!isSuppressed(Message.DOMALA4181)) {
-      c.warning(c.enclosingPosition, Message.DOMALA4181.getMessage(daoTpe, defName))
+      c.warning(c.enclosingPosition, Message.DOMALA4181.getMessage(targetName))
     }
     super.visitEmbeddedVariableNode(node, p)
   }
 
   override def visitIfNode(node: IfNode, p: Void): Void = {
     if (!isSuppressed(Message.DOMALA4182)) {
-      c.warning(daoTpe.typeSymbol.pos.asInstanceOf, Message.DOMALA4182.getMessage(daoTpe, defName))
+      c.warning(daoTpe.typeSymbol.pos.asInstanceOf, Message.DOMALA4182.getMessage(targetName))
     }
     super.visitIfNode(node, p)
   }
 
   override def visitForNode(node: ForNode, p: Void): Void = {
     if (!isSuppressed(Message.DOMALA4183)) {
-      c.warning(daoTpe.typeSymbol.pos.asInstanceOf, Message.DOMALA4183.getMessage(daoTpe, defName))
+      c.warning(daoTpe.typeSymbol.pos.asInstanceOf, Message.DOMALA4183.getMessage(targetName))
     }
     super.visitForNode(node, p)
   }
