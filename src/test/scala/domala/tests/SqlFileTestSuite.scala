@@ -238,4 +238,50 @@ class SqlFileTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  test("update by Sql") {
+    Required {
+      dao.updateSql(
+        Person(
+          Some(ID(1)),
+          Some(Name("aaa")),
+          Some(5),
+          Address("bbb", "ccc"),
+          Some(1),
+          Some(1)),
+        Person(
+          Some(ID(3)),
+          Some(Name("ddd")),
+          Some(10),
+          Address("eee", "fff"),
+          Some(1),
+          Some(2)),
+        0
+      )
+      assert(
+        dao.selectById(1) == Some(Person(
+          Some(ID(1)),
+          Some(Name("aaa")),
+          Some(5),
+          Address("eee", "fff"),
+          Some(2),
+          Some(1))))
+    }
+  }
+
+  test("delete by Sql") {
+    Required {
+      dao.deleteSql(
+        Person(
+          Some(ID(1)),
+          Some(Name("aaa")),
+          Some(5),
+          Address("bbb", "ccc"),
+          Some(1),
+          Some(1)),
+        0
+      )
+      assert(dao.selectById(1).isEmpty)
+    }
+  }
+
 }

@@ -24,9 +24,12 @@ object DeleteGenerator extends DaoMethodGenerator {
       .collectFirst { case arg"suppressOptimisticLockException = $x" => x }
       .getOrElse(q"false")
 
-    if (commonArgs.hasSqlAnnotation) {
-      val query: (Term, Option[Term]) => Term.New = (entityAndEntityType, _) =>
-        q"new domala.jdbc.query.SqlAnnotationDeleteQuery(${commonArgs.sql}, $ignoreVersion, $suppressOptimisticLockException)($entityAndEntityType)"
+    if (commonArgs.hasSqlAnnotation || commonArgs.sqlFile) {
+      val query: (Term, Option[Term]) => Term.New =
+        if(commonArgs.hasSqlAnnotation) (entityAndEntityType, _) =>
+          q"new domala.jdbc.query.SqlAnnotationDeleteQuery(${commonArgs.sql}, $ignoreVersion, $suppressOptimisticLockException)($entityAndEntityType)"
+        else (entityAndEntityType, path) =>
+          q"new domala.jdbc.query.SqlFileDeleteQuery(${path.get}, $ignoreVersion, $suppressOptimisticLockException)($entityAndEntityType)"
       val otherQueryArgs = Seq[Stat]()
       val command =
         q"getCommandImplementors.createDeleteCommand($internalMethodName, __query)"

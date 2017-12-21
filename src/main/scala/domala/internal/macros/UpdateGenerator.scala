@@ -26,16 +26,26 @@ object UpdateGenerator extends DaoMethodGenerator {
     }
     val suppressOptimisticLockException = args.collectFirst { case arg"suppressOptimisticLockException = $x" => x }.getOrElse(q"false")
 
-    if (commonArgs.hasSqlAnnotation) {
-      val query: (Term, Option[Term]) => Term.New = (entityAndEntityType, _) =>
-        q"""new domala.jdbc.query.SqlAnnotationUpdateQuery(
-          ${commonArgs.sql},
-          $excludeNull,
-          $ignoreVersion,
-          $suppressOptimisticLockException,
-          Seq(..$includedPropertyNames).toArray,
-          Seq(..$excludedPropertyNames).toArray)($entityAndEntityType)
-        """
+    if (commonArgs.hasSqlAnnotation || commonArgs.sqlFile) {
+      val query: (Term, Option[Term]) => Term.New =
+        if(commonArgs.hasSqlAnnotation) (entityAndEntityType, _) =>
+          q"""new domala.jdbc.query.SqlAnnotationUpdateQuery(
+            ${commonArgs.sql},
+            $excludeNull,
+            $ignoreVersion,
+            $suppressOptimisticLockException,
+            Seq(..$includedPropertyNames).toArray,
+            Seq(..$excludedPropertyNames).toArray)($entityAndEntityType)
+          """
+        else (entityAndEntityType, path) =>
+          q"""new domala.jdbc.query.SqlFileUpdateQuery(
+            ${path.get},
+            $excludeNull,
+            $ignoreVersion,
+            $suppressOptimisticLockException,
+            Seq(..$includedPropertyNames).toArray,
+            Seq(..$excludedPropertyNames).toArray)($entityAndEntityType)
+          """
       val otherQueryArgs = Seq[Stat]()
       val command = q"getCommandImplementors.createUpdateCommand($internalMethodName, __query)"
       SqlModifyQueryGenerator.generate(defDecl, commonArgs, internalMethodName, query, otherQueryArgs, command, q"true")

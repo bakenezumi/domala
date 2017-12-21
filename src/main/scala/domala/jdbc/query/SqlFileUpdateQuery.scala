@@ -7,22 +7,21 @@ import org.seasar.doma.internal.util.AssertionUtil.assertNotNull
 import org.seasar.doma.jdbc.SqlKind
 import org.seasar.doma.jdbc.query.UpdateQuery
 
-
-class SqlAnnotationUpdateQuery[E](
-  sqlString: String,
+class SqlFileUpdateQuery[E](
+  sqlFilePath: String,
   nullExcluded: Boolean = false,
   versionIgnored: Boolean = false,
   optimisticLockExceptionSuppressed: Boolean = false,
   includedPropertyNames: Array[String] = new Array[String](0),
   excludedPropertyNames: Array[String] = new Array[String](0)
 )(entityAndEntityType: Option[EntityAndEntityType[E]] = None)(implicit sqlNodeRepository: SqlNodeRepository)
-  extends SqlAnnotationModifyQuery(SqlKind.UPDATE, sqlString)(sqlNodeRepository) with UpdateQuery {
+  extends SqlFileModifyQuery(SqlKind.UPDATE, sqlFilePath) with UpdateQuery {
 
   val entityHandler: Option[UpdateEntityHandler[E]] = entityAndEntityType.map(e => new this.UpdateEntityHandler(e.name, e.entity, e.entityType, nullExcluded, versionIgnored, optimisticLockExceptionSuppressed))
 
   override def prepare(): Unit = {
     super.prepare()
-    assertNotNull(method, sqlString)
+    assertNotNull(method, sqlFilePath)
     initEntityHandler()
     preUpdate()
     prepareOptimisticLock()

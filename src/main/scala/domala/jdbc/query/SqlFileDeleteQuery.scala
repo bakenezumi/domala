@@ -1,0 +1,43 @@
+package domala.jdbc.query
+
+import domala.jdbc.SqlNodeRepository
+import org.seasar.doma.internal.util.AssertionUtil.assertNotNull
+import org.seasar.doma.jdbc.SqlKind
+import org.seasar.doma.jdbc.query.DeleteQuery
+
+class SqlFileDeleteQuery[E](
+  sqlFilePath: String,
+  versionIgnored: Boolean = false,
+  optimisticLockExceptionSuppressed: Boolean = false
+)(entityAndEntityType: Option[EntityAndEntityType[E]] = None)(implicit sqlNodeRepository: SqlNodeRepository)
+  extends SqlFileModifyQuery(SqlKind.UPDATE, sqlFilePath) with DeleteQuery {
+
+  val entityHandler: Option[EntityHandler[E]] = entityAndEntityType.map(e => new this.EntityHandler(e.name, e.entity, e.entityType, versionIgnored, optimisticLockExceptionSuppressed))
+
+  override def prepare(): Unit = {
+    super.prepare()
+    assertNotNull(method, sqlFilePath)
+    preDelete()
+    prepareOptions()
+    prepareOptimisticLock()
+    prepareExecutable()
+    prepareSql()
+  }
+
+  protected def preDelete(): Unit = {
+    entityHandler.foreach(_.preDelete())
+  }
+
+  protected def prepareOptimisticLock(): Unit = entityHandler.foreach(_.prepareOptimisticLock())
+
+  protected def prepareExecutable(): Unit = {
+    setExecutable()
+  }
+
+  def getEntity: E = entityHandler.map(_.entity).getOrElse(null.asInstanceOf[E])
+
+  override def complete(): Unit = {
+    entityHandler.foreach(_.postDelete())
+  }
+
+}

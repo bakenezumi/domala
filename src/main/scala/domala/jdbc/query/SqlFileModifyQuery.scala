@@ -14,7 +14,6 @@ class SqlFileModifyQuery(kind: SqlKind, sqlFilePath: String) extends AbstractSql
 
   protected var sqlFile: SqlFile = _
 
-
   protected def prepareSql(): Unit = {
     sqlFile = config.getSqlFileRepository.getSqlFile(method, sqlFilePath, config.getDialect)
     val evaluator = new ExpressionEvaluator(this.parameters, this.config.getDialect.getExpressionFunctions, this.config.getClassHelper)

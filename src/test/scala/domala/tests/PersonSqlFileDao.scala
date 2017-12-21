@@ -45,6 +45,12 @@ trait PersonSqlFileDao {
   @Insert(sqlFile = true)
   def insertSql(entity: Person, entity2: Person, version: Int): Result[Person]
 
+  @Update(sqlFile = true)
+  def updateSql(entity: Person, entity2: Person, version: Int): Result[Person]
+
+
+  @Delete(sqlFile = true)
+  def deleteSql(entity: Person, version: Int): Int
 }
 
 
