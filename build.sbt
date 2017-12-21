@@ -19,6 +19,7 @@ lazy val root = (project in file(".")).settings(
   organization := "com.github.domala",
   javacOptions ++= List("-encoding", "utf8"),
   metaMacroSettings,
+  compile in Test := ((compile in Test) dependsOn (copyResources in Test)).value,
   libraryDependencies ++= Seq(
     "org.seasar.doma" % "doma" % "2.19.0",
     "org.scalameta" %% "scalameta" % "1.8.0",

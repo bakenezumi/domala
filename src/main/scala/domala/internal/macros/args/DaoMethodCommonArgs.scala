@@ -24,7 +24,7 @@ object DaoMethodCommonArgs {
         new SqlParser(x.syntax).parse()
       } catch {
         case e: JdbcException =>
-          MacrosHelper.abort(domala.message.Message.DOMALA4069, domala.message.Message.DOMALA9901.getMessage(traitName, methodName), e)
+          MacrosHelper.abort(domala.message.Message.DOMALA4069, domala.message.Message.DOMALA9901.getSimpleMessage(traitName, methodName), e)
       }
       (true, x)
     }.getOrElse((false, arg""""""""))

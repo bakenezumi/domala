@@ -374,7 +374,7 @@ object DaoReflectionMacros {
     val Literal(Constant(populatableLiteral: Boolean)) = populatable.tree
     val sqlLiteral: String = sql.tree match {
       case Literal (Constant(sqlLiteral: String)) => sqlLiteral
-      case _ =>  ReflectionUtil.abort(Message.DOMALA6015, Message.DOMALA9901.getMessage(daoTpe, methodNameLiteral))
+      case _ =>  ReflectionUtil.abort(Message.DOMALA6015, Message.DOMALA9901.getSimpleMessage(daoTpe, methodNameLiteral))
     }
     import scala.language.existentials
     val paramTypes = new ReflectionHelper[c.type](c).paramTypes(params)
@@ -382,12 +382,12 @@ object DaoReflectionMacros {
       case (_, tpe) =>
         ParamType.convert(c)(tpe) match {
           case ParamType.Iterable(_, ParamType.Other(_, t)) if t =:= typeOf[Any] =>
-            ReflectionUtil.abort(Message.DOMALA4160, Message.DOMALA9901.getMessage(daoTpe, methodNameLiteral))
+            ReflectionUtil.abort(Message.DOMALA4160, daoTpe, methodNameLiteral)
           case _ => ()
         }
     }
     val sqlNode = new SqlParser(sqlLiteral).parse()
-    val sqlValidator = new SqlValidator[c.type](c)(Message.DOMALA9901.getMessage(daoTpe, methodNameLiteral), expandableLiteral, populatableLiteral, paramTypes)
+    val sqlValidator = new SqlValidator[c.type](c)(Message.DOMALA9901.getSimpleMessage(daoTpe, methodNameLiteral), expandableLiteral, populatableLiteral, paramTypes)
     sqlValidator.validate(sqlNode)
     reify(())
   }
@@ -410,11 +410,11 @@ object DaoReflectionMacros {
     val sqlFilePath = classPaths.map(dir => Paths.get(dir.getCanonicalPath + fileName))
     val sqlFile = sqlFilePath.find(path => Files.exists(path))
     if (sqlFile.isEmpty) {
-      ReflectionUtil.abort(Message.DOMALA4019, Message.DOMALA9902.getMessage(fileName))
+      ReflectionUtil.abort(Message.DOMALA4019, Message.DOMALA9902.getSimpleMessage(fileName), sqlFilePath.head.toString)
     }
     val sql = new String(Files.readAllBytes(sqlFile.get), StandardCharsets.UTF_8)
     if (sql.trim.isEmpty) {
-      ReflectionUtil.abort(Message.DOMALA4020, Message.DOMALA9902.getMessage(fileName))
+      ReflectionUtil.abort(Message.DOMALA4020, Message.DOMALA9902.getSimpleMessage(fileName))
     }
     import scala.language.existentials
     val paramTypes = new ReflectionHelper[c.type](c).paramTypes(params)
@@ -422,12 +422,12 @@ object DaoReflectionMacros {
       case (_, tpe) =>
         ParamType.convert(c)(tpe) match {
           case ParamType.Iterable(_, ParamType.Other(_, t)) if t =:= typeOf[Any] =>
-            ReflectionUtil.abort(Message.DOMALA4160, Message.DOMALA9902.getMessage(fileName))
+            ReflectionUtil.abort(Message.DOMALA4160, daoTpe, defNameLiteral)
           case _ => ()
         }
     }
     val sqlNode = new SqlParser(sql).parse()
-    val sqlValidator = new SqlValidator[c.type](c)(Message.DOMALA9902.getMessage(fileName), expandableLiteral, populatableLiteral, paramTypes)
+    val sqlValidator = new SqlValidator[c.type](c)(Message.DOMALA9902.getSimpleMessage(fileName), expandableLiteral, populatableLiteral, paramTypes)
     sqlValidator.validate(sqlNode)
 
     reify(s"META-INF/${daoTrt.splice.getName.replace('.', '/')}/${defName.splice}.sql")
@@ -466,7 +466,7 @@ object DaoReflectionMacros {
 
     }
     val sqlNode = new SqlParser(sqlLiteral).parse()
-    val sqlValidator = new BatchSqlValidator[c.type](c)(daoTpe, Message.DOMALA9901.getMessage(daoTpe, methodNameLiteral), expandableLiteral, populatableLiteral, paramTypes, suppressLiterals)
+    val sqlValidator = new BatchSqlValidator[c.type](c)(daoTpe, Message.DOMALA9901.getSimpleMessage(daoTpe, methodNameLiteral), expandableLiteral, populatableLiteral, paramTypes, suppressLiterals)
     sqlValidator.validate(sqlNode)
     reify(())
   }
