@@ -2,17 +2,16 @@ package domala.jdbc.query
 
 import java.sql.Statement
 
-import domala.jdbc.SqlNodeRepository
 import org.seasar.doma.internal.util.AssertionUtil.assertEquals
 import org.seasar.doma.jdbc.SqlKind
 import org.seasar.doma.jdbc.entity.EntityType
 import org.seasar.doma.jdbc.query.BatchInsertQuery
 
-class SqlAnnotationBatchInsertQuery[ELEMENT](
+class SqlFileBatchInsertQuery[ELEMENT](
   elementClass: Class[ELEMENT],
-  sql: String,
-)(entityType: Option[_ >: EntityType[ELEMENT]] = None)(implicit sqlNodeRepository: SqlNodeRepository)
-  extends SqlAnnotationBatchModifyQuery(elementClass, SqlKind.BATCH_INSERT, sql)(sqlNodeRepository) with BatchInsertQuery{
+  sqlFilePath: String,
+)(entityType: Option[_ >: EntityType[ELEMENT]] = None)
+  extends SqlFileBatchModifyQuery(elementClass, SqlKind.BATCH_INSERT, sqlFilePath) with BatchInsertQuery{
 
   val entityHandler: Option[BatchInsertEntityHandler] = entityType.map(e => new this.BatchInsertEntityHandler(e.asInstanceOf[EntityType[ELEMENT]]))
 

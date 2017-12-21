@@ -1,13 +1,10 @@
 package domala.jdbc.query
 
-import java.lang.reflect.Method
-
 import domala.jdbc.SqlNodeRepository
-import org.seasar.doma.internal.jdbc.entity.{AbstractPostDeleteContext, AbstractPreDeleteContext}
-import org.seasar.doma.internal.util.AssertionUtil.{assertEquals, assertNotNull}
+import org.seasar.doma.internal.util.AssertionUtil.assertEquals
+import org.seasar.doma.jdbc.SqlKind
 import org.seasar.doma.jdbc.entity.EntityType
 import org.seasar.doma.jdbc.query.BatchDeleteQuery
-import org.seasar.doma.jdbc.{Config, SqlKind}
 
 class SqlAnnotationBatchDeleteQuery[ELEMENT](
   elementClass: Class[ELEMENT],
@@ -17,7 +14,8 @@ class SqlAnnotationBatchDeleteQuery[ELEMENT](
 )(entityType: Option[_ >: EntityType[ELEMENT]] = None)(implicit sqlNodeRepository: SqlNodeRepository)
   extends SqlAnnotationBatchModifyQuery(elementClass, SqlKind.BATCH_INSERT, sql)(sqlNodeRepository) with BatchDeleteQuery {
 
-  val entityHandler: Option[EntityHandler] = entityType.map(e => new this.EntityHandler(e.asInstanceOf[EntityType[ELEMENT]]))
+  val entityHandler: Option[BatchDeleteEntityHandler] =
+    entityType.map(e => new this.BatchDeleteEntityHandler(e.asInstanceOf[EntityType[ELEMENT]], versionIgnored, optimisticLockExceptionSuppressed))
 
   setConfig(config)
 
@@ -61,31 +59,4 @@ class SqlAnnotationBatchDeleteQuery[ELEMENT](
     }
   }
 
-  protected class EntityHandler(entityType: EntityType[ELEMENT]) {
-    assertNotNull(entityType, "")
-
-    private val versionPropertyType = entityType.getVersionPropertyType
-
-    def preDelete(): Unit = {
-      val context = new SqlBatchPreDeleteContext[ELEMENT](entityType, method, config)
-      entityType.preDelete(currentEntity, context)
-      if (context.getNewEntity != null) currentEntity = context.getNewEntity
-    }
-
-    def postDelete(): Unit = {
-      val context = new SqlBatchPostDeleteContext[ELEMENT](entityType, method, config)
-      entityType.postDelete(currentEntity, context)
-      if (context.getNewEntity != null) currentEntity = context.getNewEntity
-    }
-
-    def prepareOptimisticLock(): Unit = {
-      if (versionPropertyType != null && !versionIgnored) if (!optimisticLockExceptionSuppressed) optimisticLockCheckRequired = true
-    }
-  }
-
-  protected class SqlBatchPreDeleteContext[E](entityType: EntityType[E], method: Method, config: Config) extends AbstractPreDeleteContext[E](entityType, method, config) {
-  }
-
-  protected class SqlBatchPostDeleteContext[E](entityType: EntityType[E], method: Method, config: Config) extends AbstractPostDeleteContext[E](entityType, method, config) {
-  }
 }

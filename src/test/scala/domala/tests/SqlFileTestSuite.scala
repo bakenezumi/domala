@@ -284,4 +284,57 @@ class SqlFileTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  test("batch insert by Sql") {
+    Required {
+      dao.batchInsertSql(Seq(
+        Person(
+          Some(ID(3)),
+          Some(Name("aaa")),
+          Some(5),
+          Address("bbb", "ccc"),
+          Some(1),
+          Some(1)),
+        Person(
+          Some(ID(4)),
+          Some(Name("ddd")),
+          Some(10),
+          Address("eee", "fff"),
+          Some(1),
+          Some(1)),
+        Person(
+          Some(ID(5)),
+          Some(Name("ggg")),
+          Some(15),
+          Address("hhh", "iii"),
+          Some(1),
+          Some(1))
+      ))
+      assert(dao.selectCount == 5)
+      assert(
+        dao.selectById(3) == Some(Person(
+          Some(ID(3)),
+          Some(Name("aaa")),
+          Some(5),
+          Address("bbb", "ccc"),
+          Some(2),
+          Some(1))))
+      assert(
+        dao.selectById(4) == Some(Person(
+          Some(ID(4)),
+          Some(Name("ddd")),
+          Some(10),
+          Address("eee", "fff"),
+          Some(2),
+          Some(1))))
+      assert(
+        dao.selectById(5) == Some(Person(
+          Some(ID(5)),
+          Some(Name("ggg")),
+          Some(15),
+          Address("hhh", "iii"),
+          Some(2),
+          Some(1))))
+    }
+  }
+
 }

@@ -17,9 +17,11 @@ object BatchInsertGenerator extends DaoMethodGenerator {
       args,
       trtName.syntax,
       _def.name.syntax)
-    if (commonArgs.hasSql) {
+    if (commonArgs.hasSqlAnnotation || commonArgs.sqlFile) {
       val (paramName, paramTpe, internalTpe) = AutoBatchModifyQueryGenerator.extractParameter(defDecl)
-      val query: Term => Term.New = (entityType) => q"new domala.jdbc.query.SqlAnnotationBatchInsertQuery(classOf[$internalTpe], ${commonArgs.sql})($entityType)"
+      val query: (Term, Option[Term]) => Term.New =
+        if(commonArgs.hasSqlAnnotation) (entityType, _) => q"new domala.jdbc.query.SqlAnnotationBatchInsertQuery(classOf[$internalTpe], ${commonArgs.sql})($entityType)"
+        else (entityType, path) => q"new domala.jdbc.query.SqlFileBatchInsertQuery(classOf[$internalTpe], ${path.get})($entityType)"
       val otherQueryArgs = Seq[Stat]()
       val command = q"getCommandImplementors.createBatchInsertCommand($internalMethodName, __query)"
       SqlBatchModifyQueryGenerator.generate(defDecl, commonArgs, paramName, paramTpe, internalTpe, internalMethodName, query, otherQueryArgs, command, q"false")

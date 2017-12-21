@@ -1,13 +1,16 @@
 package domala.tests
 
 import domala._
-import domala.jdbc.Result
+import domala.jdbc.{BatchResult, Result}
 
 @Dao
 trait PersonSqlFileDao {
 
   @Select
   def selectById(id: Int): Option[Person]
+
+  @Select("select count(1) from person")
+  def selectCount: Int
 
   @Select
   def selectAll: Seq[Person]
@@ -51,6 +54,10 @@ trait PersonSqlFileDao {
 
   @Delete(sqlFile = true)
   def deleteSql(entity: Person, version: Int): Int
+
+  @BatchInsert(sqlFile = true, batchSize = 100)
+  def batchInsertSql(persons: Seq[Person]): BatchResult[Person]
+
 }
 
 

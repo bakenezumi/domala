@@ -24,9 +24,9 @@ object BatchUpdateGenerator extends DaoMethodGenerator {
     val suppressOptimisticLockException = args
       .collectFirst { case arg"suppressOptimisticLockException = $x" => x }
       .getOrElse(q"false")
-    if (commonArgs.hasSql) {
+    if (commonArgs.hasSqlAnnotation) {
       val (paramName, paramTpe, internalTpe) = AutoBatchModifyQueryGenerator.extractParameter(defDecl)
-      val query: Term => Term.New = (entityType) => q"new domala.jdbc.query.SqlAnnotationBatchUpdateQuery(classOf[$internalTpe], ${commonArgs.sql}, $ignoreVersion, $suppressOptimisticLockException)($entityType)"
+      val query: (Term, Option[Term]) => Term.New = (entityType, _) => q"new domala.jdbc.query.SqlAnnotationBatchUpdateQuery(classOf[$internalTpe], ${commonArgs.sql}, $ignoreVersion, $suppressOptimisticLockException)($entityType)"
       val otherQueryArgs = Seq[Stat]()
       val command = q"getCommandImplementors.createBatchUpdateCommand($internalMethodName, __query)"
       SqlBatchModifyQueryGenerator.generate(defDecl, commonArgs, paramName, paramTpe, internalTpe, internalMethodName, query, otherQueryArgs, command, q"true")
