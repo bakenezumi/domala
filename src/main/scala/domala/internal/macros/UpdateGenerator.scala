@@ -26,8 +26,8 @@ object UpdateGenerator extends DaoMethodGenerator {
     }
     val suppressOptimisticLockException = args.collectFirst { case arg"suppressOptimisticLockException = $x" => x }.getOrElse(q"false")
 
-    if (commonArgs.hasSql) {
-      val query: Term => Term.New = (entityAndEntityType) =>
+    if (commonArgs.hasSqlAnnotation) {
+      val query: (Term, Option[Term]) => Term.New = (entityAndEntityType, _) =>
         q"""new domala.jdbc.query.SqlAnnotationUpdateQuery(
           ${commonArgs.sql},
           $excludeNull,

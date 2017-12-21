@@ -21,6 +21,7 @@ import org.seasar.doma.jdbc.SqlLogType
   * }}}
   *
   * @param sql a execution SQL. If not specified, SQL is auto generating.
+  * @param sqlFile Whether the annotated method is mapped to an SQL file.
   * @param queryTimeOut The query timeout in seconds.
   *  If not specified, [[domala.jdbc.Config Config#getQueryTimeout]] is used.
   * @param ignoreVersion Whether a version property is ignored.
@@ -39,6 +40,7 @@ import org.seasar.doma.jdbc.SqlLogType
   */
 class Delete(
   sql: String = "",
+  sqlFile: Boolean = false,
   queryTimeOut: Int = -1,
   ignoreVersion: Boolean = false,
   suppressOptimisticLockException: Boolean = false,

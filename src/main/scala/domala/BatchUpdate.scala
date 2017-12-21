@@ -21,6 +21,7 @@ import org.seasar.doma.jdbc.SqlLogType
   * }}}
   *
   * @param sql a execution SQL. If not specified, SQL is auto generating.
+  * @param sqlFile Whether the annotated method is mapped to an SQL file.
   * @param queryTimeOut The query timeout in seconds.
   *  If not specified, [[domala.jdbc.Config Config#getQueryTimeout]] is used.
   * @param batchSize The batch size.
@@ -49,6 +50,7 @@ import org.seasar.doma.jdbc.SqlLogType
   */
 class BatchUpdate(
   sql: String = "",
+  sqlFile: Boolean = false,
   queryTimeOut: Int = -1,
   batchSize: Int = -1,
   ignoreVersion: Boolean = false,

@@ -2,7 +2,7 @@ package domala.internal.macros
 
 import domala.internal.macros.args.DaoMethodCommonArgs
 import domala.internal.macros.util.LiteralConverters._
-import domala.internal.macros.util.{DaoMacroHelper, TypeUtil}
+import domala.internal.macros.util.{DaoMacroHelper, MacrosHelper, TypeUtil}
 
 import scala.collection.immutable.Seq
 import scala.meta._
@@ -13,11 +13,15 @@ object SqlModifyQueryGenerator {
     defDecl: QueryDefDecl,
     commonArgs: DaoMethodCommonArgs,
     internalMethodName: Term.Name,
-    query: Term => Term.New,
+    queryTemplate: (Term, Option[Term]) => Term.New,
     otherQueryArgs: Seq[Stat],
     command: Term.Apply,
-    populatable: Term
+    populatable: Term,
   ): Defn.Def = {
+    if(commonArgs.hasSqlAnnotation && commonArgs.sqlFile) {
+      MacrosHelper.abort(domala.message.Message.DOMALA6021, defDecl.trtName, defDecl.name)
+    }
+
     val params = defDecl.paramss.flatten
 
     val enteringParam = params.map(p =>
@@ -63,12 +67,20 @@ object SqlModifyQueryGenerator {
       q"domala.internal.macros.DaoParamClass.apply(${p.name.literal}, classOf[$pType])"
     }
 
+    val sqlValidator =
+      if (commonArgs.hasSqlAnnotation) {
+        q"domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql(classOf[${defDecl.trtName}], ${defDecl.name.literal}, false, $populatable, ${commonArgs.sql}, ..$daoParamTypes)"
+      } else q"()"
+
+    val query =
+      if (commonArgs.hasSqlAnnotation) queryTemplate(entityAndEntityType, None)
+      else queryTemplate(entityAndEntityType, Some(q"domala.internal.macros.reflect.DaoReflectionMacros.getSqlFilePath(classOf[${defDecl.trtName}], ${defDecl.name.literal}, false, $populatable, ..$daoParamTypes)"))
     q"""
     override def ${defDecl.name} = {
-      domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql(classOf[${defDecl.trtName}], ${defDecl.name.literal}, false, $populatable, ${commonArgs.sql}, ..$daoParamTypes)
+      $sqlValidator
       entering(${defDecl.trtName.className}, ${defDecl.name.literal}, ..$enteringParam)
       try {
-        val __query = ${query(entityAndEntityType)}
+        val __query = $query
         ..$checkNullParameter
         __query.setMethod($internalMethodName)
         __query.setConfig(__config)

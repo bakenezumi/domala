@@ -8,8 +8,9 @@ import scala.collection.immutable.Seq
 import scala.meta._
 
 case class DaoMethodCommonArgs(
-  hasSql: Boolean,
+  hasSqlAnnotation: Boolean,
   sql: Term.Arg,
+  sqlFile: Boolean,
   queryTimeOut: Term.Arg,
   sqlLogType: Term.Arg
 )
@@ -28,9 +29,10 @@ object DaoMethodCommonArgs {
       }
       (true, x)
     }.getOrElse((false, arg""""""""))
+    val sqlFile = args.collectFirst { case arg"sqlFile = true" => true }.getOrElse(false)
     val queryTimeOut =  args.collectFirst{ case arg"queryTimeOut = $x" => x }.getOrElse(arg"-1")
-    val sqlLog =  args.collectFirst{ case arg"sqlLog = $x" => x }.getOrElse(arg"org.seasar.doma.jdbc.SqlLogType.FORMATTED")
-    DaoMethodCommonArgs(hasSql, sql, queryTimeOut, sqlLog)
+    val sqlLog = args.collectFirst{ case arg"sqlLog = $x" => x }.getOrElse(arg"org.seasar.doma.jdbc.SqlLogType.FORMATTED")
+    DaoMethodCommonArgs(hasSql, sql, sqlFile, queryTimeOut, sqlLog)
   }
 
 }

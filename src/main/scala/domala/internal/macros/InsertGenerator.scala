@@ -16,9 +16,13 @@ object InsertGenerator extends DaoMethodGenerator {
     val include = args.collectFirst { case arg"include = $x" => Some(x) }.flatten
     val exclude = args.collectFirst { case arg"exclude = $x" => Some(x) }.flatten
 
-    if (commonArgs.hasSql) {
-      val query: Term => Term.New = (entityAndEntityType) =>
-        q"new domala.jdbc.query.SqlAnnotationInsertQuery(${commonArgs.sql})($entityAndEntityType)"
+    if (commonArgs.hasSqlAnnotation || commonArgs.sqlFile) {
+      val query: (Term, Option[Term]) => Term.New =
+        if(commonArgs.hasSqlAnnotation) (entityAndEntityType, _) =>
+          q"new domala.jdbc.query.SqlAnnotationInsertQuery(${commonArgs.sql})($entityAndEntityType)"
+        else (entityAndEntityType, path) =>
+          q"new domala.jdbc.query.SqlFileInsertQuery(${path.get})($entityAndEntityType)"
+
       val otherQuerySettings = Seq[Stat]()
       val command = q"getCommandImplementors.createInsertCommand($internalMethodName, __query)"
       SqlModifyQueryGenerator.generate(defDecl, commonArgs, internalMethodName, query, otherQuerySettings, command, q"false")

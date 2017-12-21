@@ -64,7 +64,6 @@ object SelectGenerator extends DaoMethodGenerator {
       args,
       trtName.syntax,
       defDecl.name.syntax)
-    val useSqlAnnotation = commonArgs.sql.syntax != """"""""
     val selectArgs = SelectArgs.read(args)
     if(TypeUtil.isWildcardType(defDecl.tpe))
       MacrosHelper.abort(Message.DOMALA4207, defDecl.tpe, trtName.syntax, defDecl.name.syntax)
@@ -74,9 +73,9 @@ object SelectGenerator extends DaoMethodGenerator {
         case q"SelectType.RETURN" | q"RETURN" => (Nil, false, false)
         case q"SelectType.STREAM" | q"STREAM" =>
           (Seq {
-            //noinspection ScalaUnusedSymbol
             val functionParams = defDecl.paramss.flatten.filter { p =>
               p.decltpe.get match {
+                //noinspection ScalaUnusedSymbol
                 case t"Stream[$_] => $_" => true
                 case _           => false
               }
@@ -91,9 +90,9 @@ object SelectGenerator extends DaoMethodGenerator {
           }, true, false)
         case q"SelectType.ITERATOR" | q"ITERATOR" =>
           (Seq {
-            //noinspection ScalaUnusedSymbol
             val functionParams = defDecl.paramss.flatten.filter { p =>
               p.decltpe.get match {
+                //noinspection ScalaUnusedSymbol
                 case t"Iterator[$_] => $_" => true
                 case _           => false
               }
@@ -110,12 +109,14 @@ object SelectGenerator extends DaoMethodGenerator {
       }
 
     if (defDecl.paramss.flatten.exists(p => p.decltpe.get match {
+      //noinspection ScalaUnusedSymbol
       case t"Stream[$_] => $_" => true
       case _ => false
     }) && !isStream) {
       MacrosHelper.abort(Message.DOMALA6019, trtName.syntax, defDecl.name.syntax)
     }
     if (defDecl.paramss.flatten.exists(p => p.decltpe.get match {
+      //noinspection ScalaUnusedSymbol
       case t"Iterator[$_] => $_" => true
       case _ => false
     }) && !isIterator) {
@@ -152,8 +153,8 @@ object SelectGenerator extends DaoMethodGenerator {
       if (isStream) {
         val (functionParamTerm, internalTpe, retTpe) = defDecl.paramss.flatten
           .find { p =>
-            //noinspection ScalaUnusedSymbol
             p.decltpe.get match {
+              //noinspection ScalaUnusedSymbol
               case t"Stream[$_] => $_" => true
               case x if TypeUtil.isWildcardType(x) =>
                 MacrosHelper.abort(Message.DOMALA4243, x.children.head.syntax, trtName.syntax, defDecl.name.syntax)
@@ -210,8 +211,8 @@ object SelectGenerator extends DaoMethodGenerator {
       } else if (isIterator) {
         val (functionParamTerm, internalTpe, retTpe) = defDecl.paramss.flatten
           .find { p =>
-            //noinspection ScalaUnusedSymbol
             p.decltpe.get match {
+              //noinspection ScalaUnusedSymbol
               case t"Iterator[$_] => $_" => true
               case x if TypeUtil.isWildcardType(x) =>
                 MacrosHelper.abort(Message.DOMALA4243, x.children.head.syntax, trtName.syntax, defDecl.name.syntax)
@@ -390,12 +391,12 @@ object SelectGenerator extends DaoMethodGenerator {
 
 
     val sqlValidator =
-      if (useSqlAnnotation) {
+      if (commonArgs.hasSqlAnnotation) {
         q"domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql(classOf[$trtName], ${defDecl.name.literal}, true, false, ${commonArgs.sql}, ..$daoParamTypes)"
       } else q"()"
 
 
-    val query = if(useSqlAnnotation) {
+    val query = if(commonArgs.hasSqlAnnotation) {
       q"new domala.jdbc.query.SqlAnnotationSelectQuery(${commonArgs.sql})"
     } else {
       q"""new domala.jdbc.query.SqlFileSelectQuery(domala.internal.macros.reflect.DaoReflectionMacros.getSqlFilePath(classOf[$trtName], ${defDecl.name.literal}, true, false, ..$daoParamTypes))"""

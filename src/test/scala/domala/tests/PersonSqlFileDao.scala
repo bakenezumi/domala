@@ -1,6 +1,7 @@
 package domala.tests
 
 import domala._
+import domala.jdbc.Result
 
 @Dao
 trait PersonSqlFileDao {
@@ -41,5 +42,9 @@ trait PersonSqlFileDao {
   @Select
   def expandAliasSelect: Seq[Person]
 
+  @Insert(sqlFile = true)
+  def insertSql(entity: Person, entity2: Person, version: Int): Result[Person]
 
 }
+
+

@@ -212,6 +212,7 @@ public enum Message implements MessageResource {
     DOMALA6018("{0} はDaoトレイトでないため実装クラスを取得できません。"),
     DOMALA6019("Stream[?] => ?型のパラメータは@Selectのstrategy要素にSelectStrategyType.STREAMを設定した場合のみ使用できます。at {0}.{1}"),
     DOMALA6020("Iterator[?] => ?型のパラメータは@Selectのstrategy要素にSelectStrategyType.ITERATORを設定した場合のみ使用できます。at {0}.{1}"),
+    DOMALA6021("sql要素に値を設定した場合、sqlFile要素にはtrueを指定できません。 at {0}.{1}"),
 
     // a part of message
     DOMALA9901("[{0}.{1}]のSQL"),
