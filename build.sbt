@@ -35,6 +35,7 @@ lazy val example = project.settings (
     version      := _version
   )),
   metaMacroSettings,
+  compile in Compile := ((compile in Compile) dependsOn (copyResources in Compile)).value,
   libraryDependencies ++= Seq(
     "com.h2database" % "h2" % "1.4.193",
     scalaTest % Test

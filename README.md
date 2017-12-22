@@ -24,6 +24,8 @@ lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(
 
 lazy val yourProject = project.settings(
   metaMacroSettings,
+  // required to validate SQL files at compile time
+  compile in Compile := ((compile in Compile) dependsOn (copyResources in Compile)).value,
   libraryDependencies ++= Seq(
     "com.github.domala" %% "domala" % "0.1.0-beta.7",
     // ... your other library dependencies
@@ -83,21 +85,39 @@ where id = /*id*/0
   """)
   def selectById(id: Int): Option[Person]
 
-  @Select(sql = """
-select *
-from person where
-/*%if name != null */
-  name like /* @prefix(name) */'%' escape '$'
-/*%end*/
-  """)
-  def selectByName(name: String): Seq[Person]
-
   @Insert
   def insert(person: Person): Result[Person]
 
   @Update
   def update(person: Person): Result[Person]
 }
+```
+
+SQL can also be described in an external file.
+
+When use external file, the file name must be as follows, and put it on the class path.
+
+META-INF/_Dao package name_/_Dao class name_/_Dao method name_.sql
+
+
+
+```scala
+package example
+trait PersonDao {
+  @Select
+  def selectByName(name: String): Seq[Person]
+}
+```
+External SQL file for this method is as follows.
+
+META-INF/example/PersonDao/selectByName.sql
+
+```sql
+select *
+from person where
+/*%if name != null */
+  name like /* @prefix(name) */'%' escape '$'
+/*%end*/
 ```
 
 #### Config
