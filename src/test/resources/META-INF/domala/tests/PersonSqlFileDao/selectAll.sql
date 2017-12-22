@@ -1,1 +1,1 @@
-select * from person
+select * from person order by id

@@ -1,8 +1,11 @@
 package domala.tests
 
 import domala.Required
-import domala.jdbc.Config
+import domala.jdbc.{Config, LocalTransactionConfig}
 import org.scalatest._
+import org.seasar.doma.jdbc.Naming
+import org.seasar.doma.jdbc.dialect.PostgresDialect
+import org.seasar.doma.jdbc.tx.LocalTransactionDataSource
 
 class SqlFileTestSuite extends FunSuite with BeforeAndAfter {
   implicit val config: Config = new H2TestConfigTemplate("sql-file"){}
@@ -366,6 +369,36 @@ class SqlFileTestSuite extends FunSuite with BeforeAndAfter {
       dao.batchDeleteSql(dao.selectAll)
       assert(dao.selectCount == 0)
     }
+  }
+
+  test("dialect sql file") {
+    val postgresConfig: Config = new LocalTransactionConfig(
+      dataSource =  new LocalTransactionDataSource(
+        "jdbc:h2:mem:sql-file;DB_CLOSE_DELAY=-1", "sa", null),
+      dialect = new PostgresDialect(),
+      naming = Naming.SNAKE_LOWER_CASE
+    ){}
+    val postgresDao = PersonSqlFileDao.impl(postgresConfig)
+    Required {
+      assert(
+        postgresDao.selectAll == Seq(
+          Person(
+            Some(ID(2)),
+            Some(Name("ALLEN")),
+            Some(20),
+            Address("Kyoto", "Karasuma"),
+            Some(1),
+            Some(0)),
+          Person(
+            Some(ID(1)),
+            Some(Name("SMITH")),
+            Some(10),
+            Address("Tokyo", "Yaesu"),
+            Some(2),
+            Some(0))
+        ))
+    }(postgresConfig)
+
   }
 
 }
