@@ -21,9 +21,6 @@ object SqlBatchModifyQueryGenerator {
     command: Term.Apply,
     populatable: Term
   ): Defn.Def = {
-    if(commonArgs.hasSqlAnnotation && commonArgs.sqlFile) {
-      MacrosHelper.abort(domala.message.Message.DOMALA6021, defDecl.trtName, defDecl.name)
-    }
     val params = defDecl.paramss.flatten
 
     val checkNullParameter = params.map(p => {
@@ -64,7 +61,7 @@ object SqlBatchModifyQueryGenerator {
 
     val query =
       if (commonArgs.hasSqlAnnotation) queryTemplate(entityTypeOption, None)
-      else queryTemplate(entityTypeOption, Some(q"domala.internal.macros.reflect.DaoReflectionMacros.getSqlFilePath(classOf[${defDecl.trtName}], ${defDecl.name.literal}, false, $populatable, $daoParamType)"))
+      else queryTemplate(entityTypeOption, Some(q"domala.internal.macros.reflect.DaoReflectionMacros.getSqlFilePath(classOf[${defDecl.trtName}], ${defDecl.name.literal}, false, $populatable, false, $daoParamType)"))
 
     q"""
     override def ${defDecl.name} = {

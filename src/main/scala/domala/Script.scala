@@ -28,7 +28,7 @@ import org.seasar.doma.jdbc.SqlLogType
   * @throws org.seasar.doma.jdbc.JdbcException if a JDBC related error occurs
   */
 class Script(
-  sql: String,
+  sql: String = "",
   blockDelimiter: String = "",
   haltOnError: Boolean = true,
   sqlLog: SqlLogType = SqlLogType.FORMATTED

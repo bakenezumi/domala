@@ -11,6 +11,7 @@ import domala.internal.macros.{DaoParam, DaoParamClass}
 import domala.jdbc.{BatchResult, Result}
 import domala.jdbc.query.EntityAndEntityType
 import domala.message.Message
+import org.seasar.doma.internal.Constants
 import org.seasar.doma.internal.jdbc.command._
 import org.seasar.doma.internal.jdbc.sql.SqlParser
 import org.seasar.doma.jdbc.{CommandImplementors, JdbcException}
@@ -398,16 +399,20 @@ object DaoReflectionMacros {
     defName: c.Expr[String],
     expandable: c.Expr[Boolean],
     populatable: c.Expr[Boolean],
+    isScript: c.Expr[Boolean],
     params: c.Expr[DaoParamClass[_]]*): c.Expr[String] = handle(c)(daoTrt, defName) {
     import c.universe._
     val daoTpe = weakTypeOf[D]
+
     val Literal(Constant(defNameLiteral: String)) = defName.tree
     val Literal(Constant(expandableLiteral: Boolean)) = expandable.tree
     val Literal(Constant(populatableLiteral: Boolean)) = populatable.tree
+    val Literal(Constant(isScriptLiteral: Boolean)) = isScript.tree
 
-    val fileName = s"/META-INF/${daoTpe.toString.replace('.', '/')}/$defNameLiteral.sql"
+    val pathSuffix = if (isScriptLiteral) Constants.SCRIPT_PATH_SUFFIX else Constants.SQL_PATH_SUFFIX
+    val fileName = s"${Constants.SQL_PATH_PREFIX}${daoTpe.toString.replace('.', '/')}/$defNameLiteral$pathSuffix"
     val classPaths = c.classPath.map(url => Paths.get(url.toURI).toFile).filter(_.isDirectory)
-    val sqlFilePath = classPaths.map(dir => Paths.get(dir.getCanonicalPath + fileName))
+    val sqlFilePath = classPaths.map(dir => Paths.get(dir.getCanonicalPath + "/" + fileName))
     val sqlFile = sqlFilePath.find(path => Files.exists(path))
     if (sqlFile.isEmpty) {
       ReflectionUtil.abort(Message.DOMALA4019, Message.DOMALA9902.getSimpleMessage(fileName), sqlFilePath.head.toString)
@@ -429,10 +434,9 @@ object DaoReflectionMacros {
     val sqlNode = new SqlParser(sql).parse()
     val sqlValidator = new SqlValidator[c.type](c)(Message.DOMALA9902.getSimpleMessage(fileName), expandableLiteral, populatableLiteral, paramTypes)
     sqlValidator.validate(sqlNode)
-
-    reify(s"META-INF/${daoTrt.splice.getName.replace('.', '/')}/${defName.splice}.sql")
+    reify(s"${Constants.SQL_PATH_PREFIX}${daoTrt.splice.getName.replace('.', '/')}/${defName.splice}${c.Expr(q"$pathSuffix").splice}")
   }
-  def getSqlFilePath[D](daoTrt: Class[D], defName: String, expandable: Boolean, populatable: Boolean, params: (DaoParamClass[_])*): String = macro getSqlFilePathImpl[D]
+  def getSqlFilePath[D](daoTrt: Class[D], defName: String, expandable: Boolean, populatable: Boolean, isScript: Boolean, params: (DaoParamClass[_])*): String = macro getSqlFilePathImpl[D]
 
   def validateBatchParameterAndSqlImpl[D: c.WeakTypeTag](c: blackbox.Context)(
     daoClass: c.Expr[Class[D]],

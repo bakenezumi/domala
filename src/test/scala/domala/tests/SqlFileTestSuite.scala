@@ -7,18 +7,17 @@ import org.scalatest._
 class SqlFileTestSuite extends FunSuite with BeforeAndAfter {
   implicit val config: Config = new H2TestConfigTemplate("sql-file"){}
 
-  val ddlDao: PersonDao = PersonDao.impl
   val dao: PersonSqlFileDao = PersonSqlFileDao.impl
 
   before {
     Required {
-      ddlDao.create()
+      dao.create()
     }
   }
 
   after {
     Required {
-      ddlDao.drop()
+      dao.drop()
     }
   }
 

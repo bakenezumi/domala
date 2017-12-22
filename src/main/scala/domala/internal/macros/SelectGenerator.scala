@@ -399,7 +399,7 @@ object SelectGenerator extends DaoMethodGenerator {
     val query = if(commonArgs.hasSqlAnnotation) {
       q"new domala.jdbc.query.SqlAnnotationSelectQuery(${commonArgs.sql})"
     } else {
-      q"""new domala.jdbc.query.SqlFileSelectQuery(domala.internal.macros.reflect.DaoReflectionMacros.getSqlFilePath(classOf[$trtName], ${defDecl.name.literal}, true, false, ..$daoParamTypes))"""
+      q"""new domala.jdbc.query.SqlFileSelectQuery(domala.internal.macros.reflect.DaoReflectionMacros.getSqlFilePath(classOf[$trtName], ${defDecl.name.literal}, true, false, false, ..$daoParamTypes))"""
     }
 
     q"""

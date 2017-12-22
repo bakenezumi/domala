@@ -48,13 +48,22 @@ object ScriptGenerator extends DaoMethodGenerator {
         Message.DOMALA4173, trtName.syntax, name.syntax)
     }
 
+    val (query, setScriptFilePath) =
+      if (commonArgs.hasSqlAnnotation) (
+        q"new domala.jdbc.query.SqlScriptQuery(${commonArgs.sql})",
+        q"()")
+      else (
+        q"new org.seasar.doma.jdbc.query.SqlFileScriptQuery",
+        q"__query.setScriptFilePath(domala.internal.macros.reflect.DaoReflectionMacros.getSqlFilePath(classOf[$trtName], ${_def.name.literal}, true, false, true))")
+
     q"""
     override def $name = {
       entering(${trtName.className}, ${name.literal})
       try {
-        val __query = new domala.jdbc.query.SqlScriptQuery(${commonArgs.sql})
+        val __query = $query
         __query.setMethod($internalMethodName)
         __query.setConfig(__config)
+        $setScriptFilePath
         __query.setCallerClassName(${trtName.className})
         __query.setCallerMethodName(${name.literal})
         __query.setBlockDelimiter(${scriptArgs.blockDelimiter})

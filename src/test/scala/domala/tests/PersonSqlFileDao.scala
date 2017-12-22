@@ -6,6 +6,12 @@ import domala.jdbc.{BatchResult, Result}
 @Dao
 trait PersonSqlFileDao {
 
+  @Script
+  def create()
+
+  @Script
+  def drop()
+
   @Select
   def selectById(id: Int): Option[Person]
 
@@ -50,7 +56,6 @@ trait PersonSqlFileDao {
 
   @Update(sqlFile = true)
   def updateSql(entity: Person, entity2: Person, version: Int): Result[Person]
-
 
   @Delete(sqlFile = true)
   def deleteSql(entity: Person, version: Int): Int

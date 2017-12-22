@@ -32,6 +32,9 @@ object DaoMethodCommonArgs {
     val sqlFile = args.collectFirst { case arg"sqlFile = true" => true }.getOrElse(false)
     val queryTimeOut =  args.collectFirst{ case arg"queryTimeOut = $x" => x }.getOrElse(arg"-1")
     val sqlLog = args.collectFirst{ case arg"sqlLog = $x" => x }.getOrElse(arg"org.seasar.doma.jdbc.SqlLogType.FORMATTED")
+    if(hasSql && sqlFile) {
+      MacrosHelper.abort(domala.message.Message.DOMALA6021, traitName, methodName)
+    }
     DaoMethodCommonArgs(hasSql, sql, sqlFile, queryTimeOut, sqlLog)
   }
 
