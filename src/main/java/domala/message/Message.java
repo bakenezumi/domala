@@ -213,6 +213,8 @@ public enum Message implements MessageResource {
     DOMALA6019("Stream[?] => ?型のパラメータは@Selectのstrategy要素にSelectStrategyType.STREAMを設定した場合のみ使用できます。at {0}.{1}"),
     DOMALA6020("Iterator[?] => ?型のパラメータは@Selectのstrategy要素にSelectStrategyType.ITERATORを設定した場合のみ使用できます。at {0}.{1}"),
     DOMALA6021("sql要素に値を設定した場合、sqlFile要素にはtrueを指定できません。 at {0}.{1}"),
+    DOMALA6022("AdHocConfigはトランザクションをサポートしていません。"),
+    DOMALA6023("AdHocConfigを利用する場合、クエリは発行時に自動コミットされます。トランザクション制御が必要な場合はdomala.jdbc.LocalTransactionConfigを利用して下さい。"),
 
     // a part of message
     DOMALA9901("[{0}.{1}]のSQL"),

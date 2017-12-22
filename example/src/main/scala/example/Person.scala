@@ -11,6 +11,7 @@ case class Person(
   name: Name,
   age: Option[Int],
   address: Address,
+  @Column(name = "department_id")
   departmentId: Option[ID[Department]],
   @Version
   version: Int = -1

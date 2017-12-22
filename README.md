@@ -174,61 +174,36 @@ So, compile separately with `sbt ~console` or use the following SQL interpolatio
 
 ```scala
 import domala._
-import domala.jdbc.LocalTransactionConfig
-import org.seasar.doma.jdbc.tx.LocalTransactionDataSource
-import org.seasar.doma.jdbc.dialect.H2Dialect
+// load jdbc driver
+Class.forName("org.h2.Driver")
 
 // A configuration of database
-implicit object ExampleConfig extends LocalTransactionConfig(
-  dataSource = new LocalTransactionDataSource(
-    "jdbc:h2:mem:example;DB_CLOSE_DELAY=-1", "sa", null),
-  dialect = new H2Dialect
-) {
-  Class.forName("org.h2.Driver")
-}
+// domala.jdbc.AdHocConfig works with AutoCommit mode.
+implicit val config = jdbc.AdHocConfig("jdbc:h2:mem:example;DB_CLOSE_DELAY=-1")
 
-Required {
-  // `script"..." ` builds a script query statement
-  script"""
-    create table emp(
-      id int serial primary key,
-      name varchar(20)
-    );
+// `script"..." ` builds a script query statement
+script"create table emp(id int serial primary key, name varchar(20))".execute()
+
+// `update"..." ` builds a `INSERT`, `UPDATE`, `DELETE` query statement
+Seq("Scott", "Allen").map { name =>
+  update"""
+    insert into emp(name) values($name)
   """.execute()
 }
 
-Required {
-  // `update"..." ` builds a `INSERT`, `UPDATE`, `DELETE` query statement
-  Seq("Scott", "Allen").map { name =>
-    update"""
-      insert into emp(name) values($name)
-    """.execute()
-  }
-}
-
 // `select"..." ` builds a `SELECT` query statement
-val query =
-  select"""
-    select id, name
-    from emp
-    order by id
-  """
+select"select * from emp order by id".getMapList
+// => List(Map("ID" -> 1, "NAME" -> "Scott"), Map("ID" -> 2, "NAME" -> "Allen"))
 
-Required {
-  query.getMapList
-} // => List(Map("ID" -> 1, "NAME" -> "Scott"), Map("ID" -> 2, "NAME" -> "Allen"))
-
-Required {
-  select"select id from emp".getList[Int]
-} // => List(1, 2)
+select"select id from emp".getList[Int]
+// => List(1, 2)
 
 // If the `Entity` class has already been compiled
 // then can the following 
-// @Holder case class ID[E] (value: Int)
+// case class ID[E] (value: Int) extends AnyVal
 // @Entity case class Emp(id: ID[Emp], name: String) 
-Required {
-  query.getList[Emp]
-} // => List(Emp(ID(1), "Scott"), Emp(ID(2), "Allen"))
+select"select * from emp order by id".getList[Emp]
+// => List(Emp(ID(1), "Scott"), Emp(ID(2), "Allen"))
 
 ```
 

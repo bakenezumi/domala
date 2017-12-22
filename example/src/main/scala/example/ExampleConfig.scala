@@ -7,9 +7,8 @@ import org.seasar.doma.jdbc.tx.LocalTransactionDataSource
 
 object ExampleConfig extends LocalTransactionConfig(
   dataSource =  new LocalTransactionDataSource(
-    "jdbc:h2:mem:example;DB_CLOSE_DELAY=-1", "sa", null),
-  dialect = new H2Dialect,
-  naming = Naming.SNAKE_LOWER_CASE
+    "jdbc:h2:mem:example;DB_CLOSE_DELAY=-1", "", ""),
+  dialect = new H2Dialect
 ) {
   Class.forName("org.h2.Driver")
 }
