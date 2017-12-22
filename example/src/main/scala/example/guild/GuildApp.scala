@@ -2,6 +2,8 @@ package example.guild
 
 import domala._
 import domala.jdbc.{BatchResult, SelectOptions}
+import org.seasar.doma.jdbc.Naming
+
 
 /** Object structure example
   * {{{
@@ -114,10 +116,9 @@ WHERE
 
 object GuildApp {
   import domala.jdbc.Config
-  import example.ExampleConfig
   import example.util.prettyPrint
 
-  implicit val config: Config = ExampleConfig
+  implicit val config: Config = GuildAppConfig
   implicit val guildDao: GuildDao = GuildDao.impl
   implicit val characterDao: CharacterDao = CharacterDao.impl
   implicit val guildHouseDao: GuildHouseDao = GuildHouseDao.impl
@@ -178,4 +179,17 @@ DROP TABLE guild;
 """)
     def drop()
   }
+}
+
+import org.seasar.doma.jdbc.dialect.H2Dialect
+import domala.jdbc.LocalTransactionConfig
+import org.seasar.doma.jdbc.tx.LocalTransactionDataSource
+
+object GuildAppConfig extends LocalTransactionConfig(
+  dataSource =  new LocalTransactionDataSource(
+    "jdbc:h2:mem:example;DB_CLOSE_DELAY=-1", "", ""),
+  dialect = new H2Dialect,
+  naming = Naming.SNAKE_LOWER_CASE
+) {
+  Class.forName("org.h2.Driver")
 }
