@@ -45,4 +45,18 @@ trait StreamNoFunctionParamDao {
     }
     assert(caught.message == Message.DOMALA4249)
   }
+
+  test("Simultaneous specification of SQL annotation and SQL file") {
+    val trt = q"""
+trait StreamNoFunctionParamDao {
+  @Delete("delete from emp", sqlFile = true)
+  def delete(entity: Emp): Result[Emp]
+}
+"""
+    val caught = intercept[MacrosAbortException] {
+      DaoGenerator.generate(trt, null, None)
+    }
+    assert(caught.message == Message.DOMALA6021)
+  }
+
 }
