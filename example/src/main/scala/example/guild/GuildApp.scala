@@ -187,7 +187,7 @@ import org.seasar.doma.jdbc.tx.LocalTransactionDataSource
 
 object GuildAppConfig extends LocalTransactionConfig(
   dataSource =  new LocalTransactionDataSource(
-    "jdbc:h2:mem:example;DB_CLOSE_DELAY=-1", "", ""),
+    "jdbc:h2:mem:guild;DB_CLOSE_DELAY=-1", "", ""),
   dialect = new H2Dialect,
   naming = Naming.SNAKE_LOWER_CASE
 ) {
