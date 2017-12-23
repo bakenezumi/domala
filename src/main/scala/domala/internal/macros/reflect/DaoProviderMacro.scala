@@ -12,6 +12,25 @@ import scala.reflect.macros.blackbox
 
 object DaoProviderMacro {
 
+  def get[T: c.WeakTypeTag](c: blackbox.Context)(
+    config: c.Expr[Config], classTag: c.Expr[ClassTag[T]]): c.Expr[T] = {
+    import c.universe._
+    val tpe = weakTypeOf[T]
+    val companion = tpe.companion
+    companion.members
+      .find(m =>
+        m.isMethod && m.asMethod.name.toString == "impl" && m.asMethod.returnType <:< tpe
+          && m.asMethod.paramLists.flatten.head.typeSignature <:< typeOf[Config])
+      .getOrElse(ReflectionUtil.abort(
+        Message.DOMALA6018, tpe))
+    reify {
+      val companion = ReflectionUtil.getCompanion(classTag.splice)
+      val implMethod = companion.getClass.getMethod("impl", classOf[Config])
+      implMethod.invoke(companion, config.splice).asInstanceOf[T]
+    }
+  }
+
+
   def getByConfig[T: c.WeakTypeTag](c: blackbox.Context)(
       config: c.Expr[Config])(classTag: c.Expr[ClassTag[T]]): c.Expr[T] = {
     import c.universe._

@@ -8,13 +8,23 @@ import org.scalatest.FunSuite
 import org.seasar.doma.internal.jdbc.dao.DomalaAbstractDaoHelper
 
 class DaoProviderTestSuite extends FunSuite {
-  implicit val config: Config = DaoProviderTestConfig
-  test("config parameter") {
-    val dao = DaoProvider.get[PersonDao](config)
+  implicit val config: Config = DaoProviderTestConfig1
+
+  test("implicit only") {
+    val dao = DaoProvider.get[PersonDao]
     assert(dao.isInstanceOf[PersonDao])
     Required {
       dao.create()
     }
+  }
+
+
+  test("config parameter") {
+    val dao = DaoProvider.get[PersonDao](DaoProviderTestConfig2)
+    assert(dao.isInstanceOf[PersonDao])
+    Required {
+      dao.create()
+    }(DaoProviderTestConfig2)
   }
 
   // compile error
@@ -52,4 +62,5 @@ class DaoProviderTestSuite extends FunSuite {
 
 }
 
-object DaoProviderTestConfig extends H2TestConfigTemplate("dao-provider")
+object DaoProviderTestConfig1 extends H2TestConfigTemplate("dao-provider1")
+object DaoProviderTestConfig2 extends H2TestConfigTemplate("dao-provider2")
