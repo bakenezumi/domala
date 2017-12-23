@@ -27,7 +27,8 @@ lazy val yourProject = project.settings(
   // required to validate SQL files at compile time
   compile in Compile := ((compile in Compile) dependsOn (copyResources in Compile)).value,
   libraryDependencies ++= Seq(
-    "com.github.domala" %% "domala" % "0.1.0-beta.7",
+    "com.github.domala" %% "domala" % "0.1.0-beta.8",
+    "org.scalameta" %% "scalameta" % "1.8.0" % Provided,    
     // ... your other library dependencies
   ),
   // ... your other project settings
