@@ -37,6 +37,7 @@ lazy val example = project.settings (
   metaMacroSettings,
   compile in Compile := ((compile in Compile) dependsOn (copyResources in Compile)).value,
   libraryDependencies ++= Seq(
+    "org.scalameta" %% "scalameta" % "1.8.0" % Provided,
     "com.h2database" % "h2" % "1.4.193",
     scalaTest % Test
   )
