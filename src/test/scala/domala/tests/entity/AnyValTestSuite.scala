@@ -24,16 +24,16 @@ class AnyValTestSuite extends FunSuite with BeforeAndAfter {
 
   test("insert & update AnyVal") {
     Required {
-      val newEntity = Values(id = None, name = NameValue("AAA"), optionName = Some(NameValue("BBB")), weight1 = Some(WeightValue(1)),  weight2 = WeightValue(1000), nested = Values.Inner("DDD"), enum = EnumHolderA, version = None)
+      val newEntity = Values(id = IDValue(1), name = NameValue("AAA"), optionName = Some(NameValue("BBB")), weight1 = Some(WeightValue(1)),  weight2 = WeightValue(1000), nested = Values.Inner("DDD"), enum = EnumHolderA, version = None)
       dao.insert(newEntity)
       val selected1 = dao.selectAll
       assert(selected1 == Seq(
-        Values(Some(IDValue(1)), NameValue("AAA"), Some(NameValue("BBB")), Some(WeightValue(1)), WeightValue(1000), Values.Inner("DDD"), EnumHolderA, Some(VersionValue(1)))
+        Values(IDValue(1), NameValue("AAA"), Some(NameValue("BBB")), Some(WeightValue(1)), WeightValue(1000), Values.Inner("DDD"), EnumHolderA, Some(VersionValue(1)))
       ))
       dao.update(selected1.head.copy(name = NameValue("CCC"), weight2 = WeightValue(1002), nested = Values.Inner("EEE"), enum = EnumHolderB))
       val selected2 = dao.selectAll
       assert(selected2 == Seq(
-        Values(Some(IDValue(1)), NameValue("CCC"), Some(NameValue("BBB")), Some(WeightValue(1)), WeightValue(1002), Values.Inner("EEE"), EnumHolderB, Some(VersionValue(2)))
+        Values(IDValue(1), NameValue("CCC"), Some(NameValue("BBB")), Some(WeightValue(1)), WeightValue(1002), Values.Inner("EEE"), EnumHolderB, Some(VersionValue(2)))
       ))
     }
   }
@@ -41,8 +41,8 @@ class AnyValTestSuite extends FunSuite with BeforeAndAfter {
   test("select AnyVal result") {
     Required {
       val newEntities = Seq(
-        Values(id = None, name = NameValue("AAA"), optionName = Some(NameValue("BBB")), weight1 = Some(WeightValue(1)), weight2 = WeightValue(1000), nested = Values.Inner("DDD"), enum = EnumHolderA, version = None),
-        Values(id = None, name = NameValue("EEE"), optionName = Some(NameValue("FFF")), weight1 = Some(WeightValue(2)), weight2 = WeightValue(2000), nested = Values.Inner("GGG"), enum = EnumHolderB, version = None)
+        Values(id = IDValue(1), name = NameValue("AAA"), optionName = Some(NameValue("BBB")), weight1 = Some(WeightValue(1)), weight2 = WeightValue(1000), nested = Values.Inner("DDD"), enum = EnumHolderA, version = None),
+        Values(id = IDValue(2), name = NameValue("EEE"), optionName = Some(NameValue("FFF")), weight1 = Some(WeightValue(2)), weight2 = WeightValue(2000), nested = Values.Inner("GGG"), enum = EnumHolderB, version = None)
       )
       dao.insertList(newEntities)
       val w = dao.selectSumKg
@@ -53,11 +53,12 @@ class AnyValTestSuite extends FunSuite with BeforeAndAfter {
   test("select AnyVal typed parameter") {
     Required {
       val newEntities = Seq(
-        Values(id = None, name = NameValue("AAA"), optionName = Some(NameValue("BBB")), weight1 = Some(WeightValue(1)), weight2 = WeightValue(1000), nested = Values.Inner("DDD"), enum = EnumHolderA, version = None),
-        Values(id = None, name = NameValue("EEE"), optionName = Some(NameValue("FFF")), weight1 = Some(WeightValue(2)), weight2 = WeightValue(2000), nested = Values.Inner("GGG"), enum = EnumHolderA, version = None),
-        Values(id = None, name = NameValue("HHH"), optionName = Some(NameValue("III")), weight1 = Some(WeightValue(3)), weight2 = WeightValue(3000), nested = Values.Inner("JJJ"), enum = EnumHolderA, version = None)
+        Values(id = IDValue(1), name = NameValue("AAA"), optionName = Some(NameValue("BBB")), weight1 = Some(WeightValue(1)), weight2 = WeightValue(1000), nested = Values.Inner("DDD"), enum = EnumHolderA, version = None),
+        Values(id = IDValue(2), name = NameValue("EEE"), optionName = Some(NameValue("FFF")), weight1 = Some(WeightValue(2)), weight2 = WeightValue(2000), nested = Values.Inner("GGG"), enum = EnumHolderA, version = None),
+        Values(id = IDValue(3), name = NameValue("HHH"), optionName = Some(NameValue("III")), weight1 = Some(WeightValue(3)), weight2 = WeightValue(3000), nested = Values.Inner("JJJ"), enum = EnumHolderA, version = None)
       )
       dao.insertList(newEntities)
+      assert(dao.selectById(IDValue(1)) == Some(Values(id = IDValue(1), name = NameValue("AAA"), optionName = Some(NameValue("BBB")), weight1 = Some(WeightValue(1)),  weight2 = WeightValue(1000), nested = Values.Inner("DDD"), enum = EnumHolderA, version = Some(VersionValue(1)))))
       assert(dao.selectHeavierThan(WeightValue(1)) == Seq(NameValue("EEE"), NameValue("HHH")))
     }
   }
@@ -65,9 +66,9 @@ class AnyValTestSuite extends FunSuite with BeforeAndAfter {
   test("select AnyVal primitive parameter") {
     Required {
       val newEntities = Seq(
-        Values(id = None, name = NameValue("AAA"), optionName = Some(NameValue("BBB")), weight1 = Some(WeightValue(1)), weight2 = WeightValue(1000), nested = Values.Inner("DDD"), enum = EnumHolderA, version = None),
-        Values(id = None, name = NameValue("EEE"), optionName = Some(NameValue("FFF")), weight1 = Some(WeightValue(2)), weight2 = WeightValue(2000), nested = Values.Inner("GGG"), enum = EnumHolderA, version = None),
-        Values(id = None, name = NameValue("HHH"), optionName = Some(NameValue("III")), weight1 = Some(WeightValue(3)), weight2 = WeightValue(3000), nested = Values.Inner("JJJ"), enum = EnumHolderA, version = None)
+        Values(id = IDValue(1), name = NameValue("AAA"), optionName = Some(NameValue("BBB")), weight1 = Some(WeightValue(1)), weight2 = WeightValue(1000), nested = Values.Inner("DDD"), enum = EnumHolderA, version = None),
+        Values(id = IDValue(2), name = NameValue("EEE"), optionName = Some(NameValue("FFF")), weight1 = Some(WeightValue(2)), weight2 = WeightValue(2000), nested = Values.Inner("GGG"), enum = EnumHolderA, version = None),
+        Values(id = IDValue(3), name = NameValue("HHH"), optionName = Some(NameValue("III")), weight1 = Some(WeightValue(3)), weight2 = WeightValue(3000), nested = Values.Inner("JJJ"), enum = EnumHolderA, version = None)
       )
       dao.insertList(newEntities)
       assert(dao.selectByVersion(VersionValue(1)) == Seq(NameValue("AAA"), NameValue("EEE"), NameValue("HHH")))
@@ -77,9 +78,9 @@ class AnyValTestSuite extends FunSuite with BeforeAndAfter {
   test("select AnyVal Iterator") {
     Required {
       val newEntities = Seq(
-        Values(id = None, name = NameValue("AAA"), optionName = Some(NameValue("BBB")), weight1 = Some(WeightValue(1)), weight2 = WeightValue(1000), nested = Values.Inner("DDD"), enum = EnumHolderA, version = None),
-        Values(id = None, name = NameValue("EEE"), optionName = Some(NameValue("FFF")), weight1 = Some(WeightValue(2)), weight2 = WeightValue(2000), nested = Values.Inner("GGG"), enum = EnumHolderA, version = None),
-        Values(id = None, name = NameValue("HHH"), optionName = Some(NameValue("III")), weight1 = Some(WeightValue(3)), weight2 = WeightValue(3000), nested = Values.Inner("JJJ"), enum = EnumHolderA, version = None)
+        Values(id = IDValue(1), name = NameValue("AAA"), optionName = Some(NameValue("BBB")), weight1 = Some(WeightValue(1)), weight2 = WeightValue(1000), nested = Values.Inner("DDD"), enum = EnumHolderA, version = None),
+        Values(id = IDValue(2), name = NameValue("EEE"), optionName = Some(NameValue("FFF")), weight1 = Some(WeightValue(2)), weight2 = WeightValue(2000), nested = Values.Inner("GGG"), enum = EnumHolderA, version = None),
+        Values(id = IDValue(3), name = NameValue("HHH"), optionName = Some(NameValue("III")), weight1 = Some(WeightValue(3)), weight2 = WeightValue(3000), nested = Values.Inner("JJJ"), enum = EnumHolderA, version = None)
       )
       dao.insertList(newEntities)
       assert(dao.selectByIds(Seq(IDValue[Values](1), IDValue[Values](3))) {
@@ -99,7 +100,7 @@ class AnyValTestSuite extends FunSuite with BeforeAndAfter {
 case class Values(
   @domala.Id()
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  id: Option[IDValue[Values]],
+  id: IDValue[Values],
   name: NameValue,
   optionName: Option[NameValue],
   weight1: Option[WeightValue[WeightValueType.Kg]],
@@ -158,6 +159,12 @@ drop table values
 select * from `values` order by id
   """)
   def selectAll: Seq[Values]
+
+  @Select(sql="""
+select * from `values` where id = /*id*/0
+  """)
+  def selectById(id: IDValue[Values]): Option[Values]
+
 
   @Select(sql="""
 select sum(weight1) from `values`
