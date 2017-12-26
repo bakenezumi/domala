@@ -1,5 +1,6 @@
 package domala.internal.macros.reflect
 
+import domala.internal.jdbc.command._
 import domala.internal.macros.DaoParam
 import domala.jdbc.Result
 import domala.jdbc.query.EntityAndEntityType
@@ -9,11 +10,11 @@ import org.seasar.doma.internal.jdbc.command._
 class DaoReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
 
   test("getOptionalSingleResultHandler for Entity") {
-    assert(DaoReflectionMacros.getOptionalSingleResultHandler[DaoReflectionMacrosTestSuite, DummyEntity](classOf[DaoReflectionMacrosTestSuite], "get Handler for Entity").isInstanceOf[OptionalEntitySingleResultHandler[_]])
+    assert(DaoReflectionMacros.getOptionSingleResultHandler[DaoReflectionMacrosTestSuite, DummyEntity](classOf[DaoReflectionMacrosTestSuite], "get Handler for Entity").isInstanceOf[OptionEntitySingleResultHandler[_]])
   }
 
   test("getOptionalSingleResultHandler for Domain") {
-    assert(DaoReflectionMacros.getOptionalSingleResultHandler[DaoReflectionMacrosTestSuite, DummyDomain](classOf[DaoReflectionMacrosTestSuite], "get Handler for Domain").isInstanceOf[OptionalDomainSingleResultHandler[_, _]])
+    assert(DaoReflectionMacros.getOptionSingleResultHandler[DaoReflectionMacrosTestSuite, DummyDomain](classOf[DaoReflectionMacrosTestSuite], "get Handler for Domain").isInstanceOf[OptionHolderSingleResultHandler[_, _]])
   }
 
   test("getOptionalSingleResultHandler for Other") {

@@ -78,7 +78,7 @@ trait PersonDao {
           __query.setFetchSize(-1)
           __query.setSqlLogType(org.seasar.doma.jdbc.SqlLogType.FORMATTED)
           __query.prepare()
-          val __result: Option[Person] = domala.internal.OptionConverters.asScala(getCommandImplementors.createSelectCommand(__method0, __query, domala.internal.macros.reflect.DaoReflectionMacros.getOptionalSingleResultHandler[PersonDao, Person](classOf[PersonDao], "selectById")).execute())
+          val __result: Option[Person] = getCommandImplementors.createSelectCommand(__method0, __query, domala.internal.macros.reflect.DaoReflectionMacros.getOptionSingleResultHandler[PersonDao, Person](classOf[PersonDao], "selectById")).execute()
           __query.complete()
           exiting(classOf[PersonDao].getName, "selectById", __result)
           __result

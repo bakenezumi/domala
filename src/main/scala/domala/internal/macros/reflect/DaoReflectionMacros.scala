@@ -3,11 +3,11 @@ package domala.internal.macros.reflect
 import java.lang.reflect.Method
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
-import java.util.Optional
 
 import domala.internal.{WrapIterator, WrapStream}
 import domala.internal.macros.reflect.util.{ReflectionUtil, TypeUtil}
 import domala.internal.macros.{DaoParam, DaoParamClass}
+import domala.internal.jdbc.command.{OptionEntitySingleResultHandler, OptionHolderSingleResultHandler}
 import domala.jdbc.{BatchResult, Result}
 import domala.jdbc.query.EntityAndEntityType
 import domala.message.Message
@@ -166,10 +166,10 @@ object DaoReflectionMacros {
       implicit classTag: ClassTag[T]): AbstractResultListHandler[T] =
     macro getResultListHandlerImpl[D, T]
 
-  def getOptionalSingleResultHandlerImpl[D: c.WeakTypeTag, T: c.WeakTypeTag](c: blackbox.Context)(
+  def getOptionSingleResultHandlerImpl[D: c.WeakTypeTag, T: c.WeakTypeTag](c: blackbox.Context)(
       daoClass: c.Expr[Class[D]],
       methodName: c.Expr[String])(classTag: c.Expr[ClassTag[T]])
-    : c.Expr[AbstractSingleResultHandler[Optional[T]]] = handle(c)(daoClass, methodName) {
+    : c.Expr[AbstractSingleResultHandler[Option[T]]] = handle(c)(daoClass, methodName) {
     import c.universe._
     val daoTpe = weakTypeOf[D]
     val Literal(Constant(methodNameText: String)) = methodName.tree
@@ -177,12 +177,12 @@ object DaoReflectionMacros {
     if (TypeUtil.isEntity(c)(tpe)) {
       reify {
         val entity = ReflectionUtil.getEntityCompanion(classTag.splice)
-        new OptionalEntitySingleResultHandler(entity)
+        new OptionEntitySingleResultHandler(entity)
       }
     } else if (TypeUtil.isHolder(c)(tpe)) {
       reify {
         val holder = ReflectionUtil.getHolderCompanion(classTag.splice)
-        new OptionalDomainSingleResultHandler(holder)
+        new OptionHolderSingleResultHandler(holder)
       }
     } else if (TypeUtil.isAnyVal(c)(tpe)) {
       val (basicType, holderDesc) = TypeUtil.newAnyValHolderDesc[blackbox.Context, T](c)(tpe)
@@ -192,16 +192,16 @@ object DaoReflectionMacros {
       }
       reify {
         val holder = holderDesc.get.splice
-        new OptionalDomainSingleResultHandler(holder)
+        new OptionHolderSingleResultHandler(holder)
       }
     } else {
       ReflectionUtil.abort(Message.DOMALA4235,
                 tpe, daoTpe, methodNameText)
     }
   }
-  def getOptionalSingleResultHandler[D, T](daoClass: Class[D], methodName: String)(
+  def getOptionSingleResultHandler[D, T](daoClass: Class[D], methodName: String)(
       implicit classTag: ClassTag[T]): AbstractSingleResultHandler[
-    Optional[T]] = macro getOptionalSingleResultHandlerImpl[D, T]
+    Option[T]] = macro getOptionSingleResultHandlerImpl[D, T]
 
   def getOtherResultImpl[D: c.WeakTypeTag, T: c.WeakTypeTag](
       c: blackbox.Context)(daoClass: c.Expr[Class[D]], methodName: c.Expr[String], commandImplementors: c.Expr[CommandImplementors], query: c.Expr[AbstractSelectQuery], method: c.Expr[Method])(
