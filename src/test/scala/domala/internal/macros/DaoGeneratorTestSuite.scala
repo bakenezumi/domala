@@ -37,12 +37,12 @@ trait PersonDao {
 {
   trait PersonDao {
     def selectById(id: Int): Option[Person]
-    def insert(person: Person): Result[Person]
-    def update(person: Person): Result[Person]
-    def delete(person: Person): Int
-    def batchInsert(persons: Seq[Person]): BatchResult[Person]
-    def batchUpdate(persons: Seq[Person]): BatchResult[Person]
-    def batchDelete(persons: Seq[Person]): Array[Int]
+    @Insert def insert(person: Person): Result[Person]
+    @Update def update(person: Person): Result[Person]
+    @Delete def delete(person: Person): Int
+    @BatchInsert def batchInsert(persons: Seq[Person]): BatchResult[Person]
+    @BatchUpdate def batchUpdate(persons: Seq[Person]): BatchResult[Person]
+    @BatchDelete def batchDelete(persons: Seq[Person]): Array[Int]
   }
   object PersonDao {
     def impl(implicit config: domala.jdbc.Config): PersonDao = new Internal(config, Option(config).getOrElse(throw new org.seasar.doma.DomaNullPointerException("config")).getDataSource)
@@ -394,7 +394,7 @@ object PersonDao {
     val expect = q"""
 {
   trait PersonDao {
-    def insert(person: Person): Result[Person]
+    @Insert def insert(person: Person): Result[Person]
   }
   object PersonDao {
     def impl(implicit config: domala.jdbc.Config): PersonDao = new Internal(config, Option(config).getOrElse(throw new org.seasar.doma.DomaNullPointerException("config")).getDataSource)

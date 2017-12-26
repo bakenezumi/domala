@@ -68,7 +68,17 @@ object DaoGenerator {
           },
           // 警告抑制のため処理済みdefアノテーション除去
           // https://github.com/scala/bug/issues/9612
-          mods = Nil
+          mods = _def.mods.filter {
+            case mod"@Select(..$_)" => false
+            case mod"@Insert(..$_)" => false
+            case mod"@Update(..$_)" => false
+            case mod"@Delete(..$_)" => false
+            case mod"@Script(..$_)" => false
+            case mod"@BatchInsert(..$_)" => false
+            case mod"@BatchUpdate(..$_)" => false
+            case mod"@BatchDelete(..$_)" => false
+            case _ => true
+          }
         )
         case x => x
       }))),
