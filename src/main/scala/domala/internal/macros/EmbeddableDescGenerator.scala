@@ -11,13 +11,13 @@ import scala.meta._
 /**
   * @see [[https://github.com/domaframework/doma/blob/master/src/main/java/org/seasar/doma/internal/apt/EmbeddableTypeGenerator.java]]
   */
-object EmbeddableTypeGenerator {
+object EmbeddableDescGenerator {
   def generate(cls: Defn.Class, maybeOriginalCompanion: Option[Defn.Object]): Defn.Object = {
     if(cls.tparams.nonEmpty)
       MacrosHelper.abort(Message.DOMALA4285, cls.name.syntax)
     val methods = makeMethods(cls.name, cls.ctor)
     val generatedCompanion = q"""
-    object ${Term.Name(cls.name.syntax)} extends org.seasar.doma.jdbc.entity.EmbeddableType[${cls.name}] {
+    object ${Term.Name(cls.name.syntax)} extends domala.jdbc.entity.EmbeddableDesc[${cls.name}] {
       ..${Seq(CaseClassMacroHelper.generateApply(cls, maybeOriginalCompanion), CaseClassMacroHelper.generateUnapply(cls, maybeOriginalCompanion))}
       ..$methods
     }
@@ -64,27 +64,27 @@ object EmbeddableTypeGenerator {
     Seq({
       val params = properties.map { p =>
         q"""
-      domala.internal.macros.reflect.EmbeddableReflectionMacros.generatePropertyType[$clsName, ${p.tpe}, ENTITY, ${p.nakedTpe}](
-        classOf[$clsName],
-        ${p.name.literal},
-        entityClass,
-        embeddedPropertyName + "." + ${p.name.literal},
-        namingType,
-        ${if(p.isBasic) q"true" else q"false"},
-        ${p.newWrapperExpr},
-        ${p.columnArgs.name},
-        ${p.columnArgs.insertable},
-        ${p.columnArgs.updatable},
-        ${p.columnArgs.quote},
-        domala.internal.macros.reflect.EntityCollections[ENTITY]()
-      ).asInstanceOf[org.seasar.doma.jdbc.entity.EntityPropertyType[ENTITY, _]]
-      """
+        domala.internal.macros.reflect.EmbeddableReflectionMacros.generatePropertyDesc[$clsName, ${p.tpe}, ENTITY, ${p.nakedTpe}](
+          classOf[$clsName],
+          ${p.name.literal},
+          entityClass,
+          embeddedPropertyName + "." + ${p.name.literal},
+          namingType,
+          ${if(p.isBasic) q"true" else q"false"},
+          ${p.newWrapperExpr},
+          ${p.columnArgs.name},
+          ${p.columnArgs.insertable},
+          ${p.columnArgs.updatable},
+          ${p.columnArgs.quote},
+          domala.internal.macros.reflect.EntityCollections[ENTITY]()
+        ).asInstanceOf[domala.jdbc.entity.EntityPropertyDesc[ENTITY, _]]
+        """
       }
       q"""
-    override def getEmbeddablePropertyTypes[ENTITY](embeddedPropertyName: String, entityClass: Class[ENTITY], namingType: org.seasar.doma.jdbc.entity.NamingType): java.util.List[org.seasar.doma.jdbc.entity.EntityPropertyType[ENTITY, _]] = {
-      java.util.Arrays.asList(..$params)
-    }
-    """
+      override def getEmbeddablePropertyTypes[ENTITY](embeddedPropertyName: String, entityClass: Class[ENTITY], namingType: org.seasar.doma.jdbc.entity.NamingType): java.util.List[domala.jdbc.entity.EntityPropertyDesc[ENTITY, _]] = {
+        java.util.Arrays.asList(..$params)
+      }
+      """
     }, {
       val params = properties.map { p =>
           q"""
@@ -92,7 +92,7 @@ object EmbeddableTypeGenerator {
           """
       }
       q"""
-      override def newEmbeddable[ENTITY](embeddedPropertyName: String,  __args: java.util.Map[String, org.seasar.doma.jdbc.entity.Property[ENTITY, _]]): $clsName = {
+      override def newEmbeddable[ENTITY](embeddedPropertyName: String,  __args: java.util.Map[String, domala.jdbc.entity.Property[ENTITY, _]]): $clsName = {
         ${Term.Name(clsName.syntax)}(..$params)
       }
       """

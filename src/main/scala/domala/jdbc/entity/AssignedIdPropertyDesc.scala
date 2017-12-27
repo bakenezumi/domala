@@ -3,19 +3,16 @@ package domala.jdbc.entity
 import java.util.function.Supplier
 
 import domala.jdbc.entity
-import domala.jdbc.holder.{AbstractAnyValHolderDesc, AbstractHolderDesc}
-import org.seasar.doma.jdbc.domain.DomainType
-import org.seasar.doma.jdbc.entity.EntityPropertyType
-import org.seasar.doma.jdbc.entity.NamingType
+import domala.jdbc.holder.{AbstractAnyValHolderDesc, AbstractHolderDesc, HolderDesc}
 import org.seasar.doma.wrapper.Wrapper
 
-class AssignedIdPropertyType[PARENT, ENTITY <: PARENT, BASIC, HOLDER] private (
+class AssignedIdPropertyDesc[PARENT, ENTITY <: PARENT, BASIC, HOLDER] private (
   entityClass: Class[ENTITY],
   entityPropertyClass: Class[_],
   basicClass: Class[BASIC],
   wrapperSupplier: Supplier[Wrapper[BASIC]],
-  parentEntityPropertyType: EntityPropertyType[PARENT, BASIC],
-  holderType: DomainType[BASIC, HOLDER],
+  parentEntityPropertyDesc: EntityPropertyDesc[PARENT, BASIC],
+  holderDesc: HolderDesc[BASIC, HOLDER],
   name: String,
   columnName: String,
   namingType: NamingType,
@@ -25,18 +22,18 @@ class AssignedIdPropertyType[PARENT, ENTITY <: PARENT, BASIC, HOLDER] private (
   entityPropertyClass,
   basicClass,
   wrapperSupplier,
-  parentEntityPropertyType,
-  holderType,
+  parentEntityPropertyDesc,
+  holderDesc,
   name,
   columnName,
   namingType,
   quoteRequired) {
 
- override def createProperty: entity.DefaultProperty[_, ENTITY, BASIC] = DefaultPropertyType.createPropertySupplier[ENTITY, BASIC, HOLDER](field, entityPropertyClass, wrapperSupplier, holderType)()
+ override def createProperty: entity.DefaultProperty[_, ENTITY, BASIC] = DefaultPropertyDesc.createPropertySupplier[ENTITY, BASIC, HOLDER](field, entityPropertyClass, wrapperSupplier, holderDesc)()
 
 }
 
-object AssignedIdPropertyType {
+object AssignedIdPropertyDesc {
   def ofBasic[ENTITY, BASIC, HOLDER](
     entityClass: Class[ENTITY],
     entityPropertyClass: Class[_],
@@ -46,8 +43,8 @@ object AssignedIdPropertyType {
     columnName: String,
     namingType: NamingType,
     quoteRequired: Boolean
-  ): AssignedIdPropertyType[ENTITY, ENTITY, BASIC, HOLDER] = {
-    new AssignedIdPropertyType[ENTITY, ENTITY, BASIC, HOLDER](
+  ): AssignedIdPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER] = {
+    new AssignedIdPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER](
       entityClass,
       entityPropertyClass,
       basicClass,
@@ -63,19 +60,19 @@ object AssignedIdPropertyType {
   def ofHolder[ENTITY, BASIC, HOLDER](
     entityClass: Class[ENTITY],
     entityPropertyClass: Class[_],
-    holderType: AbstractHolderDesc[BASIC, HOLDER],
+    holderDesc: AbstractHolderDesc[BASIC, HOLDER],
     name: String,
     columnName: String,
     namingType: NamingType,
     quoteRequired: Boolean
-  ): AssignedIdPropertyType[ENTITY, ENTITY, BASIC, HOLDER] = {
-    new AssignedIdPropertyType[ENTITY, ENTITY, BASIC, HOLDER](
+  ): AssignedIdPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER] = {
+    new AssignedIdPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER](
       entityClass,
       entityPropertyClass,
-      holderType.getBasicClass.asInstanceOf[Class[BASIC]],
-      holderType.wrapper,
+      holderDesc.getBasicClass.asInstanceOf[Class[BASIC]],
+      holderDesc.wrapper,
       null,
-      holderType,
+      holderDesc,
       name,
       columnName,
       namingType,
@@ -86,19 +83,19 @@ object AssignedIdPropertyType {
   def ofAnyVal[ENTITY, BASIC, HOLDER](
     entityClass: Class[ENTITY],
     entityPropertyClass: Class[_],
-    holderType: AbstractAnyValHolderDesc[BASIC, HOLDER],
+    holderDesc: AbstractAnyValHolderDesc[BASIC, HOLDER],
     name: String,
     columnName: String,
     namingType: NamingType,
     quoteRequired: Boolean
-  ): AssignedIdPropertyType[ENTITY, ENTITY, BASIC, HOLDER] = {
-    new AssignedIdPropertyType[ENTITY, ENTITY, BASIC, HOLDER](
+  ): AssignedIdPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER] = {
+    new AssignedIdPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER](
       entityClass,
       entityPropertyClass,
-      holderType.getBasicClass,
-      holderType.wrapperSupplier ,
+      holderDesc.getBasicClass,
+      holderDesc.wrapperSupplier ,
       null,
-      holderType,
+      holderDesc,
       name,
       columnName,
       namingType,

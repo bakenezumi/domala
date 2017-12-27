@@ -6,7 +6,7 @@ import java.util.stream
 import domala.internal.jdbc.scalar.Scalars
 import domala.internal.{OptionConverters, WrapIterator}
 import domala.jdbc.Config
-import domala.jdbc.entity.EntityTypeFactory
+import domala.jdbc.entity.EntityDescFactory
 import domala.jdbc.query.SqlSelectQuery
 import org.seasar.doma.internal.jdbc.command._
 import org.seasar.doma.internal.jdbc.scalar.{Scalar, ScalarException}
@@ -97,7 +97,7 @@ class DomalaSelectBuilder(
     if (query.getMethodName == null)
       query.setCallerMethodName("getEntitySingleResult")
     val entityType =
-      EntityTypeFactory.getEntityType(resultClass, config.getClassHelper)
+      EntityDescFactory.getEntityDesc(resultClass, config.getClassHelper)
     query.setEntityType(entityType)
     val handler = new EntitySingleResultHandler[RESULT](entityType)
     execute(handler)
@@ -113,7 +113,7 @@ class DomalaSelectBuilder(
     if (query.getMethodName == null)
       query.setCallerMethodName("getOptionalEntitySingleResult")
     val entityType =
-      EntityTypeFactory.getEntityType(resultClass, config.getClassHelper)
+      EntityDescFactory.getEntityDesc(resultClass, config.getClassHelper)
     query.setEntityType(entityType)
     val handler = new OptionalEntitySingleResultHandler[RESULT](entityType)
     OptionConverters.asScala(execute(handler))
@@ -167,7 +167,7 @@ class DomalaSelectBuilder(
     if (query.getMethodName == null)
       query.setCallerMethodName("getEntityResultSeq")
     val entityType =
-      EntityTypeFactory.getEntityType(elementClass, config.getClassHelper)
+      EntityDescFactory.getEntityDesc(elementClass, config.getClassHelper)
     query.setEntityType(entityType)
     val handler = new EntityResultListHandler[ELEMENT](entityType)
     execute(handler).asScala
@@ -231,7 +231,7 @@ class DomalaSelectBuilder(
       mapper: Iterator[TARGET] => RESULT): RESULT = {
     if (query.getMethodName == null) query.setCallerMethodName("iteratorEntity")
     val entityType =
-      EntityTypeFactory.getEntityType(targetClass, config.getClassHelper)
+      EntityDescFactory.getEntityDesc(targetClass, config.getClassHelper)
     query.setEntityType(entityType)
     val handler = new EntityStreamHandler(entityType, (p: java.util.stream.Stream[TARGET]) => mapper(WrapIterator.of(p)))
     execute(handler)

@@ -14,7 +14,7 @@ import scala.meta._
 /**
   * @see [[https://github.com/domaframework/doma/tree/master/src/main/java/org/seasar/doma/internal/apt/EntityTypeGenerator.java]]
   */
-object EntityTypeGenerator {
+object EntityDescGenerator {
 
   case class EntityArgs(
     listener: Type,
@@ -99,9 +99,9 @@ object EntityTypeGenerator {
 
     val propertyTypesFields =
       q"""
-      private[this] val __idList = new java.util.ArrayList[org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]]()
-      private[this] val __list = new java.util.ArrayList[org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]](${Term.Name(propertySize.toString)})
-      private[this] val __map = new java.util.HashMap[String, org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]](${Term.Name(propertySize.toString)})
+      private[this] val __idList = new java.util.ArrayList[domala.jdbc.entity.EntityPropertyDesc[$clsName, _]]()
+      private[this] val __list = new java.util.ArrayList[domala.jdbc.entity.EntityPropertyDesc[$clsName, _]](${Term.Name(propertySize.toString)})
+      private[this] val __map = new java.util.HashMap[String, domala.jdbc.entity.EntityPropertyDesc[$clsName, _]](${Term.Name(propertySize.toString)})
       private[this] val __collections = domala.internal.macros.reflect.EntityCollections[$clsName](__list, __map, __idList)
       """.stats
 
@@ -246,7 +246,7 @@ object EntityTypeGenerator {
         MacrosHelper.abort(Message.DOMALA4089, clsName.syntax, name.syntax)
 
       q"""
-      private[this] val $propertyName = domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyType[$tpe, $clsName, $nakedTpe](
+      private[this] val $propertyName = domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyDesc[$tpe, $clsName, $nakedTpe](
         classOf[$clsName],
         ${name.literal},
         __namingType,
@@ -281,7 +281,7 @@ object EntityTypeGenerator {
     private[this] val __entityPropertyTypes = java.util.Collections.unmodifiableList(__list)
     private[this] val __entityPropertyTypeMap: java.util.Map[
       String,
-      org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]] =
+      domala.jdbc.entity.EntityPropertyDesc[$clsName, _]] =
       java.util.Collections.unmodifiableMap(__map)
     """.stats
   }
@@ -289,7 +289,7 @@ object EntityTypeGenerator {
   protected def generateGeneratedIdPropertyType(clsName: Type.Name, ctor: Ctor.Primary): Term = {
     ctor.paramss.flatten.collect {
       case param if param.mods.exists(mod => mod.syntax.startsWith("@GeneratedValue")) =>
-        ("$" + param.name.syntax + s".asInstanceOf[org.seasar.doma.jdbc.entity.GeneratedIdPropertyType[$clsName, $clsName, _ <: Number, _]]").parse[Term].get
+        ("$" + param.name.syntax + s".asInstanceOf[domala.jdbc.entity.GeneratedIdPropertyDesc[$clsName, $clsName, _ <: Number, _]]").parse[Term].get
     }.headOption.getOrElse(q"null")
   }
 
@@ -299,7 +299,7 @@ object EntityTypeGenerator {
     }
     if(versionProperties.length > 1) MacrosHelper.abort(Message.DOMALA4024, clsName.syntax, versionProperties(1).name.syntax)
     versionProperties.headOption.map(param =>
-      ("$" + param.name.syntax  + s".asInstanceOf[org.seasar.doma.jdbc.entity.VersionPropertyType[$clsName, $clsName, _ <: Number, _]]").parse[Term].get
+      ("$" + param.name.syntax  + s".asInstanceOf[domala.jdbc.entity.VersionPropertyDesc[$clsName, $clsName, _ <: Number, _]]").parse[Term].get
     ).getOrElse(q"null")
   }
 
@@ -309,7 +309,7 @@ object EntityTypeGenerator {
     }
     if(tenantIdProperties.length > 1) MacrosHelper.abort(Message.DOMALA4442,  clsName.syntax, tenantIdProperties(1).name.syntax)
     tenantIdProperties.headOption.map(param =>
-      ("$" + param.name.syntax  + s".asInstanceOf[org.seasar.doma.jdbc.entity.TenantIdPropertyType[$clsName, $clsName, _, _]]").parse[Term].get
+      ("$" + param.name.syntax  + s".asInstanceOf[domala.jdbc.entity.TenantIdPropertyDesc[$clsName, $clsName, _, _]]").parse[Term].get
     ).getOrElse(q"null")
   }
 
@@ -409,17 +409,17 @@ object EntityTypeGenerator {
       __listener.postDelete(entity, context)
     }
 
-    override def getEntityPropertyTypes: java.util.List[org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]] = __entityPropertyTypes
+    override def getEntityPropertyTypes: java.util.List[domala.jdbc.entity.EntityPropertyDesc[$clsName, _]] = __entityPropertyTypes
 
-    override def getEntityPropertyType(__name: String): org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _] = __entityPropertyTypeMap.get(__name)
+    override def getEntityPropertyType(__name: String): domala.jdbc.entity.EntityPropertyDesc[$clsName, _] = __entityPropertyTypeMap.get(__name)
 
-    override def getIdPropertyTypes: java.util.List[org.seasar.doma.jdbc.entity.EntityPropertyType[$clsName, _]] = __idPropertyTypes
+    override def getIdPropertyTypes: java.util.List[domala.jdbc.entity.EntityPropertyDesc[$clsName, _]] = __idPropertyTypes
 
-    override def getGeneratedIdPropertyType: org.seasar.doma.jdbc.entity.GeneratedIdPropertyType[_ >: $clsName, $clsName, _, _] = ${generateGeneratedIdPropertyType(clsName, ctor)}
+    override def getGeneratedIdPropertyType: domala.jdbc.entity.GeneratedIdPropertyDesc[_ >: $clsName, $clsName, _, _] = ${generateGeneratedIdPropertyType(clsName, ctor)}
 
-    override def getVersionPropertyType: org.seasar.doma.jdbc.entity.VersionPropertyType[_ >: $clsName, $clsName, _, _] = ${generateVersionPropertyType(clsName, ctor)}
+    override def getVersionPropertyType: domala.jdbc.entity.VersionPropertyDesc[_ >: $clsName, $clsName, _, _] = ${generateVersionPropertyType(clsName, ctor)}
 
-    override def getTenantIdPropertyType: org.seasar.doma.jdbc.entity.TenantIdPropertyType[_ >: $clsName, $clsName, _, _] = ${generateGetTenantIdPropertyTypeMethod(clsName, ctor)}
+    override def getTenantIdPropertyType: domala.jdbc.entity.TenantIdPropertyDesc[_ >: $clsName, $clsName, _, _] = ${generateGetTenantIdPropertyTypeMethod(clsName, ctor)}
 
     """.stats ++ {
         val params = ctor.paramss.flatten.map { p =>
@@ -430,7 +430,7 @@ object EntityTypeGenerator {
           override def newEntity(
               __args: java.util.Map[
                 String,
-                org.seasar.doma.jdbc.entity.Property[$clsName, _]]) =
+                domala.jdbc.entity.Property[$clsName, _]]) =
             new ${clsName.toString.parse[Ctor.Call].get}(
               ..$params
             )

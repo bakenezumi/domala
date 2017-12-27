@@ -20,7 +20,7 @@ object EmbeddableReflectionMacros {
       c.abort(weakTypeOf[E].typeSymbol.pos, e.getLocalizedMessage.replace("Nothing", weakTypeOf[E].toString))
   }
 
-  def generatePropertyTypeImpl[
+  def generatePropertyDescImpl[
     EM: c.WeakTypeTag,
     T: c.WeakTypeTag,
     E: c.WeakTypeTag,
@@ -68,7 +68,7 @@ object EmbeddableReflectionMacros {
     )(propertyClassTag, nakedClassTag)
   }
 
-  def generatePropertyType[EM, T, E, N](
+  def generatePropertyDesc[EM, T, E, N](
     embeddableClass: Class[EM],
     propertyName: String,
     entityClass: Class[E],
@@ -84,6 +84,6 @@ object EmbeddableReflectionMacros {
   )(
     implicit propertyClassTag: ClassTag[T],
     nakedClassTag: ClassTag[N]
-  ): Object =  macro generatePropertyTypeImpl[EM, T, E, N]
+  ): Object =  macro generatePropertyDescImpl[EM, T, E, N]
 
 }

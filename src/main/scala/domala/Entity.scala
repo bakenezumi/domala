@@ -1,6 +1,6 @@
 package domala
 
-import domala.internal.macros.EntityTypeGenerator
+import domala.internal.macros.EntityDescGenerator
 import domala.internal.macros.util.MacrosHelper
 import org.seasar.doma.jdbc.entity.EntityListener
 import org.seasar.doma.jdbc.entity.{NamingType, NullEntityListener}
@@ -48,9 +48,9 @@ class Entity(listener: Class[_ <: EntityListener[_ <: Any]] = classOf[NullEntity
     val q"new $_(..$params)" = this
     defn match {
       case Term.Block(Seq(cls: Defn.Class, companion: Defn.Object)) =>
-        EntityTypeGenerator.generate(cls, Some(companion), params)
+        EntityDescGenerator.generate(cls, Some(companion), params)
       case cls: Defn.Class =>
-        EntityTypeGenerator.generate(cls, None, params)
+        EntityDescGenerator.generate(cls, None, params)
       case _ => MacrosHelper.abort(domala.message.Message.DOMALA4015)
     }
   }

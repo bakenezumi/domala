@@ -1,6 +1,6 @@
 package domala
 
-import domala.internal.macros.EmbeddableTypeGenerator
+import domala.internal.macros.EmbeddableDescGenerator
 
 import scala.collection.immutable.Seq
 import scala.meta._
@@ -49,9 +49,9 @@ class Embeddable extends scala.annotation.StaticAnnotation {
   inline def apply(defn: Any): Any = meta {
     val (cls, newCompanion) = defn match {
       case Term.Block(Seq(cls: Defn.Class, companion: Defn.Object)) =>
-        (cls, EmbeddableTypeGenerator.generate(cls, Some(companion)))
+        (cls, EmbeddableDescGenerator.generate(cls, Some(companion)))
       case cls: Defn.Class =>
-        (cls, EmbeddableTypeGenerator.generate(cls, None))
+        (cls, EmbeddableDescGenerator.generate(cls, None))
       case _ => abort(domala.message.Message.DOMALA4283.getMessage())
     }
     //logger.debug(newCompanion)

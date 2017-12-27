@@ -3,20 +3,17 @@ package domala.jdbc.entity
 import java.util.function.Supplier
 
 import domala.jdbc.entity
-import domala.jdbc.holder.{AbstractAnyValHolderDesc, AbstractHolderDesc}
-import org.seasar.doma.jdbc.domain.DomainType
-import org.seasar.doma.jdbc.entity.EntityPropertyType
-import org.seasar.doma.jdbc.entity.NamingType
+import domala.jdbc.holder.{AbstractAnyValHolderDesc, AbstractHolderDesc, HolderDesc}
 import org.seasar.doma.jdbc.id.IdGenerator
 import org.seasar.doma.wrapper.Wrapper
 
-class GeneratedIdPropertyType[PARENT, ENTITY <: PARENT, BASIC <: Number, HOLDER] private (
+class GeneratedIdPropertyDesc[PARENT, ENTITY <: PARENT, BASIC <: Number, HOLDER] private (
   entityClass: Class[ENTITY],
   entityPropertyClass: Class[_],
   basicClass: Class[BASIC],
   wrapperSupplier: Supplier[Wrapper[BASIC]],
-  parentEntityPropertyType: EntityPropertyType[PARENT, BASIC],
-  holderType: DomainType[BASIC, HOLDER],
+  parentEntityPropertyDesc: EntityPropertyDesc[PARENT, BASIC],
+  holderDesc: HolderDesc[BASIC, HOLDER],
   name: String,
   columnName: String,
   namingType: NamingType,
@@ -27,19 +24,19 @@ class GeneratedIdPropertyType[PARENT, ENTITY <: PARENT, BASIC <: Number, HOLDER]
   entityPropertyClass,
   basicClass,
   wrapperSupplier,
-  parentEntityPropertyType,
-  holderType,
+  parentEntityPropertyDesc,
+  holderDesc,
   name,
   columnName,
   namingType,
   quoteRequired,
   idGenerator) {
 
- override def createProperty: entity.DefaultProperty[_, ENTITY, BASIC] = DefaultPropertyType.createPropertySupplier[ENTITY, BASIC, HOLDER](field, entityPropertyClass, wrapperSupplier, holderType)()
+ override def createProperty: entity.DefaultProperty[_, ENTITY, BASIC] = DefaultPropertyDesc.createPropertySupplier[ENTITY, BASIC, HOLDER](field, entityPropertyClass, wrapperSupplier, holderDesc)()
 
 }
 
-object GeneratedIdPropertyType {
+object GeneratedIdPropertyDesc {
   def ofBasic[ENTITY, BASIC <: Number, HOLDER] (
     entityClass: Class[ENTITY],
     entityPropertyClass: Class[_],
@@ -50,8 +47,8 @@ object GeneratedIdPropertyType {
     namingType: NamingType,
     quoteRequired: Boolean,
     idGenerator: IdGenerator
-  ) : GeneratedIdPropertyType[ENTITY, ENTITY, BASIC, HOLDER] =
-    new GeneratedIdPropertyType[ENTITY, ENTITY, BASIC, HOLDER](
+  ) : GeneratedIdPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER] =
+    new GeneratedIdPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER](
     entityClass,
     entityPropertyClass,
     basicClass,
@@ -67,20 +64,20 @@ object GeneratedIdPropertyType {
   def ofHolder[ENTITY, BASIC <: Number, HOLDER](
     entityClass: Class[ENTITY],
     entityPropertyClass: Class[_],
-    holderType: AbstractHolderDesc[BASIC, HOLDER],
+    holderDesc: AbstractHolderDesc[BASIC, HOLDER],
     name: String,
     columnName: String,
     namingType: NamingType,
     quoteRequired: Boolean,
     idGenerator: IdGenerator
-  ): GeneratedIdPropertyType[ENTITY, ENTITY, BASIC, HOLDER] = {
-    new GeneratedIdPropertyType[ENTITY, ENTITY, BASIC, HOLDER](
+  ): GeneratedIdPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER] = {
+    new GeneratedIdPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER](
       entityClass,
       entityPropertyClass,
-      holderType.getBasicClass.asInstanceOf[Class[BASIC]],
-      holderType.wrapper,
+      holderDesc.getBasicClass.asInstanceOf[Class[BASIC]],
+      holderDesc.wrapper,
       null,
-      holderType,
+      holderDesc,
       name,
       columnName,
       namingType,
@@ -92,20 +89,20 @@ object GeneratedIdPropertyType {
   def ofAnyVal[ENTITY, BASIC <: Number, HOLDER](
     entityClass: Class[ENTITY],
     entityPropertyClass: Class[_],
-    holderType: AbstractAnyValHolderDesc[BASIC, HOLDER],
+    holderDesc: AbstractAnyValHolderDesc[BASIC, HOLDER],
     name: String,
     columnName: String,
     namingType: NamingType,
     quoteRequired: Boolean,
     idGenerator: IdGenerator
-  ): GeneratedIdPropertyType[ENTITY, ENTITY, BASIC, HOLDER] = {
-    new GeneratedIdPropertyType[ENTITY, ENTITY, BASIC, HOLDER](
+  ): GeneratedIdPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER] = {
+    new GeneratedIdPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER](
       entityClass,
       entityPropertyClass,
-      holderType.getBasicClass,
-      holderType.wrapperSupplier,
+      holderDesc.getBasicClass,
+      holderDesc.wrapperSupplier,
       null,
-      holderType,
+      holderDesc,
       name,
       columnName,
       namingType,

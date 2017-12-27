@@ -1,7 +1,7 @@
 package domala.internal.macros.reflect
 
 import domala._
-import domala.jdbc.entity.{DefaultPropertyType, GeneratedIdPropertyType, VersionPropertyType}
+import domala.jdbc.entity.{DefaultPropertyDesc, GeneratedIdPropertyDesc, VersionPropertyDesc}
 import org.scalatest.{BeforeAndAfter, FunSuite}
 import org.seasar.doma.jdbc.entity.{EntityPropertyType, NamingType}
 import org.seasar.doma.wrapper.{IntegerWrapper, StringWrapper, Wrapper}
@@ -14,7 +14,7 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
     val __list = new java.util.ArrayList[EntityPropertyType[DummyEntity, _]]
     val __map =
       new java.util.HashMap[String, EntityPropertyType[DummyEntity, _]]
-    val propertyType = EntityReflectionMacros.generatePropertyType[String, DummyEntity, String](
+    val propertyType = EntityReflectionMacros.generatePropertyDesc[String, DummyEntity, String](
       classOf[DummyEntity],
       "basic",
       NamingType.NONE,
@@ -33,7 +33,7 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
     )
     assert(
       propertyType
-        .isInstanceOf[DefaultPropertyType[_, _, _, _]])
+        .isInstanceOf[DefaultPropertyDesc[_, _, _, _]])
     assert(__idList.isEmpty)
     assert(__list.get(0) == propertyType)
     assert(__map.get("basic") == propertyType)
@@ -45,7 +45,7 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
     val __map =
       new java.util.HashMap[String, EntityPropertyType[DummyEntity, _]]
     val __idGenerator = new org.seasar.doma.jdbc.id.BuiltinIdentityIdGenerator()
-    val propertyType = EntityReflectionMacros.generatePropertyType[Int, DummyEntity, Integer](
+    val propertyType = EntityReflectionMacros.generatePropertyDesc[Int, DummyEntity, Integer](
       classOf[DummyEntity],
       "id",
       NamingType.NONE,
@@ -62,7 +62,7 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
       false,
       EntityCollections[DummyEntity](__list, __map, __idList)
     )
-    assert(propertyType.isInstanceOf[GeneratedIdPropertyType[_, _, _, _]])
+    assert(propertyType.isInstanceOf[GeneratedIdPropertyDesc[_, _, _, _]])
     assert(__idList.get(0) == propertyType)
     assert(__list.get(0) == propertyType)
     assert(__map.get("id") == propertyType)
@@ -73,7 +73,7 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
     val __list = new java.util.ArrayList[EntityPropertyType[DummyEntity, _]]
     val __map =
       new java.util.HashMap[String, EntityPropertyType[DummyEntity, _]]
-    val propertyType = EntityReflectionMacros.generatePropertyType[Int, DummyEntity, Integer](
+    val propertyType = EntityReflectionMacros.generatePropertyDesc[Int, DummyEntity, Integer](
       classOf[DummyEntity],
       "version",
       NamingType.NONE,
@@ -90,7 +90,7 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
       false,
       EntityCollections[DummyEntity](__list, __map, __idList)
     )
-    assert(propertyType.isInstanceOf[VersionPropertyType[_, _, _, _]])
+    assert(propertyType.isInstanceOf[VersionPropertyDesc[_, _, _, _]])
     assert(__idList.isEmpty)
     assert(__list.get(0) == propertyType)
     assert(__map.get("version") == propertyType)
@@ -101,7 +101,7 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
     val __list = new java.util.ArrayList[EntityPropertyType[DummyEntity, _]]
     val __map =
       new java.util.HashMap[String, EntityPropertyType[DummyEntity, _]]
-    val propertyType = EntityReflectionMacros.generatePropertyType[DummyDomain, DummyEntity, DummyDomain](
+    val propertyType = EntityReflectionMacros.generatePropertyDesc[DummyDomain, DummyEntity, DummyDomain](
       classOf[DummyEntity],
       "domain",
       NamingType.NONE,
@@ -118,7 +118,7 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
       false,
       EntityCollections[DummyEntity](__list, __map, __idList)
     )
-    assert(propertyType.isInstanceOf[DefaultPropertyType[_, _, _, _]])
+    assert(propertyType.isInstanceOf[DefaultPropertyDesc[_, _, _, _]])
     assert(__idList.isEmpty)
     assert(__list.get(0) == propertyType)
     assert(__map.get("domain") == propertyType)

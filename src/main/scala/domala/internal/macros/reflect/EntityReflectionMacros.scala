@@ -23,10 +23,10 @@ object EntityReflectionMacros {
       c.abort(weakTypeOf[E].typeSymbol.pos, e.getLocalizedMessage)
   }
 
-  def generatePropertyTypeImpl[
-  T: c.WeakTypeTag,
-  E: c.WeakTypeTag,
-  N: c.WeakTypeTag](c: blackbox.Context)(
+  def generatePropertyDescImpl[
+    T: c.WeakTypeTag,
+    E: c.WeakTypeTag,
+    N: c.WeakTypeTag](c: blackbox.Context)(
     entityClass: c.Expr[Class[E]],
     paramName: c.Expr[String],
     namingType: c.Expr[NamingType],
@@ -64,7 +64,7 @@ object EntityReflectionMacros {
       collections
     )(propertyClassTag, nakedClassTag)
   }
-  def generatePropertyType[T, E, N](
+  def generatePropertyDesc[T, E, N](
       entityClass: Class[E],
       paramName: String,
       namingType: NamingType,
@@ -83,7 +83,7 @@ object EntityReflectionMacros {
   )(
       implicit propertyClassTag: ClassTag[T],
       nakedClassTag: ClassTag[N]
-  ): Object =  macro generatePropertyTypeImpl[T, E, N]
+  ): Object =  macro generatePropertyDescImpl[T, E, N]
 
   def readPropertyImpl[T: c.WeakTypeTag, E: c.WeakTypeTag](c: blackbox.Context)(
       entityClass: c.Expr[Class[E]],

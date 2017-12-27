@@ -9,7 +9,7 @@ import scala.meta._
 /**
   * @see [[https://github.com/domaframework/doma/blob/master/src/main/java/org/seasar/doma/internal/apt/DomainTypeGenerator.java]]
   */
-object HolderTypeGenerator {
+object HolderDescGenerator {
   def generate(cls: Defn.Class, maybeOriginalCompanion: Option[Defn.Object]): Defn.Object = {
 
     if (cls.ctor.paramss.flatten.length != 1)  MacrosHelper.abort(Message.DOMALA6001)

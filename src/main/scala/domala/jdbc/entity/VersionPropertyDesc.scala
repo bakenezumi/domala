@@ -3,19 +3,16 @@ package domala.jdbc.entity
 import java.util.function.Supplier
 
 import domala.jdbc.entity
-import domala.jdbc.holder.{AbstractAnyValHolderDesc, AbstractHolderDesc}
-import org.seasar.doma.jdbc.domain.DomainType
-import org.seasar.doma.jdbc.entity.EntityPropertyType
-import org.seasar.doma.jdbc.entity.NamingType
+import domala.jdbc.holder.{AbstractAnyValHolderDesc, AbstractHolderDesc, HolderDesc}
 import org.seasar.doma.wrapper.Wrapper
 
-class VersionPropertyType[PARENT, ENTITY <: PARENT, BASIC <: Number, HOLDER] private (
+class VersionPropertyDesc[PARENT, ENTITY <: PARENT, BASIC <: Number, HOLDER] private (
   entityClass: Class[ENTITY],
   entityPropertyClass: Class[_],
   basicClass: Class[BASIC],
   wrapperSupplier: Supplier[Wrapper[BASIC]],
-  parentEntityPropertyType: EntityPropertyType[PARENT, BASIC],
-  holderType: DomainType[BASIC, HOLDER],
+  parentEntityPropertyDesc: EntityPropertyDesc[PARENT, BASIC],
+  holderDesc: HolderDesc[BASIC, HOLDER],
   name: String,
   columnName: String,
   namingType: NamingType,
@@ -25,19 +22,19 @@ class VersionPropertyType[PARENT, ENTITY <: PARENT, BASIC <: Number, HOLDER] pri
   entityPropertyClass,
   basicClass,
   wrapperSupplier,
-  parentEntityPropertyType,
-  holderType,
+  parentEntityPropertyDesc,
+  holderDesc,
   name,
   columnName,
   namingType,
   quoteRequired
 ) {
 
-  override def createProperty: entity.DefaultProperty[_, ENTITY, BASIC] = DefaultPropertyType.createPropertySupplier[ENTITY, BASIC, HOLDER](field, entityPropertyClass, wrapperSupplier, holderType)()
+  override def createProperty: entity.DefaultProperty[_, ENTITY, BASIC] = DefaultPropertyDesc.createPropertySupplier[ENTITY, BASIC, HOLDER](field, entityPropertyClass, wrapperSupplier, holderDesc)()
 
 }
 
-object VersionPropertyType {
+object VersionPropertyDesc {
   def ofBasic[ENTITY, BASIC <: Number, HOLDER](
     entityClass: Class[ENTITY],
     entityPropertyClass: Class[_],
@@ -47,8 +44,8 @@ object VersionPropertyType {
     columnName: String,
     namingType: NamingType,
     quoteRequired: Boolean
-  ): VersionPropertyType[ENTITY, ENTITY, BASIC, HOLDER] = {
-    new VersionPropertyType[ENTITY, ENTITY, BASIC, HOLDER](
+  ): VersionPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER] = {
+    new VersionPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER](
       entityClass,
       entityPropertyClass,
       basicClass,
@@ -65,19 +62,19 @@ object VersionPropertyType {
   def ofHolder[ENTITY, BASIC <: Number, HOLDER](
     entityClass: Class[ENTITY],
     entityPropertyClass: Class[_],
-    holderType: AbstractHolderDesc[BASIC, HOLDER],
+    holderDesc: AbstractHolderDesc[BASIC, HOLDER],
     name: String,
     columnName: String,
     namingType: NamingType,
     quoteRequired: Boolean
-  ): VersionPropertyType[ENTITY, ENTITY, BASIC, HOLDER] = {
-    new VersionPropertyType[ENTITY, ENTITY, BASIC, HOLDER](
+  ): VersionPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER] = {
+    new VersionPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER](
       entityClass,
       entityPropertyClass,
-      holderType.getBasicClass.asInstanceOf[Class[BASIC]],
-      holderType.wrapper,
+      holderDesc.getBasicClass.asInstanceOf[Class[BASIC]],
+      holderDesc.wrapper,
       null,
-      holderType,
+      holderDesc,
       name,
       columnName,
       namingType,
@@ -88,19 +85,19 @@ object VersionPropertyType {
   def ofAnyVal[ENTITY, BASIC <: Number, HOLDER](
     entityClass: Class[ENTITY],
     entityPropertyClass: Class[_],
-    holderType: AbstractAnyValHolderDesc[BASIC, HOLDER],
+    holderDesc: AbstractAnyValHolderDesc[BASIC, HOLDER],
     name: String,
     columnName: String,
     namingType: NamingType,
     quoteRequired: Boolean
-  ): VersionPropertyType[ENTITY, ENTITY, BASIC, HOLDER] = {
-    new VersionPropertyType[ENTITY, ENTITY, BASIC, HOLDER](
+  ): VersionPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER] = {
+    new VersionPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER](
       entityClass,
       entityPropertyClass,
-      holderType.getBasicClass,
-      holderType.wrapperSupplier,
+      holderDesc.getBasicClass,
+      holderDesc.wrapperSupplier,
       null,
-      holderType,
+      holderDesc,
       name,
       columnName,
       namingType,

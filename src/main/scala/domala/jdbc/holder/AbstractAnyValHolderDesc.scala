@@ -4,12 +4,11 @@ import java.util.Optional
 import java.util.function.Supplier
 
 import org.seasar.doma.internal.jdbc.scalar.Scalar
-import org.seasar.doma.jdbc.domain.DomainType
 import org.seasar.doma.wrapper.Wrapper
 
 import scala.reflect.ClassTag
 
-abstract class AbstractAnyValHolderDesc[BASIC, HOLDER](val wrapperSupplier: Supplier[Wrapper[BASIC]])(implicit basicTag: ClassTag[BASIC], holderTag: ClassTag[HOLDER]) extends DomainType[BASIC, HOLDER]{
+abstract class AbstractAnyValHolderDesc[BASIC, HOLDER](val wrapperSupplier: Supplier[Wrapper[BASIC]])(implicit basicTag: ClassTag[BASIC], holderTag: ClassTag[HOLDER]) extends HolderDesc[BASIC, HOLDER]{
   val self: AbstractAnyValHolderDesc[BASIC, HOLDER] = this
 
   override def createOptionalScalar(): Scalar[BASIC, Optional[HOLDER]] = new OptionalHolderScalar(wrapperSupplier.get)

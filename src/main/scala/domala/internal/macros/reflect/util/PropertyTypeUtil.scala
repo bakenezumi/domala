@@ -100,7 +100,7 @@ object PropertyTypeUtil {
             )
           }
           reify {
-            val prop = GeneratedIdPropertyType.ofHolder(
+            val prop = GeneratedIdPropertyDesc.ofHolder(
               entityClass.splice,
               propertyClassTag.splice.runtimeClass,
               holder.splice.asInstanceOf[AbstractHolderDesc[Number, _]],
@@ -116,7 +116,7 @@ object PropertyTypeUtil {
           }
         } else {
           reify {
-            val prop = AssignedIdPropertyType.ofHolder(
+            val prop = AssignedIdPropertyDesc.ofHolder(
               entityClass.splice,
               propertyClassTag.splice.runtimeClass,
               holder.splice,
@@ -139,7 +139,7 @@ object PropertyTypeUtil {
           )
         }
         reify {
-          val prop = VersionPropertyType.ofHolder(
+          val prop = VersionPropertyDesc.ofHolder(
             entityClass.splice,
             propertyClassTag.splice.runtimeClass,
             holder.splice.asInstanceOf[AbstractHolderDesc[Number, _]],
@@ -153,7 +153,7 @@ object PropertyTypeUtil {
         }
       } else if (isTenantIdLiteral) {
         reify {
-          val prop = TenantIdPropertyType.ofHolder(
+          val prop = TenantIdPropertyDesc.ofHolder(
             entityClass.splice,
             propertyClassTag.splice.runtimeClass,
             holder.splice,
@@ -167,7 +167,7 @@ object PropertyTypeUtil {
         }
       } else {
         reify {
-          val prop = DefaultPropertyType.ofHolder(
+          val prop = DefaultPropertyDesc.ofHolder(
             entityClass.splice,
             propertyClassTag.splice.runtimeClass,
             holder.splice,
@@ -203,7 +203,7 @@ object PropertyTypeUtil {
             )
           }
           reify {
-            val prop = GeneratedIdPropertyType.ofAnyVal(
+            val prop = GeneratedIdPropertyDesc.ofAnyVal(
               entityClass.splice,
               propertyClassTag.splice.runtimeClass,
               holder.get.splice.asInstanceOf[AbstractAnyValHolderDesc[Number, _]],
@@ -219,7 +219,7 @@ object PropertyTypeUtil {
           }
         } else {
           reify {
-            val prop = AssignedIdPropertyType.ofAnyVal(
+            val prop = AssignedIdPropertyDesc.ofAnyVal(
               entityClass.splice,
               propertyClassTag.splice.runtimeClass,
               holder.get.splice,
@@ -242,7 +242,7 @@ object PropertyTypeUtil {
           )
         }
         reify {
-          val prop = VersionPropertyType.ofAnyVal(
+          val prop = VersionPropertyDesc.ofAnyVal(
             entityClass.splice,
             propertyClassTag.splice.runtimeClass,
             holder.get.splice.asInstanceOf[AbstractAnyValHolderDesc[Number, _]],
@@ -256,7 +256,7 @@ object PropertyTypeUtil {
         }
       } else if (isTenantIdLiteral) {
         reify {
-          val prop = TenantIdPropertyType.ofAnyVal(
+          val prop = TenantIdPropertyDesc.ofAnyVal(
             entityClass.splice,
             propertyClassTag.splice.runtimeClass,
             holder.get.splice,
@@ -270,7 +270,7 @@ object PropertyTypeUtil {
         }
       } else {
         reify {
-          val prop = DefaultPropertyType.ofAnyVal(
+          val prop = DefaultPropertyDesc.ofAnyVal(
             entityClass.splice,
             propertyClassTag.splice.runtimeClass,
             holder.get.splice,
@@ -304,7 +304,7 @@ object PropertyTypeUtil {
             )
           }
           reify {
-            val prop = domala.jdbc.entity.GeneratedIdPropertyType.ofBasic(
+            val prop = domala.jdbc.entity.GeneratedIdPropertyDesc.ofBasic(
               entityClass.splice,
               propertyClassTag.splice.runtimeClass,
               nakedClassTag.splice.runtimeClass.asInstanceOf[Class[Number]],
@@ -321,7 +321,7 @@ object PropertyTypeUtil {
           }
         } else {
           reify {
-            val prop = AssignedIdPropertyType.ofBasic(
+            val prop = AssignedIdPropertyDesc.ofBasic(
               entityClass.splice,
               propertyClassTag.splice.runtimeClass,
               nakedClassTag.splice.runtimeClass.asInstanceOf[Class[Any]],
@@ -345,7 +345,7 @@ object PropertyTypeUtil {
           )
         }
         reify {
-          val prop = VersionPropertyType.ofBasic(
+          val prop = VersionPropertyDesc.ofBasic(
             entityClass.splice,
             propertyClassTag.splice.runtimeClass,
             nakedClassTag.splice.runtimeClass.asInstanceOf[Class[Number]],
@@ -360,7 +360,7 @@ object PropertyTypeUtil {
         }
       } else if (isTenantIdLiteral) {
         reify {
-          val prop = TenantIdPropertyType.ofBasic(
+          val prop = TenantIdPropertyDesc.ofBasic(
             entityClass.splice,
             propertyClassTag.splice.runtimeClass,
             nakedClassTag.splice.runtimeClass.asInstanceOf[Class[Number]],
@@ -375,7 +375,7 @@ object PropertyTypeUtil {
         }
       } else {
         reify {
-          val prop = DefaultPropertyType.ofBasic(
+          val prop = DefaultPropertyDesc.ofBasic(
             entityClass.splice,
             propertyClassTag.splice.runtimeClass,
             nakedClassTag.splice.runtimeClass.asInstanceOf[Class[Any]],

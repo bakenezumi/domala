@@ -1,36 +1,24 @@
 package domala.jdbc.entity
 
+import java.util.{Optional, OptionalDouble, OptionalInt, OptionalLong}
 import java.util.function.Supplier
-import java.util.Optional
-import java.util.OptionalDouble
-import java.util.OptionalInt
-import java.util.OptionalLong
 
-import org.seasar.doma.internal.jdbc.entity.PropertyField
-import org.seasar.doma.internal.jdbc.scalar.BasicScalar
-import org.seasar.doma.internal.jdbc.scalar.OptionalBasicScalar
-import org.seasar.doma.internal.jdbc.scalar.OptionalDoubleScalar
-import org.seasar.doma.internal.jdbc.scalar.OptionalIntScalar
-import org.seasar.doma.internal.jdbc.scalar.OptionalLongScalar
-import org.seasar.doma.internal.jdbc.scalar.Scalar
-import org.seasar.doma.internal.jdbc.sql.ScalarInParameter
-import org.seasar.doma.jdbc.InParameter
-import org.seasar.doma.jdbc.domain.DomainType
-import org.seasar.doma.jdbc.entity.EntityPropertyType
-import org.seasar.doma.jdbc.entity.NamingType
-import org.seasar.doma.jdbc.entity.Property
-import org.seasar.doma.wrapper.Wrapper
 import domala.internal.jdbc.scalar.{OptionBasicScalar, OptionDomainBridgeScalar}
 import domala.jdbc.entity
-import domala.jdbc.holder.{AbstractAnyValHolderDesc, AbstractHolderDesc}
+import domala.jdbc.holder.{AbstractAnyValHolderDesc, AbstractHolderDesc, HolderDesc}
+import org.seasar.doma.internal.jdbc.entity.PropertyField
+import org.seasar.doma.internal.jdbc.scalar._
+import org.seasar.doma.internal.jdbc.sql.ScalarInParameter
+import org.seasar.doma.jdbc.InParameter
+import org.seasar.doma.wrapper.Wrapper
 
-class DefaultPropertyType[PARENT, ENTITY <: PARENT, BASIC, HOLDER] private (
+class DefaultPropertyDesc[PARENT, ENTITY <: PARENT, BASIC, HOLDER] private (
   entityClass: Class[ENTITY],
   entityPropertyClass: Class[_],
   basicClassClass: Class[BASIC],
   wrapperSupplier: Supplier[Wrapper[BASIC]],
-  parentEntityPropertyType: EntityPropertyType[PARENT, BASIC],
-  holderType: DomainType[BASIC, HOLDER],
+  parentEntityPropertyDesc: EntityPropertyDesc[PARENT, BASIC],
+  holderDesc: HolderDesc[BASIC, HOLDER],
   name: String,
   columnName: String,
   namingType: NamingType,
@@ -46,8 +34,8 @@ class DefaultPropertyType[PARENT, ENTITY <: PARENT, BASIC, HOLDER] private (
   entityPropertyClass,
   basicClassClass,
   wrapperSupplier,
-  parentEntityPropertyType,
-  holderType,
+  parentEntityPropertyDesc,
+  holderDesc,
   name,
   columnName,
   namingType,
@@ -57,36 +45,36 @@ class DefaultPropertyType[PARENT, ENTITY <: PARENT, BASIC, HOLDER] private (
 ) {
 
   override def createProperty: entity.DefaultProperty[_, ENTITY, BASIC] =
-    DefaultPropertyType.createPropertySupplier[ENTITY, BASIC, HOLDER](
+    DefaultPropertyDesc.createPropertySupplier[ENTITY, BASIC, HOLDER](
       field,
       entityPropertyClass,
       wrapperSupplier,
-      holderType)()
+      holderDesc)()
 
 }
 
-object DefaultPropertyType {
+object DefaultPropertyDesc {
   def createPropertySupplier[ENTITY, BASIC, HOLDER](
       field: PropertyField[ENTITY],
       entityPropertyClass: Class[_],
       wrapperSupplier: Supplier[Wrapper[BASIC]],
-      holderType: DomainType[BASIC, HOLDER]
+      holderDesc: HolderDesc[BASIC, HOLDER]
   ): () => DefaultProperty[_, ENTITY, BASIC] =
     () =>
-      if (holderType != null) {
+      if (holderDesc != null) {
         entityPropertyClass match {
           case x if x == classOf[Optional[_]] =>
             new DefaultProperty[Optional[HOLDER], ENTITY, BASIC](
               field,
-              holderType.createOptionalScalar())
+              holderDesc.createOptionalScalar())
           case x if x == classOf[Option[_]] =>
             new DefaultProperty[Option[HOLDER], ENTITY, BASIC](
               field,
-              new OptionDomainBridgeScalar(holderType.createOptionalScalar()))
+              new OptionDomainBridgeScalar(holderDesc.createOptionalScalar()))
           case _ =>
             new DefaultProperty[HOLDER, ENTITY, BASIC](
               field,
-              holderType.createScalar())
+              holderDesc.createScalar())
         }
       } else {
         entityPropertyClass match {
@@ -130,8 +118,8 @@ object DefaultPropertyType {
     insertable: Boolean,
     updatable: Boolean,
     quoteRequired: Boolean
-  ): DefaultPropertyType[ENTITY, ENTITY, BASIC, HOLDER] =
-    new DefaultPropertyType[ENTITY, ENTITY, BASIC, HOLDER](
+  ): DefaultPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER] =
+    new DefaultPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER](
       entityClass,
       entityPropertyClass,
       basicClassClass,
@@ -149,21 +137,21 @@ object DefaultPropertyType {
   def ofHolder[ENTITY, BASIC, HOLDER](
     entityClass: Class[ENTITY],
     entityPropertyClass: Class[_],
-    holderType: AbstractHolderDesc[BASIC, HOLDER],
+    holderDesc: AbstractHolderDesc[BASIC, HOLDER],
     name: String,
     columnName: String,
     namingType: NamingType,
     insertable: Boolean,
     updatable: Boolean,
     quoteRequired: Boolean
-  ): DefaultPropertyType[ENTITY, ENTITY, BASIC, HOLDER] = {
-    new DefaultPropertyType[ENTITY, ENTITY, BASIC, HOLDER](
+  ): DefaultPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER] = {
+    new DefaultPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER](
       entityClass,
       entityPropertyClass,
-      holderType.getBasicClass.asInstanceOf[Class[BASIC]],
-      holderType.wrapper,
+      holderDesc.getBasicClass.asInstanceOf[Class[BASIC]],
+      holderDesc.wrapper,
       null,
-      holderType,
+      holderDesc,
       name,
       columnName,
       namingType,
@@ -176,21 +164,21 @@ object DefaultPropertyType {
   def ofAnyVal[ENTITY, BASIC, HOLDER](
     entityClass: Class[ENTITY],
     entityPropertyClass: Class[_],
-    holderType: AbstractAnyValHolderDesc[BASIC, HOLDER],
+    holderDesc: AbstractAnyValHolderDesc[BASIC, HOLDER],
     name: String,
     columnName: String,
     namingType: NamingType,
     insertable: Boolean,
     updatable: Boolean,
     quoteRequired: Boolean
-  ): DefaultPropertyType[ENTITY, ENTITY, BASIC, HOLDER] = {
-    new DefaultPropertyType[ENTITY, ENTITY, BASIC, HOLDER](
+  ): DefaultPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER] = {
+    new DefaultPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER](
       entityClass,
       entityPropertyClass,
-      holderType.getBasicClass,
-      holderType.wrapperSupplier,
+      holderDesc.getBasicClass,
+      holderDesc.wrapperSupplier,
       null,
-      holderType,
+      holderDesc,
       name,
       columnName,
       namingType,

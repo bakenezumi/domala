@@ -6,7 +6,7 @@ import org.scalatest.FunSuite
 
 import scala.meta._
 
-class HolderTypeGeneratorTestSuite extends FunSuite {
+class HolderDescGeneratorTestSuite extends FunSuite {
   test("normal holder") {
     val cls = q"""
 case class Name(value: String)
@@ -29,7 +29,7 @@ object Name extends domala.jdbc.holder.AbstractHolderDesc[String, Name]((() => n
   }
 }
 """
-    val ret = HolderTypeGenerator.generate(cls, None)
+    val ret = HolderDescGenerator.generate(cls, None)
     assert(ret.syntax == expect.syntax)
   }
 
@@ -38,7 +38,7 @@ object Name extends domala.jdbc.holder.AbstractHolderDesc[String, Name]((() => n
 case class UnsupportedValueTypeHolder(value: Seq[String])
 """
     val caught = intercept[MacrosAbortException] {
-      HolderTypeGenerator.generate(cls, None)
+      HolderDescGenerator.generate(cls, None)
     }
     assert(caught.message == Message.DOMALA4102)
   }

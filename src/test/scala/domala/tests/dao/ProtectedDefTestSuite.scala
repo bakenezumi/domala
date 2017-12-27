@@ -31,8 +31,3 @@ trait ProtectedDao {
     ids.grouped(3).flatMap(groupedIds => findByIdsInternally(groupedIds)(_.toList)).toList
   }
 }
-
-
-
-
-

@@ -1,6 +1,6 @@
 package domala
 
-import domala.internal.macros.HolderTypeGenerator
+import domala.internal.macros.HolderDescGenerator
 
 import scala.collection.immutable.Seq
 import scala.meta._
@@ -22,9 +22,9 @@ class Holder extends scala.annotation.StaticAnnotation {
   inline def apply(defn: Any): Any = meta {
     val (cls, newCompanion) = defn match {
       case Term.Block(Seq(cls: Defn.Class, companion: Defn.Object)) =>
-        (cls, HolderTypeGenerator.generate(cls, Some(companion)))
+        (cls, HolderDescGenerator.generate(cls, Some(companion)))
       case cls: Defn.Class =>
-        (cls, HolderTypeGenerator.generate(cls, None))
+        (cls, HolderDescGenerator.generate(cls, None))
       case _ => abort(domala.message.Message.DOMALA4105.getMessage())
     }
     //logger.debug(newCompanion)
