@@ -1,8 +1,9 @@
-package domala.internal.macros
+package domala.internal.macros.generator
 
+import domala.internal.macros.DomaType
 import domala.internal.macros.args.ColumnArgs
-import domala.internal.macros.util.LiteralConverters._
-import domala.internal.macros.util.{CaseClassMacroHelper, MacrosHelper, TypeUtil}
+import domala.internal.macros.util.NameConverters._
+import domala.internal.macros.util.{MacrosHelper, TypeUtil}
 import domala.message.Message
 
 import scala.collection.immutable.Seq
@@ -18,7 +19,7 @@ object EmbeddableDescGenerator {
     val methods = makeMethods(cls.name, cls.ctor)
     val generatedCompanion = q"""
     object ${Term.Name(cls.name.syntax)} extends domala.jdbc.entity.EmbeddableDesc[${cls.name}] {
-      ..${Seq(CaseClassMacroHelper.generateApply(cls, maybeOriginalCompanion), CaseClassMacroHelper.generateUnapply(cls, maybeOriginalCompanion))}
+      ..${Seq(CaseClassGenerator.generateApply(cls, maybeOriginalCompanion), CaseClassGenerator.generateUnapply(cls, maybeOriginalCompanion))}
       ..$methods
     }
     """

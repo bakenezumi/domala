@@ -1,6 +1,6 @@
 package domala
 
-import domala.internal.macros.HolderDescGenerator
+import domala.internal.macros.generator.HolderDescGenerator
 
 import scala.collection.immutable.Seq
 import scala.meta._

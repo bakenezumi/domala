@@ -1,6 +1,6 @@
 package domala
 
-import domala.internal.macros.DaoGenerator
+import domala.internal.macros.generator.DaoGenerator
 import domala.jdbc.Config
 
 import scala.collection.immutable.Seq

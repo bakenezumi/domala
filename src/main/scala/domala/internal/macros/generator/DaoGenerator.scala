@@ -1,6 +1,7 @@
-package domala.internal.macros
+package domala.internal.macros.generator
 
-import domala.internal.macros.util.LiteralConverters._
+import domala.internal.macros._
+import domala.internal.macros.util.NameConverters._
 import domala.internal.macros.util.{MacrosHelper, TypeUtil}
 import domala.message.Message
 import org.seasar.doma.internal.apt.meta.MetaConstants

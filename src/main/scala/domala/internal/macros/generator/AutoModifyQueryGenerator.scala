@@ -1,12 +1,13 @@
-package domala.internal.macros
+package domala.internal.macros.generator
 
+import domala.internal.macros.QueryDefDecl
 import domala.internal.macros.args.DaoMethodCommonArgs
-import domala.internal.macros.util.LiteralConverters._
-import domala.internal.macros.util.{DaoMacroHelper, MacrosHelper}
+import domala.internal.macros.util.NameConverters._
+import domala.internal.macros.util.MacrosHelper
 import domala.message.Message
 
-import scala.meta._
 import scala.collection.immutable.Seq
+import scala.meta._
 
 object AutoModifyQueryGenerator {
   def extractParameter(defDecl: QueryDefDecl): (Term.Name, Type.Name) = {
@@ -29,7 +30,7 @@ object AutoModifyQueryGenerator {
     otherQueryArgs: Seq[Stat],
     command: Term.Apply): Defn.Def = {
 
-    val (isReturnResult, entityType) = DaoMacroHelper.getResultType(defDecl)
+    val (isReturnResult, entityType) = DaoMethodGeneratorHelper.getResultType(defDecl)
     val result = if (isReturnResult) {
       q"domala.jdbc.Result[$entityType](__count, __query.getEntity)"
     } else {

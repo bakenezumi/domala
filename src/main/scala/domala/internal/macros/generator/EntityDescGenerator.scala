@@ -1,10 +1,11 @@
-package domala.internal.macros
+package domala.internal.macros.generator
 
 import domala.GenerationType
+import domala.internal.macros.DomaType
 import domala.internal.macros.args.{ColumnArgs, SequenceGeneratorArgs, TableArgs, TableGeneratorArgs}
-import domala.internal.macros.util.LiteralConverters._
+import domala.internal.macros.util.NameConverters._
 import domala.internal.macros.util.TypeUtil.toType
-import domala.internal.macros.util.{CaseClassMacroHelper, MacrosHelper, TypeUtil}
+import domala.internal.macros.util.{MacrosHelper, TypeUtil}
 import domala.message.Message
 import org.seasar.doma.internal.apt.meta.MetaConstants
 
@@ -46,7 +47,7 @@ object EntityDescGenerator {
           new ${entityArgs.listener.syntax.parse[Ctor.Call].get}()
       }
 
-      ..${Seq(CaseClassMacroHelper.generateApply(cls, maybeOriginalCompanion), CaseClassMacroHelper.generateUnapply(cls, maybeOriginalCompanion))}
+      ..${Seq(CaseClassGenerator.generateApply(cls, maybeOriginalCompanion), CaseClassGenerator.generateUnapply(cls, maybeOriginalCompanion))}
 
       ..${fields ++ constructor ++ methods}
     }

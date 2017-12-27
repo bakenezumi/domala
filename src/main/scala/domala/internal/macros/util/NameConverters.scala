@@ -1,7 +1,7 @@
 package domala.internal.macros.util
 
 import scala.meta._
-object LiteralConverters {
+object NameConverters {
 
   implicit class RichName(name: Name) {
     def literal: Term = Term.Name("\"" + name.syntax + "\"")

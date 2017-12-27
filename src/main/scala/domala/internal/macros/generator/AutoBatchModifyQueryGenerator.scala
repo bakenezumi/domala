@@ -1,8 +1,9 @@
-package domala.internal.macros
+package domala.internal.macros.generator
 
+import domala.internal.macros.QueryDefDecl
 import domala.internal.macros.args.DaoMethodCommonBatchArgs
-import domala.internal.macros.util.LiteralConverters._
-import domala.internal.macros.util.{DaoMacroHelper, MacrosHelper}
+import domala.internal.macros.util.NameConverters._
+import domala.internal.macros.util.MacrosHelper
 import domala.message.Message
 
 import scala.collection.immutable.Seq
@@ -36,7 +37,7 @@ object AutoBatchModifyQueryGenerator {
                command: Term.Apply): Defn.Def = {
 
     val (isReturnBatchResult, entityType) =
-      DaoMacroHelper.getBatchResultType(defDecl)
+      DaoMethodGeneratorHelper.getBatchResultType(defDecl)
     val result = if (isReturnBatchResult) {
       q"domala.jdbc.BatchResult[$entityType](__count, __query.getEntities.asScala)"
     } else {

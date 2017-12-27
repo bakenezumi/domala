@@ -1,8 +1,9 @@
-package domala.internal.macros
+package domala.internal.macros.generator
 
 import domala.Insert
 import domala.internal.macros.args.DaoMethodCommonArgs
-import domala.internal.macros.util.DaoMacroHelper
+import DaoMethodGeneratorHelper
+import domala.internal.macros.QueryDefDecl
 
 import scala.collection.immutable.Seq
 import scala.meta._
@@ -38,7 +39,7 @@ object InsertGenerator extends DaoMethodGenerator {
       val (paramName, paramTpe) = AutoModifyQueryGenerator.extractParameter(defDecl)
       val query = q"getQueryImplementors.createAutoInsertQuery($internalMethodName, ${Term.Name(paramTpe.syntax)})"
       val command = q"getCommandImplementors.createInsertCommand($internalMethodName, __query)"
-      val validateEntityPropertyNames = DaoMacroHelper.validateEntityPropertyNames(defDecl, paramTpe, includedPropertyNames, excludedPropertyNames)
+      val validateEntityPropertyNames = DaoMethodGeneratorHelper.validateEntityPropertyNames(defDecl, paramTpe, includedPropertyNames, excludedPropertyNames)
       val otherQueryArgs = validateEntityPropertyNames ++ Seq[Stat](
         q"__query.setNullExcluded($excludeNull)",
         q"__query.setIncludedPropertyNames(..$includedPropertyNames)",

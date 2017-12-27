@@ -1,6 +1,7 @@
-package domala.internal.macros
+package domala.internal.macros.generator
 
-import domala.internal.macros.util.{CaseClassMacroHelper, MacrosHelper, TypeUtil}
+import domala.internal.macros.DomaType
+import domala.internal.macros.util.{MacrosHelper, TypeUtil}
 import domala.message.Message
 
 import scala.collection.immutable.Seq
@@ -47,7 +48,7 @@ object HolderDescGenerator {
     val tparams = TypeUtil.convertDefTypeParams(cls.tparams)
 
     val applyDef =
-      if(isEnum && !CaseClassMacroHelper.hasApplyDef(cls, maybeOriginalCompanion)) {
+      if(isEnum && !CaseClassGenerator.hasApplyDef(cls, maybeOriginalCompanion)) {
         val paramss = cls.ctor.paramss.map(ps => ps.map(_.copy(mods = Nil)))
         val argss = paramss.map(ps => ps.map(p => Term.Name(p.name.syntax)))
         val typeNames = cls.tparams.map(tp => Type.Name(tp.name.syntax))
@@ -59,7 +60,7 @@ object HolderDescGenerator {
           else
             q"private def apply(...$paramss): ${cls.name} = $matchSubclasses"
         )
-      } else Seq(CaseClassMacroHelper.generateApply(cls, maybeOriginalCompanion))
+      } else Seq(CaseClassGenerator.generateApply(cls, maybeOriginalCompanion))
 
     val numericImplicitVal =
       if(isNumeric && !isNumericDefined(maybeOriginalCompanion)) Seq(generateNumericImplicitVal(cls.name, basicTpe, tparams, Term.Name(valueParam.name.syntax)))
@@ -70,7 +71,7 @@ object HolderDescGenerator {
       domala.jdbc.holder.AbstractHolderDesc[
         $basicTpe, $erasedHolderType](
         $wrapperSupplier: java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$basicTpe]]) {
-      ..${applyDef ++ Seq(CaseClassMacroHelper.generateUnapply(cls, maybeOriginalCompanion))}
+      ..${applyDef ++ Seq(CaseClassGenerator.generateUnapply(cls, maybeOriginalCompanion))}
       ..$numericImplicitVal
       ..$methods
     }

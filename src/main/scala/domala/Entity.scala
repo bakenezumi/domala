@@ -1,6 +1,6 @@
 package domala
 
-import domala.internal.macros.EntityDescGenerator
+import domala.internal.macros.generator.EntityDescGenerator
 import domala.internal.macros.util.MacrosHelper
 import org.seasar.doma.jdbc.entity.EntityListener
 import org.seasar.doma.jdbc.entity.{NamingType, NullEntityListener}

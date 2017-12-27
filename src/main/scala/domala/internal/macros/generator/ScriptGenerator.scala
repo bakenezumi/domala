@@ -1,8 +1,8 @@
-package domala.internal.macros
+package domala.internal.macros.generator
 
 import domala.Script
 import domala.internal.macros.args.DaoMethodCommonArgs
-import domala.internal.macros.util.LiteralConverters._
+import domala.internal.macros.util.NameConverters._
 import domala.internal.macros.util.MacrosHelper
 import domala.message.Message
 

@@ -1,6 +1,8 @@
 package domala.internal.macros
 
+import domala.internal.macros.generator.EmbeddableDescGenerator
 import org.scalatest.FunSuite
+
 import scala.meta._
 
 class EmbeddableDescGeneratorTestSuite extends FunSuite {

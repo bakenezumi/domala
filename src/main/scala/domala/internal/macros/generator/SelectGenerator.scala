@@ -1,9 +1,10 @@
-package domala.internal.macros
+package domala.internal.macros.generator
 
 import domala.Select
 import domala.internal.macros.args.DaoMethodCommonArgs
-import domala.internal.macros.util.LiteralConverters._
+import domala.internal.macros.util.NameConverters._
 import domala.internal.macros.util.{MacrosHelper, TypeUtil}
+import domala.internal.macros.{DomaType, QueryDefDecl}
 import domala.message.Message
 
 import scala.collection.immutable.Seq

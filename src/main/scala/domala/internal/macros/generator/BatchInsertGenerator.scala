@@ -1,6 +1,7 @@
-package domala.internal.macros
+package domala.internal.macros.generator
 
 import domala.internal.macros.args.DaoMethodCommonBatchArgs
+import domala.internal.macros.QueryDefDecl
 import org.seasar.doma.BatchInsert
 
 import scala.collection.immutable.Seq

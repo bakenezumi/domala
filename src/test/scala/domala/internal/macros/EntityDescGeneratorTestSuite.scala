@@ -1,5 +1,6 @@
 package domala.internal.macros
 
+import domala.internal.macros.generator.EntityDescGenerator
 import domala.message.Message
 import org.scalatest.FunSuite
 

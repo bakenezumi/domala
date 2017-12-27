@@ -1,4 +1,4 @@
-package domala.internal.macros
+package domala.internal.macros.generator
 
 import scala.annotation.StaticAnnotation
 import scala.collection.immutable.Seq

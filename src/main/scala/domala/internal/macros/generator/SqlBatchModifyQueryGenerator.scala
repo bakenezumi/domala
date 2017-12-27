@@ -1,8 +1,9 @@
-package domala.internal.macros
+package domala.internal.macros.generator
 
+import domala.internal.macros.QueryDefDecl
 import domala.internal.macros.args.DaoMethodCommonBatchArgs
-import domala.internal.macros.util.LiteralConverters._
-import domala.internal.macros.util.{DaoMacroHelper, MacrosHelper}
+import DaoMethodGeneratorHelper
+import domala.internal.macros.util.NameConverters._
 
 import scala.collection.immutable.Seq
 import scala.meta._
@@ -31,7 +32,7 @@ object SqlBatchModifyQueryGenerator {
       """
     })
 
-    val (isReturnResult, _) = DaoMacroHelper.getBatchResultType(defDecl)
+    val (isReturnResult, _) = DaoMethodGeneratorHelper.getBatchResultType(defDecl)
 
     val daoParam =
       q"domala.internal.macros.DaoParam.apply(${paramName.literal}, $paramName, classOf[$paramType])"

@@ -1,10 +1,12 @@
-package domala.internal.macros.util
+package domala.internal.macros.generator
+
+import domala.internal.macros.util.TypeUtil
 
 import scala.meta._
 
-object CaseClassMacroHelper {
+object CaseClassGenerator {
 
-  def hasDef(cls: Defn.Class, maybeCompanion: Option[Defn.Object], name: String): Boolean = {
+  private def hasDef(cls: Defn.Class, maybeCompanion: Option[Defn.Object], name: String): Boolean = {
     maybeCompanion.exists(companion => {
       companion.templ.stats.exists(stats => stats.exists {
         case x: Defn.Def if x.name.syntax == name => true

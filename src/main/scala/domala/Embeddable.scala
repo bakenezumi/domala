@@ -1,6 +1,6 @@
 package domala
 
-import domala.internal.macros.EmbeddableDescGenerator
+import domala.internal.macros.generator.EmbeddableDescGenerator
 
 import scala.collection.immutable.Seq
 import scala.meta._

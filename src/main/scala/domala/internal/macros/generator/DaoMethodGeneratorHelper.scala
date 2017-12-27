@@ -1,11 +1,12 @@
-package domala.internal.macros.util
+package domala.internal.macros.generator
 
 import domala.internal.macros.QueryDefDecl
+import domala.internal.macros.util.MacrosHelper
 
 import scala.collection.immutable.Seq
 import scala.meta._
 
-object DaoMacroHelper {
+object DaoMethodGeneratorHelper {
 
   private def hasEntityParameter(defDecl: QueryDefDecl, resultEntityType: Type, paramTypes: Seq[Term.Param]): Boolean = {
     paramTypes.map(_.decltpe.get.syntax).exists {

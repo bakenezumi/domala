@@ -1,8 +1,8 @@
-package domala.internal.macros
+package domala.internal.macros.generator
 
 import domala.Delete
 import domala.internal.macros.args.DaoMethodCommonArgs
-import domala.internal.macros.util.DaoMacroHelper
+import domala.internal.macros.QueryDefDecl
 
 import scala.collection.immutable.Seq
 import scala.meta._

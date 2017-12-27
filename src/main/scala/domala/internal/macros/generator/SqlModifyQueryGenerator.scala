@@ -1,8 +1,9 @@
-package domala.internal.macros
+package domala.internal.macros.generator
 
 import domala.internal.macros.args.DaoMethodCommonArgs
-import domala.internal.macros.util.LiteralConverters._
-import domala.internal.macros.util.{DaoMacroHelper, MacrosHelper, TypeUtil}
+import domala.internal.macros.util.NameConverters._
+import domala.internal.macros.util.TypeUtil
+import domala.internal.macros.{DomaType, QueryDefDecl}
 
 import scala.collection.immutable.Seq
 import scala.meta._
@@ -41,7 +42,7 @@ object SqlModifyQueryGenerator {
       q"__query.addParameter(${p.name.literal}, classOf[$paramTpe], ${Term.Name(p.name.syntax): Term.Arg})"
     }
 
-    val (isReturnResult, entityType) = DaoMacroHelper.getResultType(defDecl)
+    val (isReturnResult, entityType) = DaoMethodGeneratorHelper.getResultType(defDecl)
 
     val daoParams = defDecl.paramss.flatten.map { p =>
       q"domala.internal.macros.DaoParam.apply(${p.name.literal}, ${Term.Name(p.name.syntax)}, classOf[${TypeUtil.toType(p.decltpe.get)}])"
