@@ -1,8 +1,8 @@
 package domala.jdbc
 
-import org.seasar.doma.jdbc.domain.DomainType
+import org.seasar.doma
 
 package object holder {
   // Alias of Doma type
-  type HolderDesc[BASIC, HOLDER] = DomainType[BASIC, HOLDER]
+  type HolderDesc[BASIC, HOLDER] = doma.jdbc.domain.DomainType[BASIC, HOLDER]
 }

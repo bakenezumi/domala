@@ -1,6 +1,6 @@
 package domala
 
-import org.seasar.doma.jdbc.id.{BuiltinSequenceIdGenerator, BuiltinTableIdGenerator, SequenceIdGenerator, TableIdGenerator}
+import domala.jdbc.id.{BuiltinSequenceIdGenerator, BuiltinTableIdGenerator, SequenceIdGenerator, TableIdGenerator}
 
 /** Indicates an entity identifier that is mapped to a primary key of a database
   * table.

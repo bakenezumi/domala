@@ -2,8 +2,7 @@ package domala
 
 import domala.internal.macros.generator.EntityDescGenerator
 import domala.internal.macros.util.MacrosHelper
-import org.seasar.doma.jdbc.entity.EntityListener
-import org.seasar.doma.jdbc.entity.{NamingType, NullEntityListener}
+import domala.jdbc.entity.{EntityListener, NamingType, NullEntityListener}
 
 import scala.collection.immutable.Seq
 import scala.meta._

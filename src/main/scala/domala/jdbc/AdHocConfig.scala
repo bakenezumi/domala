@@ -3,11 +3,11 @@ package domala.jdbc
 import java.util.logging.Logger
 import javax.sql.DataSource
 
+import domala.jdbc.dialect.{Dialect, StandardDialect}
 import domala.message.Message
 import org.seasar.doma.DomaNullPointerException
-import org.seasar.doma.jdbc.dialect.{Dialect, StandardDialect}
+import org.seasar.doma.jdbc.SimpleDataSource
 import org.seasar.doma.jdbc.tx.TransactionManager
-import org.seasar.doma.jdbc.{Naming, SimpleDataSource}
 
 /** An ad-hoc config for REPL
   *

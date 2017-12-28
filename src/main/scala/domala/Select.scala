@@ -1,7 +1,6 @@
 package domala
 
-import org.seasar.doma.jdbc.SqlLogType
-import org.seasar.doma.{FetchType, MapKeyNamingType}
+import domala.jdbc.SqlLogType
 
 /** Indicates a select.
   *

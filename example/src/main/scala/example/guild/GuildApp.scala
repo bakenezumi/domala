@@ -1,8 +1,7 @@
 package example.guild
 
 import domala._
-import domala.jdbc.{BatchResult, SelectOptions}
-import org.seasar.doma.jdbc.Naming
+import domala.jdbc.{BatchResult, Naming, SelectOptions}
 
 
 /** Object structure example
@@ -181,9 +180,9 @@ DROP TABLE guild;
   }
 }
 
-import org.seasar.doma.jdbc.dialect.H2Dialect
 import domala.jdbc.LocalTransactionConfig
-import org.seasar.doma.jdbc.tx.LocalTransactionDataSource
+import domala.jdbc.dialect.H2Dialect
+import domala.jdbc.tx.LocalTransactionDataSource
 
 object GuildAppConfig extends LocalTransactionConfig(
   dataSource =  new LocalTransactionDataSource(

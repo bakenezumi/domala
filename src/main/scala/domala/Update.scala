@@ -1,6 +1,6 @@
 package domala
 
-import org.seasar.doma.jdbc.SqlLogType
+import domala.jdbc.SqlLogType
 
 /** Indicates an update.
   *

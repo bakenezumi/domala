@@ -2,7 +2,6 @@ package domala.internal.macros.generator
 
 import domala.Insert
 import domala.internal.macros.args.DaoMethodCommonArgs
-import DaoMethodGeneratorHelper
 import domala.internal.macros.QueryDefDecl
 
 import scala.collection.immutable.Seq

@@ -1,6 +1,6 @@
 import domala.jdbc.Config
 import domala.jdbc.interpolation.{SQLInterpolator, ScriptStatement, SelectStatement, UpdateStatement}
-import org.seasar.doma.jdbc.tx.TransactionIsolationLevel
+import domala.jdbc.tx.TransactionIsolationLevel
 
 package object domala {
 
@@ -142,6 +142,20 @@ package object domala {
       */
     def script(params: Any*)(implicit config: Config): ScriptStatement = SQLInterpolator.script(context, params, config)
 
+  }
+
+  // Alias of Doma type
+  type FetchType = org.seasar.doma.FetchType
+  object FetchType {
+    val EAGER = org.seasar.doma.FetchType.EAGER
+    val LAZY = org.seasar.doma.FetchType.LAZY
+  }
+  type MapKeyNamingType = org.seasar.doma.MapKeyNamingType
+  object MapKeyNamingType {
+    val NONE = org.seasar.doma.MapKeyNamingType.NONE
+    val CAMEL_CASE = org.seasar.doma.MapKeyNamingType.CAMEL_CASE
+    val UPPER_CASE = org.seasar.doma.MapKeyNamingType.UPPER_CASE
+    val LOWER_CASE = org.seasar.doma.MapKeyNamingType.LOWER_CASE
   }
 
 }

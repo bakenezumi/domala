@@ -2,8 +2,7 @@ package domala.jdbc
 
 import javax.sql.DataSource
 
-import org.seasar.doma.jdbc.Naming
-import org.seasar.doma.jdbc.dialect.Dialect
+import domala.jdbc.dialect.Dialect
 import org.seasar.doma.jdbc.tx.{LocalTransactionDataSource, LocalTransactionManager, TransactionManager}
 
 /** A basic implementation of [[domala.jdbc.Config Config]] for local transactions.
