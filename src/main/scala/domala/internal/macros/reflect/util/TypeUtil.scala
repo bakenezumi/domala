@@ -4,11 +4,10 @@ import java.math.BigInteger
 import java.sql.{Blob, Clob, NClob, SQLXML, Time, Timestamp}
 import java.time.{LocalDate, LocalDateTime, LocalTime}
 
-import domala.jdbc.entity.EntityCompanion
-import domala.jdbc.holder.{AbstractAnyValHolderDesc, AbstractHolderDesc}
+import domala.jdbc.entity.{EmbeddableCompanion, EntityCompanion}
+import domala.jdbc.holder.{AbstractAnyValHolderDesc, HolderCompanion}
 import domala.wrapper.BigIntWrapper
-import org.seasar.doma.internal.apt.meta.EntityConstructorMeta
-import org.seasar.doma.jdbc.entity.{AbstractEntityType, EmbeddableType}
+import org.seasar.doma.jdbc.entity.EmbeddableType
 import org.seasar.doma.wrapper._
 
 import scala.collection.mutable.ArrayBuffer
@@ -46,12 +45,12 @@ object TypeUtil {
 
   def isEntity[C <: blackbox.Context](c: C)(tpe: C#Type): Boolean = {
     import c.universe._
-    tpe.companion <:< typeOf[EntityCompanion]
+    tpe.companion <:< typeOf[EntityCompanion[_]]
   }
 
   def isHolder[C <: blackbox.Context](c: C)(tpe: C#Type): Boolean = {
     import c.universe._
-    tpe.companion <:< typeOf[AbstractHolderDesc[_, _]]
+    tpe.companion <:< typeOf[HolderCompanion[_, _]]
   }
 
   def isAnyVal[C <: blackbox.Context](c: C)(tpe: C#Type): Boolean = {
@@ -61,7 +60,7 @@ object TypeUtil {
 
   def isNumberHolder[C <: blackbox.Context](c: C)(tpe: C#Type): Boolean = {
     import c.universe._
-    tpe.companion <:< typeOf[AbstractHolderDesc[_ <: Number, _]]
+    tpe.companion <:< typeOf[HolderCompanion[_ <: Number, _]]
   }
 
   def isNumber[C <: blackbox.Context](c: C)(tpe: C#Type): Boolean = {
@@ -71,7 +70,7 @@ object TypeUtil {
 
   def isEmbeddable[C <: blackbox.Context](c: C)(tpe: C#Type): Boolean = {
     import c.universe._
-    tpe.companion <:< typeOf[EmbeddableType[_]]
+    tpe.companion <:< typeOf[EmbeddableCompanion[_]]
   }
 
   def isIterable[C <: blackbox.Context](c: C)(tpe: C#Type): Boolean = {

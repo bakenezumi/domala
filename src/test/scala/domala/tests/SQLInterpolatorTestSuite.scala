@@ -57,7 +57,7 @@ class SQLInterpolatorTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       assert(statement(ID(1)).getSingle[Name] == Name("SMITH"))
       assert(statement(ID(2)).getOption[Name] == Some(Name("ALLEN")))
-      assert(statement(ID(99)).getSingle[Name] == null)
+      assert(statement(ID(99)).getSingle[Name] == Name(null))
       assert(statement(ID(99)).getOption[Name] == None)
       assert(statement(ID(1)).getSingle[String] == "SMITH")
       assert(statement(ID(2)).getOption[String] == Some("ALLEN"))

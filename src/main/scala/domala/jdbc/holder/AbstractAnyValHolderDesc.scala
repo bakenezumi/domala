@@ -8,21 +8,21 @@ import org.seasar.doma.wrapper.Wrapper
 
 import scala.reflect.ClassTag
 
-abstract class AbstractAnyValHolderDesc[BASIC, HOLDER](val wrapperSupplier: Supplier[Wrapper[BASIC]])(implicit basicTag: ClassTag[BASIC], holderTag: ClassTag[HOLDER]) extends HolderDesc[BASIC, HOLDER]{
+abstract class AbstractAnyValHolderDesc[BASIC, HOLDER](val wrapperProvider: Supplier[Wrapper[BASIC]])(implicit basicTag: ClassTag[BASIC], holderTag: ClassTag[HOLDER]) extends HolderDesc[BASIC, HOLDER]{
   val self: AbstractAnyValHolderDesc[BASIC, HOLDER] = this
 
-  override def createOptionalScalar(): Scalar[BASIC, Optional[HOLDER]] = new OptionalHolderScalar(wrapperSupplier.get)
+  override def createOptionalScalar(): Scalar[BASIC, Optional[HOLDER]] = new OptionalHolderScalar(wrapperProvider.get)
 
   override def createOptionalScalar(value: HOLDER): Scalar[BASIC, Optional[HOLDER]] = {
-    val wrapper = wrapperSupplier.get
+    val wrapper = wrapperProvider.get
     wrapper.set(getBasicValue(value))
     new OptionalHolderScalar(wrapper)
   }
 
-  override def createScalar(): Scalar[BASIC, HOLDER] = new HolderScalar(wrapperSupplier.get)
+  override def createScalar(): Scalar[BASIC, HOLDER] = new HolderScalar(wrapperProvider.get)
 
   override def createScalar(value: HOLDER): Scalar[BASIC, HOLDER] = {
-    val wrapper = wrapperSupplier.get
+    val wrapper = wrapperProvider.get
     wrapper.set(getBasicValue(value))
     new HolderScalar(wrapper)
   }

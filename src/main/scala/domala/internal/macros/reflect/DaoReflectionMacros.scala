@@ -55,7 +55,7 @@ object DaoReflectionMacros {
       }
     } else if (TypeUtil.isHolder(c)(tpe)) {
       reify {
-        val holder = ReflectionUtil.getHolderCompanion(classTag.splice)
+        val holder = ReflectionUtil.getHolderDesc(classTag.splice)
         new DomainStreamHandler(
           holder,
           (p: java.util.stream.Stream[T]) => f.splice.apply(WrapStream.of(p)))
@@ -101,7 +101,7 @@ object DaoReflectionMacros {
       }
     } else if (TypeUtil.isHolder(c)(tpe)) {
       reify {
-        val holder = ReflectionUtil.getHolderCompanion(classTag.splice)
+        val holder = ReflectionUtil.getHolderDesc(classTag.splice)
         new DomainStreamHandler(
           holder,
           (p: java.util.stream.Stream[T]) => f.splice.apply(WrapIterator.of(p)))
@@ -144,7 +144,7 @@ object DaoReflectionMacros {
       }
     } else if (TypeUtil.isHolder(c)(tpe)) {
       reify {
-        val holder = ReflectionUtil.getHolderCompanion(classTag.splice)
+        val holder = ReflectionUtil.getHolderDesc(classTag.splice)
         new DomainResultListHandler(holder)
       }
     } else if (TypeUtil.isAnyVal(c)(tpe)) {
@@ -181,7 +181,7 @@ object DaoReflectionMacros {
       }
     } else if (TypeUtil.isHolder(c)(tpe)) {
       reify {
-        val holder = ReflectionUtil.getHolderCompanion(classTag.splice)
+        val holder = ReflectionUtil.getHolderDesc(classTag.splice)
         new OptionHolderSingleResultHandler(holder)
       }
     } else if (TypeUtil.isAnyVal(c)(tpe)) {
@@ -219,7 +219,7 @@ object DaoReflectionMacros {
         }
       case ResultType.Holder(_, _) =>
         reify {
-          val holder = ReflectionUtil.getHolderCompanion(classTag.splice)
+          val holder = ReflectionUtil.getHolderDesc(classTag.splice)
           val handler = new DomainSingleResultHandler(holder)
           commandImplementors.splice.createSelectCommand(method.splice, query.splice, handler).execute()
         }

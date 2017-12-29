@@ -4,8 +4,8 @@ import java.math.BigInteger
 import java.sql.{Blob, Clob, NClob, SQLXML, Time, Timestamp}
 import java.time.{LocalDate, LocalDateTime, LocalTime}
 
-import domala.jdbc.entity.EntityCompanion
-import domala.jdbc.holder.AbstractHolderDesc
+import domala.jdbc.entity.{EmbeddableCompanion, EntityCompanion}
+import domala.jdbc.holder.{AbstractHolderDesc, HolderCompanion}
 import org.seasar.doma.jdbc.entity.EmbeddableType
 
 import scala.collection.mutable.ArrayBuffer
@@ -44,15 +44,15 @@ object TypeUtil {
   }
 
   def isEntity(tpe: Type): Boolean = {
-    tpe.companion <:< typeOf[EntityCompanion]
+    tpe.companion <:< typeOf[EntityCompanion[_]]
   }
 
   def isHolder(tpe: Type): Boolean = {
-    tpe.companion <:< typeOf[AbstractHolderDesc[_, _]]
+    tpe.companion <:< typeOf[HolderCompanion[_, _]]
   }
 
   def isNumberHolder(tpe: Type): Boolean = {
-    tpe.companion <:< typeOf[AbstractHolderDesc[_ <: Number, _]]
+    tpe.companion <:< typeOf[HolderCompanion[_ <: Number, _]]
   }
 
   def isAnyVal(tpe: Type): Boolean = {
@@ -64,7 +64,7 @@ object TypeUtil {
   }
 
   def isEmbeddable(tpe: Type): Boolean = {
-    tpe.companion <:< typeOf[EmbeddableType[_]]
+    tpe.companion <:< typeOf[EmbeddableCompanion[_]]
   }
 
   def isIterable(tpe: Type): Boolean = {

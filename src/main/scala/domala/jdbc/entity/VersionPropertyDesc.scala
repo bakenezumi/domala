@@ -3,7 +3,7 @@ package domala.jdbc.entity
 import java.util.function.Supplier
 
 import domala.jdbc.entity
-import domala.jdbc.holder.{AbstractAnyValHolderDesc, AbstractHolderDesc, HolderDesc}
+import domala.jdbc.holder.HolderDesc
 import org.seasar.doma.wrapper.Wrapper
 
 class VersionPropertyDesc[PARENT, ENTITY <: PARENT, BASIC <: Number, HOLDER] private (
@@ -62,30 +62,7 @@ object VersionPropertyDesc {
   def ofHolder[ENTITY, BASIC <: Number, HOLDER](
     entityClass: Class[ENTITY],
     entityPropertyClass: Class[_],
-    holderDesc: AbstractHolderDesc[BASIC, HOLDER],
-    name: String,
-    columnName: String,
-    namingType: NamingType,
-    quoteRequired: Boolean
-  ): VersionPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER] = {
-    new VersionPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER](
-      entityClass,
-      entityPropertyClass,
-      holderDesc.getBasicClass.asInstanceOf[Class[BASIC]],
-      holderDesc.wrapper,
-      null,
-      holderDesc,
-      name,
-      columnName,
-      namingType,
-      quoteRequired
-    )
-  }
-
-  def ofAnyVal[ENTITY, BASIC <: Number, HOLDER](
-    entityClass: Class[ENTITY],
-    entityPropertyClass: Class[_],
-    holderDesc: AbstractAnyValHolderDesc[BASIC, HOLDER],
+    holderDesc: HolderDesc[BASIC, HOLDER],
     name: String,
     columnName: String,
     namingType: NamingType,
@@ -95,7 +72,7 @@ object VersionPropertyDesc {
       entityClass,
       entityPropertyClass,
       holderDesc.getBasicClass,
-      holderDesc.wrapperSupplier,
+      holderDesc.wrapperProvider,
       null,
       holderDesc,
       name,
@@ -104,4 +81,5 @@ object VersionPropertyDesc {
       quoteRequired
     )
   }
+
 }

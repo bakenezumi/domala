@@ -1,6 +1,5 @@
 package domala.jdbc.entity
 
-trait EntityCompanion {
-  type ENTITY
+trait EntityCompanion[ENTITY] {
   val entityDesc: EntityDesc[ENTITY]
 }

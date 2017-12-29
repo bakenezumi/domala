@@ -24,8 +24,7 @@ case class Person(
 """
     val expect = """{
   case class Person(@Id id: Option[ID[Person]] = None, name: Option[Name], age: Option[Int], address: Address, departmentId: Option[Int], @Version version: Option[Int] = Option(-1))
-  object Person extends domala.jdbc.entity.EntityCompanion {
-    type ENTITY = Person
+  object Person extends domala.jdbc.entity.EntityCompanion[Person] {
     val entityDesc: domala.jdbc.entity.EntityDesc[Person] = EntityDesc
     object EntityDesc extends domala.jdbc.entity.AbstractEntityDesc[Person] {
       object ListenerHolder {

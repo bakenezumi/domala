@@ -3,7 +3,7 @@ package domala.jdbc.entity
 import java.util.function.Supplier
 
 import domala.jdbc.entity
-import domala.jdbc.holder.{AbstractAnyValHolderDesc, AbstractHolderDesc, HolderDesc}
+import domala.jdbc.holder.HolderDesc
 import org.seasar.doma.wrapper.Wrapper
 
 class AssignedIdPropertyDesc[PARENT, ENTITY <: PARENT, BASIC, HOLDER] private (
@@ -60,30 +60,7 @@ object AssignedIdPropertyDesc {
   def ofHolder[ENTITY, BASIC, HOLDER](
     entityClass: Class[ENTITY],
     entityPropertyClass: Class[_],
-    holderDesc: AbstractHolderDesc[BASIC, HOLDER],
-    name: String,
-    columnName: String,
-    namingType: NamingType,
-    quoteRequired: Boolean
-  ): AssignedIdPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER] = {
-    new AssignedIdPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER](
-      entityClass,
-      entityPropertyClass,
-      holderDesc.getBasicClass.asInstanceOf[Class[BASIC]],
-      holderDesc.wrapper,
-      null,
-      holderDesc,
-      name,
-      columnName,
-      namingType,
-      quoteRequired
-    )
-  }
-
-  def ofAnyVal[ENTITY, BASIC, HOLDER](
-    entityClass: Class[ENTITY],
-    entityPropertyClass: Class[_],
-    holderDesc: AbstractAnyValHolderDesc[BASIC, HOLDER],
+    holderDesc: HolderDesc[BASIC, HOLDER],
     name: String,
     columnName: String,
     namingType: NamingType,
@@ -93,7 +70,7 @@ object AssignedIdPropertyDesc {
       entityClass,
       entityPropertyClass,
       holderDesc.getBasicClass,
-      holderDesc.wrapperSupplier ,
+      holderDesc.wrapperProvider,
       null,
       holderDesc,
       name,
@@ -102,4 +79,5 @@ object AssignedIdPropertyDesc {
       quoteRequired
     )
   }
+
 }

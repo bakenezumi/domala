@@ -39,8 +39,7 @@ object EntityDescGenerator {
     val methods = generateMethods(cls.name, cls.ctor, entityArgs)
 
     val generatedCompanion = q"""
-    object ${Term.Name(cls.name.syntax)} extends domala.jdbc.entity.EntityCompanion {
-      type ENTITY = ${cls.name}
+    object ${Term.Name(cls.name.syntax)} extends domala.jdbc.entity.EntityCompanion[${cls.name}] {
       val entityDesc: domala.jdbc.entity.EntityDesc[${cls.name}] = EntityDesc
       object EntityDesc extends domala.jdbc.entity.AbstractEntityDesc[${cls.name}] {
         object ListenerHolder {

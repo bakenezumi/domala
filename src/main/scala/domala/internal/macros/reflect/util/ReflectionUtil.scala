@@ -1,8 +1,8 @@
 package domala.internal.macros.reflect.util
 
 import domala.internal.macros.reflect.ReflectAbortException
-import domala.jdbc.entity.{AbstractEntityDesc, EntityCompanion}
-import domala.jdbc.holder.AbstractHolderDesc
+import domala.jdbc.entity.{EmbeddableCompanion, EntityCompanion, EntityDesc}
+import domala.jdbc.holder.{HolderCompanion, HolderDesc}
 import org.seasar.doma.jdbc.entity.EmbeddableType
 import org.seasar.doma.message.MessageResource
 
@@ -22,17 +22,16 @@ object ReflectionUtil {
 //    moduleMirror.instance
   }
 
-  def getEntityDesc[T](classTag: ClassTag[T]): AbstractEntityDesc[T] = {
-    getCompanion(classTag).asInstanceOf[EntityCompanion].entityDesc.asInstanceOf[AbstractEntityDesc[T]]
+  def getEntityDesc[T](classTag: ClassTag[T]): EntityDesc[T] = {
+    getCompanion(classTag).asInstanceOf[EntityCompanion[T]].entityDesc
   }
 
-  def getHolderCompanion[T](
-      classTag: ClassTag[T]): AbstractHolderDesc[Any, T] = {
-    getCompanion(classTag).asInstanceOf[AbstractHolderDesc[Any, T]]
+  def getHolderDesc[T](classTag: ClassTag[T]): HolderDesc[Any, T] = {
+    getCompanion(classTag).asInstanceOf[HolderCompanion[Any, T]].holderDesc
   }
 
-  def getEmbeddableCompanion[T](classTag: ClassTag[T]): EmbeddableType[T] = {
-    getCompanion(classTag).asInstanceOf[EmbeddableType[T]]
+  def getEmbeddableDesc[T](classTag: ClassTag[T]): EmbeddableType[T] = {
+    getCompanion(classTag).asInstanceOf[EmbeddableCompanion[T]].embeddableDesc
   }
 
   def extractionClassString(str: String): String = {

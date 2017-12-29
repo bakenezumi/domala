@@ -18,9 +18,12 @@ object EmbeddableDescGenerator {
       MacrosHelper.abort(Message.DOMALA4285, cls.name.syntax)
     val methods = makeMethods(cls.name, cls.ctor)
     val generatedCompanion = q"""
-    object ${Term.Name(cls.name.syntax)} extends domala.jdbc.entity.EmbeddableDesc[${cls.name}] {
-      ..${Seq(CaseClassGenerator.generateApply(cls, maybeOriginalCompanion), CaseClassGenerator.generateUnapply(cls, maybeOriginalCompanion))}
+    object ${Term.Name(cls.name.syntax)} extends domala.jdbc.entity.EmbeddableCompanion[${cls.name}] {
+      val embeddableDesc: domala.jdbc.entity.EmbeddableDesc[${cls.name}] = EmbeddableDesc
+      object EmbeddableDesc extends domala.jdbc.entity.EmbeddableDesc[${cls.name}] {
       ..$methods
+      }
+      ..${Seq(CaseClassGenerator.generateApply(cls, maybeOriginalCompanion), CaseClassGenerator.generateUnapply(cls, maybeOriginalCompanion))}
     }
     """
     MacrosHelper.mergeObject(maybeOriginalCompanion, generatedCompanion)

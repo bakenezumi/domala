@@ -67,13 +67,15 @@ object HolderDescGenerator {
       else Nil
 
     val generatedCompanion = q"""
-    object ${Term.Name(cls.name.syntax) } extends
-      domala.jdbc.holder.AbstractHolderDesc[
-        $basicTpe, $erasedHolderType](
-        $wrapperSupplier: java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$basicTpe]]) {
-      ..${applyDef ++ Seq(CaseClassGenerator.generateUnapply(cls, maybeOriginalCompanion))}
+    object ${Term.Name(cls.name.syntax) } extends domala.jdbc.holder.HolderCompanion[$basicTpe, $erasedHolderType] {
+      val holderDesc: domala.jdbc.holder.HolderDesc[$basicTpe, $erasedHolderType] = HolderDesc
+      object HolderDesc extends domala.jdbc.holder.AbstractHolderDesc[
+          $basicTpe, $erasedHolderType](
+          $wrapperSupplier: java.util.function.Supplier[org.seasar.doma.wrapper.Wrapper[$basicTpe]]) {
+        ..$methods
+      }
       ..$numericImplicitVal
-      ..$methods
+      ..${applyDef ++ Seq(CaseClassGenerator.generateUnapply(cls, maybeOriginalCompanion))}
     }
     """
     MacrosHelper.mergeObject(maybeOriginalCompanion, generatedCompanion)

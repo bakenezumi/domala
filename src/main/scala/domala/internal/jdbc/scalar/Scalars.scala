@@ -5,10 +5,10 @@ import java.sql.{Blob, Clob, Date, NClob, SQLXML, Time, Timestamp}
 import java.time.{LocalDate, LocalDateTime, LocalTime}
 import java.util.function.Supplier
 
-import domala.jdbc.holder.{AbstractAnyValHolderDesc, AbstractHolderDesc}
+import domala.jdbc.holder.{AbstractAnyValHolderDesc, AbstractHolderDesc, HolderDesc}
 import domala.wrapper.{BigDecimalWrapper, BigIntWrapper}
 import org.seasar.doma.internal.WrapException
-import org.seasar.doma.internal.jdbc.scalar.{BasicScalar, OptionalBasicScalar, Scalar, ScalarException}
+import org.seasar.doma.internal.jdbc.scalar.{BasicScalar, Scalar, ScalarException}
 import org.seasar.doma.internal.util.AssertionUtil.{assertNotNull, assertTrue}
 import org.seasar.doma.internal.util.ClassUtil
 import org.seasar.doma.jdbc.ClassHelper
@@ -189,9 +189,9 @@ object Scalars {
 
   object AnyValHolderDescCache {
 
-    private[this] val cache = scala.collection.concurrent.TrieMap[String, AbstractAnyValHolderDesc[_,_]]()
+    private[this] val cache = scala.collection.concurrent.TrieMap[String, HolderDesc[_,_]]()
 
-    def get[BASIC <: Object, HOLDER](holderClass: Class[HOLDER], classHelper: ClassHelper)(implicit bTag: ClassTag[BASIC], hTag: ClassTag[HOLDER]): AbstractAnyValHolderDesc[BASIC, HOLDER] =
+    def get[BASIC <: Object, HOLDER](holderClass: Class[HOLDER], classHelper: ClassHelper)(implicit bTag: ClassTag[BASIC], hTag: ClassTag[HOLDER]): HolderDesc[BASIC, HOLDER] =
       cache.getOrElseUpdate(holderClass.getName, {
         val constructors = holderClass.getConstructors
         if (constructors.length != 1) return null
@@ -281,7 +281,7 @@ object Scalars {
           } else {
             return null
           }
-        val holderDesc = new AbstractAnyValHolderDesc[BASIC, HOLDER](wrapperSupplier) {
+        val holderDesc: HolderDesc[BASIC, HOLDER] = new AbstractAnyValHolderDesc[BASIC, HOLDER](wrapperSupplier) {
 
           override def newHolder(value: BASIC): HOLDER = {
             constructors.head.newInstance((if (value == null && elementType.isPrimitive) 0 else value).asInstanceOf[BASIC]).asInstanceOf[HOLDER]
@@ -290,7 +290,7 @@ object Scalars {
             (if (holder == null) null else holderClass.getMethod(fieldName).invoke(holder)).asInstanceOf[BASIC]
         }
         holderDesc
-      }).asInstanceOf[AbstractAnyValHolderDesc[BASIC, HOLDER]]
+      }).asInstanceOf[HolderDesc[BASIC, HOLDER]]
 
     def clearCache(): Unit = cache.clear()
 

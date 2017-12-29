@@ -1,11 +1,11 @@
 package domala.jdbc.entity
 
-import java.util.{Optional, OptionalDouble, OptionalInt, OptionalLong}
 import java.util.function.Supplier
+import java.util.{Optional, OptionalDouble, OptionalInt, OptionalLong}
 
 import domala.internal.jdbc.scalar.{OptionBasicScalar, OptionDomainBridgeScalar}
 import domala.jdbc.entity
-import domala.jdbc.holder.{AbstractAnyValHolderDesc, AbstractHolderDesc, HolderDesc}
+import domala.jdbc.holder.HolderDesc
 import org.seasar.doma.internal.jdbc.entity.PropertyField
 import org.seasar.doma.internal.jdbc.scalar._
 import org.seasar.doma.internal.jdbc.sql.ScalarInParameter
@@ -137,34 +137,7 @@ object DefaultPropertyDesc {
   def ofHolder[ENTITY, BASIC, HOLDER](
     entityClass: Class[ENTITY],
     entityPropertyClass: Class[_],
-    holderDesc: AbstractHolderDesc[BASIC, HOLDER],
-    name: String,
-    columnName: String,
-    namingType: NamingType,
-    insertable: Boolean,
-    updatable: Boolean,
-    quoteRequired: Boolean
-  ): DefaultPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER] = {
-    new DefaultPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER](
-      entityClass,
-      entityPropertyClass,
-      holderDesc.getBasicClass.asInstanceOf[Class[BASIC]],
-      holderDesc.wrapper,
-      null,
-      holderDesc,
-      name,
-      columnName,
-      namingType,
-      insertable,
-      updatable,
-      quoteRequired
-    )
-  }
-
-  def ofAnyVal[ENTITY, BASIC, HOLDER](
-    entityClass: Class[ENTITY],
-    entityPropertyClass: Class[_],
-    holderDesc: AbstractAnyValHolderDesc[BASIC, HOLDER],
+    holderDesc: HolderDesc[BASIC, HOLDER],
     name: String,
     columnName: String,
     namingType: NamingType,
@@ -176,7 +149,7 @@ object DefaultPropertyDesc {
       entityClass,
       entityPropertyClass,
       holderDesc.getBasicClass,
-      holderDesc.wrapperSupplier,
+      holderDesc.wrapperProvider,
       null,
       holderDesc,
       name,

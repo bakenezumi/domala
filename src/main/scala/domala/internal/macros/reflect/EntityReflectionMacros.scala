@@ -95,7 +95,7 @@ object EntityReflectionMacros {
     if (TypeUtil.isEmbeddable(c)(wtt)) {
       reify {
         val embeddable =
-          ReflectionUtil.getEmbeddableCompanion(propertyClassTag.splice)
+          ReflectionUtil.getEmbeddableDesc(propertyClassTag.splice)
         embeddable
           .newEmbeddable[E](propertyName.splice, args.splice)
           .asInstanceOf[T]

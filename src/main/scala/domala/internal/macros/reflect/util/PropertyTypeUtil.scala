@@ -5,7 +5,7 @@ import java.util.function.Supplier
 import domala.internal.macros.reflect.EntityCollections
 import domala.internal.macros.reflect.util.ReflectionUtil.{extractionClassString, extractionQuotedString}
 import domala.jdbc.entity._
-import domala.jdbc.holder.{AbstractAnyValHolderDesc, AbstractHolderDesc}
+import domala.jdbc.holder.{AbstractAnyValHolderDesc, AbstractHolderDesc, HolderDesc}
 import domala.message.Message
 import org.seasar.doma.jdbc.entity.{EmbeddedPropertyType, NamingType}
 import org.seasar.doma.jdbc.id.IdGenerator
@@ -77,7 +77,7 @@ object PropertyTypeUtil {
       }
       reify {
         val embeddable =
-          ReflectionUtil.getEmbeddableCompanion(propertyClassTag.splice)
+          ReflectionUtil.getEmbeddableDesc(propertyClassTag.splice)
         val prop = new EmbeddedPropertyType[E, T](
           paramName.splice,
           entityClass.splice,
@@ -89,7 +89,7 @@ object PropertyTypeUtil {
       }
     } else if (TypeUtil.isHolder(c)(nakedTpe)) {
       val holder =
-        reify(ReflectionUtil.getHolderCompanion(nakedClassTag.splice))
+        reify(ReflectionUtil.getHolderDesc(nakedClassTag.splice))
       if (isIdLiteral) {
         if (isIdGenerateActualLiteral) {
           if (!TypeUtil.isNumberHolder(c)(nakedTpe)) {
@@ -142,7 +142,7 @@ object PropertyTypeUtil {
           val prop = VersionPropertyDesc.ofHolder(
             entityClass.splice,
             propertyClassTag.splice.runtimeClass,
-            holder.splice.asInstanceOf[AbstractHolderDesc[Number, _]],
+            holder.splice.asInstanceOf[HolderDesc[Number, _]],
             paramName.splice,
             columnName.splice,
             namingType.splice,
@@ -203,7 +203,7 @@ object PropertyTypeUtil {
             )
           }
           reify {
-            val prop = GeneratedIdPropertyDesc.ofAnyVal(
+            val prop = GeneratedIdPropertyDesc.ofHolder(
               entityClass.splice,
               propertyClassTag.splice.runtimeClass,
               holder.get.splice.asInstanceOf[AbstractAnyValHolderDesc[Number, _]],
@@ -219,7 +219,7 @@ object PropertyTypeUtil {
           }
         } else {
           reify {
-            val prop = AssignedIdPropertyDesc.ofAnyVal(
+            val prop = AssignedIdPropertyDesc.ofHolder(
               entityClass.splice,
               propertyClassTag.splice.runtimeClass,
               holder.get.splice,
@@ -242,7 +242,7 @@ object PropertyTypeUtil {
           )
         }
         reify {
-          val prop = VersionPropertyDesc.ofAnyVal(
+          val prop = VersionPropertyDesc.ofHolder(
             entityClass.splice,
             propertyClassTag.splice.runtimeClass,
             holder.get.splice.asInstanceOf[AbstractAnyValHolderDesc[Number, _]],
@@ -256,7 +256,7 @@ object PropertyTypeUtil {
         }
       } else if (isTenantIdLiteral) {
         reify {
-          val prop = TenantIdPropertyDesc.ofAnyVal(
+          val prop = TenantIdPropertyDesc.ofHolder(
             entityClass.splice,
             propertyClassTag.splice.runtimeClass,
             holder.get.splice,
@@ -270,7 +270,7 @@ object PropertyTypeUtil {
         }
       } else {
         reify {
-          val prop = DefaultPropertyDesc.ofAnyVal(
+          val prop = DefaultPropertyDesc.ofHolder(
             entityClass.splice,
             propertyClassTag.splice.runtimeClass,
             holder.get.splice,
