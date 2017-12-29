@@ -6,6 +6,6 @@ object EntityDescFactory {
   def getEntityDesc[E](entityClass: Class[E], classHelper: ClassHelper): EntityDesc[E] = {
     classHelper
       .forName(entityClass.getName + "$")
-      .getField("MODULE$").get(null).asInstanceOf[EntityDesc[E]]
+      .getField("MODULE$").get(null).asInstanceOf[EntityCompanion].entityDesc.asInstanceOf[EntityDesc[E]]
   }
 }

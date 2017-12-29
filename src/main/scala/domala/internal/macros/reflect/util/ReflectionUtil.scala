@@ -1,8 +1,9 @@
 package domala.internal.macros.reflect.util
 
 import domala.internal.macros.reflect.ReflectAbortException
+import domala.jdbc.entity.{AbstractEntityDesc, EntityCompanion}
 import domala.jdbc.holder.AbstractHolderDesc
-import org.seasar.doma.jdbc.entity.{AbstractEntityType, EmbeddableType}
+import org.seasar.doma.jdbc.entity.EmbeddableType
 import org.seasar.doma.message.MessageResource
 
 import scala.reflect.ClassTag
@@ -21,8 +22,8 @@ object ReflectionUtil {
 //    moduleMirror.instance
   }
 
-  def getEntityCompanion[T](classTag: ClassTag[T]): AbstractEntityType[T] = {
-    getCompanion(classTag).asInstanceOf[AbstractEntityType[T]]
+  def getEntityDesc[T](classTag: ClassTag[T]): AbstractEntityDesc[T] = {
+    getCompanion(classTag).asInstanceOf[EntityCompanion].entityDesc.asInstanceOf[AbstractEntityDesc[T]]
   }
 
   def getHolderCompanion[T](

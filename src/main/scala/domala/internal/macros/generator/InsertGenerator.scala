@@ -36,7 +36,7 @@ object InsertGenerator extends DaoMethodGenerator {
         case _ => Nil
       }
       val (paramName, paramTpe) = AutoModifyQueryGenerator.extractParameter(defDecl)
-      val query = q"getQueryImplementors.createAutoInsertQuery($internalMethodName, ${Term.Name(paramTpe.syntax)})"
+      val query = q"getQueryImplementors.createAutoInsertQuery($internalMethodName, ${Term.Name(paramTpe.syntax)}.entityDesc)"
       val command = q"getCommandImplementors.createInsertCommand($internalMethodName, __query)"
       val validateEntityPropertyNames = DaoMethodGeneratorHelper.validateEntityPropertyNames(defDecl, paramTpe, includedPropertyNames, excludedPropertyNames)
       val otherQueryArgs = validateEntityPropertyNames ++ Seq[Stat](

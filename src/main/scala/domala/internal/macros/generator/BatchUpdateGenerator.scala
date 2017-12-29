@@ -52,7 +52,7 @@ object BatchUpdateGenerator extends DaoMethodGenerator {
         q"getQueryImplementors.createAutoBatchUpdateQuery($internalMethodName, ${
           Term
             .Name(internalTpe.syntax)
-        })"
+        }.entityDesc)"
       val command =
         q"getCommandImplementors.createBatchUpdateCommand($internalMethodName, __query)"
       val otherQueryArgs = Seq[Stat](

@@ -4,8 +4,10 @@ import java.math.BigInteger
 import java.sql.{Blob, Clob, NClob, SQLXML, Time, Timestamp}
 import java.time.{LocalDate, LocalDateTime, LocalTime}
 
+import domala.jdbc.entity.EntityCompanion
 import domala.jdbc.holder.{AbstractAnyValHolderDesc, AbstractHolderDesc}
 import domala.wrapper.BigIntWrapper
+import org.seasar.doma.internal.apt.meta.EntityConstructorMeta
 import org.seasar.doma.jdbc.entity.{AbstractEntityType, EmbeddableType}
 import org.seasar.doma.wrapper._
 
@@ -44,7 +46,7 @@ object TypeUtil {
 
   def isEntity[C <: blackbox.Context](c: C)(tpe: C#Type): Boolean = {
     import c.universe._
-    tpe.companion <:< typeOf[AbstractEntityType[_]]
+    tpe.companion <:< typeOf[EntityCompanion]
   }
 
   def isHolder[C <: blackbox.Context](c: C)(tpe: C#Type): Boolean = {

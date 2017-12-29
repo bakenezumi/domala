@@ -46,7 +46,7 @@ object DeleteGenerator extends DaoMethodGenerator {
         AutoModifyQueryGenerator.extractParameter(defDecl)
       val query =
         q"getQueryImplementors.createAutoDeleteQuery($internalMethodName, ${Term
-          .Name(paramTpe.syntax)})"
+          .Name(paramTpe.syntax)}.entityDesc)"
       val command =
         q"getCommandImplementors.createDeleteCommand($internalMethodName, __query)"
       val otherQueryArgs = Seq[Stat](

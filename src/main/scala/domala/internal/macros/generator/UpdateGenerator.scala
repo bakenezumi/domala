@@ -52,7 +52,7 @@ object UpdateGenerator extends DaoMethodGenerator {
 
     } else {
       val (paramName, paramTpe) = AutoModifyQueryGenerator.extractParameter(defDecl)
-      val query = q"getQueryImplementors.createAutoUpdateQuery($internalMethodName, ${Term.Name(paramTpe.syntax)})"
+      val query = q"getQueryImplementors.createAutoUpdateQuery($internalMethodName, ${Term.Name(paramTpe.syntax)}.entityDesc)"
       val command = q"getCommandImplementors.createUpdateCommand($internalMethodName, __query)"
       val validateEntityPropertyNames = DaoMethodGeneratorHelper.validateEntityPropertyNames(defDecl, paramTpe, includedPropertyNames, excludedPropertyNames)
       val otherQueryArgs = validateEntityPropertyNames ++ Seq[Stat](

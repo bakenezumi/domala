@@ -96,7 +96,7 @@ trait PersonDao {
           if (person == null) {
             throw new org.seasar.doma.DomaNullPointerException("person")
           }
-          val __query = getQueryImplementors.createAutoInsertQuery(__method1, Person)
+          val __query = getQueryImplementors.createAutoInsertQuery(__method1, Person.entityDesc)
           __query.setMethod(__method1)
           __query.setConfig(__config)
           __query.setEntity(person)
@@ -127,7 +127,7 @@ trait PersonDao {
           if (person == null) {
             throw new org.seasar.doma.DomaNullPointerException("person")
           }
-          val __query = getQueryImplementors.createAutoUpdateQuery(__method2, Person)
+          val __query = getQueryImplementors.createAutoUpdateQuery(__method2, Person.entityDesc)
           __query.setMethod(__method2)
           __query.setConfig(__config)
           __query.setEntity(person)
@@ -161,7 +161,7 @@ trait PersonDao {
           if (person == null) {
             throw new org.seasar.doma.DomaNullPointerException("person")
           }
-          val __query = getQueryImplementors.createAutoDeleteQuery(__method3, Person)
+          val __query = getQueryImplementors.createAutoDeleteQuery(__method3, Person.entityDesc)
           __query.setMethod(__method3)
           __query.setConfig(__config)
           __query.setEntity(person)
@@ -191,7 +191,7 @@ trait PersonDao {
           if (persons == null) {
             throw new org.seasar.doma.DomaNullPointerException("persons")
           }
-          val __query = getQueryImplementors.createAutoBatchInsertQuery(__method4, Person)
+          val __query = getQueryImplementors.createAutoBatchInsertQuery(__method4, Person.entityDesc)
           __query.setMethod(__method4)
           __query.setConfig(__config)
           __query.setEntities(persons.asJava)
@@ -222,7 +222,7 @@ trait PersonDao {
           if (persons == null) {
             throw new org.seasar.doma.DomaNullPointerException("persons")
           }
-          val __query = getQueryImplementors.createAutoBatchUpdateQuery(__method5, Person)
+          val __query = getQueryImplementors.createAutoBatchUpdateQuery(__method5, Person.entityDesc)
           __query.setMethod(__method5)
           __query.setConfig(__config)
           __query.setEntities(persons.asJava)
@@ -255,7 +255,7 @@ trait PersonDao {
           if (persons == null) {
             throw new org.seasar.doma.DomaNullPointerException("persons")
           }
-          val __query = getQueryImplementors.createAutoBatchDeleteQuery(__method6, Person)
+          val __query = getQueryImplementors.createAutoBatchDeleteQuery(__method6, Person.entityDesc)
           __query.setMethod(__method6)
           __query.setConfig(__config)
           __query.setEntities(persons.asJava)
@@ -413,7 +413,7 @@ object PersonDao {
           if (person == null) {
             throw new org.seasar.doma.DomaNullPointerException("person")
           }
-          val __query = getQueryImplementors.createAutoInsertQuery(__method0, Person)
+          val __query = getQueryImplementors.createAutoInsertQuery(__method0, Person.entityDesc)
           __query.setMethod(__method0)
           __query.setConfig(__config)
           __query.setEntity(person)

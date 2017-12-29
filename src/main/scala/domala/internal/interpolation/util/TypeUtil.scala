@@ -4,8 +4,9 @@ import java.math.BigInteger
 import java.sql.{Blob, Clob, NClob, SQLXML, Time, Timestamp}
 import java.time.{LocalDate, LocalDateTime, LocalTime}
 
+import domala.jdbc.entity.EntityCompanion
 import domala.jdbc.holder.AbstractHolderDesc
-import org.seasar.doma.jdbc.entity.{AbstractEntityType, EmbeddableType}
+import org.seasar.doma.jdbc.entity.EmbeddableType
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.runtime.universe._
@@ -43,7 +44,7 @@ object TypeUtil {
   }
 
   def isEntity(tpe: Type): Boolean = {
-    tpe.companion <:< typeOf[AbstractEntityType[_]]
+    tpe.companion <:< typeOf[EntityCompanion]
   }
 
   def isHolder(tpe: Type): Boolean = {

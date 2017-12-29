@@ -46,7 +46,7 @@ object BatchInsertGenerator extends DaoMethodGenerator {
         q"getQueryImplementors.createAutoBatchInsertQuery($internalMethodName, ${
           Term
             .Name(internalTpe.syntax)
-        })"
+        }.entityDesc)"
       val command =
         q"getCommandImplementors.createBatchInsertCommand($internalMethodName, __query)"
       val otherQueryArgs = Seq[Stat](

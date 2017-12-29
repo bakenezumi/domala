@@ -8,6 +8,7 @@ import domala.internal.{WrapIterator, WrapStream}
 import domala.internal.macros.reflect.util.{ReflectionUtil, TypeUtil}
 import domala.internal.macros.{DaoParam, DaoParamClass}
 import domala.internal.jdbc.command.{OptionEntitySingleResultHandler, OptionHolderSingleResultHandler}
+import domala.jdbc.entity.{AbstractEntityDesc, EntityCompanion, EntityDesc}
 import domala.jdbc.{BatchResult, Result}
 import domala.jdbc.query.EntityAndEntityType
 import domala.message.Message
@@ -15,7 +16,6 @@ import org.seasar.doma.internal.Constants
 import org.seasar.doma.internal.jdbc.command._
 import org.seasar.doma.internal.jdbc.sql.SqlParser
 import org.seasar.doma.jdbc.{CommandImplementors, JdbcException}
-import org.seasar.doma.jdbc.entity.{AbstractEntityType, EntityType}
 import org.seasar.doma.jdbc.query.AbstractSelectQuery
 
 import scala.language.experimental.macros
@@ -48,7 +48,7 @@ object DaoReflectionMacros {
     val tpe = weakTypeOf[T]
     if (TypeUtil.isEntity(c)(tpe)) {
       reify {
-        val entity = ReflectionUtil.getEntityCompanion(classTag.splice)
+        val entity = ReflectionUtil.getEntityDesc(classTag.splice)
         new EntityStreamHandler(
           entity,
           (p: java.util.stream.Stream[T]) => f.splice.apply(WrapStream.of(p)))
@@ -94,7 +94,7 @@ object DaoReflectionMacros {
     val tpe = weakTypeOf[T]
     if (TypeUtil.isEntity(c)(tpe)) {
       reify {
-        val entity = ReflectionUtil.getEntityCompanion(classTag.splice)
+        val entity = ReflectionUtil.getEntityDesc(classTag.splice)
         new EntityStreamHandler(
           entity,
           (p: java.util.stream.Stream[T]) => f.splice.apply(WrapIterator.of(p)))
@@ -139,7 +139,7 @@ object DaoReflectionMacros {
     val tpe = weakTypeOf[T]
     if (TypeUtil.isEntity(c)(tpe)) {
       reify {
-        val entity = ReflectionUtil.getEntityCompanion(classTag.splice)
+        val entity = ReflectionUtil.getEntityDesc(classTag.splice)
         new EntityResultListHandler(entity)
       }
     } else if (TypeUtil.isHolder(c)(tpe)) {
@@ -176,7 +176,7 @@ object DaoReflectionMacros {
     val tpe = weakTypeOf[T]
     if (TypeUtil.isEntity(c)(tpe)) {
       reify {
-        val entity = ReflectionUtil.getEntityCompanion(classTag.splice)
+        val entity = ReflectionUtil.getEntityDesc(classTag.splice)
         new OptionEntitySingleResultHandler(entity)
       }
     } else if (TypeUtil.isHolder(c)(tpe)) {
@@ -213,7 +213,7 @@ object DaoReflectionMacros {
     ResultType.convert(c)(tpe) match {
       case ResultType.Entity(_, _) =>
         reify {
-          val entity = ReflectionUtil.getEntityCompanion(classTag.splice)
+          val entity = ReflectionUtil.getEntityDesc(classTag.splice)
           val handler = new EntitySingleResultHandler(entity)
           commandImplementors.splice.createSelectCommand(method.splice, query.splice, handler).execute()
         }
@@ -259,7 +259,7 @@ object DaoReflectionMacros {
     val tpe = weakTypeOf[T]
     if (TypeUtil.isEntity(c)(tpe)) {
       reify {
-        val entity = ReflectionUtil.getEntityCompanion(classTag.splice)
+        val entity = ReflectionUtil.getEntityDesc(classTag.splice)
         query.splice.setEntityType(entity)
       }
     } else reify((): Unit) // No operation
@@ -292,11 +292,7 @@ object DaoReflectionMacros {
       .collectFirst {
         case Some(param) =>
           reify {
-            val entity = Class
-              .forName(param.splice.clazz.getName + "$")
-              .getField("MODULE$")
-              .get(null)
-              .asInstanceOf[AbstractEntityType[Any]]
+            val entity = ReflectionUtil.getEntityDesc(param.splice.tag.asInstanceOf[ClassTag[Any]])
             Some(
               EntityAndEntityType(param.splice.name,
                                   param.splice.value,
@@ -322,7 +318,7 @@ object DaoReflectionMacros {
     daoClass: c.Expr[Class[D]],
     methodName: c.Expr[String],
     resultClass: c.Expr[Class[T]],
-    param: c.Expr[DaoParam[_]]): c.Expr[Option[EntityType[Any]]] = handle(c)(daoClass, methodName) {
+    param: c.Expr[DaoParam[_]]): c.Expr[Option[EntityDesc[Any]]] = handle(c)(daoClass, methodName) {
     import c.universe._
     val daoTpe = weakTypeOf[D]
     val Literal(Constant(methodNameLiteral: String)) = methodName.tree
@@ -331,11 +327,7 @@ object DaoReflectionMacros {
       else if (weakTypeOf[T] <:< weakTypeOf[BatchResult[_]]) {
         if (weakTypeOf[T].typeArgs.head =:= param.actualType.typeArgs.head)
           reify {
-            val entity = Class
-              .forName(param.splice.clazz.getName + "$")
-              .getField("MODULE$")
-              .get(null)
-              .asInstanceOf[AbstractEntityType[Any]]
+            val entity = ReflectionUtil.getEntityDesc(param.splice.tag.asInstanceOf[ClassTag[Any]])
             Some(entity)
           }
         else reify(None)
@@ -358,7 +350,7 @@ object DaoReflectionMacros {
     daoClass: Class[D],
     methodName: String,
     resultClass: Class[T],
-    param: (DaoParam[_])): Option[EntityType[Any]] =
+    param: (DaoParam[_])): Option[EntityDesc[Any]] =
   macro getBatchEntityTypeImpl[D, T]
 
   def validateParameterAndSqlImpl[D: c.WeakTypeTag](c: blackbox.Context)(
@@ -507,7 +499,7 @@ object DaoReflectionMacros {
     val containerTpe = weakTypeOf[C]
     if (TypeUtil.isIterable(c)(containerTpe)) {
       val tpe = weakTypeOf[T]
-      if (tpe.companion <:< typeOf[AbstractEntityType[_]]) {
+      if (TypeUtil.isEntity(c)(tpe)) {
         reify(())
       } else {
         ReflectionUtil.abort(

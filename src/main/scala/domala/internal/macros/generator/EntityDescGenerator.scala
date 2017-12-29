@@ -39,17 +39,18 @@ object EntityDescGenerator {
     val methods = generateMethods(cls.name, cls.ctor, entityArgs)
 
     val generatedCompanion = q"""
-    object ${Term.Name(cls.name.syntax)} extends org.seasar.doma.jdbc.entity.AbstractEntityType[${cls.name}] {
-
-      object ListenerHolder {
-        domala.internal.macros.reflect.EntityReflectionMacros.validateListener(classOf[${cls.name}], classOf[${entityArgs.listener}])
-        val listener =
-          new ${entityArgs.listener.syntax.parse[Ctor.Call].get}()
+    object ${Term.Name(cls.name.syntax)} extends domala.jdbc.entity.EntityCompanion {
+      type ENTITY = ${cls.name}
+      val entityDesc: domala.jdbc.entity.EntityDesc[${cls.name}] = EntityDesc
+      object EntityDesc extends domala.jdbc.entity.AbstractEntityDesc[${cls.name}] {
+        object ListenerHolder {
+          domala.internal.macros.reflect.EntityReflectionMacros.validateListener(classOf[${cls.name}], classOf[${entityArgs.listener}])
+          val listener =
+            new ${entityArgs.listener.syntax.parse[Ctor.Call].get}()
+        }
+        ..${fields ++ constructor ++ methods}
       }
-
       ..${Seq(CaseClassGenerator.generateApply(cls, maybeOriginalCompanion), CaseClassGenerator.generateUnapply(cls, maybeOriginalCompanion))}
-
-      ..${fields ++ constructor ++ methods}
     }
     """
     val newCompanion = MacrosHelper.mergeObject(maybeOriginalCompanion, generatedCompanion)

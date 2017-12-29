@@ -40,7 +40,7 @@ object BatchDeleteGenerator extends DaoMethodGenerator {
         q"getQueryImplementors.createAutoBatchDeleteQuery($internalMethodName, ${
           Term
             .Name(internalTpe.syntax)
-        })"
+        }.entityDesc)"
       val command =
         q"getCommandImplementors.createBatchDeleteCommand($internalMethodName, __query)"
       val otherQueryArgs = Seq[Stat](
