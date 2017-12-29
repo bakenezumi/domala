@@ -30,7 +30,7 @@ object EmbeddableDescGenerator {
     val properties: Seq[EmbeddableProperties] = ctor.paramss.head.map { p =>
       val Term.Param(mods, name, Some(decltpe), _) = p
       val tpe = Type.Name(decltpe.toString)
-      val columnArgs = ColumnArgs.read(mods)
+      val columnArgs = ColumnArgs.of(mods)
       val (isBasic, isOption, nakedTpe, newWrapperExpr) = TypeUtil.convertToEntityDomaType(decltpe) match {
         case DomaType.Basic(_, convertedType, wrapperSupplier, _) => (true, false, convertedType, wrapperSupplier)
         case DomaType.Option(DomaType.Basic(_, convertedType, wrapperSupplier, _), _) => (true, true, convertedType, wrapperSupplier)

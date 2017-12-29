@@ -10,7 +10,7 @@ case class ColumnArgs(
 )
 
 object ColumnArgs {
-  def read(mods: Seq[Mod]): ColumnArgs = {
+  def of(mods: Seq[Mod]): ColumnArgs = {
     val column = mods.collectFirst {
       case mod"@Column(..$args)" => args
     }

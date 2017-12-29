@@ -33,7 +33,7 @@ object EntityDescGenerator {
       }.getOrElse(t"org.seasar.doma.jdbc.entity.NullEntityListener[${cls.name}]"),
       args.collectFirst { case arg"naming = $x" => Term.Name(x.syntax) }.getOrElse(q"null")
     )
-    val tableSetting = TableArgs.read(cls.mods)
+    val tableSetting = TableArgs.of(cls.mods)
     val fields = generateFields(cls.name, cls.ctor, entityArgs)
     val constructor = generateConstructor(cls.name, cls.ctor, entityArgs, tableSetting)
     val methods = generateMethods(cls.name, cls.ctor, entityArgs)
@@ -166,7 +166,7 @@ object EntityDescGenerator {
     strategy.map {
       case GenerationType.IDENTITY => Seq(q"private[this] val __idGenerator = new org.seasar.doma.jdbc.id.BuiltinIdentityIdGenerator()")
       case GenerationType.SEQUENCE =>
-        val sequenceGeneratorSetting = SequenceGeneratorArgs.read(idParams.head.mods, clsName.syntax)
+        val sequenceGeneratorSetting = SequenceGeneratorArgs.of(idParams.head.mods, clsName.syntax)
           .getOrElse(MacrosHelper.abort(Message.DOMALA4034, clsName.syntax, idParams.head.name.syntax))
         q"""
           domala.internal.macros.reflect.EntityReflectionMacros.validateSequenceIdGenerator(classOf[$clsName], classOf[${sequenceGeneratorSetting.implementer}])
@@ -177,7 +177,7 @@ object EntityDescGenerator {
           __idGenerator.initialize()
           """.stats
       case GenerationType.TABLE =>
-        val tableGeneratorSetting = TableGeneratorArgs.read(idParams.head.mods, clsName.syntax)
+        val tableGeneratorSetting = TableGeneratorArgs.of(idParams.head.mods, clsName.syntax)
           .getOrElse(MacrosHelper.abort(Message.DOMALA4035, clsName.syntax, idParams.head.name.syntax))
         q"""
           domala.internal.macros.reflect.EntityReflectionMacros.validateTableIdGenerator(classOf[$clsName], classOf[${tableGeneratorSetting.implementer}])
@@ -198,7 +198,7 @@ object EntityDescGenerator {
   protected def generatePropertyTypeFields(clsName: Type.Name, ctor: Ctor.Primary): Seq[Defn.Val] = {
     ctor.paramss.flatten.map { p =>
       val Term.Param(mods, name, Some(decltpe), _) = p
-      val columnSetting = ColumnArgs.read(mods)
+      val columnSetting = ColumnArgs.of(mods)
       val tpe = Type.Name(decltpe.toString)
       if(name.syntax.startsWith(MetaConstants.RESERVED_NAME_PREFIX)) {
         MacrosHelper.abort(Message.DOMALA4025, MetaConstants.RESERVED_NAME_PREFIX, clsName.syntax, name.syntax)

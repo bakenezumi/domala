@@ -10,7 +10,7 @@ case class TableArgs(
 )
 
 object TableArgs {
-  def read(mods: Seq[Mod]): TableArgs = {
+  def of(mods: Seq[Mod]): TableArgs = {
     val table = mods.collectFirst {
       case mod"@Table(..$args)" => args
     }

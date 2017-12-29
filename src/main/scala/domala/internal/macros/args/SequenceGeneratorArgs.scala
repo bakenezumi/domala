@@ -12,7 +12,7 @@ case class SequenceGeneratorArgs(
 )
 
 object SequenceGeneratorArgs {
-  def read(mods: Seq[Mod], className: String): Option[SequenceGeneratorArgs] = {
+  def of(mods: Seq[Mod], className: String): Option[SequenceGeneratorArgs] = {
     val blank = q""" "" """
     mods.collectFirst {
       case mod"@SequenceGenerator(..$args)" =>

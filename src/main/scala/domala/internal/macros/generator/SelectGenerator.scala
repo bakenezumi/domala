@@ -1,6 +1,6 @@
 package domala.internal.macros.generator
 
-import domala.Select
+import domala.{Select, SelectType}
 import domala.internal.macros.args.DaoMethodCommonArgs
 import domala.internal.macros.util.NameConverters._
 import domala.internal.macros.util.{MacrosHelper, TypeUtil}
@@ -15,6 +15,7 @@ object SelectGenerator extends DaoMethodGenerator {
   override def annotationClass: Class[Select] = classOf[Select]
 
   case class SelectArgs(
+    common: DaoMethodCommonArgs,
     fetchSize: Term.Arg,
     maxRows: Term.Arg,
     strategy: Term.Arg,
@@ -22,10 +23,20 @@ object SelectGenerator extends DaoMethodGenerator {
     ensureResult: Term.Arg,
     ensureResultMapping: Term.Arg,
     mapKeyNaming: Term.Arg
-  )
+  ) {
+    val selectType: SelectType = strategy match {
+      case q"SelectType.RETURN" | q"RETURN" => SelectType.RETURN
+      case q"SelectType.STREAM" | q"STREAM" => SelectType.STREAM
+      case q"SelectType.ITERATOR" | q"ITERATOR" => SelectType.ITERATOR
+      case _ => abort("error")
+    }
+    val isStream: Boolean = selectType == SelectType.STREAM
+    val isIterator: Boolean = selectType == SelectType.ITERATOR
+  }
 
   object SelectArgs {
-    def read(args: Seq[Term.Arg]): SelectArgs = {
+    def of(args: Seq[Term.Arg], traitName: String, methodName: String
+    ): SelectArgs = {
       val fetchSize =
         args.collectFirst { case arg"fetchSize = $x" => x }.getOrElse(q"-1")
       val maxRows =
@@ -45,6 +56,7 @@ object SelectGenerator extends DaoMethodGenerator {
         .collectFirst { case arg"mapKeyNaming = $x" => x }
         .getOrElse(q"org.seasar.doma.MapKeyNamingType.NONE")
       SelectArgs(
+        DaoMethodCommonArgs.of(args, traitName, methodName),
         fetchSize,
         maxRows,
         strategy,
@@ -61,66 +73,56 @@ object SelectGenerator extends DaoMethodGenerator {
     internalMethodName: Term.Name,
     args: Seq[Term.Arg]): Defn.Def = {
     val defDecl = QueryDefDecl.of(trtName, _def)
-    val commonArgs = DaoMethodCommonArgs.read(
-      args,
-      trtName.syntax,
-      defDecl.name.syntax)
-    val selectArgs = SelectArgs.read(args)
+    val selectArgs = SelectArgs.of(args, trtName.syntax, defDecl.name.syntax)
     if (TypeUtil.isWildcardType(defDecl.tpe))
       MacrosHelper.abort(Message.DOMALA4207, defDecl.tpe, trtName.syntax, defDecl.name.syntax)
 
-    val (checkParameter: Seq[Stat], isStream: Boolean, isIterator: Boolean) =
-      selectArgs.strategy match {
-        case q"SelectType.RETURN" | q"RETURN" => (Nil, false, false)
-        case q"SelectType.STREAM" | q"STREAM" =>
-          (Seq {
-            val functionParams = defDecl.paramss.flatten.filter { p =>
-              p.decltpe.get match {
-                //noinspection ScalaUnusedSymbol
-                case t"Stream[$_] => $_" => true
-                case _ => false
-              }
-            }
-            if (functionParams.isEmpty) {
-              MacrosHelper.abort(Message.DOMALA4247, trtName.syntax, defDecl.name.syntax)
-            } else if (functionParams.length > 1) {
-              MacrosHelper.abort(Message.DOMALA4249, trtName.syntax, defDecl.name.syntax)
-            }
-            val functionParam = Term.Name(functionParams.head.name.toString)
-            q"""if ($functionParam == null) throw new org.seasar.doma.DomaNullPointerException(${functionParam.literal})"""
-          }, true, false)
-        case q"SelectType.ITERATOR" | q"ITERATOR" =>
-          (Seq {
-            val functionParams = defDecl.paramss.flatten.filter { p =>
-              p.decltpe.get match {
-                //noinspection ScalaUnusedSymbol
-                case t"Iterator[$_] => $_" => true
-                case _ => false
-              }
-            }
-            if (functionParams.isEmpty) {
-              MacrosHelper.abort(Message.DOMALA6009, trtName.syntax, defDecl.name.syntax)
-            } else if (functionParams.length > 1) {
-              MacrosHelper.abort(Message.DOMALA6010, trtName.syntax, defDecl.name.syntax)
-            }
-            val functionParam = Term.Name(functionParams.head.name.toString)
-            q"""if ($functionParam == null) throw new org.seasar.doma.DomaNullPointerException(${functionParam.literal})"""
-          }, false, true)
-        case _ => abort(_def.pos, "error")
-      }
+    val validateParameter: Seq[Stat] = selectArgs.selectType match {
+      case SelectType.RETURN => Nil
+      case SelectType.STREAM =>
+        val functionParams = defDecl.paramss.flatten.filter {
+          _.decltpe.get match {
+            //noinspection ScalaUnusedSymbol
+            case t"Stream[$_] => $_" => true
+            case _ => false
+          }
+        }
+        if (functionParams.isEmpty) {
+          MacrosHelper.abort(Message.DOMALA4247, trtName.syntax, defDecl.name.syntax)
+        } else if (functionParams.length > 1) {
+          MacrosHelper.abort(Message.DOMALA4249, trtName.syntax, defDecl.name.syntax)
+        }
+        val functionParam = Term.Name(functionParams.head.name.toString)
+        Seq(q"if ($functionParam == null) throw new org.seasar.doma.DomaNullPointerException(${functionParam.literal})")
+      case SelectType.ITERATOR =>
+        val functionParams = defDecl.paramss.flatten.filter {
+          _.decltpe.get match {
+            //noinspection ScalaUnusedSymbol
+            case t"Iterator[$_] => $_" => true
+            case _ => false
+          }
+        }
+        if (functionParams.isEmpty) {
+          MacrosHelper.abort(Message.DOMALA6009, trtName.syntax, defDecl.name.syntax)
+        } else if (functionParams.length > 1) {
+          MacrosHelper.abort(Message.DOMALA6010, trtName.syntax, defDecl.name.syntax)
+        }
+        val functionParam = Term.Name(functionParams.head.name.toString)
+        Seq(q"if ($functionParam == null) throw new org.seasar.doma.DomaNullPointerException(${functionParam.literal})")
+    }
 
-    if (defDecl.paramss.flatten.exists(p => p.decltpe.get match {
+    if (defDecl.paramss.flatten.exists(_.decltpe.get match {
       //noinspection ScalaUnusedSymbol
       case t"Stream[$_] => $_" => true
       case _ => false
-    }) && !isStream) {
+    }) && !selectArgs.isStream) {
       MacrosHelper.abort(Message.DOMALA6019, trtName.syntax, defDecl.name.syntax)
     }
-    if (defDecl.paramss.flatten.exists(p => p.decltpe.get match {
+    if (defDecl.paramss.flatten.exists(_.decltpe.get match {
       //noinspection ScalaUnusedSymbol
       case t"Iterator[$_] => $_" => true
       case _ => false
-    }) && !isIterator) {
+    }) && !selectArgs.isIterator) {
       MacrosHelper.abort(Message.DOMALA6020, trtName.syntax, defDecl.name.syntax)
     }
 
@@ -151,7 +153,7 @@ object SelectGenerator extends DaoMethodGenerator {
       """
 
     val (result, setEntityType) =
-      if (isStream) {
+      if (selectArgs.isStream) {
         val (functionParamTerm, internalTpe, retTpe) = defDecl.paramss.flatten.find {
             _.decltpe.get match {
               //noinspection ScalaUnusedSymbol
@@ -208,7 +210,7 @@ object SelectGenerator extends DaoMethodGenerator {
             MacrosHelper.abort(
               Message.DOMALA4008, defDecl.tpe, trtName.syntax, defDecl.name.syntax)
         }
-      } else if (isIterator) {
+      } else if (selectArgs.isIterator) {
         val (functionParamTerm, internalTpe, retTpe) = defDecl.paramss.flatten
           .find { p =>
             p.decltpe.get match {
@@ -382,7 +384,7 @@ object SelectGenerator extends DaoMethodGenerator {
       q"domala.internal.macros.DaoParamClass(${p.name.literal}, classOf[$pType])"
     }
 
-    val setResultStream = if (isStream || isIterator) {
+    val setResultStream = if (selectArgs.isStream || selectArgs.isIterator) {
       Seq(q"__query.setResultStream(true)")
     } else {
       Nil
@@ -390,13 +392,13 @@ object SelectGenerator extends DaoMethodGenerator {
 
 
     val sqlValidator =
-      if (commonArgs.hasSqlAnnotation) {
-        q"domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql(classOf[$trtName], ${defDecl.name.literal}, true, false, ${commonArgs.sql}, ..$daoParamTypes)"
+      if (selectArgs.common.hasSqlAnnotation) {
+        q"domala.internal.macros.reflect.DaoReflectionMacros.validateParameterAndSql(classOf[$trtName], ${defDecl.name.literal}, true, false, ${selectArgs.common.sql}, ..$daoParamTypes)"
       } else q"()"
 
 
-    val query = if (commonArgs.hasSqlAnnotation) {
-      q"new domala.jdbc.query.SqlAnnotationSelectQuery(${commonArgs.sql})"
+    val query = if (selectArgs.common.hasSqlAnnotation) {
+      q"new domala.jdbc.query.SqlAnnotationSelectQuery(${selectArgs.common.sql})"
     } else {
       q"""new domala.jdbc.query.SqlFileSelectQuery(domala.internal.macros.reflect.DaoReflectionMacros.getSqlFilePath(classOf[$trtName], ${defDecl.name.literal}, true, false, false, ..$daoParamTypes))"""
     }
@@ -407,7 +409,7 @@ object SelectGenerator extends DaoMethodGenerator {
       entering(${trtName.className}, ${defDecl.name.literal} ..$enteringParam)
       try {
         val __query = $query
-        ..$checkParameter
+        ..$validateParameter
         __query.setMethod($internalMethodName)
         __query.setConfig(__config)
         ..$setOptions
@@ -418,10 +420,10 @@ object SelectGenerator extends DaoMethodGenerator {
         __query.setResultEnsured(${selectArgs.ensureResult})
         __query.setResultMappingEnsured(${selectArgs.ensureResultMapping})
         __query.setFetchType(${selectArgs.fetch})
-        __query.setQueryTimeout(${commonArgs.queryTimeOut})
+        __query.setQueryTimeout(${selectArgs.common.queryTimeOut})
         __query.setMaxRows(${selectArgs.maxRows})
         __query.setFetchSize(${selectArgs.fetchSize})
-        __query.setSqlLogType(${commonArgs.sqlLogType})
+        __query.setSqlLogType(${selectArgs.common.sqlLogType})
         ..$setResultStream
         __query.prepare()
         val __result: ${defDecl.tpe} = $result

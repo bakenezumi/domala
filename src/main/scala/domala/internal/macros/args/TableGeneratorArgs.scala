@@ -15,7 +15,7 @@ case class TableGeneratorArgs(
 )
 
 object TableGeneratorArgs {
-  def read(mods: Seq[Mod], className: String): Option[TableGeneratorArgs] = {
+  def of(mods: Seq[Mod], className: String): Option[TableGeneratorArgs] = {
     val blank = q""" "" """
     mods.collectFirst {
       case mod"@TableGenerator(..$args)" =>

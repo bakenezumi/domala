@@ -14,17 +14,19 @@ object ScriptGenerator extends DaoMethodGenerator {
   override def annotationClass: Class[Script] = classOf[Script]
 
   case class ScriptArgs(
+    common: DaoMethodCommonArgs,
     blockDelimiter: Term.Arg,
     haltOnError: Term.Arg
   )
 
   object ScriptArgs {
-    def read(args: Seq[Term.Arg]): ScriptArgs = {
+    def of(args: Seq[Term.Arg], traitName: String, methodName: String): ScriptArgs = {
       val blockDelimiter =
         args.collectFirst { case arg"blockDelimiter = $x" => x }.getOrElse(q""" "" """)
       val haltOnError =
         args.collectFirst { case arg"haltOnError = $x" => x }.getOrElse(q"false")
       ScriptArgs(
+        DaoMethodCommonArgs.of(args, traitName, methodName),
         blockDelimiter,
         haltOnError)
     }
@@ -32,11 +34,7 @@ object ScriptGenerator extends DaoMethodGenerator {
 
   override def generate(trtName: Type.Name, _def: Decl.Def, internalMethodName: Term.Name, args: Seq[Term.Arg]): Defn.Def = {
     val Decl.Def(_, name, _, paramss, tpe) = _def
-    val commonArgs = DaoMethodCommonArgs.read(
-      args,
-      trtName.syntax,
-      _def.name.syntax)
-    val scriptArgs = ScriptArgs.read(args)
+    val scriptArgs = ScriptArgs.of(args, trtName.syntax, _def.syntax)
 
     tpe match {
       case t"Unit" | t"scala.Unit" => ()
@@ -49,8 +47,8 @@ object ScriptGenerator extends DaoMethodGenerator {
     }
 
     val (query, setScriptFilePath) =
-      if (commonArgs.hasSqlAnnotation) (
-        q"new domala.jdbc.query.SqlScriptQuery(${commonArgs.sql})",
+      if (scriptArgs.common.hasSqlAnnotation) (
+        q"new domala.jdbc.query.SqlScriptQuery(${scriptArgs.common.sql})",
         q"()")
       else (
         q"new org.seasar.doma.jdbc.query.SqlFileScriptQuery",
@@ -68,7 +66,7 @@ object ScriptGenerator extends DaoMethodGenerator {
         __query.setCallerMethodName(${name.literal})
         __query.setBlockDelimiter(${scriptArgs.blockDelimiter})
         __query.setHaltOnError(${scriptArgs.haltOnError})
-        __query.setSqlLogType(${commonArgs.sqlLogType})
+        __query.setSqlLogType(${scriptArgs.common.sqlLogType})
         __query.prepare()
         val __command = getCommandImplementors.createScriptCommand($internalMethodName, __query)
         __command.execute()

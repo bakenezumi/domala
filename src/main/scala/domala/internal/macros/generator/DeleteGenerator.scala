@@ -16,7 +16,7 @@ object DeleteGenerator extends DaoMethodGenerator {
     args: Seq[Term.Arg]): Defn.Def = {
     val defDecl = QueryDefDecl.of(trtName, _def)
     val commonArgs =
-      DaoMethodCommonArgs.read(args, trtName.syntax, _def.name.syntax)
+      DaoMethodCommonArgs.of(args, trtName.syntax, _def.name.syntax)
     val ignoreVersion = args
       .collectFirst { case arg"ignoreVersion = $x" => x }
       .getOrElse(q"false")

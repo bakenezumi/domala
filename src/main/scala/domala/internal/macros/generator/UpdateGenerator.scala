@@ -11,7 +11,7 @@ object UpdateGenerator extends DaoMethodGenerator {
   override def annotationClass: Class[Update] = classOf[Update]
   override def generate(trtName: Type.Name, _def: Decl.Def, internalMethodName: Term.Name, args: Seq[Term.Arg]): Defn.Def = {
     val defDecl = QueryDefDecl.of(trtName, _def)
-    val commonArgs = DaoMethodCommonArgs.read(args, trtName.syntax, _def.name.syntax)
+    val commonArgs = DaoMethodCommonArgs.of(args, trtName.syntax, _def.name.syntax)
     val excludeNull = args.collectFirst { case arg"excludeNull = $x" => x }.getOrElse(q"false")
     val ignoreVersion = args.collectFirst { case arg"ignoreVersion = $x" => x }.getOrElse(q"false")
     val include = args.collectFirst { case arg"include = $x" => Some(x) }.flatten

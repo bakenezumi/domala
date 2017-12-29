@@ -16,7 +16,7 @@ case class DaoMethodCommonArgs(
 )
 
 object DaoMethodCommonArgs {
-  def read(args: Seq[Term.Arg], traitName: String, methodName: String): DaoMethodCommonArgs = {
+  def of(args: Seq[Term.Arg], traitName: String, methodName: String): DaoMethodCommonArgs = {
     val (hasSql, sql) =  args.collectFirst{
       case arg"sql = $x" => x
       case arg"$x" if x.syntax.startsWith("\"") => x.syntax.parse[Term.Arg].get
