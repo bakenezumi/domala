@@ -30,7 +30,7 @@ object CaseClassGenerator {
     } else {
       val paramss = cls.ctor.paramss.map(ps => ps.map(_.copy(mods = Nil)))
       val argss = paramss.map(ps => ps.map(p => Term.Name(p.name.syntax)))
-      val tparams = TypeUtil.convertDefTypeParams(cls.tparams)
+      val tparams = TypeUtil.toDefTypeParams(cls.tparams)
       val typeNames = cls.tparams.map(tp => Type.Name(tp.name.syntax))
       if (typeNames.nonEmpty)
         q"def apply[..{$tparams}](...$paramss): ${cls.name}[..{$typeNames}] = new ${Ctor.Ref.Name(cls.name.syntax)}[..{$typeNames}](...$argss)"
@@ -45,7 +45,7 @@ object CaseClassGenerator {
       q"()" // no op
     } else {
       val params = cls.ctor.paramss.head.map(_.copy(mods = Nil))
-      val tparams = TypeUtil.convertDefTypeParams(cls.tparams)
+      val tparams = TypeUtil.toDefTypeParams(cls.tparams)
       val typeNames = cls.tparams.map(tp => Type.Name(tp.name.syntax))
       if (params.size > 1) {
         val typeTuple =

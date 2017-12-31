@@ -1,6 +1,7 @@
 package domala.internal.macros.util
 
 import scala.meta._
+
 object NameConverters {
 
   implicit class RichName(name: Name) {

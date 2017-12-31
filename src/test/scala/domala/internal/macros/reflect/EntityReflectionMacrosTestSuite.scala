@@ -1,20 +1,16 @@
 package domala.internal.macros.reflect
 
 import domala._
-import domala.jdbc.entity.{DefaultPropertyDesc, GeneratedIdPropertyDesc, VersionPropertyDesc}
+import domala.jdbc.entity.{DefaultPropertyDesc, EntityPropertyDesc, GeneratedIdPropertyDesc, VersionPropertyDesc}
 import org.scalatest.{BeforeAndAfter, FunSuite}
-import org.seasar.doma.jdbc.entity.{EntityPropertyType, NamingType}
+import org.seasar.doma.jdbc.entity.NamingType
 import org.seasar.doma.wrapper.{IntegerWrapper, StringWrapper, Wrapper}
 
 //noinspection NameBooleanParameters
 class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
 
   test("generatePropertyType basic") {
-    val __idList = new java.util.ArrayList[EntityPropertyType[DummyEntity, _]]
-    val __list = new java.util.ArrayList[EntityPropertyType[DummyEntity, _]]
-    val __map =
-      new java.util.HashMap[String, EntityPropertyType[DummyEntity, _]]
-    val propertyType = EntityReflectionMacros.generatePropertyDesc[String, DummyEntity, String](
+    val propertyType: Map[String, EntityPropertyDesc[DummyEntity, _]] = EntityReflectionMacros.generatePropertyDesc[String, DummyEntity, String](
       classOf[DummyEntity],
       "basic",
       NamingType.NONE,
@@ -28,22 +24,14 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
       "",
       true,
       true,
-      false,
-      EntityCollections[DummyEntity](__list, __map, __idList)
+      false
     )
     assert(
-      propertyType
+      propertyType.values.head
         .isInstanceOf[DefaultPropertyDesc[_, _, _, _]])
-    assert(__idList.isEmpty)
-    assert(__list.get(0) == propertyType)
-    assert(__map.get("basic") == propertyType)
   }
 
   test("generatePropertyType id") {
-    val __idList = new java.util.ArrayList[EntityPropertyType[DummyEntity, _]]
-    val __list = new java.util.ArrayList[EntityPropertyType[DummyEntity, _]]
-    val __map =
-      new java.util.HashMap[String, EntityPropertyType[DummyEntity, _]]
     val __idGenerator = new org.seasar.doma.jdbc.id.BuiltinIdentityIdGenerator()
     val propertyType = EntityReflectionMacros.generatePropertyDesc[Int, DummyEntity, Integer](
       classOf[DummyEntity],
@@ -59,20 +47,12 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
       "",
       true,
       true,
-      false,
-      EntityCollections[DummyEntity](__list, __map, __idList)
+      false
     )
-    assert(propertyType.isInstanceOf[GeneratedIdPropertyDesc[_, _, _, _]])
-    assert(__idList.get(0) == propertyType)
-    assert(__list.get(0) == propertyType)
-    assert(__map.get("id") == propertyType)
+    assert(propertyType.values.head.isInstanceOf[GeneratedIdPropertyDesc[_, _, _, _]])
   }
 
   test("generatePropertyType version") {
-    val __idList = new java.util.ArrayList[EntityPropertyType[DummyEntity, _]]
-    val __list = new java.util.ArrayList[EntityPropertyType[DummyEntity, _]]
-    val __map =
-      new java.util.HashMap[String, EntityPropertyType[DummyEntity, _]]
     val propertyType = EntityReflectionMacros.generatePropertyDesc[Int, DummyEntity, Integer](
       classOf[DummyEntity],
       "version",
@@ -87,20 +67,12 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
       "",
       true,
       true,
-      false,
-      EntityCollections[DummyEntity](__list, __map, __idList)
+      false
     )
-    assert(propertyType.isInstanceOf[VersionPropertyDesc[_, _, _, _]])
-    assert(__idList.isEmpty)
-    assert(__list.get(0) == propertyType)
-    assert(__map.get("version") == propertyType)
+    assert(propertyType.values.head.isInstanceOf[VersionPropertyDesc[_, _, _, _]])
   }
 
   test("generatePropertyType domain") {
-    val __idList = new java.util.ArrayList[EntityPropertyType[DummyEntity, _]]
-    val __list = new java.util.ArrayList[EntityPropertyType[DummyEntity, _]]
-    val __map =
-      new java.util.HashMap[String, EntityPropertyType[DummyEntity, _]]
     val propertyType = EntityReflectionMacros.generatePropertyDesc[DummyDomain, DummyEntity, DummyDomain](
       classOf[DummyEntity],
       "domain",
@@ -115,13 +87,9 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
       "",
       true,
       true,
-      false,
-      EntityCollections[DummyEntity](__list, __map, __idList)
+      false
     )
-    assert(propertyType.isInstanceOf[DefaultPropertyDesc[_, _, _, _]])
-    assert(__idList.isEmpty)
-    assert(__list.get(0) == propertyType)
-    assert(__map.get("domain") == propertyType)
+    assert(propertyType.values.head.isInstanceOf[DefaultPropertyDesc[_, _, _, _]])
   }
 
 }

@@ -2,7 +2,8 @@ package domala.internal.macros.reflect
 
 import java.util.function.Supplier
 
-import domala.internal.macros.reflect.util.{PropertyTypeUtil, ReflectionUtil, TypeUtil}
+import domala.internal.macros.reflect.util.{PropertyDescUtil, ReflectionUtil, TypeUtil}
+import domala.jdbc.entity.EntityPropertyDesc
 import domala.message.Message
 import org.seasar.doma.jdbc.entity.NamingType
 import org.seasar.doma.wrapper.Wrapper
@@ -35,12 +36,11 @@ object EmbeddableReflectionMacros {
     columnName: c.Expr[String],
     columnInsertable: c.Expr[Boolean],
     columnUpdatable: c.Expr[Boolean],
-    columnQuote: c.Expr[Boolean],
-    collections: c.Expr[EntityCollections[E]]
+    columnQuote: c.Expr[Boolean]
   )(
     propertyClassTag: c.Expr[ClassTag[T]],
     nakedClassTag: c.Expr[ClassTag[N]]
-  ): c.Expr[Object] = handle(c)(embeddableClass) {
+  ): c.Expr[Map[String, EntityPropertyDesc[E, _]]] = handle(c)(embeddableClass) {
     import c.universe._
     val tpe = weakTypeOf[T]
     if(TypeUtil.isEmbeddable(c)(tpe)) {
@@ -49,7 +49,7 @@ object EmbeddableReflectionMacros {
         Message.DOMALA4297,
         tpe, weakTypeOf[EM], propertyNameLiteral)
     }
-    PropertyTypeUtil.generatePropertyTypeImpl[T, E, N](c)(
+    PropertyDescUtil.generatePropertyDescImpl[T, E, N](c)(
       entityClass,
       paramName,
       namingType,
@@ -63,8 +63,7 @@ object EmbeddableReflectionMacros {
       columnName,
       columnInsertable,
       columnUpdatable,
-      columnQuote,
-      collections
+      columnQuote
     )(propertyClassTag, nakedClassTag)
   }
 
@@ -79,11 +78,10 @@ object EmbeddableReflectionMacros {
     columnName: String,
     columnInsertable: Boolean,
     columnUpdatable: Boolean,
-    columnQuote: Boolean,
-    collections: EntityCollections[E]
+    columnQuote: Boolean
   )(
     implicit propertyClassTag: ClassTag[T],
     nakedClassTag: ClassTag[N]
-  ): Object =  macro generatePropertyDescImpl[EM, T, E, N]
+  ): Map[String, EntityPropertyDesc[E, _]] =  macro generatePropertyDescImpl[EM, T, E, N]
 
 }

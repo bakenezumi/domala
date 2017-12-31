@@ -7,7 +7,6 @@ import java.time.{LocalDate, LocalDateTime, LocalTime}
 import domala.jdbc.entity.{EmbeddableCompanion, EntityCompanion}
 import domala.jdbc.holder.{AbstractAnyValHolderDesc, HolderCompanion}
 import domala.wrapper.BigIntWrapper
-import org.seasar.doma.jdbc.entity.EmbeddableType
 import org.seasar.doma.wrapper._
 
 import scala.collection.mutable.ArrayBuffer
@@ -253,16 +252,16 @@ object TypeUtil {
           } else true
         }
       val holderValueName  = TermName(holderConstructor.paramLists.flatten.head.name.toString)
-      val basicImport = generateImport(c)(basicType)
-      val holderImport = generateImport(c)(tpe)
+      val basicImport = generateImport(c)(basicType).getOrElse(q"()")
+      val holderImport = generateImport(c)(tpe).getOrElse(q"()")
       c.Expr[AbstractAnyValHolderDesc[Any, T]](
         if (tpe.typeArgs.isEmpty) {
           val holderFactory =
             if(useApply)  q"${tpe.typeSymbol.name.toTermName}.apply (value)"
             else q"new $holderTypeName (value)"
           q""" {
-            ${basicImport.getOrElse(q"()")}
-            ${holderImport.getOrElse(q"()")}
+            $basicImport
+            $holderImport
             new domala.jdbc.holder.AbstractAnyValHolderDesc[$basicTypeName, $holderTypeName](${generateWrapperSupplier(c)(basicType)}) {
               override def newHolder(value: $basicTypeName): $holderTypeName = $holderFactory
               override def getBasicValue(holder: $holderTypeName) = holder.$holderValueName
@@ -274,8 +273,8 @@ object TypeUtil {
             else q"new $holderTypeName [..${tpe.typeArgs}] (value)"
 
           q""" {
-            ${basicImport.getOrElse(q"()")}
-            ${holderImport.getOrElse(q"()")}
+            $basicImport
+            $holderImport
             new domala.jdbc.holder.AbstractAnyValHolderDesc[$basicTypeName, $holderTypeName [..${tpe.typeArgs}]](${generateWrapperSupplier(c)(basicType)}) {
               override def newHolder(value: $basicTypeName): $holderTypeName [..${tpe.typeArgs}] = $holderFactory
               override def getBasicValue(holder: $holderTypeName [..${tpe.typeArgs}]) = holder.$holderValueName

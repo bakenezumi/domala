@@ -13,7 +13,7 @@ case class DaoMethodCommonBatchArgs(
 )
 
 object DaoMethodCommonBatchArgs {
-  def read(args: Seq[Term.Arg], traitName: String, methodName: String): DaoMethodCommonBatchArgs = {
+  def of(args: Seq[Term.Arg], traitName: String, methodName: String): DaoMethodCommonBatchArgs = {
     val commonArgs = DaoMethodCommonArgs.of(args, traitName, methodName)
     val batchSize = args.collectFirst{ case arg"batchSize = $x" => x }.getOrElse(arg"-1")
     DaoMethodCommonBatchArgs(commonArgs.hasSqlAnnotation, commonArgs.sql, commonArgs.sqlFile, commonArgs.queryTimeOut, commonArgs.sqlLogType, batchSize)

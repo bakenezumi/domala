@@ -15,7 +15,7 @@ object HolderDescGenerator {
 
     if (cls.ctor.paramss.flatten.length != 1)  MacrosHelper.abort(Message.DOMALA6001)
     val valueParam = cls.ctor.paramss.flatten.headOption.getOrElse(MacrosHelper.abort(Message.DOMALA6001))
-    val (basicTpe: Type, wrapperSupplier: Term.Function, isNumeric) = TypeUtil.convertToDomaType(valueParam.decltpe.get) match {
+    val (basicTpe: Type, wrapperSupplier: Term.Function, isNumeric) = DomaType.of(valueParam.decltpe.get) match {
       case DomaType.Basic(_, convertedType, function, numeric) => (convertedType, function, numeric)
       case _ => MacrosHelper.abort(Message.DOMALA4102, valueParam.decltpe.get.toString(), cls.name.syntax, valueParam.name.syntax)
     }
@@ -45,7 +45,7 @@ object HolderDescGenerator {
       }
 
     val methods = makeMethods(cls.name, cls.ctor, basicTpe, erasedHolderType, valueParam)
-    val tparams = TypeUtil.convertDefTypeParams(cls.tparams)
+    val tparams = TypeUtil.toDefTypeParams(cls.tparams)
 
     val applyDef =
       if(isEnum && !CaseClassGenerator.hasApplyDef(cls, maybeOriginalCompanion)) {

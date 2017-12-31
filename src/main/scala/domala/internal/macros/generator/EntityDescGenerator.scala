@@ -98,28 +98,33 @@ object EntityDescGenerator {
       q"private[this]  val __namingType: org.seasar.doma.jdbc.entity.NamingType = ${entitySetting.naming}"
     val idGeneratorField = generateIdGeneratorFields(clsName, ctor)
 
+    val idSet = q"Set(..${idParamsFilter(ctor.paramss.flatten).map(_.name.literal)})"
     val propertyTypesFields =
       q"""
-      private[this] val __idList = new java.util.ArrayList[domala.jdbc.entity.EntityPropertyDesc[$clsName, _]]()
-      private[this] val __list = new java.util.ArrayList[domala.jdbc.entity.EntityPropertyDesc[$clsName, _]](${Term.Name(propertySize.toString)})
-      private[this] val __map = new java.util.HashMap[String, domala.jdbc.entity.EntityPropertyDesc[$clsName, _]](${Term.Name(propertySize.toString)})
-      private[this] val __collections = domala.internal.macros.reflect.EntityCollections[$clsName](__list, __map, __idList)
+      import scala.collection.JavaConverters._
+      private[this] val __propertyMap = Seq(..${generatePropertyDescMap(clsName, ctor)}).flatten.toMap
+      private[this] val __idList = __propertyMap.filterKeys($idSet).values.toList.asJava
+      private[this] val __list = __propertyMap.values.toList.asJava
+      private[this] val __map = __propertyMap.asJava
       """.stats
 
-    val propertyTypeFields = generatePropertyTypeFields(clsName, ctor)
 
     namingTypeField +: (
-    idGeneratorField ++
-    propertyTypesFields ++
-    propertyTypeFields )
+      idGeneratorField ++
+      propertyTypesFields
+    )
+  }
+
+  def idParamsFilter(params: Seq[Term.Param]): Seq[Term.Param] = {
+    params.filter(p => p.mods.exists {
+      case mod"@Id" | mod"@domala.Id" | mod"@Id()" | mod"@domala.Id()" => true
+      case _ => false
+    })
   }
 
   protected def generateIdGeneratorFields(clsName: Type.Name, ctor: Ctor.Primary): Seq[Stat] = {
     val params = ctor.paramss.flatten
-    val idParams = params.filter(p => p.mods.exists {
-      case mod"@Id" | mod"@domala.Id" | mod"@Id()" | mod"@domala.Id()" => true
-      case _ => false
-    })
+    val idParams = idParamsFilter(params)
     //noinspection ScalaUnusedSymbol
     val generatedValueParams = params.filter(p => p.mods.exists {
       case mod"@GeneratedValue($_)" => true
@@ -195,7 +200,7 @@ object EntityDescGenerator {
       )
   }
 
-  protected def generatePropertyTypeFields(clsName: Type.Name, ctor: Ctor.Primary): Seq[Defn.Val] = {
+  protected def generatePropertyDescMap(clsName: Type.Name, ctor: Ctor.Primary): Seq[Term.Apply] = {
     ctor.paramss.flatten.map { p =>
       val Term.Param(mods, name, Some(decltpe), _) = p
       val columnSetting = ColumnArgs.of(mods)
@@ -205,7 +210,7 @@ object EntityDescGenerator {
       }
       val propertyName = Pat.Var.Term(Term.Name("$" + name.syntax))
 
-      val (isBasic, nakedTpe, newWrapperExpr) = TypeUtil.convertToEntityDomaType(decltpe) match {
+      val (isBasic, nakedTpe, newWrapperExpr) = DomaType.ofEntity(decltpe) match {
         case DomaType.Basic(_, convertedType, wrapperSupplier, _) => (true, convertedType, wrapperSupplier)
         case DomaType.Option(DomaType.Basic(_, convertedType, wrapperSupplier, _), _) => (true, convertedType, wrapperSupplier)
         case DomaType.EntityOrHolderOrEmbeddable(otherType) => (false, otherType, q"null")
@@ -247,7 +252,7 @@ object EntityDescGenerator {
         MacrosHelper.abort(Message.DOMALA4089, clsName.syntax, name.syntax)
 
       q"""
-      private[this] val $propertyName = domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyDesc[$tpe, $clsName, $nakedTpe](
+      domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyDesc[$tpe, $clsName, $nakedTpe](
         classOf[$clsName],
         ${name.literal},
         __namingType,
@@ -261,8 +266,7 @@ object EntityDescGenerator {
         ${columnSetting.name},
         ${columnSetting.insertable},
         ${columnSetting.updatable},
-        ${columnSetting.quote},
-        __collections
+        ${columnSetting.quote}
       )
       """
     }
@@ -287,20 +291,20 @@ object EntityDescGenerator {
     """.stats
   }
 
-  protected def generateGeneratedIdPropertyType(clsName: Type.Name, ctor: Ctor.Primary): Term = {
-    ctor.paramss.flatten.collect {
+  protected def generateGeneratedIdPropertyDesc(clsName: Type.Name, ctor: Ctor.Primary): Term = {
+    ctor.paramss.flatten.collectFirst {
       case param if param.mods.exists(mod => mod.syntax.startsWith("@GeneratedValue")) =>
-        ("$" + param.name.syntax + s".asInstanceOf[domala.jdbc.entity.GeneratedIdPropertyDesc[$clsName, $clsName, _ <: Number, _]]").parse[Term].get
-    }.headOption.getOrElse(q"null")
+        q"__propertyMap(${param.name.literal}).asInstanceOf[domala.jdbc.entity.GeneratedIdPropertyDesc[$clsName, $clsName, _ <: Number, _]]"
+    }.getOrElse(q"null")
   }
 
-  protected def generateVersionPropertyType(clsName: Type.Name, ctor: Ctor.Primary): Term = {
+  protected def generateVersionPropertyDesc(clsName: Type.Name, ctor: Ctor.Primary): Term = {
     val versionProperties = ctor.paramss.flatten.collect {
       case param if param.mods.exists(mod => mod.syntax.startsWith("@Version") || mod.syntax.startsWith("@domala.Version")) => param
     }
     if(versionProperties.length > 1) MacrosHelper.abort(Message.DOMALA4024, clsName.syntax, versionProperties(1).name.syntax)
     versionProperties.headOption.map(param =>
-      ("$" + param.name.syntax  + s".asInstanceOf[domala.jdbc.entity.VersionPropertyDesc[$clsName, $clsName, _ <: Number, _]]").parse[Term].get
+      q"__propertyMap(${param.name.literal}).asInstanceOf[domala.jdbc.entity.VersionPropertyDesc[$clsName, $clsName, _ <: Number, _]]"
     ).getOrElse(q"null")
   }
 
@@ -310,7 +314,8 @@ object EntityDescGenerator {
     }
     if(tenantIdProperties.length > 1) MacrosHelper.abort(Message.DOMALA4442,  clsName.syntax, tenantIdProperties(1).name.syntax)
     tenantIdProperties.headOption.map(param =>
-      ("$" + param.name.syntax  + s".asInstanceOf[domala.jdbc.entity.TenantIdPropertyDesc[$clsName, $clsName, _, _]]").parse[Term].get
+      q"__propertyMap(${param.name.literal}).asInstanceOf[domala.jdbc.entity.TenantIdPropertyDesc[$clsName, $clsName, _, _]]"
+
     ).getOrElse(q"null")
   }
 
@@ -416,9 +421,9 @@ object EntityDescGenerator {
 
     override def getIdPropertyTypes: java.util.List[domala.jdbc.entity.EntityPropertyDesc[$clsName, _]] = __idPropertyTypes
 
-    override def getGeneratedIdPropertyType: domala.jdbc.entity.GeneratedIdPropertyDesc[_ >: $clsName, $clsName, _, _] = ${generateGeneratedIdPropertyType(clsName, ctor)}
+    override def getGeneratedIdPropertyType: domala.jdbc.entity.GeneratedIdPropertyDesc[_ >: $clsName, $clsName, _, _] = ${generateGeneratedIdPropertyDesc(clsName, ctor)}
 
-    override def getVersionPropertyType: domala.jdbc.entity.VersionPropertyDesc[_ >: $clsName, $clsName, _, _] = ${generateVersionPropertyType(clsName, ctor)}
+    override def getVersionPropertyType: domala.jdbc.entity.VersionPropertyDesc[_ >: $clsName, $clsName, _, _] = ${generateVersionPropertyDesc(clsName, ctor)}
 
     override def getTenantIdPropertyType: domala.jdbc.entity.TenantIdPropertyDesc[_ >: $clsName, $clsName, _, _] = ${generateGetTenantIdPropertyTypeMethod(clsName, ctor)}
 

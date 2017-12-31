@@ -2,8 +2,8 @@ package domala.internal.macros.generator
 
 import domala.internal.macros.DomaType
 import domala.internal.macros.args.ColumnArgs
+import domala.internal.macros.util.MacrosHelper
 import domala.internal.macros.util.NameConverters._
-import domala.internal.macros.util.{MacrosHelper, TypeUtil}
 import domala.message.Message
 
 import scala.collection.immutable.Seq
@@ -34,7 +34,7 @@ object EmbeddableDescGenerator {
       val Term.Param(mods, name, Some(decltpe), _) = p
       val tpe = Type.Name(decltpe.toString)
       val columnArgs = ColumnArgs.of(mods)
-      val (isBasic, isOption, nakedTpe, newWrapperExpr) = TypeUtil.convertToEntityDomaType(decltpe) match {
+      val (isBasic, isOption, nakedTpe, newWrapperExpr) = DomaType.ofEntity(decltpe) match {
         case DomaType.Basic(_, convertedType, wrapperSupplier, _) => (true, false, convertedType, wrapperSupplier)
         case DomaType.Option(DomaType.Basic(_, convertedType, wrapperSupplier, _), _) => (true, true, convertedType, wrapperSupplier)
         case DomaType.EntityOrHolderOrEmbeddable(otherType) => (false, false, otherType, q"null")
@@ -79,9 +79,8 @@ object EmbeddableDescGenerator {
           ${p.columnArgs.name},
           ${p.columnArgs.insertable},
           ${p.columnArgs.updatable},
-          ${p.columnArgs.quote},
-          domala.internal.macros.reflect.EntityCollections[ENTITY]()
-        ).asInstanceOf[domala.jdbc.entity.EntityPropertyDesc[ENTITY, _]]
+          ${p.columnArgs.quote}
+        ).values.head
         """
       }
       q"""

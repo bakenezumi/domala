@@ -177,7 +177,7 @@ object SelectGenerator extends DaoMethodGenerator {
             trtName.syntax,
             defDecl.name.syntax)
         }
-        TypeUtil.convertToDomaType(internalTpe) match {
+        DomaType.of(internalTpe) match {
           case DomaType.Map =>
             val command = commandTemplate(
               q"""
@@ -235,7 +235,7 @@ object SelectGenerator extends DaoMethodGenerator {
             trtName.syntax,
             defDecl.name.syntax)
         }
-        TypeUtil.convertToDomaType(internalTpe) match {
+        DomaType.of(internalTpe) match {
           case DomaType.Map =>
             val command = commandTemplate(
               q"""
@@ -269,7 +269,7 @@ object SelectGenerator extends DaoMethodGenerator {
               Message.DOMALA4008, defDecl.tpe, trtName.syntax, defDecl.name.syntax)
         }
       } else
-        TypeUtil.convertToDomaType(defDecl.tpe) match {
+        DomaType.of(defDecl.tpe) match {
           case DomaType.Option(DomaType.Map, _) =>
             val command = commandTemplate(
               q"new domala.internal.jdbc.command.OptionMapSingleResultHandler(${selectArgs.mapKeyNaming})")

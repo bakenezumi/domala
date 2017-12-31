@@ -3,7 +3,8 @@ package domala.internal.macros.reflect
 import java.util.function.Supplier
 
 import domala.internal.macros.reflect.util.ReflectionUtil.extractionClassString
-import domala.internal.macros.reflect.util.{PropertyTypeUtil, ReflectionUtil, TypeUtil}
+import domala.internal.macros.reflect.util.{PropertyDescUtil, ReflectionUtil, TypeUtil}
+import domala.jdbc.entity.EntityPropertyDesc
 import domala.message.Message
 import org.seasar.doma.jdbc.entity._
 import org.seasar.doma.jdbc.id.{IdGenerator, SequenceIdGenerator, TableIdGenerator}
@@ -40,13 +41,12 @@ object EntityReflectionMacros {
     columnName: c.Expr[String],
     columnInsertable: c.Expr[Boolean],
     columnUpdatable: c.Expr[Boolean],
-    columnQuote: c.Expr[Boolean],
-    collections: c.Expr[EntityCollections[E]]
+    columnQuote: c.Expr[Boolean]
   )(
     propertyClassTag: c.Expr[ClassTag[T]],
     nakedClassTag: c.Expr[ClassTag[N]]
-  ): c.Expr[Object] = handle(c)(entityClass) {
-    PropertyTypeUtil.generatePropertyTypeImpl[T, E, N](c)(
+  ): c.Expr[Map[String, EntityPropertyDesc[E, _]]] = handle(c)(entityClass) {
+    PropertyDescUtil.generatePropertyDescImpl[T, E, N](c)(
       entityClass,
       paramName,
       namingType,
@@ -60,8 +60,7 @@ object EntityReflectionMacros {
       columnName,
       columnInsertable,
       columnUpdatable,
-      columnQuote,
-      collections
+      columnQuote
     )(propertyClassTag, nakedClassTag)
   }
   def generatePropertyDesc[T, E, N](
@@ -78,12 +77,11 @@ object EntityReflectionMacros {
       columnName: String,
       columnInsertable: Boolean,
       columnUpdatable: Boolean,
-      columnQuote: Boolean,
-      collections: EntityCollections[E]
+      columnQuote: Boolean
   )(
       implicit propertyClassTag: ClassTag[T],
       nakedClassTag: ClassTag[N]
-  ): Object =  macro generatePropertyDescImpl[T, E, N]
+  ): Map[String, EntityPropertyDesc[E, _]] =  macro generatePropertyDescImpl[T, E, N]
 
   def readPropertyImpl[T: c.WeakTypeTag, E: c.WeakTypeTag](c: blackbox.Context)(
       entityClass: c.Expr[Class[E]],
@@ -177,31 +175,5 @@ object EntityReflectionMacros {
     reify(())
   }
   def validateSequenceIdGenerator[E, G <: SequenceIdGenerator](entityClass: Class[E], generatorClass: Class[G]): Unit = macro validateSequenceIdGeneratorImpl[E, G]
-
-}
-
-case class EntityCollections[E](
-    list: java.util.List[EntityPropertyType[E, _]] = null,
-    map: java.util.Map[String, EntityPropertyType[E, _]] = null,
-    idList: java.util.List[EntityPropertyType[E, _]] = null
-) {
-
-  def putId(propertyType: EntityPropertyType[E, _]): Unit = {
-    if (idList == null) return
-    idList.add(propertyType)
-  }
-
-  def put(propertyName: String,
-          propertyType: EntityPropertyType[E, _]): Unit = {
-    if (list == null) return
-    list.add(propertyType)
-    map.put(propertyName, propertyType)
-  }
-
-  def putAll[T](propertyType: EmbeddedPropertyType[E, T]): Unit = {
-    if (list == null) return
-    list.addAll(propertyType.getEmbeddablePropertyTypes)
-    map.putAll(propertyType.getEmbeddablePropertyTypeMap)
-  }
 
 }

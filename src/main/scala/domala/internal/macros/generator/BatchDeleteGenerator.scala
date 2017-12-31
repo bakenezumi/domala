@@ -15,7 +15,7 @@ object BatchDeleteGenerator extends DaoMethodGenerator {
     internalMethodName: Term.Name,
     args: Seq[Term.Arg]): Defn.Def = {
     val defDecl = QueryDefDecl.of(trtName, _def)
-    val commonArgs = DaoMethodCommonBatchArgs.read(
+    val commonArgs = DaoMethodCommonBatchArgs.of(
       args,
       trtName.syntax,
       _def.name.syntax)

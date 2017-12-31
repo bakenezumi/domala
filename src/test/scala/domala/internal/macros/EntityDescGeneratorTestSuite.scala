@@ -22,7 +22,7 @@ case class Person(
   version: Option[Int] = Option(-1)
 )
 """
-    val expect = """{
+    val expect = q"""{
   case class Person(@Id id: Option[ID[Person]] = None, name: Option[Name], age: Option[Int], address: Address, departmentId: Option[Int], @Version version: Option[Int] = Option(-1))
   object Person extends domala.jdbc.entity.EntityCompanion[Person] {
     val entityDesc: domala.jdbc.entity.EntityDesc[Person] = EntityDesc
@@ -33,16 +33,11 @@ case class Person(
       }
       private[this] val __namingType: org.seasar.doma.jdbc.entity.NamingType = null
       private[this] val __idGenerator = new org.seasar.doma.jdbc.id.BuiltinIdentityIdGenerator()
-      private[this] val __idList = new java.util.ArrayList[domala.jdbc.entity.EntityPropertyDesc[Person, _]]()
-      private[this] val __list = new java.util.ArrayList[domala.jdbc.entity.EntityPropertyDesc[Person, _]](6)
-      private[this] val __map = new java.util.HashMap[String, domala.jdbc.entity.EntityPropertyDesc[Person, _]](6)
-      private[this] val __collections = domala.internal.macros.reflect.EntityCollections[Person](__list, __map, __idList)
-      private[this] val $id = domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyDesc[Option[ID[Person]], Person, ID[Person]](classOf[Person], "id", __namingType, true, true, __idGenerator, false, false, false, null, "", true, true, false, __collections)
-      private[this] val $name = domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyDesc[Option[Name], Person, Name](classOf[Person], "name", __namingType, false, false, __idGenerator, false, false, false, null, "", true, false, false, __collections)
-      private[this] val $age = domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyDesc[Option[Int], Person, Integer](classOf[Person], "age", __namingType, false, false, __idGenerator, false, false, true, () => new org.seasar.doma.wrapper.IntegerWrapper(): org.seasar.doma.wrapper.Wrapper[Integer], "", true, true, false, __collections)
-      private[this] val $address = domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyDesc[Address, Person, Address](classOf[Person], "address", __namingType, false, false, __idGenerator, false, false, false, null, "", true, true, false, __collections)
-      private[this] val $departmentId = domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyDesc[Option[Int], Person, Integer](classOf[Person], "departmentId", __namingType, false, false, __idGenerator, false, false, true, () => new org.seasar.doma.wrapper.IntegerWrapper(): org.seasar.doma.wrapper.Wrapper[Integer], "", true, true, false, __collections)
-      private[this] val $version = domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyDesc[Option[Int], Person, Integer](classOf[Person], "version", __namingType, false, false, __idGenerator, true, false, true, () => new org.seasar.doma.wrapper.IntegerWrapper(): org.seasar.doma.wrapper.Wrapper[Integer], "", true, true, false, __collections)
+      import scala.collection.JavaConverters._
+      private[this] val __propertyMap = Seq(domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyDesc[Option[ID[Person]], Person, ID[Person]](classOf[Person], "id", __namingType, true, true, __idGenerator, false, false, false, null, "", true, true, false), domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyDesc[Option[Name], Person, Name](classOf[Person], "name", __namingType, false, false, __idGenerator, false, false, false, null, "", true, false, false), domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyDesc[Option[Int], Person, Integer](classOf[Person], "age", __namingType, false, false, __idGenerator, false, false, true, () => new org.seasar.doma.wrapper.IntegerWrapper(): org.seasar.doma.wrapper.Wrapper[Integer], "", true, true, false), domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyDesc[Address, Person, Address](classOf[Person], "address", __namingType, false, false, __idGenerator, false, false, false, null, "", true, true, false), domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyDesc[Option[Int], Person, Integer](classOf[Person], "departmentId", __namingType, false, false, __idGenerator, false, false, true, () => new org.seasar.doma.wrapper.IntegerWrapper(): org.seasar.doma.wrapper.Wrapper[Integer], "", true, true, false), domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyDesc[Option[Int], Person, Integer](classOf[Person], "version", __namingType, false, false, __idGenerator, true, false, true, () => new org.seasar.doma.wrapper.IntegerWrapper(): org.seasar.doma.wrapper.Wrapper[Integer], "", true, true, false)).flatten.toMap
+      private[this] val __idList = __propertyMap.filterKeys(Set("id")).values.toList.asJava
+      private[this] val __list = __propertyMap.values.toList.asJava
+      private[this] val __map = __propertyMap.asJava
       private[this] val __listenerSupplier: java.util.function.Supplier[org.seasar.doma.jdbc.entity.NullEntityListener[Person]] = () => ListenerHolder.listener
       private[this] val __immutable = true
       private[this] val __name = "Person"
@@ -100,8 +95,8 @@ case class Person(
       override def getEntityPropertyTypes: java.util.List[domala.jdbc.entity.EntityPropertyDesc[Person, _]] = __entityPropertyTypes
       override def getEntityPropertyType(__name: String): domala.jdbc.entity.EntityPropertyDesc[Person, _] = __entityPropertyTypeMap.get(__name)
       override def getIdPropertyTypes: java.util.List[domala.jdbc.entity.EntityPropertyDesc[Person, _]] = __idPropertyTypes
-      override def getGeneratedIdPropertyType: domala.jdbc.entity.GeneratedIdPropertyDesc[_ >: Person, Person, _, _] = $id.asInstanceOf[domala.jdbc.entity.GeneratedIdPropertyDesc[Person, Person, _ <: Number, _]]
-      override def getVersionPropertyType: domala.jdbc.entity.VersionPropertyDesc[_ >: Person, Person, _, _] = $version.asInstanceOf[domala.jdbc.entity.VersionPropertyDesc[Person, Person, _ <: Number, _]]
+      override def getGeneratedIdPropertyType: domala.jdbc.entity.GeneratedIdPropertyDesc[_ >: Person, Person, _, _] = __propertyMap("id").asInstanceOf[domala.jdbc.entity.GeneratedIdPropertyDesc[Person, Person, _ <: Number, _]]
+      override def getVersionPropertyType: domala.jdbc.entity.VersionPropertyDesc[_ >: Person, Person, _, _] = __propertyMap("version").asInstanceOf[domala.jdbc.entity.VersionPropertyDesc[Person, Person, _ <: Number, _]]
       override def getTenantIdPropertyType: domala.jdbc.entity.TenantIdPropertyDesc[_ >: Person, Person, _, _] = null
       override def newEntity(__args: java.util.Map[String, domala.jdbc.entity.Property[Person, _]]) = new Person(domala.internal.macros.reflect.EntityReflectionMacros.readProperty[Option[ID[Person]], Person](classOf[Person], __args, "id"), domala.internal.macros.reflect.EntityReflectionMacros.readProperty[Option[Name], Person](classOf[Person], __args, "name"), domala.internal.macros.reflect.EntityReflectionMacros.readProperty[Option[Int], Person](classOf[Person], __args, "age"), domala.internal.macros.reflect.EntityReflectionMacros.readProperty[Address, Person](classOf[Person], __args, "address"), domala.internal.macros.reflect.EntityReflectionMacros.readProperty[Option[Int], Person](classOf[Person], __args, "departmentId"), domala.internal.macros.reflect.EntityReflectionMacros.readProperty[Option[Int], Person](classOf[Person], __args, "version"))
       override def getEntityClass: Class[Person] = classOf[Person]
@@ -113,7 +108,7 @@ case class Person(
   }
 }"""
     val ret = EntityDescGenerator.generate(cls, None, Nil)
-    assert(ret.syntax == expect)
+    assert(ret.syntax == expect.syntax)
   }
 
   test("annotation  conflicted") {

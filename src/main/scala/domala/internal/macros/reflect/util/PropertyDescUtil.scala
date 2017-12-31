@@ -2,7 +2,6 @@ package domala.internal.macros.reflect.util
 
 import java.util.function.Supplier
 
-import domala.internal.macros.reflect.EntityCollections
 import domala.internal.macros.reflect.util.ReflectionUtil.{extractionClassString, extractionQuotedString}
 import domala.jdbc.entity._
 import domala.jdbc.holder.{AbstractAnyValHolderDesc, AbstractHolderDesc, HolderDesc}
@@ -14,9 +13,9 @@ import org.seasar.doma.wrapper.Wrapper
 import scala.reflect.ClassTag
 import scala.reflect.macros.blackbox
 
-object PropertyTypeUtil {
+object PropertyDescUtil {
 
-  def generatePropertyTypeImpl[
+  def generatePropertyDescImpl[
   T: c.WeakTypeTag,
   E: c.WeakTypeTag,
   N: c.WeakTypeTag](c: blackbox.Context)(
@@ -33,11 +32,10 @@ object PropertyTypeUtil {
     columnName: c.Expr[String],
     columnInsertable: c.Expr[Boolean],
     columnUpdatable: c.Expr[Boolean],
-    columnQuote: c.Expr[Boolean],
-    collections: c.Expr[EntityCollections[E]]
+    columnQuote: c.Expr[Boolean]
   )(
     propertyClassTag: c.Expr[ClassTag[T]],
-    nakedClassTag: c.Expr[ClassTag[N]]): c.Expr[Object] = {
+    nakedClassTag: c.Expr[ClassTag[N]]): c.Expr[Map[String, EntityPropertyDesc[E, _]]] = {
     import c.universe._
     val Literal(Constant(isBasicLiteral: Boolean)) = isBasic.tree
     val Literal(Constant(isIdLiteral: Boolean)) = isId.tree
@@ -78,14 +76,15 @@ object PropertyTypeUtil {
       reify {
         val embeddable =
           ReflectionUtil.getEmbeddableDesc(propertyClassTag.splice)
-        val prop = new EmbeddedPropertyType[E, T](
+        import scala.collection.JavaConverters._
+        new EmbeddedPropertyType[E, T](
           paramName.splice,
           entityClass.splice,
-          embeddable.getEmbeddablePropertyTypes(paramName.splice,
+          embeddable.getEmbeddablePropertyTypes(
+            paramName.splice,
             entityClass.splice,
-            namingType.splice))
-        collections.splice.putAll(prop)
-        prop
+            namingType.splice
+          )).getEmbeddablePropertyTypeMap.asScala.toMap
       }
     } else if (TypeUtil.isHolder(c)(nakedTpe)) {
       val holder =
@@ -100,7 +99,7 @@ object PropertyTypeUtil {
             )
           }
           reify {
-            val prop = GeneratedIdPropertyDesc.ofHolder(
+            Map(paramName.splice -> GeneratedIdPropertyDesc.ofHolder(
               entityClass.splice,
               propertyClassTag.splice.runtimeClass,
               holder.splice.asInstanceOf[AbstractHolderDesc[Number, _]],
@@ -109,25 +108,19 @@ object PropertyTypeUtil {
               namingType.splice,
               columnQuote.splice,
               idGenerator.splice
-            )
-            collections.splice.putId(prop)
-            collections.splice.put(paramName.splice, prop)
-            prop
+            ))
           }
         } else {
           reify {
-            val prop = AssignedIdPropertyDesc.ofHolder(
-              entityClass.splice,
-              propertyClassTag.splice.runtimeClass,
-              holder.splice,
-              paramName.splice,
-              columnName.splice,
-              namingType.splice,
-              columnQuote.splice
-            )
-            collections.splice.putId(prop)
-            collections.splice.put(paramName.splice, prop)
-            prop
+            Map(paramName.splice -> AssignedIdPropertyDesc.ofHolder(
+               entityClass.splice,
+               propertyClassTag.splice.runtimeClass,
+               holder.splice,
+               paramName.splice,
+               columnName.splice,
+               namingType.splice,
+               columnQuote.splice
+            ))
           }
         }
       } else if (isVersionLiteral) {
@@ -139,7 +132,7 @@ object PropertyTypeUtil {
           )
         }
         reify {
-          val prop = VersionPropertyDesc.ofHolder(
+          Map(paramName.splice -> VersionPropertyDesc.ofHolder(
             entityClass.splice,
             propertyClassTag.splice.runtimeClass,
             holder.splice.asInstanceOf[HolderDesc[Number, _]],
@@ -147,13 +140,11 @@ object PropertyTypeUtil {
             columnName.splice,
             namingType.splice,
             columnQuote.splice
-          )
-          collections.splice.put(paramName.splice, prop)
-          prop
+          ))
         }
       } else if (isTenantIdLiteral) {
         reify {
-          val prop = TenantIdPropertyDesc.ofHolder(
+          Map(paramName.splice -> TenantIdPropertyDesc.ofHolder(
             entityClass.splice,
             propertyClassTag.splice.runtimeClass,
             holder.splice,
@@ -161,13 +152,11 @@ object PropertyTypeUtil {
             columnName.splice,
             namingType.splice,
             columnQuote.splice
-          )
-          collections.splice.put(paramName.splice, prop)
-          prop
+          ))
         }
       } else {
         reify {
-          val prop = DefaultPropertyDesc.ofHolder(
+          Map(paramName.splice -> DefaultPropertyDesc.ofHolder(
             entityClass.splice,
             propertyClassTag.splice.runtimeClass,
             holder.splice,
@@ -177,9 +166,7 @@ object PropertyTypeUtil {
             columnInsertable.splice,
             columnUpdatable.splice,
             columnQuote.splice
-          )
-          collections.splice.put(paramName.splice, prop)
-          prop
+          ))
         }
       }
     } else if (TypeUtil.isAnyVal(c)(nakedTpe)) {
@@ -203,7 +190,7 @@ object PropertyTypeUtil {
             )
           }
           reify {
-            val prop = GeneratedIdPropertyDesc.ofHolder(
+            Map(paramName.splice -> GeneratedIdPropertyDesc.ofHolder(
               entityClass.splice,
               propertyClassTag.splice.runtimeClass,
               holder.get.splice.asInstanceOf[AbstractAnyValHolderDesc[Number, _]],
@@ -212,14 +199,11 @@ object PropertyTypeUtil {
               namingType.splice,
               columnQuote.splice,
               idGenerator.splice
-            )
-            collections.splice.putId(prop)
-            collections.splice.put(paramName.splice, prop)
-            prop
+            ))
           }
         } else {
           reify {
-            val prop = AssignedIdPropertyDesc.ofHolder(
+            Map(paramName.splice -> AssignedIdPropertyDesc.ofHolder(
               entityClass.splice,
               propertyClassTag.splice.runtimeClass,
               holder.get.splice,
@@ -227,10 +211,7 @@ object PropertyTypeUtil {
               columnName.splice,
               namingType.splice,
               columnQuote.splice
-            )
-            collections.splice.putId(prop)
-            collections.splice.put(paramName.splice, prop)
-            prop
+            ))
           }
         }
       } else if (isVersionLiteral) {
@@ -242,7 +223,7 @@ object PropertyTypeUtil {
           )
         }
         reify {
-          val prop = VersionPropertyDesc.ofHolder(
+          Map(paramName.splice -> VersionPropertyDesc.ofHolder(
             entityClass.splice,
             propertyClassTag.splice.runtimeClass,
             holder.get.splice.asInstanceOf[AbstractAnyValHolderDesc[Number, _]],
@@ -250,13 +231,11 @@ object PropertyTypeUtil {
             columnName.splice,
             namingType.splice,
             columnQuote.splice
-          )
-          collections.splice.put(paramName.splice, prop)
-          prop
+          ))
         }
       } else if (isTenantIdLiteral) {
         reify {
-          val prop = TenantIdPropertyDesc.ofHolder(
+          Map(paramName.splice -> TenantIdPropertyDesc.ofHolder(
             entityClass.splice,
             propertyClassTag.splice.runtimeClass,
             holder.get.splice,
@@ -264,13 +243,11 @@ object PropertyTypeUtil {
             columnName.splice,
             namingType.splice,
             columnQuote.splice
-          )
-          collections.splice.put(paramName.splice, prop)
-          prop
+          ))
         }
       } else {
         reify {
-          val prop = DefaultPropertyDesc.ofHolder(
+          Map(paramName.splice -> DefaultPropertyDesc.ofHolder(
             entityClass.splice,
             propertyClassTag.splice.runtimeClass,
             holder.get.splice,
@@ -280,9 +257,7 @@ object PropertyTypeUtil {
             columnInsertable.splice,
             columnUpdatable.splice,
             columnQuote.splice
-          )
-          collections.splice.put(paramName.splice, prop)
-          prop
+          ))
         }
       }
     } else {
@@ -304,7 +279,7 @@ object PropertyTypeUtil {
             )
           }
           reify {
-            val prop = domala.jdbc.entity.GeneratedIdPropertyDesc.ofBasic(
+            Map(paramName.splice -> domala.jdbc.entity.GeneratedIdPropertyDesc.ofBasic(
               entityClass.splice,
               propertyClassTag.splice.runtimeClass,
               nakedClassTag.splice.runtimeClass.asInstanceOf[Class[Number]],
@@ -314,14 +289,11 @@ object PropertyTypeUtil {
               namingType.splice,
               columnQuote.splice,
               idGenerator.splice
-            )
-            collections.splice.putId(prop)
-            collections.splice.put(paramName.splice, prop)
-            prop
+            ))
           }
         } else {
           reify {
-            val prop = AssignedIdPropertyDesc.ofBasic(
+            Map(paramName.splice -> AssignedIdPropertyDesc.ofBasic(
               entityClass.splice,
               propertyClassTag.splice.runtimeClass,
               nakedClassTag.splice.runtimeClass.asInstanceOf[Class[Any]],
@@ -330,10 +302,7 @@ object PropertyTypeUtil {
               columnName.splice,
               namingType.splice,
               columnQuote.splice
-            )
-            collections.splice.putId(prop)
-            collections.splice.put(paramName.splice, prop)
-            prop
+            ))
           }
         }
       } else if (isVersionLiteral) {
@@ -345,7 +314,7 @@ object PropertyTypeUtil {
           )
         }
         reify {
-          val prop = VersionPropertyDesc.ofBasic(
+          Map(paramName.splice -> VersionPropertyDesc.ofBasic(
             entityClass.splice,
             propertyClassTag.splice.runtimeClass,
             nakedClassTag.splice.runtimeClass.asInstanceOf[Class[Number]],
@@ -354,13 +323,11 @@ object PropertyTypeUtil {
             columnName.splice,
             namingType.splice,
             columnQuote.splice
-          )
-          collections.splice.put(paramName.splice, prop)
-          prop
+          ))
         }
       } else if (isTenantIdLiteral) {
         reify {
-          val prop = TenantIdPropertyDesc.ofBasic(
+          Map(paramName.splice -> TenantIdPropertyDesc.ofBasic(
             entityClass.splice,
             propertyClassTag.splice.runtimeClass,
             nakedClassTag.splice.runtimeClass.asInstanceOf[Class[Number]],
@@ -369,13 +336,11 @@ object PropertyTypeUtil {
             columnName.splice,
             namingType.splice,
             columnQuote.splice
-          )
-          collections.splice.put(paramName.splice, prop)
-          prop
+          ))
         }
       } else {
         reify {
-          val prop = DefaultPropertyDesc.ofBasic(
+          Map(paramName.splice -> DefaultPropertyDesc.ofBasic(
             entityClass.splice,
             propertyClassTag.splice.runtimeClass,
             nakedClassTag.splice.runtimeClass.asInstanceOf[Class[Any]],
@@ -386,9 +351,7 @@ object PropertyTypeUtil {
             columnInsertable.splice,
             columnUpdatable.splice,
             columnQuote.splice
-          )
-          collections.splice.put(paramName.splice, prop)
-          prop
+          ))
         }
       }
     }
