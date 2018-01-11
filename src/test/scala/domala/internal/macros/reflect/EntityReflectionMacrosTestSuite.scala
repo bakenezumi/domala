@@ -1,9 +1,8 @@
 package domala.internal.macros.reflect
 
 import domala._
-import domala.jdbc.entity.{DefaultPropertyDesc, EntityPropertyDesc, GeneratedIdPropertyDesc, VersionPropertyDesc}
+import domala.jdbc.entity.{DefaultPropertyDesc, EntityPropertyDesc, GeneratedIdPropertyDesc, NamingType, VersionPropertyDesc}
 import org.scalatest.{BeforeAndAfter, FunSuite}
-import org.seasar.doma.jdbc.entity.NamingType
 import org.seasar.doma.wrapper.{IntegerWrapper, StringWrapper, Wrapper}
 
 //noinspection NameBooleanParameters

@@ -3,11 +3,11 @@ package domala.jdbc.query
 import java.sql.Statement
 
 import domala.jdbc.SqlNodeRepository
+import domala.jdbc.entity.EntityDesc
 import org.seasar.doma.internal.jdbc.sql.SqlContext
 import org.seasar.doma.internal.jdbc.sql.node.PopulateNode
 import org.seasar.doma.internal.util.AssertionUtil.assertEquals
 import org.seasar.doma.jdbc.SqlKind
-import org.seasar.doma.jdbc.entity.EntityType
 import org.seasar.doma.jdbc.query.BatchUpdateQuery
 
 class SqlAnnotationBatchUpdateQuery[ELEMENT](
@@ -15,11 +15,11 @@ class SqlAnnotationBatchUpdateQuery[ELEMENT](
   sql: String,
   versionIgnored: Boolean = false,
   optimisticLockExceptionSuppressed: Boolean = false
-)(entityType: Option[_ >: EntityType[ELEMENT]] = None)(implicit sqlNodeRepository: SqlNodeRepository)
+)(entityDesc: Option[_ >: EntityDesc[ELEMENT]] = None)(implicit sqlNodeRepository: SqlNodeRepository)
   extends SqlAnnotationBatchModifyQuery(elementClass, SqlKind.BATCH_INSERT, sql)(sqlNodeRepository) with BatchUpdateQuery {
 
   val entityHandler: Option[BatchUpdateEntityHandler] =
-    entityType.map(e => new this.BatchUpdateEntityHandler(e.asInstanceOf[EntityType[ELEMENT]], versionIgnored, optimisticLockExceptionSuppressed))
+    entityDesc.map(e => new this.BatchUpdateEntityHandler(e.asInstanceOf[EntityDesc[ELEMENT]], versionIgnored, optimisticLockExceptionSuppressed))
 
   override def prepare(): Unit = {
     super.prepare()

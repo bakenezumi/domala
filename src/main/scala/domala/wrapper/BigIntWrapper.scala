@@ -3,7 +3,7 @@ package domala.wrapper
 import java.math.BigInteger
 
 import org.seasar.doma.DomaNullPointerException
-import org.seasar.doma.wrapper.{NumberWrapper, Wrapper, WrapperVisitor}
+import org.seasar.doma.wrapper.{NumberWrapper, WrapperVisitor}
 
 class BigIntWrapper(var value: BigInt = null) extends Wrapper[BigInt] with NumberWrapper[BigInt] {
   private val basicClass = classOf[BigInt]

@@ -1,7 +1,8 @@
 package domala.internal.macros.reflect
 
 import domala.internal.macros.reflect.decl.TypeDeclaration
-import domala.internal.macros.reflect.util.{ReflectionUtil, TypeUtil}
+import domala.internal.reflect.util.ReflectionUtil
+import domala.jdbc.`type`.Types
 import domala.message.Message
 import org.seasar.doma.internal.expr.node.ExpressionNode
 import org.seasar.doma.internal.expr.ExpressionException
@@ -54,17 +55,15 @@ class SqlValidator[C <: blackbox.Context](val c: C)(
   }
 
   protected def isScalar(typeDeclaration: TypeDeclaration[C]): Boolean = {
-    val tpe: C#Type = typeDeclaration.tpe
-    TypeUtil.isBasic(c)(tpe) || TypeUtil.isHolder(c)(tpe) || TypeUtil.isAnyVal(c)(tpe)
+    typeDeclaration.convertedType.isBasic || typeDeclaration.convertedType.isHolder
   }
 
   //noinspection ScalaRedundantCast
   protected def isScalarIterable(typeDeclaration: TypeDeclaration[C]): Boolean = {
-    val tpe: C#Type = typeDeclaration.tpe
-    if(TypeUtil.isIterable(c)(tpe)) {
-      TypeUtil.isBasic(c)(tpe.typeArgs.asInstanceOf[List[C#Type]].head) || TypeUtil.isHolder(c)(tpe.typeArgs.asInstanceOf[List[C#Type]].head) || TypeUtil.isAnyVal(c)(tpe.typeArgs.asInstanceOf[List[C#Type]].head)
-    } else {
-      false
+    typeDeclaration.convertedType match {
+      case Types.Seq(e) => e.isBasic || e.isHolder
+      case Types.Iterable(e) => e.isBasic || e.isHolder
+      case _ => false
     }
   }
 

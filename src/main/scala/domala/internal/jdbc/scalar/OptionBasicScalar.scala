@@ -1,9 +1,10 @@
 package domala.internal.jdbc.scalar
 
 import java.util.function.Supplier
+
+import domala.wrapper.Wrapper
 import org.seasar.doma.internal.jdbc.scalar.Scalar
 import org.seasar.doma.internal.util.AssertionUtil
-import org.seasar.doma.wrapper.Wrapper
 
 class OptionBasicScalar[BASIC](supplier: Supplier[Wrapper[BASIC]])
     extends Scalar[BASIC, Option[BASIC]] {

@@ -5,7 +5,7 @@ import java.util.OptionalInt
 import java.util.OptionalLong
 
 import domala.internal.macros.reflect.decl.{MethodDeclaration, TypeDeclaration}
-import domala.internal.macros.reflect.util.ReflectionUtil
+import domala.internal.reflect.util.ReflectionUtil
 import domala.message.Message
 import org.seasar.doma.expr.ExpressionFunctions
 import org.seasar.doma.internal.expr.node._

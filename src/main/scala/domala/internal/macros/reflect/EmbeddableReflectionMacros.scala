@@ -2,10 +2,10 @@ package domala.internal.macros.reflect
 
 import java.util.function.Supplier
 
-import domala.internal.macros.reflect.util.{PropertyDescUtil, ReflectionUtil, TypeUtil}
-import domala.jdbc.entity.EntityPropertyDesc
+import domala.internal.macros.reflect.util.{MacroTypeConverter, PropertyDescUtil}
+import domala.internal.reflect.util.ReflectionUtil
+import domala.jdbc.entity.{EntityPropertyDesc, NamingType}
 import domala.message.Message
-import org.seasar.doma.jdbc.entity.NamingType
 import org.seasar.doma.wrapper.Wrapper
 
 import scala.language.experimental.macros
@@ -43,7 +43,7 @@ object EmbeddableReflectionMacros {
   ): c.Expr[Map[String, EntityPropertyDesc[E, _]]] = handle(c)(embeddableClass) {
     import c.universe._
     val tpe = weakTypeOf[T]
-    if(TypeUtil.isEmbeddable(c)(tpe)) {
+    if(MacroTypeConverter.of(c).toType(tpe).isEmbeddable) {
       val Literal(Constant(propertyNameLiteral: String)) = propertyName.tree
       ReflectionUtil.abort(
         Message.DOMALA4297,

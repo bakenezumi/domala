@@ -2,8 +2,9 @@ package domala.internal.macros.reflect
 
 import java.util.function.Supplier
 
-import domala.internal.macros.reflect.util.ReflectionUtil.extractionClassString
-import domala.internal.macros.reflect.util.{PropertyDescUtil, ReflectionUtil, TypeUtil}
+import domala.internal.macros.reflect.util.{MacroTypeConverter, PropertyDescUtil}
+import domala.internal.reflect.util.ReflectionUtil
+import domala.internal.reflect.util.ReflectionUtil.extractionClassString
 import domala.jdbc.entity.EntityPropertyDesc
 import domala.message.Message
 import org.seasar.doma.jdbc.entity._
@@ -90,7 +91,7 @@ object EntityReflectionMacros {
       propertyClassTag: c.Expr[ClassTag[T]]): c.Expr[T] = handle(c)(entityClass) {
     import c.universe._
     val wtt = weakTypeOf[T]
-    if (TypeUtil.isEmbeddable(c)(wtt)) {
+    if (MacroTypeConverter.of(c).toType(wtt).isEmbeddable) {
       reify {
         val embeddable =
           ReflectionUtil.getEmbeddableDesc(propertyClassTag.splice)

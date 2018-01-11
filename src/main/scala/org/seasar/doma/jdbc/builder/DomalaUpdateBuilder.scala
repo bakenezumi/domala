@@ -34,6 +34,12 @@ class DomalaUpdateBuilder(
     appendParam(paramClass, param, literal = false)
   }
 
+  def params[E](elementClass: Class[E], params: Iterable[E]): DomalaUpdateBuilder = {
+    if (elementClass == null) throw new DomaNullPointerException("elementClass")
+    if (params == null) throw new DomaNullPointerException("params")
+    appendParams(elementClass, params, false)
+  }
+
   def literal[P](paramClass: Class[P], param: P): DomalaUpdateBuilder = {
     if (paramClass == null) throw new DomaNullPointerException("paramClass")
     appendParam(paramClass, param, literal = true)
@@ -45,6 +51,20 @@ class DomalaUpdateBuilder(
     helper.appendParam(new Param(paramClass, param, paramIndex, literal))
     paramIndex.increment()
     new SubsequentUpdateBuilder(config, helper, query, paramIndex)
+  }
+
+  private def appendParams[E](elementClass: Class[E],
+    params: Iterable[E],
+    literal: Boolean) = {
+    var builder = this
+    var index = 0
+    for (param <- params) {
+      builder = builder.appendParam(elementClass, param, literal).sql(", ")
+      index += 1
+    }
+    if (index == 0) builder = builder.sql("null")
+    else builder = builder.removeLast()
+    builder
   }
 
   def execute(): Int = {

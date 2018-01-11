@@ -1,7 +1,7 @@
 package domala
 
-import domala.internal.macros.generator.EntityDescGenerator
-import domala.internal.macros.util.MacrosHelper
+import domala.internal.macros.meta.generator.EntityDescGenerator
+import domala.internal.macros.meta.util.MetaHelper
 import domala.jdbc.entity.{EntityListener, NamingType, NullEntityListener}
 
 import scala.collection.immutable.Seq
@@ -42,7 +42,9 @@ import scala.meta._
   * @see [[domala.Version Version]]
   */
 //noinspection ScalaUnusedSymbol
-class Entity(listener: Class[_ <: EntityListener[_ <: Any]] = classOf[NullEntityListener[_]], val naming: NamingType = NamingType.NONE) extends scala.annotation.StaticAnnotation {
+class Entity(
+  listener: Class[_ <: EntityListener[_ <: Any]] = classOf[NullEntityListener[_]],
+  val naming: NamingType = NamingType.NONE) extends scala.annotation.StaticAnnotation {
   inline def apply(defn: Any): Any = meta {
     val q"new $_(..$params)" = this
     defn match {
@@ -50,7 +52,7 @@ class Entity(listener: Class[_ <: EntityListener[_ <: Any]] = classOf[NullEntity
         EntityDescGenerator.generate(cls, Some(companion), params)
       case cls: Defn.Class =>
         EntityDescGenerator.generate(cls, None, params)
-      case _ => MacrosHelper.abort(domala.message.Message.DOMALA4015)
+      case _ => MetaHelper.abort(domala.message.Message.DOMALA4015)
     }
   }
 }

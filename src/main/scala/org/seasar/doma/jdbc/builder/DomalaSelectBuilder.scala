@@ -3,18 +3,20 @@ package org.seasar.doma.jdbc.builder
 import java.util.function.{Function, Supplier}
 import java.util.stream
 
+import domala.internal.jdbc.entity.EntityDescRepository
 import domala.internal.jdbc.scalar.Scalars
 import domala.internal.{OptionConverters, WrapIterator}
 import domala.jdbc.Config
-import domala.jdbc.entity.EntityDescFactory
 import domala.jdbc.query.SqlSelectQuery
 import org.seasar.doma.internal.jdbc.command._
 import org.seasar.doma.internal.jdbc.scalar.{Scalar, ScalarException}
 import org.seasar.doma.jdbc.command.{ResultSetHandler, SelectCommand}
-import org.seasar.doma.jdbc.{Sql, SqlLogType}
+import org.seasar.doma.jdbc.{ClassHelper, Sql, SqlLogType}
 import org.seasar.doma.message.Message
 import org.seasar.doma.{DomaIllegalArgumentException, DomaNullPointerException, FetchType, MapKeyNamingType}
 
+import scala.reflect._
+import scala.reflect.runtime.universe._
 import scala.collection.JavaConverters._
 
 // Domaのパッケージプライベートクラスを利用しているためここに配置
@@ -27,6 +29,7 @@ class DomalaSelectBuilder(
     val helper: BuildingHelper = new BuildingHelper(),
     query: SqlSelectQuery = new SqlSelectQuery,
     paramIndex: ParamIndex = new ParamIndex()) {
+  implicit val classHelper: ClassHelper = config.getClassHelper
 
   query.setConfig(config)
   query.setCallerClassName(getClass.getName)
@@ -88,53 +91,40 @@ class DomalaSelectBuilder(
     builder
   }
 
-  def getEntitySingleResult[RESULT](resultClass: Class[RESULT]): RESULT = {
-    if (resultClass == null) throw new DomaNullPointerException("resultClass")
-//    if (!resultClass.isAnnotationPresent(classOf[Entity]))
-//      throw new DomaIllegalArgumentException(
-//        "resultClass",
-//        Message.DOMA2219.getMessage(resultClass))
+  def getEntitySingleResult[RESULT: TypeTag: ClassTag]: RESULT = {
     if (query.getMethodName == null)
       query.setCallerMethodName("getEntitySingleResult")
-    val entityType =
-      EntityDescFactory.getEntityDesc(resultClass, config.getClassHelper)
-    query.setEntityType(entityType)
-    val handler = new EntitySingleResultHandler[RESULT](entityType)
+    val entityDesc =
+      EntityDescRepository.get[RESULT]
+    query.setEntityType(entityDesc)
+    val handler = new EntitySingleResultHandler[RESULT](entityDesc)
     execute(handler)
   }
 
-  def getOptionEntitySingleResult[RESULT](
-      resultClass: Class[RESULT]): Option[RESULT] = {
-    if (resultClass == null) throw new DomaNullPointerException("resultClass")
-//    if (!resultClass.isAnnotationPresent(classOf[Entity]))
-//      throw new DomaIllegalArgumentException(
-//        "resultClass",
-//        Message.DOMA2219.getMessage(resultClass))
+  def getOptionEntitySingleResult[RESULT: ClassTag: TypeTag]: Option[RESULT] = {
     if (query.getMethodName == null)
       query.setCallerMethodName("getOptionalEntitySingleResult")
-    val entityType =
-      EntityDescFactory.getEntityDesc(resultClass, config.getClassHelper)
-    query.setEntityType(entityType)
-    val handler = new OptionalEntitySingleResultHandler[RESULT](entityType)
+    val entityDesc =
+      EntityDescRepository.get[RESULT]
+    query.setEntityType(entityDesc)
+    val handler = new OptionalEntitySingleResultHandler[RESULT](entityDesc)
     OptionConverters.asScala(execute(handler))
   }
 
   @SuppressWarnings(Array("unchecked", "rawtypes"))
-  def getScalarSingleResult[RESULT](resultClass: Class[RESULT]): RESULT = {
-    if (resultClass == null) throw new DomaNullPointerException("resultClass")
+  def getScalarSingleResult[RESULT](implicit cTag: ClassTag[RESULT]): RESULT = {
     if (query.getMethodName == null)
       query.setCallerMethodName("getScalarSingleResult")
-    val supplier = createScalarSupplier("resultClass", resultClass, false).asInstanceOf[Supplier[Scalar[Any, RESULT]]]
+    val supplier = createScalarSupplier("resultClass", cTag.runtimeClass, false).asInstanceOf[Supplier[Scalar[Any, RESULT]]]
     val handler = new ScalarSingleResultHandler(supplier)
     execute(handler)
   }
 
   @SuppressWarnings(Array("unchecked", "rawtypes"))
-  def getOptionScalarSingleResult[RESULT](resultClass: Class[RESULT]): Option[RESULT] = {
-    if (resultClass == null) throw new DomaNullPointerException("resultClass")
+  def getOptionScalarSingleResult[RESULT](implicit cTag: ClassTag[RESULT]): Option[RESULT] = {
     if (query.getMethodName == null)
       query.setCallerMethodName("getOptionScalarSingleResult")
-    val supplier = createScalarSupplier("resultClass", resultClass, true).asInstanceOf[Supplier[Scalar[Any, RESULT]]]
+    val supplier = createScalarSupplier("resultClass", cTag.runtimeClass, true).asInstanceOf[Supplier[Scalar[Any, RESULT]]]
     val handler = new ScalarSingleResultHandler(supplier)
     execute(handler).asInstanceOf[Option[RESULT]]
   }
@@ -158,39 +148,30 @@ class DomalaSelectBuilder(
     OptionConverters.asScala(execute(handler)).map(_.asScala.toMap)
   }
 
-  def getEntityResultSeq[ELEMENT](elementClass: Class[ELEMENT]): Seq[ELEMENT] = {
-    if (elementClass == null) throw new DomaNullPointerException("elementClass")
-//    if (!elementClass.isAnnotationPresent(classOf[Entity]))
-//      throw new DomaIllegalArgumentException(
-//        "elementClass",
-//        Message.DOMA2219.getMessage(elementClass))
+  def getEntityResultSeq[ELEMENT: ClassTag: TypeTag]: Seq[ELEMENT] = {
     if (query.getMethodName == null)
       query.setCallerMethodName("getEntityResultSeq")
-    val entityType =
-      EntityDescFactory.getEntityDesc(elementClass, config.getClassHelper)
-    query.setEntityType(entityType)
-    val handler = new EntityResultListHandler[ELEMENT](entityType)
+    val entityDesc =
+      EntityDescRepository.get[ELEMENT]
+    query.setEntityType(entityDesc)
+    val handler = new EntityResultListHandler[ELEMENT](entityDesc)
     execute(handler).asScala
   }
 
   @SuppressWarnings(Array("unchecked", "rawtypes"))
-  def getScalarResultSeq[
-      ELEMENT](elementClass: Class[ELEMENT]): Seq[ELEMENT] = {
-    if (elementClass == null) throw new DomaNullPointerException("elementClass")
+  def getScalarResultSeq[ELEMENT]( implicit cTag: ClassTag[ELEMENT]): Seq[ELEMENT] = {
     if (query.getMethodName == null)
       query.setCallerMethodName("getScalarResultSeq")
-    val supplier = createScalarSupplier("elementClass", elementClass, false).asInstanceOf[Supplier[Scalar[Any, Any]]]
+    val supplier = createScalarSupplier("elementClass", cTag.runtimeClass, false).asInstanceOf[Supplier[Scalar[Any, Any]]]
     val handler = new ScalarResultListHandler(supplier)
     execute(handler).asScala.asInstanceOf[Seq[ELEMENT]]
   }
 
   @SuppressWarnings(Array("unchecked", "rawtypes"))
-  def getOptionalScalarResultSeq[
-      ELEMENT](elementClass: Class[ELEMENT]): Seq[Option[ELEMENT]] = {
-    if (elementClass == null) throw new DomaNullPointerException("elementClass")
+  def getOptionalScalarResultSeq[ELEMENT](cTag: ClassTag[ELEMENT]): Seq[Option[ELEMENT]] = {
     if (query.getMethodName == null)
       query.setCallerMethodName("getOptionalScalarResultSeq")
-    val supplier = createScalarSupplier("elementClass", elementClass, true).asInstanceOf[Supplier[Scalar[Any, Any]]]
+    val supplier = createScalarSupplier("elementClass", cTag.runtimeClass, true).asInstanceOf[Supplier[Scalar[Any, Any]]]
     val handler = new ScalarResultListHandler(supplier)
     execute(handler).asScala.map(x => Option(x.asInstanceOf[ELEMENT]))
   }
@@ -204,84 +185,67 @@ class DomalaSelectBuilder(
     execute(handler).asScala.map(_.asScala.toMap)
   }
 
-  def iteratorEntity[TARGET](targetClass: Class[TARGET]): Iterator[TARGET] = {
-    if (targetClass == null) throw new DomaNullPointerException("targetClass")
-//    if (!targetClass.isAnnotationPresent(classOf[Entity]))
-//      throw new DomaIllegalArgumentException(
-//        "targetClass",
-//        Message.DOMA2219.getMessage(targetClass))
+  def iteratorEntity[TARGET: TypeTag](implicit cTag: ClassTag[TARGET]): Iterator[TARGET] = {
     query.setResultStream(true)
-    iteratorEntityInternal[TARGET, Iterator[TARGET]](targetClass, x => x)
+    iteratorEntityInternal[TARGET, Iterator[TARGET]](cTag, x => x)
   }
 
-  def iteratorEntity[TARGET, RESULT](
-      targetClass: Class[TARGET],
-      mapper: Iterator[TARGET] => RESULT): RESULT = {
-    if (targetClass == null) throw new DomaNullPointerException("targetClass")
-//    if (!targetClass.isAnnotationPresent(classOf[Entity]))
-//      throw new DomaIllegalArgumentException(
-//        "targetClass",
-//        Message.DOMA2219.getMessage(targetClass))
+  def iteratorEntity[TARGET: TypeTag, RESULT](
+      mapper: Iterator[TARGET] => RESULT)(implicit cTag: ClassTag[TARGET]): RESULT = {
     if (mapper == null) throw new DomaNullPointerException("mapper")
-    iteratorEntityInternal(targetClass, mapper)
+    iteratorEntityInternal(cTag, mapper)
   }
 
-  protected def iteratorEntityInternal[TARGET, RESULT](
-      targetClass: Class[TARGET],
+  protected def iteratorEntityInternal[TARGET: ClassTag: TypeTag, RESULT](
+      cTag: ClassTag[TARGET],
       mapper: Iterator[TARGET] => RESULT): RESULT = {
     if (query.getMethodName == null) query.setCallerMethodName("iteratorEntity")
-    val entityType =
-      EntityDescFactory.getEntityDesc(targetClass, config.getClassHelper)
-    query.setEntityType(entityType)
-    val handler = new EntityStreamHandler(entityType, (p: java.util.stream.Stream[TARGET]) => mapper(WrapIterator.of(p)))
+    val entityDesc =
+      EntityDescRepository.get[TARGET]
+    query.setEntityType(entityDesc)
+    val handler = new EntityStreamHandler(entityDesc, (p: java.util.stream.Stream[TARGET]) => mapper(WrapIterator.of(p)))
     execute(handler)
   }
 
-  def iteratorScalar[TARGET](targetClass: Class[TARGET]): Iterator[TARGET] = {
-    if (targetClass == null) throw new DomaNullPointerException("targetClass")
+  def iteratorScalar[TARGET](implicit cTag: ClassTag[TARGET]): Iterator[TARGET] = {
     query.setResultStream(true)
-    iteratorScalarInternal[Iterator[TARGET], TARGET](targetClass, x => x)
+    iteratorScalarInternal[Iterator[TARGET], TARGET](cTag, x => x)
   }
 
   def iteratorScalar[RESULT, TARGET](
-      targetClass: Class[TARGET],
-      mapper: Iterator[TARGET] => RESULT): RESULT = {
-    if (targetClass == null) throw new DomaNullPointerException("targetClass")
+      mapper: Iterator[TARGET] => RESULT)(implicit cTag: ClassTag[TARGET]): RESULT = {
     if (mapper == null) throw new DomaNullPointerException("mapper")
-    iteratorScalarInternal(targetClass, mapper)
+    iteratorScalarInternal(cTag, mapper)
   }
 
   @SuppressWarnings(Array("unchecked", "rawtypes"))
   protected def iteratorScalarInternal[
       RESULT,
-      TARGET](targetClass: Class[TARGET],
+      TARGET](cTag: ClassTag[TARGET],
               mapper: Iterator[TARGET] => RESULT): RESULT = {
     if (query.getMethodName == null) query.setCallerMethodName("iteratorScalar")
-    val supplier = createScalarSupplier("targetClass", targetClass, false).asInstanceOf[Supplier[Scalar[Any, TARGET]]]
+    val supplier = createScalarSupplier("targetClass", cTag.runtimeClass, false).asInstanceOf[Supplier[Scalar[Any, TARGET]]]
     val handler = new ScalarStreamHandler(supplier, (p: java.util.stream.Stream[TARGET]) => mapper(WrapIterator.of(p)))
     execute(handler)
   }
 
-  def iteratorOptionalScalar[TARGET](targetClass: Class[TARGET]): Iterator[Option[TARGET]] = {
-    if (targetClass == null) throw new DomaNullPointerException("targetClass")
+  def iteratorOptionalScalar[TARGET](implicit cTag: ClassTag[TARGET]): Iterator[Option[TARGET]] = {
     query.setResultStream(true)
-    iteratorOptionalScalarInternal[Iterator[Option[TARGET]], TARGET](targetClass, x => x)
+    iteratorOptionalScalarInternal[Iterator[Option[TARGET]], TARGET](cTag, x => x)
   }
 
   def iteratorOptionalScalar[RESULT, TARGET](
-      targetClass: Class[TARGET],
-      mapper: Iterator[Option[TARGET]] => RESULT): RESULT = {
-    if (targetClass == null) throw new DomaNullPointerException("targetClass")
+      mapper: Iterator[Option[TARGET]] => RESULT)(implicit cTag: ClassTag[TARGET]): RESULT = {
     if (mapper == null) throw new DomaNullPointerException("mapper")
-    iteratorOptionalScalarInternal(targetClass, mapper)
+    iteratorOptionalScalarInternal(cTag, mapper)
   }
 
   @SuppressWarnings(Array("unchecked", "rawtypes"))
-  protected def iteratorOptionalScalarInternal[RESULT, TARGET](targetClass: Class[TARGET],
+  protected def iteratorOptionalScalarInternal[RESULT, TARGET](cTag: ClassTag[TARGET],
               mapper: Iterator[Option[TARGET]] => RESULT): RESULT = {
     if (query.getMethodName == null)
       query.setCallerMethodName("iteratorOptionalScalar")
-    val supplier: Supplier[Scalar[TARGET, TARGET]] = createScalarSupplier("targetClass", targetClass, true).asInstanceOf[Supplier[Scalar[TARGET, TARGET]]]
+    val supplier: Supplier[Scalar[TARGET, TARGET]] = createScalarSupplier("targetClass", cTag.runtimeClass, true).asInstanceOf[Supplier[Scalar[TARGET, TARGET]]]
     val bridgeMapper: Function[stream.Stream[TARGET], RESULT] = (p: java.util.stream.Stream[TARGET]) => mapper(WrapIterator.of(p).map(x => Option(x)))
     val handler = new ScalarStreamHandler[TARGET, TARGET, RESULT](supplier, bridgeMapper)
     execute(handler)

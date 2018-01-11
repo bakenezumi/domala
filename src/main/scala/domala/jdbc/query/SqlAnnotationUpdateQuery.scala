@@ -15,10 +15,19 @@ class SqlAnnotationUpdateQuery[E](
   optimisticLockExceptionSuppressed: Boolean = false,
   includedPropertyNames: Array[String] = new Array[String](0),
   excludedPropertyNames: Array[String] = new Array[String](0)
-)(entityAndEntityType: Option[EntityAndEntityType[E]] = None)(implicit sqlNodeRepository: SqlNodeRepository)
+)(entityAndEntityDesc: Option[EntityAndEntityDesc[E]] = None)(implicit sqlNodeRepository: SqlNodeRepository)
   extends SqlAnnotationModifyQuery(SqlKind.UPDATE, sqlString)(sqlNodeRepository) with UpdateQuery {
 
-  val entityHandler: Option[UpdateEntityHandler[E]] = entityAndEntityType.map(e => new this.UpdateEntityHandler(e.name, e.entity, e.entityType, nullExcluded, versionIgnored, optimisticLockExceptionSuppressed))
+  val entityHandler: Option[UpdateEntityHandler[E]] =
+    entityAndEntityDesc.map { e =>
+      new this.UpdateEntityHandler(
+        e.name,
+        e.entity,
+        e.entityDesc,
+        nullExcluded,
+        versionIgnored,
+        optimisticLockExceptionSuppressed)
+    }
 
   override def prepare(): Unit = {
     super.prepare()

@@ -12,13 +12,12 @@ object SQLInterpolator {
     context.parts.foreach{ part =>
       builder.sql(part)
       if(params.hasNext) {
-        val param = params.next
-        if(classOf[Iterable[_]].isAssignableFrom(param.getClass)) {
-          val list = param.asInstanceOf[Iterable[Any]]
-          val clazz = list.headOption.map(_.getClass).getOrElse(classOf[Any])
-          builder.params(clazz.asInstanceOf[Class[Any]], list)
-        } else {
-          builder.param(param.getClass.asInstanceOf[Class[Any]], param)
+        val (clazz, param, paramType) = extractParam(params.next)
+        paramType match {
+          case ParamType.Iterable =>
+            builder.params(clazz, param.asInstanceOf[Iterable[Any]])
+          case ParamType.Single =>
+            builder.param(clazz, param)
         }
       }
     }
@@ -36,11 +35,36 @@ object SQLInterpolator {
     context.parts.foreach { part =>
       builder.sql(part)
       if(params.hasNext) {
-        val param = params.next
-          builder.param(param.getClass.asInstanceOf[Class[Any]], param)
+        val (clazz, param, paramType) = extractParam(params.next)
+        paramType match {
+          case ParamType.Iterable =>
+            builder.params(clazz, param.asInstanceOf[Iterable[Any]])
+          case ParamType.Single =>
+            builder.param(clazz, param)
+        }
       }
     }
     UpdateStatement(builder)
+  }
+
+  sealed trait ParamType
+  object ParamType {
+    object Iterable extends ParamType
+    object Single extends ParamType
+  }
+
+  private def extractParam(param: Any): (Class[Any], Any, ParamType) = {
+    if(classOf[Iterable[_]].isAssignableFrom(param.getClass)) {
+      val list = param.asInstanceOf[Iterable[Any]]
+      val clazz = list.headOption.map(_.getClass).getOrElse(classOf[Any])
+      (clazz.asInstanceOf[Class[Any]], list, ParamType.Iterable)
+    } else if(classOf[Option[_]].isAssignableFrom(param.getClass)) {
+      val opt = param.asInstanceOf[Option[Any]]
+      val clazz = opt.map(_.getClass).getOrElse(classOf[Any])
+      (clazz.asInstanceOf[Class[Any]], opt.orNull, ParamType.Single)
+    } else {
+      (param.getClass.asInstanceOf[Class[Any]], param, ParamType.Single)
+    }
   }
 
 }

@@ -1,7 +1,7 @@
 package domala.wrapper
 
 import org.seasar.doma.DomaNullPointerException
-import org.seasar.doma.wrapper.{Wrapper, NumberWrapper, WrapperVisitor}
+import org.seasar.doma.wrapper.{NumberWrapper, WrapperVisitor}
 
 class BigDecimalWrapper(var value: BigDecimal = null) extends Wrapper[BigDecimal] with NumberWrapper[BigDecimal] {
   private val basicClass = classOf[BigDecimal]

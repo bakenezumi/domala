@@ -1,9 +1,9 @@
 package domala.jdbc.query
 
 import domala.jdbc.SqlNodeRepository
+import domala.jdbc.entity.EntityDesc
 import org.seasar.doma.internal.util.AssertionUtil.assertEquals
 import org.seasar.doma.jdbc.SqlKind
-import org.seasar.doma.jdbc.entity.EntityType
 import org.seasar.doma.jdbc.query.BatchDeleteQuery
 
 class SqlFileBatchDeleteQuery[ELEMENT](
@@ -11,11 +11,11 @@ class SqlFileBatchDeleteQuery[ELEMENT](
   sqlFilePath: String,
   versionIgnored: Boolean = false,
   optimisticLockExceptionSuppressed: Boolean = false
-)(entityType: Option[_ >: EntityType[ELEMENT]] = None)(implicit sqlNodeRepository: SqlNodeRepository)
+)(entityDesc: Option[_ >: EntityDesc[ELEMENT]] = None)(implicit sqlNodeRepository: SqlNodeRepository)
   extends SqlFileBatchModifyQuery(elementClass, SqlKind.BATCH_INSERT, sqlFilePath) with BatchDeleteQuery {
 
   val entityHandler: Option[BatchDeleteEntityHandler] =
-    entityType.map(e => new this.BatchDeleteEntityHandler(e.asInstanceOf[EntityType[ELEMENT]], versionIgnored, optimisticLockExceptionSuppressed))
+    entityDesc.map(e => new this.BatchDeleteEntityHandler(e.asInstanceOf[EntityDesc[ELEMENT]], versionIgnored, optimisticLockExceptionSuppressed))
 
   setConfig(config)
 

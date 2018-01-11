@@ -7,11 +7,11 @@ import org.seasar.doma.internal.util.AssertionUtil.assertNotNull
 import org.seasar.doma.jdbc.SqlKind
 import org.seasar.doma.jdbc.query.InsertQuery
 
-class SqlAnnotationInsertQuery[E](sqlString: String)(entityAndEntityType: Option[EntityAndEntityType[E]] = None)
+class SqlAnnotationInsertQuery[E](sqlString: String)(entityAndEntityDesc: Option[EntityAndEntityDesc[E]] = None)
   (implicit sqlNodeRepository: SqlNodeRepository)
   extends SqlAnnotationModifyQuery(SqlKind.INSERT, sqlString)(sqlNodeRepository) with InsertQuery {
 
-  val entityHandler: Option[InsertEntityHandler[E]] = entityAndEntityType.map(e => new InsertEntityHandler[E](e.name, e.entity, e.entityType))
+  val entityHandler: Option[InsertEntityHandler[E]] = entityAndEntityDesc.map(e => new InsertEntityHandler[E](e.name, e.entity, e.entityDesc))
 
   override def prepare(): Unit = {
     super.prepare()

@@ -1,6 +1,7 @@
 package domala.tests.expr
 
 import domala._
+import domala.jdbc.BatchResult
 import domala.tests._
 import org.scalatest.{BeforeAndAfter, FunSuite}
 
@@ -244,6 +245,28 @@ class ExpressionTestSuite extends FunSuite with BeforeAndAfter {
     }
   }
 
+  test("populate batch update") {
+    Required {
+      val entities = Seq(
+        Person(
+          Some(ID(1)),
+          Some(Name("AAA")),
+          Some(3),
+          Address("BBB", "CCC"),
+          Some(1),
+          Some(0)),
+        Person(
+          Some(ID(2)),
+          Some(Name("DDD")),
+          Some(4),
+          Address("EEE", "FFF"),
+          Some(2),
+          Some(0))
+      )
+      dao.populateBatchUpdate(entities)
+    }
+  }
+
 }
 
 @Dao(config = ExprTestConfig)
@@ -371,4 +394,9 @@ where
 /*%end*/
   """)
   def entityParameterSelect(entity: Option[Person]) : Option[Person]
+
+  @BatchUpdate("""
+update person set /*%populate*/id = id where id = /* entity.id */0
+  """)
+  def populateBatchUpdate(entity: Seq[Person]): BatchResult[Person]
 }

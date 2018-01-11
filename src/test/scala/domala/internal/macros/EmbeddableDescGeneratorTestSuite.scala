@@ -1,6 +1,6 @@
 package domala.internal.macros
 
-import domala.internal.macros.generator.EmbeddableDescGenerator
+import domala.internal.macros.meta.generator.EmbeddableDescGenerator
 import org.scalatest.FunSuite
 
 import scala.meta._
@@ -14,7 +14,7 @@ case class Address(city: String, street: String)
 object Address extends domala.jdbc.entity.EmbeddableCompanion[Address] {
   val embeddableDesc: domala.jdbc.entity.EmbeddableDesc[Address] = EmbeddableDesc
   object EmbeddableDesc extends domala.jdbc.entity.EmbeddableDesc[Address] {
-    override def getEmbeddablePropertyTypes[ENTITY](embeddedPropertyName: String, entityClass: Class[ENTITY], namingType: org.seasar.doma.jdbc.entity.NamingType): java.util.List[domala.jdbc.entity.EntityPropertyDesc[ENTITY, _]] = {
+    override def getEmbeddablePropertyTypes[ENTITY](embeddedPropertyName: String, entityClass: Class[ENTITY], namingType: domala.jdbc.entity.NamingType): java.util.List[domala.jdbc.entity.EntityPropertyDesc[ENTITY, _]] = {
       java.util.Arrays.asList(domala.internal.macros.reflect.EmbeddableReflectionMacros.generatePropertyDesc[Address, String, ENTITY, String](classOf[Address], "city", entityClass, embeddedPropertyName + "." + "city", namingType, true, () => new org.seasar.doma.wrapper.StringWrapper(): org.seasar.doma.wrapper.Wrapper[String], "", true, true, false).values.head, domala.internal.macros.reflect.EmbeddableReflectionMacros.generatePropertyDesc[Address, String, ENTITY, String](classOf[Address], "street", entityClass, embeddedPropertyName + "." + "street", namingType, true, () => new org.seasar.doma.wrapper.StringWrapper(): org.seasar.doma.wrapper.Wrapper[String], "", true, true, false).values.head)
     }
     override def newEmbeddable[ENTITY](embeddedPropertyName: String, __args: java.util.Map[String, domala.jdbc.entity.Property[ENTITY, _]]): Address = {
@@ -49,7 +49,7 @@ object Address {
 object Address extends domala.jdbc.entity.EmbeddableCompanion[Address] {
   val embeddableDesc: domala.jdbc.entity.EmbeddableDesc[Address] = EmbeddableDesc
   object EmbeddableDesc extends domala.jdbc.entity.EmbeddableDesc[Address] {
-    override def getEmbeddablePropertyTypes[ENTITY](embeddedPropertyName: String, entityClass: Class[ENTITY], namingType: org.seasar.doma.jdbc.entity.NamingType): java.util.List[domala.jdbc.entity.EntityPropertyDesc[ENTITY, _]] = {
+    override def getEmbeddablePropertyTypes[ENTITY](embeddedPropertyName: String, entityClass: Class[ENTITY], namingType: domala.jdbc.entity.NamingType): java.util.List[domala.jdbc.entity.EntityPropertyDesc[ENTITY, _]] = {
       java.util.Arrays.asList(domala.internal.macros.reflect.EmbeddableReflectionMacros.generatePropertyDesc[Address, String, ENTITY, String](classOf[Address], "city", entityClass, embeddedPropertyName + "." + "city", namingType, true, () => new org.seasar.doma.wrapper.StringWrapper(): org.seasar.doma.wrapper.Wrapper[String], "", true, true, false).values.head, domala.internal.macros.reflect.EmbeddableReflectionMacros.generatePropertyDesc[Address, String, ENTITY, String](classOf[Address], "street", entityClass, embeddedPropertyName + "." + "street", namingType, true, () => new org.seasar.doma.wrapper.StringWrapper(): org.seasar.doma.wrapper.Wrapper[String], "", true, true, false).values.head)
     }
     override def newEmbeddable[ENTITY](embeddedPropertyName: String, __args: java.util.Map[String, domala.jdbc.entity.Property[ENTITY, _]]): Address = {

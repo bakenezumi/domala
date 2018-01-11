@@ -31,7 +31,6 @@ class AdHocConfig private (
   if (password != null) simpleDataSource.setPassword(password)
   private[this] val dataSource = simpleDataSource
 
-
   override def getDataSource: DataSource = dataSource
   override def getDialect: Dialect = dialect
   override def getNaming: Naming = naming

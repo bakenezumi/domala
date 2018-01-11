@@ -6,10 +6,10 @@ import org.seasar.doma.internal.util.AssertionUtil.assertNotNull
 import org.seasar.doma.jdbc.query.InsertQuery
 import org.seasar.doma.jdbc.SqlKind
 
-class SqlFileInsertQuery[E](sqlFilePath: String)(entityAndEntityType: Option[EntityAndEntityType[E]] = None)
+class SqlFileInsertQuery[E](sqlFilePath: String)(entityAndEntityDesc: Option[EntityAndEntityDesc[E]] = None)
   extends SqlFileModifyQuery(SqlKind.INSERT, sqlFilePath) with InsertQuery {
 
-  val entityHandler: Option[InsertEntityHandler[E]] = entityAndEntityType.map(e => new this.InsertEntityHandler(e.name, e.entity, e.entityType))
+  val entityHandler: Option[InsertEntityHandler[E]] = entityAndEntityDesc.map(e => new this.InsertEntityHandler(e.name, e.entity, e.entityDesc))
 
   override def prepare(): Unit = {
     super.prepare()

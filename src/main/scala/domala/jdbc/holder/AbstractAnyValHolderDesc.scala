@@ -3,8 +3,8 @@ package domala.jdbc.holder
 import java.util.Optional
 import java.util.function.Supplier
 
+import domala.wrapper.Wrapper
 import org.seasar.doma.internal.jdbc.scalar.Scalar
-import org.seasar.doma.wrapper.Wrapper
 
 import scala.reflect.ClassTag
 

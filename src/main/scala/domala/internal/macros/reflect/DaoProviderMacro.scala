@@ -3,7 +3,7 @@ package domala.internal.macros.reflect
 import java.sql.Connection
 import javax.sql.DataSource
 
-import domala.internal.macros.reflect.util.ReflectionUtil
+import domala.internal.reflect.util.ReflectionUtil
 import domala.jdbc.Config
 import domala.message.Message
 

@@ -2,7 +2,7 @@ package domala.internal.jdbc.dao
 
 import java.lang.reflect.Method
 
-import domala.internal.util.ClassUtil
+import domala.internal.reflect.util.ClassUtil
 import org.seasar.doma.internal.WrapException
 import org.seasar.doma.internal.util.MethodUtil
 import org.seasar.doma.jdbc.DaoMethodNotFoundException

@@ -4,8 +4,8 @@ import org.seasar.doma
 
 package object entity {
   // Alias of Doma type
-  type EntityPropertyDesc[ENTITY, BASIC] = doma.jdbc.entity.EntityPropertyType[ENTITY, BASIC]
   type EntityDesc[ENTITY] = doma.jdbc.entity.EntityType[ENTITY]
+  type EntityPropertyDesc[ENTITY, BASIC] = doma.jdbc.entity.EntityPropertyType[ENTITY, BASIC]
   type AbstractEntityDesc[ENTITY] = doma.jdbc.entity.AbstractEntityType[ENTITY]
   type NamingType = doma.jdbc.entity.NamingType
   object NamingType {
@@ -18,6 +18,8 @@ package object entity {
     val LOWER_CASE = doma.jdbc.entity.NamingType.LOWER_CASE
   }
   type EmbeddableDesc[EMBEDDABLE] = doma.jdbc.entity.EmbeddableType[EMBEDDABLE]
+  type EmbeddedPropertyDesc[ENTITY, EMBEDDABLE] = doma.jdbc.entity.EmbeddedPropertyType[ENTITY, EMBEDDABLE]
+
   type Property[ENTITY, BASIC] = doma.jdbc.entity.Property[ENTITY, BASIC]
   type EntityListener[ENTITY] = doma.jdbc.entity.EntityListener[ENTITY]
   type NullEntityListener[ENTITY] = doma.jdbc.entity.NullEntityListener[ENTITY]

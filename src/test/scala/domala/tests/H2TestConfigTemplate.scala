@@ -13,4 +13,3 @@ abstract class H2TestConfigTemplate(dbName: String) extends LocalTransactionConf
   ) {
   Class.forName("org.h2.Driver")
 }
-

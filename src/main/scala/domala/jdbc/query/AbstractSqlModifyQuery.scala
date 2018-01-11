@@ -2,6 +2,7 @@ package domala.jdbc.query
 
 import java.lang.reflect.Method
 
+import domala.jdbc.entity.{EntityDesc, EntityPropertyDesc}
 import org.seasar.doma.internal.expr.Value
 import org.seasar.doma.internal.jdbc.entity._
 import org.seasar.doma.internal.jdbc.sql.SqlContext
@@ -9,7 +10,6 @@ import org.seasar.doma.internal.jdbc.sql.node.{ExpandNode, PopulateNode}
 import org.seasar.doma.internal.util.AssertionUtil
 import org.seasar.doma.internal.util.AssertionUtil.assertNotNull
 import org.seasar.doma.jdbc._
-import org.seasar.doma.jdbc.entity.{EntityPropertyType, EntityType}
 import org.seasar.doma.jdbc.query.{AbstractQuery, ModifyQuery, UpdateQueryHelper}
 
 abstract class AbstractSqlModifyQuery(protected val kind: SqlKind) extends AbstractQuery with ModifyQuery {
@@ -78,54 +78,54 @@ abstract class AbstractSqlModifyQuery(protected val kind: SqlKind) extends Abstr
   protected class InsertEntityHandler[E](
     name: String,
     var entity: E,
-    entityType: EntityType[E]) {
-    assertNotNull(name, entity, entityType)
+    entityName: EntityDesc[E]) {
+    assertNotNull(name, entity, entityName)
 
     def preInsert(): Unit = {
-      val context = new SqlPreInsertContext(entityType, method, config)
-      entityType.preInsert(entity, context)
+      val context = new SqlPreInsertContext(entityName, method, config)
+      entityName.preInsert(entity, context)
       if (context.getNewEntity != null) {
         entity = context.getNewEntity
-        addParameter(name, entityType.getEntityClass, entity)
+        addParameter(name, entityName.getEntityClass, entity)
       }
     }
 
     def postInsert(): Unit = {
-      val context = new SqlPostInsertContext(entityType, method, config)
-      entityType.postInsert(entity, context)
+      val context = new SqlPostInsertContext(entityName, method, config)
+      entityName.postInsert(entity, context)
       if (context.getNewEntity != null) entity = context.getNewEntity
     }
   }
 
-  protected class SqlPreInsertContext[E](entityType: EntityType[E], method: Method, config: Config) extends AbstractPreInsertContext[E](entityType, method, config)
+  protected class SqlPreInsertContext[E](entityDesc: EntityDesc[E], method: Method, config: Config) extends AbstractPreInsertContext[E](entityDesc, method, config)
 
-  protected class SqlPostInsertContext[E](entityType: EntityType[E], method: Method, config: Config) extends AbstractPostInsertContext[E](entityType, method, config)
+  protected class SqlPostInsertContext[E](entityDesc: EntityDesc[E], method: Method, config: Config) extends AbstractPostInsertContext[E](entityDesc, method, config)
 
 
   protected class UpdateEntityHandler[E](
     name: String,
     var entity: E,
-    entityType: EntityType[E],
+    entityDesc: EntityDesc[E],
     nullExcluded: Boolean,
     versionIgnored: Boolean,
     optimisticLockExceptionSuppressed: Boolean) {
-    assertNotNull(name, entity, entityType)
-    private val versionPropertyType = entityType.getVersionPropertyType
-    protected var targetPropertyTypes: java.util.List[EntityPropertyType[E, _]] = _
+    assertNotNull(name, entity, entityDesc)
+    private val versionPropertyType = entityDesc.getVersionPropertyType
+    protected var targetPropertyTypes: java.util.List[EntityPropertyDesc[E, _]] = _
     protected var helper: UpdateQueryHelper[E] = _
 
     import org.seasar.doma.jdbc.query.UpdateQueryHelper
 
     def init(): Unit = {
-      helper = new UpdateQueryHelper[E](config, entityType, includedPropertyNames, excludedPropertyNames, nullExcluded, versionIgnored, optimisticLockExceptionSuppressed, false)
+      helper = new UpdateQueryHelper[E](config, entityDesc, includedPropertyNames, excludedPropertyNames, nullExcluded, versionIgnored, optimisticLockExceptionSuppressed, false)
     }
 
     def preUpdate(): Unit = {
-      val context = new SqlPreUpdateContext(entityType, method, config)
-      entityType.preUpdate(entity, context)
+      val context = new SqlPreUpdateContext(entityDesc, method, config)
+      entityDesc.preUpdate(entity, context)
       if (context.getNewEntity != null) {
         entity = context.getNewEntity
-        addParameter(name, entityType.getEntityClass, entity)
+        addParameter(name, entityDesc.getEntityClass, entity)
       }
     }
 
@@ -136,10 +136,10 @@ abstract class AbstractSqlModifyQuery(protected val kind: SqlKind) extends Abstr
     def hasTargetPropertyTypes: Boolean = targetPropertyTypes != null && !targetPropertyTypes.isEmpty
 
     def postUpdate(): Unit = {
-      val context = new SqlPostUpdateContext(entityType, method, config)
-      entityType.postUpdate(entity, context)
+      val context = new SqlPostUpdateContext(entityDesc, method, config)
+      entityDesc.postUpdate(entity, context)
       if (context.getNewEntity != null) entity = context.getNewEntity
-      entityType.saveCurrentStates(entity)
+      entityDesc.saveCurrentStates(entity)
     }
 
     def prepareOptimisticLock(): Unit = {
@@ -147,7 +147,7 @@ abstract class AbstractSqlModifyQuery(protected val kind: SqlKind) extends Abstr
     }
 
     def incrementVersion(): Unit = {
-      if (versionPropertyType != null && !versionIgnored) entity = versionPropertyType.increment(entityType, entity)
+      if (versionPropertyType != null && !versionIgnored) entity = versionPropertyType.increment(entityDesc, entity)
     }
 
     def populateValues(context: SqlContext): Unit = {
@@ -155,7 +155,7 @@ abstract class AbstractSqlModifyQuery(protected val kind: SqlKind) extends Abstr
     }
   }
 
-  protected class SqlPreUpdateContext[E](entityType: EntityType[E], method: Method, config: Config) extends AbstractPreUpdateContext[E](entityType, method, config) {
+  protected class SqlPreUpdateContext[E](entityDesc: EntityDesc[E], method: Method, config: Config) extends AbstractPreUpdateContext[E](entityDesc, method, config) {
     override def isEntityChanged: Boolean = true
     override def isPropertyChanged(propertyName: String): Boolean = {
       validatePropertyDefined(propertyName)
@@ -163,7 +163,7 @@ abstract class AbstractSqlModifyQuery(protected val kind: SqlKind) extends Abstr
     }
   }
 
-  protected class SqlPostUpdateContext[E](entityType: EntityType[E], method: Method, config: Config) extends AbstractPostUpdateContext[E](entityType, method, config) {
+  protected class SqlPostUpdateContext[E](entityDesc: EntityDesc[E], method: Method, config: Config) extends AbstractPostUpdateContext[E](entityDesc, method, config) {
     override def isPropertyChanged(propertyName: String): Boolean = {
       validatePropertyDefined(propertyName)
       true
@@ -173,23 +173,23 @@ abstract class AbstractSqlModifyQuery(protected val kind: SqlKind) extends Abstr
   protected class EntityHandler[E](
     name: String,
     var entity: E,
-    entityType: EntityType[E],
+    entityDesc: EntityDesc[E],
     versionIgnored: Boolean,
     optimisticLockExceptionSuppressed: Boolean) {
-    assertNotNull(name, entity, entityType)
-    private val versionPropertyType = entityType.getVersionPropertyType
+    assertNotNull(name, entity, entityDesc)
+    private val versionPropertyType = entityDesc.getVersionPropertyType
     def preDelete(): Unit = {
-      val context = new SqlPreDeleteContext(entityType, method, config)
-      entityType.preDelete(entity, context)
+      val context = new SqlPreDeleteContext(entityDesc, method, config)
+      entityDesc.preDelete(entity, context)
       if (context.getNewEntity != null) {
         entity = context.getNewEntity
-        addParameter(name, entityType.getEntityClass, entity)
+        addParameter(name, entityDesc.getEntityClass, entity)
       }
     }
 
     def postDelete(): Unit = {
-      val context = new SqlPostDeleteContext(entityType, method, config)
-      entityType.postDelete(entity, context)
+      val context = new SqlPostDeleteContext(entityDesc, method, config)
+      entityDesc.postDelete(entity, context)
       if (context.getNewEntity != null) entity = context.getNewEntity
     }
 
@@ -198,8 +198,8 @@ abstract class AbstractSqlModifyQuery(protected val kind: SqlKind) extends Abstr
     }
   }
 
-  protected class SqlPreDeleteContext[E](entityType: EntityType[E], method: Method, config: Config) extends AbstractPreDeleteContext[E](entityType, method, config)
+  protected class SqlPreDeleteContext[E](entityDesc: EntityDesc[E], method: Method, config: Config) extends AbstractPreDeleteContext[E](entityDesc, method, config)
 
-  protected class SqlPostDeleteContext[E](entityType: EntityType[E], method: Method, config: Config) extends AbstractPostDeleteContext[E](entityType, method, config)
+  protected class SqlPostDeleteContext[E](entityDesc: EntityDesc[E], method: Method, config: Config) extends AbstractPostDeleteContext[E](entityDesc, method, config)
 
 }

@@ -1,6 +1,6 @@
 package domala.internal.macros
 
-import domala.internal.macros.generator.DaoGenerator
+import domala.internal.macros.meta.generator.DaoGenerator
 import domala.message.Message
 import org.scalatest.FunSuite
 
@@ -90,13 +90,13 @@ trait PersonDao {
         }
       }
       override def insert(person: Person): Result[Person] = {
-        domala.internal.macros.reflect.DaoReflectionMacros.validateAutoModifyParam(classOf[PersonDao], "insert", classOf[Person])
+        val __desc = domala.internal.macros.reflect.DaoReflectionMacros.validateAutoModifyParam(classOf[PersonDao], "insert", classOf[Person])
         entering(classOf[PersonDao].getName, "insert", person)
         try {
           if (person == null) {
             throw new org.seasar.doma.DomaNullPointerException("person")
           }
-          val __query = getQueryImplementors.createAutoInsertQuery(__method1, Person.entityDesc)
+          val __query = getQueryImplementors.createAutoInsertQuery(__method1, __desc)
           __query.setMethod(__method1)
           __query.setConfig(__config)
           __query.setEntity(person)
@@ -121,13 +121,13 @@ trait PersonDao {
         }
       }
       override def update(person: Person): Result[Person] = {
-        domala.internal.macros.reflect.DaoReflectionMacros.validateAutoModifyParam(classOf[PersonDao], "update", classOf[Person])
+        val __desc = domala.internal.macros.reflect.DaoReflectionMacros.validateAutoModifyParam(classOf[PersonDao], "update", classOf[Person])
         entering(classOf[PersonDao].getName, "update", person)
         try {
           if (person == null) {
             throw new org.seasar.doma.DomaNullPointerException("person")
           }
-          val __query = getQueryImplementors.createAutoUpdateQuery(__method2, Person.entityDesc)
+          val __query = getQueryImplementors.createAutoUpdateQuery(__method2, __desc)
           __query.setMethod(__method2)
           __query.setConfig(__config)
           __query.setEntity(person)
@@ -155,13 +155,13 @@ trait PersonDao {
         }
       }
       override def delete(person: Person): Int = {
-        domala.internal.macros.reflect.DaoReflectionMacros.validateAutoModifyParam(classOf[PersonDao], "delete", classOf[Person])
+        val __desc = domala.internal.macros.reflect.DaoReflectionMacros.validateAutoModifyParam(classOf[PersonDao], "delete", classOf[Person])
         entering(classOf[PersonDao].getName, "delete", person)
         try {
           if (person == null) {
             throw new org.seasar.doma.DomaNullPointerException("person")
           }
-          val __query = getQueryImplementors.createAutoDeleteQuery(__method3, Person.entityDesc)
+          val __query = getQueryImplementors.createAutoDeleteQuery(__method3, __desc)
           __query.setMethod(__method3)
           __query.setConfig(__config)
           __query.setEntity(person)
@@ -185,13 +185,13 @@ trait PersonDao {
         }
       }
       override def batchInsert(persons: Seq[Person]): BatchResult[Person] = {
-        domala.internal.macros.reflect.DaoReflectionMacros.validateAutoBatchModifyParam(classOf[PersonDao], "batchInsert", classOf[Seq[Person]], classOf[Person])
+        val __desc = domala.internal.macros.reflect.DaoReflectionMacros.validateAutoBatchModifyParam(classOf[PersonDao], "batchInsert", classOf[Seq[Person]], classOf[Person])
         entering(classOf[PersonDao].getName, "batchInsert", persons)
         try {
           if (persons == null) {
             throw new org.seasar.doma.DomaNullPointerException("persons")
           }
-          val __query = getQueryImplementors.createAutoBatchInsertQuery(__method4, Person.entityDesc)
+          val __query = getQueryImplementors.createAutoBatchInsertQuery(__method4, __desc)
           __query.setMethod(__method4)
           __query.setConfig(__config)
           __query.setEntities(persons.asJava)
@@ -216,13 +216,13 @@ trait PersonDao {
         }
       }
       override def batchUpdate(persons: Seq[Person]): BatchResult[Person] = {
-        domala.internal.macros.reflect.DaoReflectionMacros.validateAutoBatchModifyParam(classOf[PersonDao], "batchUpdate", classOf[Seq[Person]], classOf[Person])
+        val __desc = domala.internal.macros.reflect.DaoReflectionMacros.validateAutoBatchModifyParam(classOf[PersonDao], "batchUpdate", classOf[Seq[Person]], classOf[Person])
         entering(classOf[PersonDao].getName, "batchUpdate", persons)
         try {
           if (persons == null) {
             throw new org.seasar.doma.DomaNullPointerException("persons")
           }
-          val __query = getQueryImplementors.createAutoBatchUpdateQuery(__method5, Person.entityDesc)
+          val __query = getQueryImplementors.createAutoBatchUpdateQuery(__method5, __desc)
           __query.setMethod(__method5)
           __query.setConfig(__config)
           __query.setEntities(persons.asJava)
@@ -249,13 +249,13 @@ trait PersonDao {
         }
       }
       override def batchDelete(persons: Seq[Person]): Array[Int] = {
-        domala.internal.macros.reflect.DaoReflectionMacros.validateAutoBatchModifyParam(classOf[PersonDao], "batchDelete", classOf[Seq[Person]], classOf[Person])
+        val __desc = domala.internal.macros.reflect.DaoReflectionMacros.validateAutoBatchModifyParam(classOf[PersonDao], "batchDelete", classOf[Seq[Person]], classOf[Person])
         entering(classOf[PersonDao].getName, "batchDelete", persons)
         try {
           if (persons == null) {
             throw new org.seasar.doma.DomaNullPointerException("persons")
           }
-          val __query = getQueryImplementors.createAutoBatchDeleteQuery(__method6, Person.entityDesc)
+          val __query = getQueryImplementors.createAutoBatchDeleteQuery(__method6, __desc)
           __query.setMethod(__method6)
           __query.setConfig(__config)
           __query.setEntities(persons.asJava)
@@ -407,13 +407,13 @@ object PersonDao {
       import scala.collection.JavaConverters._
       implicit val __sqlNodeRepository: domala.jdbc.SqlNodeRepository = ___config.getSqlNodeRepository
       override def insert(person: Person): Result[Person] = {
-        domala.internal.macros.reflect.DaoReflectionMacros.validateAutoModifyParam(classOf[PersonDao], "insert", classOf[Person])
+        val __desc = domala.internal.macros.reflect.DaoReflectionMacros.validateAutoModifyParam(classOf[PersonDao], "insert", classOf[Person])
         entering(classOf[PersonDao].getName, "insert", person)
         try {
           if (person == null) {
             throw new org.seasar.doma.DomaNullPointerException("person")
           }
-          val __query = getQueryImplementors.createAutoInsertQuery(__method0, Person.entityDesc)
+          val __query = getQueryImplementors.createAutoInsertQuery(__method0, __desc)
           __query.setMethod(__method0)
           __query.setConfig(__config)
           __query.setEntity(person)

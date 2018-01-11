@@ -1,7 +1,7 @@
 package domala.internal.macros.reflect
 
-import domala.internal.macros.reflect.util.ReflectionUtil
-import domala.internal.macros.util.MacrosHelper
+import domala.internal.macros.meta.util.MetaHelper
+import domala.internal.reflect.util.ReflectionUtil
 import domala.message.Message
 
 import scala.language.experimental.macros
@@ -37,7 +37,7 @@ object HolderReflectionMacros {
     // domala.internal.macros.reflect.HolderReflectionMacros.assertUnique(handler)(Child1.value, Child2.value, ...)
     val holderTypeName = c.Expr(Literal(Constant(holderType.typeSymbol.fullName)))
     val handler = reify {
-      () => MacrosHelper.abort(Message.DOMALA6016, holderTypeName.splice.toString)
+      () => MetaHelper.abort(Message.DOMALA6016, holderTypeName.splice.toString)
     }
     val paramName = holderType.members.filter(m => m.isConstructor).head.asMethod.paramLists.head.head.name.toString
 

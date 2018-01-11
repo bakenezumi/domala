@@ -32,6 +32,9 @@ import org.seasar.doma.message.MessageResource;
  */
 @SuppressWarnings("WeakerAccess")
 public enum Message implements MessageResource {
+    DOMALA2219(org.seasar.doma.message.Message.DOMA2219.getMessagePattern()),
+
+
     // macros
     DOMALA4001("戻り値の型はエンティティクラスをパラメータとする場合はdomala.jdbc.Result<E>、そうでない場合は更新件数を示すIntでなければいけません at {0}.{1}"),
     DOMALA4002(org.seasar.doma.message.Message.DOMA4002.getMessagePattern()),
@@ -215,6 +218,8 @@ public enum Message implements MessageResource {
     DOMALA6021("sql要素に値を設定した場合、sqlFile要素にはtrueを指定できません。 at {0}.{1}"),
     DOMALA6022("AdHocConfigはトランザクションをサポートしていません。"),
     DOMALA6023("AdHocConfigを利用する場合、クエリは発行時に自動コミットされます。トランザクション制御が必要な場合はdomala.jdbc.LocalTransactionConfigを利用して下さい。"),
+    DOMALA6024("エンティティクラス[{0}]のプロパティ{1}に結果セットのカラムの値がマッピングされませんでした。マッピングには結果セットがカラム{2}を含んでいる必要があります。SQLが正しいことを確認してください。"),
+    DOMALA6025("クラス[{0}]はエンティティクラスではありません。"),
 
     // a part of message
     DOMALA9901("[{0}.{1}]のSQL"),

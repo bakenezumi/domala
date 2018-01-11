@@ -3,7 +3,7 @@ package domala.internal.macros.reflect
 import domala.internal.jdbc.command._
 import domala.internal.macros.DaoParam
 import domala.jdbc.Result
-import domala.jdbc.query.EntityAndEntityType
+import domala.jdbc.query.EntityAndEntityDesc
 import org.scalatest.{BeforeAndAfter, FunSuite}
 import org.seasar.doma.internal.jdbc.command._
 
@@ -51,15 +51,15 @@ class DaoReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
   test("getEntityAndEntityType has entity") {
     val entity1 = DummyEntity(1, null, "aa", 2)
     val entity2 = DummyEntity(2, null, "bb", 3)
-    val ret = DaoReflectionMacros.getEntityAndEntityType(classOf[DummyEntity], "method1", classOf[Int], DaoParam("aaa", 1, classOf[Int]), DaoParam("bbb", entity1, classOf[DummyEntity]), DaoParam("ccc", entity2, classOf[DummyEntity]))
-    assert(ret == Some(EntityAndEntityType("bbb", entity1, DummyEntity.entityDesc)))
+    val ret = DaoReflectionMacros.getEntityAndEntityDesc(classOf[DummyEntity], "method1", classOf[Int], DaoParam("aaa", 1, classOf[Int]), DaoParam("bbb", entity1, classOf[DummyEntity]), DaoParam("ccc", entity2, classOf[DummyEntity]))
+    assert(ret == Some(EntityAndEntityDesc("bbb", entity1, DummyEntity.entityDesc)))
   }
 
   test("getEntityAndEntityType has entity and return Result") {
     val entity1 = DummyEntity(1, null, "aa", 2)
     val entity2 = DummyEntity(2, null, "bb", 3)
-    val ret = DaoReflectionMacros.getEntityAndEntityType(classOf[DummyEntity], "method1", classOf[Result[DummyEntity]], DaoParam("aaa", 1, classOf[Int]), DaoParam("bbb", entity1, classOf[DummyEntity]), DaoParam("ccc", entity2, classOf[DummyEntity]))
-    assert(ret == Some(EntityAndEntityType("bbb", entity1, DummyEntity.entityDesc)))
+    val ret = DaoReflectionMacros.getEntityAndEntityDesc(classOf[DummyEntity], "method1", classOf[Result[DummyEntity]], DaoParam("aaa", 1, classOf[Int]), DaoParam("bbb", entity1, classOf[DummyEntity]), DaoParam("ccc", entity2, classOf[DummyEntity]))
+    assert(ret == Some(EntityAndEntityDesc("bbb", entity1, DummyEntity.entityDesc)))
   }
 
 
@@ -72,7 +72,7 @@ class DaoReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
   }
 
   test("getEntityAndEntityType no entity") {
-    val ret = DaoReflectionMacros.getEntityAndEntityType(classOf[Int], "method1", classOf[Int], DaoParam("aaa", 1, classOf[Int]), DaoParam("bbb", "aaa", classOf[String]))
+    val ret = DaoReflectionMacros.getEntityAndEntityDesc(classOf[Int], "method1", classOf[Int], DaoParam("aaa", 1, classOf[Int]), DaoParam("bbb", "aaa", classOf[String]))
     assert(ret.isEmpty)
   }
 

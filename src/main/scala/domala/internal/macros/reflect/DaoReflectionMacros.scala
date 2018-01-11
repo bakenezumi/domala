@@ -4,19 +4,21 @@ import java.lang.reflect.Method
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
-import domala.internal.{WrapIterator, WrapStream}
-import domala.internal.macros.reflect.util.{ReflectionUtil, TypeUtil}
-import domala.internal.macros.{DaoParam, DaoParamClass}
 import domala.internal.jdbc.command.{OptionEntitySingleResultHandler, OptionHolderSingleResultHandler}
-import domala.jdbc.entity.{AbstractEntityDesc, EntityCompanion, EntityDesc}
+import domala.internal.macros.reflect.util.{AnyValHolderDescGenerator, MacroTypeConverter, RuntimeEntityDescGenerator}
+import domala.internal.macros.{DaoParam, DaoParamClass}
+import domala.internal.reflect.util.ReflectionUtil
+import domala.internal.{WrapIterator, WrapStream}
+import domala.jdbc.`type`.Types
+import domala.jdbc.entity.EntityDesc
+import domala.jdbc.query.EntityAndEntityDesc
 import domala.jdbc.{BatchResult, Result}
-import domala.jdbc.query.EntityAndEntityType
 import domala.message.Message
 import org.seasar.doma.internal.Constants
 import org.seasar.doma.internal.jdbc.command._
 import org.seasar.doma.internal.jdbc.sql.SqlParser
-import org.seasar.doma.jdbc.{CommandImplementors, JdbcException}
 import org.seasar.doma.jdbc.query.AbstractSelectQuery
+import org.seasar.doma.jdbc.{CommandImplementors, JdbcException}
 
 import scala.language.experimental.macros
 import scala.reflect.ClassTag
@@ -46,35 +48,38 @@ object DaoReflectionMacros {
     val daoTpe = weakTypeOf[D]
     val Literal(Constant(methodNameLiteral: String)) = methodName.tree
     val tpe = weakTypeOf[T]
-    if (TypeUtil.isEntity(c)(tpe)) {
-      reify {
-        val entity = ReflectionUtil.getEntityDesc(classTag.splice)
-        new EntityStreamHandler(
-          entity,
-          (p: java.util.stream.Stream[T]) => f.splice.apply(WrapStream.of(p)))
-      }
-    } else if (TypeUtil.isHolder(c)(tpe)) {
-      reify {
-        val holder = ReflectionUtil.getHolderDesc(classTag.splice)
-        new DomainStreamHandler(
-          holder,
-          (p: java.util.stream.Stream[T]) => f.splice.apply(WrapStream.of(p)))
-      }
-    } else if (TypeUtil.isAnyVal(c)(tpe)) {
-      val (basicType, holderDesc) = TypeUtil.newAnyValHolderDesc[blackbox.Context, T](c)(tpe)
-      if(!TypeUtil.isBasic(c)(basicType)) {
+    MacroTypeConverter.of(c).toType(tpe) match {
+      case Types.GeneratedEntityType =>
+        reify {
+          val entityDesc = ReflectionUtil.getEntityDesc(classTag.splice)
+          new EntityStreamHandler(
+            entityDesc,
+            (p: java.util.stream.Stream[T]) => f.splice.apply(WrapStream.of(p)))
+        }
+      case Types.RuntimeEntityType =>
+        val entityDesc = RuntimeEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
+        reify {
+          new EntityStreamHandler(
+            entityDesc.get.splice,
+            (p: java.util.stream.Stream[T]) => f.splice.apply(WrapStream.of(p)))
+        }
+      case Types.GeneratedHolderType(_) =>
+        reify {
+          val holderDesc = ReflectionUtil.getHolderDesc(classTag.splice)
+          new DomainStreamHandler(
+            holderDesc,
+            (p: java.util.stream.Stream[T]) => f.splice.apply(WrapStream.of(p)))
+        }
+      case Types.AnyValHolderType(_) =>
+        val holderDesc = AnyValHolderDescGenerator.get[blackbox.Context, T](c)(tpe)
+        reify {
+          new DomainStreamHandler(
+            holderDesc.get.splice,
+            (p: java.util.stream.Stream[T]) => f.splice.apply(WrapStream.of(p)))
+        }
+      case _ =>
         ReflectionUtil.abort(Message.DOMALA4245,
-            tpe, daoTpe, methodNameLiteral)
-      }
-      reify {
-        val holder = holderDesc.get.splice
-        new DomainStreamHandler(
-          holder,
-          (p: java.util.stream.Stream[T]) => f.splice.apply(WrapStream.of(p)))
-      }
-    } else {
-      ReflectionUtil.abort(Message.DOMALA4245,
-                tpe, daoTpe, methodNameLiteral)
+          tpe, daoTpe, methodNameLiteral)
     }
   }
   def getStreamHandler[D, T, R](f: Stream[T] => R,
@@ -90,37 +95,39 @@ object DaoReflectionMacros {
     classTag: c.Expr[ClassTag[T]]): c.Expr[AbstractStreamHandler[T, R]] = handle(c)(daoClass, methodName) {
     import c.universe._
     val daoTpe = weakTypeOf[D]
-    val Literal(Constant(methodNameLiteral: String)) = methodName.tree
     val tpe = weakTypeOf[T]
-    if (TypeUtil.isEntity(c)(tpe)) {
-      reify {
-        val entity = ReflectionUtil.getEntityDesc(classTag.splice)
-        new EntityStreamHandler(
-          entity,
-          (p: java.util.stream.Stream[T]) => f.splice.apply(WrapIterator.of(p)))
-      }
-    } else if (TypeUtil.isHolder(c)(tpe)) {
-      reify {
-        val holder = ReflectionUtil.getHolderDesc(classTag.splice)
-        new DomainStreamHandler(
-          holder,
-          (p: java.util.stream.Stream[T]) => f.splice.apply(WrapIterator.of(p)))
-      }
-    } else if (TypeUtil.isAnyVal(c)(tpe)) {
-      val (basicType, holderDesc) = TypeUtil.newAnyValHolderDesc[blackbox.Context, T](c)(tpe)
-      if(!TypeUtil.isBasic(c)(basicType)) {
+    MacroTypeConverter.of(c).toType(tpe) match {
+      case Types.GeneratedEntityType =>
+        reify {
+          val entityDesc = ReflectionUtil.getEntityDesc(classTag.splice)
+          new EntityStreamHandler(
+            entityDesc,
+            (p: java.util.stream.Stream[T]) => f.splice.apply(WrapIterator.of(p)))
+        }
+      case Types.RuntimeEntityType =>
+        val entityDesc = RuntimeEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
+        reify {
+          new EntityStreamHandler(
+            entityDesc.get.splice,
+            (p: java.util.stream.Stream[T]) => f.splice.apply(WrapIterator.of(p)))
+        }
+      case Types.GeneratedHolderType(_) =>
+        reify {
+          val holderDesc = ReflectionUtil.getHolderDesc(classTag.splice)
+          new DomainStreamHandler(
+            holderDesc,
+            (p: java.util.stream.Stream[T]) => f.splice.apply(WrapIterator.of(p)))
+        }
+      case Types.AnyValHolderType(_) =>
+        val holderDesc = AnyValHolderDescGenerator.get[blackbox.Context, T](c)(tpe)
+        reify {
+          new DomainStreamHandler(
+            holderDesc.get.splice,
+            (p: java.util.stream.Stream[T]) => f.splice.apply(WrapIterator.of(p)))
+        }
+      case _ =>
+        val Literal(Constant(methodNameText: String)) = methodName.tree
         ReflectionUtil.abort(Message.DOMALA6012,
-            tpe, daoTpe, methodNameLiteral)
-      }
-      reify {
-        val holder = holderDesc.get.splice
-        new DomainStreamHandler(
-          holder,
-          (p: java.util.stream.Stream[T]) => f.splice.apply(WrapIterator.of(p)))
-      }
-    } else {
-      val Literal(Constant(methodNameText: String)) = methodName.tree
-      ReflectionUtil.abort(Message.DOMALA6012,
           tpe, daoTpe, methodNameText)
     }
   }
@@ -137,29 +144,30 @@ object DaoReflectionMacros {
     val daoTpe = weakTypeOf[D]
     val Literal(Constant(methodNameLiteral: String)) = methodName.tree
     val tpe = weakTypeOf[T]
-    if (TypeUtil.isEntity(c)(tpe)) {
-      reify {
-        val entity = ReflectionUtil.getEntityDesc(classTag.splice)
-        new EntityResultListHandler(entity)
-      }
-    } else if (TypeUtil.isHolder(c)(tpe)) {
-      reify {
-        val holder = ReflectionUtil.getHolderDesc(classTag.splice)
-        new DomainResultListHandler(holder)
-      }
-    } else if (TypeUtil.isAnyVal(c)(tpe)) {
-      val (basicType, holderDesc) = TypeUtil.newAnyValHolderDesc[blackbox.Context, T](c)(tpe)
-      if(!TypeUtil.isBasic(c)(basicType)) {
+    MacroTypeConverter.of(c).toType(tpe) match {
+      case Types.GeneratedEntityType =>
+        reify {
+          val entityDesc = ReflectionUtil.getEntityDesc(classTag.splice)
+          new EntityResultListHandler(entityDesc)
+        }
+      case Types.RuntimeEntityType =>
+        val entityDesc = RuntimeEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
+        reify {
+          new EntityResultListHandler(entityDesc.get.splice)
+        }
+      case Types.GeneratedHolderType(_) =>
+        reify {
+          val holderDesc = ReflectionUtil.getHolderDesc(classTag.splice)
+          new DomainResultListHandler(holderDesc)
+        }
+      case Types.AnyValHolderType(_) =>
+        val holderDesc = AnyValHolderDescGenerator.get[blackbox.Context, T](c)(tpe)
+        reify {
+          new DomainResultListHandler(holderDesc.get.splice)
+        }
+      case _ =>
         ReflectionUtil.abort(Message.DOMALA4007,
-            tpe, daoTpe, methodNameLiteral)
-      }
-      reify {
-        val holder = holderDesc.get.splice
-        new DomainResultListHandler(holder)
-      }
-    } else {
-      ReflectionUtil.abort(Message.DOMALA4007,
-                tpe, daoTpe, methodNameLiteral)
+          tpe, daoTpe, methodNameLiteral)
     }
   }
   def getResultListHandler[D, T](daoClass: Class[D], methodName: String)(
@@ -174,29 +182,31 @@ object DaoReflectionMacros {
     val daoTpe = weakTypeOf[D]
     val Literal(Constant(methodNameText: String)) = methodName.tree
     val tpe = weakTypeOf[T]
-    if (TypeUtil.isEntity(c)(tpe)) {
-      reify {
-        val entity = ReflectionUtil.getEntityDesc(classTag.splice)
-        new OptionEntitySingleResultHandler(entity)
-      }
-    } else if (TypeUtil.isHolder(c)(tpe)) {
-      reify {
-        val holder = ReflectionUtil.getHolderDesc(classTag.splice)
-        new OptionHolderSingleResultHandler(holder)
-      }
-    } else if (TypeUtil.isAnyVal(c)(tpe)) {
-      val (basicType, holderDesc) = TypeUtil.newAnyValHolderDesc[blackbox.Context, T](c)(tpe)
-      if(!TypeUtil.isBasic(c)(basicType)) {
+    MacroTypeConverter.of(c).toType(tpe) match {
+      case Types.GeneratedEntityType =>
+        reify {
+          val entity = ReflectionUtil.getEntityDesc(classTag.splice)
+          new OptionEntitySingleResultHandler(entity)
+        }
+      case Types.RuntimeEntityType =>
+        val entityDesc = RuntimeEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
+        reify {
+          new OptionEntitySingleResultHandler(entityDesc.get.splice)
+        }
+      case Types.GeneratedHolderType(_) =>
+        reify {
+          val holder = ReflectionUtil.getHolderDesc(classTag.splice)
+          new OptionHolderSingleResultHandler(holder)
+        }
+      case Types.AnyValHolderType(_) =>
+        val holderDesc = AnyValHolderDescGenerator.get[blackbox.Context, T](c)(tpe)
+        reify {
+          val holder = holderDesc.get.splice
+          new OptionHolderSingleResultHandler(holder)
+        }
+      case _ =>
         ReflectionUtil.abort(Message.DOMALA4235,
-            tpe, daoTpe, methodNameText)
-      }
-      reify {
-        val holder = holderDesc.get.splice
-        new OptionHolderSingleResultHandler(holder)
-      }
-    } else {
-      ReflectionUtil.abort(Message.DOMALA4235,
-                tpe, daoTpe, methodNameText)
+          tpe, daoTpe, methodNameText)
     }
   }
   def getOptionSingleResultHandler[D, T](daoClass: Class[D], methodName: String)(
@@ -211,27 +221,28 @@ object DaoReflectionMacros {
     val Literal(Constant(methodNameLiteral: String)) = methodName.tree
     val tpe = weakTypeOf[T]
     ResultType.convert(c)(tpe) match {
-      case ResultType.Entity(_, _) =>
+      case ResultType.GeneratedEntity(_, _) =>
         reify {
-          val entity = ReflectionUtil.getEntityDesc(classTag.splice)
-          val handler = new EntitySingleResultHandler(entity)
+          val entityDesc = ReflectionUtil.getEntityDesc(classTag.splice)
+          val handler = new EntitySingleResultHandler(entityDesc)
           commandImplementors.splice.createSelectCommand(method.splice, query.splice, handler).execute()
         }
-      case ResultType.Holder(_, _) =>
+      case ResultType.RuntimeEntity(_, _) =>
+        val holderDesc = RuntimeEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
         reify {
-          val holder = ReflectionUtil.getHolderDesc(classTag.splice)
-          val handler = new DomainSingleResultHandler(holder)
+          val handler = new EntitySingleResultHandler(holderDesc.get.splice)
+          commandImplementors.splice.createSelectCommand(method.splice, query.splice, handler).execute()
+        }
+      case ResultType.GeneratedHolder(_, _) =>
+        reify {
+          val holderDesc = ReflectionUtil.getHolderDesc(classTag.splice)
+          val handler = new DomainSingleResultHandler(holderDesc)
           commandImplementors.splice.createSelectCommand(method.splice, query.splice, handler).execute()
         }
       case ResultType.AnyValHolder(_, _) =>
-        val (basicType, holderDesc) = TypeUtil.newAnyValHolderDesc[blackbox.Context, T](c)(tpe)
-        if(!TypeUtil.isBasic(c)(basicType)) {
-          ReflectionUtil.abort(Message.DOMALA4008,
-            tpe, daoTpe, methodNameLiteral)
-        }
+        val holderDesc = AnyValHolderDescGenerator.get[blackbox.Context, T](c)(tpe)
         reify {
-          val holder = holderDesc.get.splice
-          val handler = new DomainSingleResultHandler(holder)
+          val handler = new DomainSingleResultHandler(holderDesc.get.splice)
           commandImplementors.splice.createSelectCommand(method.splice, query.splice, handler).execute()
         }
       case ResultType.Seq(_, t) =>
@@ -257,64 +268,78 @@ object DaoReflectionMacros {
       classTag: c.Expr[ClassTag[T]]): c.Expr[Unit] = {
     import c.universe._
     val tpe = weakTypeOf[T]
-    if (TypeUtil.isEntity(c)(tpe)) {
-      reify {
-        val entity = ReflectionUtil.getEntityDesc(classTag.splice)
-        query.splice.setEntityType(entity)
-      }
-    } else reify((): Unit) // No operation
+    MacroTypeConverter.of(c).toType(tpe) match {
+      case Types.GeneratedEntityType =>
+        reify {
+          val entity = ReflectionUtil.getEntityDesc(classTag.splice)
+          query.splice.setEntityType(entity)
+        }
+      case _ => reify((): Unit) // No operation
+    }
   }
   def setEntityType[T](query: AbstractSelectQuery)(
       implicit classTag: ClassTag[T]): Unit = macro setEntityTypeImpl[T]
 
-  def getEntityAndEntityTypeImpl[D: c.WeakTypeTag, T: c.WeakTypeTag](c: blackbox.Context)(
+  def getEntityAndEntityDescImpl[D: c.WeakTypeTag, T: c.WeakTypeTag](c: blackbox.Context)(
       daoClass: c.Expr[Class[D]],
       methodName: c.Expr[String],
       resultClass: c.Expr[Class[T]],
-      params: c.Expr[DaoParam[_]]*): c.Expr[Option[EntityAndEntityType[Any]]] = handle(c)(daoClass, methodName) {
+      params: c.Expr[DaoParam[_]]*): c.Expr[Option[EntityAndEntityDesc[Any]]] = handle(c)(daoClass, methodName) {
     import c.universe._
     val daoTpe = weakTypeOf[D]
     val Literal(Constant(methodNameLiteral: String)) = methodName.tree
+    val converter = MacroTypeConverter.of(c)
+    val resultType = weakTypeOf[T]
     params
-      .map {
-        case param if TypeUtil.isEntity(c)(param.actualType.typeArgs.head) =>
-          if (weakTypeOf[T] =:= weakTypeOf[Int]) Some(param)
-          else if (weakTypeOf[T] <:< weakTypeOf[Result[_]]) {
-            if (weakTypeOf[T].typeArgs.head =:= param.actualType.typeArgs.head)
-              Some(param)
-            else None
-          } else
-            ReflectionUtil.abort(Message.DOMALA4222,
-              daoTpe,
-              methodNameLiteral)
-        case _ => None
+      .map { param =>
+        converter.toType(param.actualType.typeArgs.head) match {
+          case convertedType if convertedType.isEntity =>
+            if (resultType =:= weakTypeOf[Int]) Some(param, convertedType)
+            else if (resultType <:< weakTypeOf[Result[_]]) {
+              if (resultType.typeArgs.head =:= param.actualType.typeArgs.head)
+                Some(param, convertedType)
+              else None
+            } else
+              ReflectionUtil.abort(Message.DOMALA4222,
+                daoTpe,
+                methodNameLiteral)
+          case _ => None
+        }
       }
       .collectFirst {
-        case Some(param) =>
+        case Some((param, Types.GeneratedEntityType)) =>
           reify {
-            val entity = ReflectionUtil.getEntityDesc(param.splice.tag.asInstanceOf[ClassTag[Any]])
+            val entityDesc = ReflectionUtil.getEntityDesc(param.splice.tag.asInstanceOf[ClassTag[Any]])
             Some(
-              EntityAndEntityType(param.splice.name,
+              EntityAndEntityDesc(param.splice.name,
                                   param.splice.value,
-                                  entity))
+                                  entityDesc))
+          }
+        case Some((param, Types.RuntimeEntityType)) =>
+          val entityDesc = RuntimeEntityDescGenerator.get[blackbox.Context, Any](c)(param.actualType.typeArgs.head)
+          reify {
+            Some(
+              EntityAndEntityDesc(param.splice.name,
+                param.splice.value,
+                entityDesc.get.splice.asInstanceOf[EntityDesc[Any]]))
           }
       }
       .getOrElse(
-        if (weakTypeOf[T] =:= weakTypeOf[Int]) reify(None)
+        if (resultType =:= weakTypeOf[Int]) reify(None)
         else
           ReflectionUtil.abort(Message.DOMALA4001,
             daoTpe,
             methodNameLiteral)
       )
   }
-  def getEntityAndEntityType[D, T](
+  def getEntityAndEntityDesc[D, T](
       daoClass: Class[D],
       methodName: String,
       resultClass: Class[T],
-      params: (DaoParam[_])*): Option[EntityAndEntityType[Any]] =
-    macro getEntityAndEntityTypeImpl[D, T]
+      params: (DaoParam[_])*): Option[EntityAndEntityDesc[Any]] =
+    macro getEntityAndEntityDescImpl[D, T]
 
-  def getBatchEntityTypeImpl[D: c.WeakTypeTag, T: c.WeakTypeTag](c: blackbox.Context)(
+  def getBatchEntityDescImpl[D: c.WeakTypeTag, T: c.WeakTypeTag](c: blackbox.Context)(
     daoClass: c.Expr[Class[D]],
     methodName: c.Expr[String],
     resultClass: c.Expr[Class[T]],
@@ -322,13 +347,34 @@ object DaoReflectionMacros {
     import c.universe._
     val daoTpe = weakTypeOf[D]
     val Literal(Constant(methodNameLiteral: String)) = methodName.tree
-    if (TypeUtil.isEntity(c)(param.actualType.typeArgs.head.typeArgs.head)) {
-      if (weakTypeOf[T] =:= weakTypeOf[Array[Int]]) reify(None)
-      else if (weakTypeOf[T] <:< weakTypeOf[BatchResult[_]]) {
-        if (weakTypeOf[T].typeArgs.head =:= param.actualType.typeArgs.head)
-          reify {
-            val entity = ReflectionUtil.getEntityDesc(param.splice.tag.asInstanceOf[ClassTag[Any]])
-            Some(entity)
+    val resultType = weakTypeOf[T]
+    val paramType = param.actualType.typeArgs.head.typeArgs.head
+    val convertedType = MacroTypeConverter.of(c).toType(paramType)
+    if (convertedType.isEntity) {
+      if (resultType =:= weakTypeOf[Array[Int]]) reify(None)
+      else if (resultType <:< weakTypeOf[BatchResult[_]]) {
+        if (resultType.typeArgs.head =:= paramType)
+          convertedType match {
+            case Types.GeneratedEntityType =>
+              val entityDesc: c.Expr[EntityDesc[Any]] = {
+                val entityTypeName = paramType.typeSymbol.name.toTypeName
+                c.Expr[EntityDesc[Any]](
+                  q"""{
+                    domala.internal.reflect.util.ReflectionUtil.getEntityDesc[$entityTypeName].asInstanceOf[domala.jdbc.entity.EntityDesc[Any]]
+                  }
+                  """
+                )
+              }
+              reify {
+                Some(entityDesc.splice)
+              }
+            case Types.RuntimeEntityType =>
+              val entityDesc = RuntimeEntityDescGenerator.get[blackbox.Context, Any](c)(paramType)
+              reify {
+                Some(entityDesc.get.splice.asInstanceOf[EntityDesc[Any]])
+              }
+            case _ =>
+              reify(None)
           }
         else reify(None)
       } else
@@ -337,21 +383,21 @@ object DaoReflectionMacros {
           daoTpe,
           methodNameLiteral)
     } else {
-      if (weakTypeOf[T] =:= weakTypeOf[Array[Int]]) reify(None)
+      if (resultType =:= weakTypeOf[Array[Int]]) reify(None)
       else {
         ReflectionUtil.abort(
           Message.DOMALA4040,
-          param.actualType.typeArgs.head.typeArgs.head,
+          paramType,
           methodNameLiteral)
       }
     }
   }
-  def getBatchEntityType[D, T](
+  def getBatchEntityDesc[D, T](
     daoClass: Class[D],
     methodName: String,
     resultClass: Class[T],
     param: (DaoParam[_])): Option[EntityDesc[Any]] =
-  macro getBatchEntityTypeImpl[D, T]
+  macro getBatchEntityDescImpl[D, T]
 
   def validateParameterAndSqlImpl[D: c.WeakTypeTag](c: blackbox.Context)(
     daoClass: c.Expr[Class[D]],
@@ -472,40 +518,53 @@ object DaoReflectionMacros {
   def validateAutoModifyParamImpl[D: c.WeakTypeTag, T: c.WeakTypeTag](c: blackbox.Context)(
     daoClass: c.Expr[Class[D]],
     methodName: c.Expr[String],
-    paramClass: c.Expr[Class[T]]): c.Expr[Unit] = handle(c)(daoClass, methodName) {
+    paramClass: c.Expr[Class[T]])(
+    classTag: c.Expr[ClassTag[T]]): c.Expr[EntityDesc[T]] = handle(c)(daoClass, methodName) {
     import c.universe._
     val daoTpe = weakTypeOf[D]
     val Literal(Constant(methodNameLiteral: String)) = methodName.tree
     val tpe = weakTypeOf[T]
-    if (TypeUtil.isEntity(c)(tpe)) {
-      reify(())
-    } else {
-      ReflectionUtil.abort(
-        Message.DOMALA4003,
-        daoTpe,
-        methodNameLiteral)
+    MacroTypeConverter.of(c).toType(tpe) match {
+      case Types.GeneratedEntityType =>
+        reify(ReflectionUtil.getEntityDesc(classTag.splice))
+      case Types.RuntimeEntityType =>
+        val entityDesc = RuntimeEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
+        reify(entityDesc.get.splice)
+      case _ =>
+        ReflectionUtil.abort(
+          Message.DOMALA4003,
+          daoTpe,
+          methodNameLiteral)
+
     }
   }
-  def validateAutoModifyParam[D, T](daoClass: Class[D], methodName: String, paramClass: Class[T]): Unit = macro validateAutoModifyParamImpl[D, T]
+  def validateAutoModifyParam[D, T](daoClass: Class[D], methodName: String, paramClass: Class[T])(implicit classTag: ClassTag[T]): EntityDesc[T] = macro validateAutoModifyParamImpl[D, T]
 
   def validateAutoBatchModifyParamImpl[D: c.WeakTypeTag, C: c.WeakTypeTag, T: c.WeakTypeTag](c: blackbox.Context)(
     daoClass: c.Expr[Class[D]],
     methodName: c.Expr[String],
     paramClass: c.Expr[Class[C]],
-    internalClass: c.Expr[Class[T]]): c.Expr[Unit] = handle(c)(daoClass, methodName) {
+    internalClass: c.Expr[Class[T]])(
+    classTag: c.Expr[ClassTag[T]]): c.Expr[EntityDesc[T]] = handle(c)(daoClass, methodName) {
     import c.universe._
     val daoTpe = weakTypeOf[D]
     val Literal(Constant(methodNameLiteral: String)) = methodName.tree
     val containerTpe = weakTypeOf[C]
-    if (TypeUtil.isIterable(c)(containerTpe)) {
+    val converter = MacroTypeConverter.of(c)
+    if (converter.toType(containerTpe).isIterable) {
       val tpe = weakTypeOf[T]
-      if (TypeUtil.isEntity(c)(tpe)) {
-        reify(())
-      } else {
-        ReflectionUtil.abort(
-          Message.DOMALA4043,
-          daoTpe,
-          methodNameLiteral)
+      converter.toType(tpe) match {
+        case Types.GeneratedEntityType =>
+          reify(ReflectionUtil.getEntityDesc(classTag.splice))
+        case Types.RuntimeEntityType =>
+          val entityDesc = RuntimeEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
+          reify(entityDesc.get.splice)
+        case _ =>
+          ReflectionUtil.abort(
+            Message.DOMALA4043,
+            daoTpe,
+            methodNameLiteral)
+
       }
     } else {
       ReflectionUtil.abort(
@@ -514,7 +573,7 @@ object DaoReflectionMacros {
         methodNameLiteral)
     }
   }
-  def validateAutoBatchModifyParam[D, C, T](daoClass: Class[D], methodName: String, paramClass: Class[C], internalClass: Class[T]): Unit = macro validateAutoBatchModifyParamImpl[D, C, T]
+  def validateAutoBatchModifyParam[D, C, T](daoClass: Class[D], methodName: String, paramClass: Class[C], internalClass: Class[T])(implicit classTag: ClassTag[T]): EntityDesc[T] = macro validateAutoBatchModifyParamImpl[D, C, T]
 
   private def validatePropertyName[D: c.WeakTypeTag, T: c.WeakTypeTag](c: blackbox.Context)(daoTpe: c.universe.Type, defName: c.Expr[String], tpe: c.universe.Type, namess: Seq[List[String]], errorMessage: domala.message.Message): c.Expr[Unit] = {
     import c.universe._

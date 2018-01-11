@@ -1,11 +1,10 @@
 package example
 
-import domala.Required
-import domala.jdbc.Config
+import domala._
 import example.util.prettyPrint
 
 object ExampleApp extends App {
-  implicit val config: Config = ExampleConfig
+  implicit val config: jdbc.Config = ExampleConfig
 
   val dao: PersonDao = PersonDao.impl
 
@@ -42,6 +41,10 @@ object ExampleApp extends App {
 
     myPrint("like select result", dao.selectByName("n"))
     myPrint("join select result", dao.selectWithDepartmentById(2))
+
+    myPrint("sql interpolation", select"select * from person where id = 2".getMapList)
+    myPrint("sql interpolation", select"select /*%expand*/* from person where id = 2".getList[Person])
+
   }
 
 }

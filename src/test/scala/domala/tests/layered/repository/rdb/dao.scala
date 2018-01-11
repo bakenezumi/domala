@@ -47,20 +47,20 @@ DROP TABLE emp;
 
   def save(entities: Seq[domain.Emp]): Array[Int] = saveImpl(entities.map(Emp.of))
   @BatchInsert
-  def saveImpl(entities: Seq[Emp]): Array[Int]
+  protected def saveImpl(entities: Seq[Emp]): Array[Int]
 
   def findByIds[R: ClassTag](id: Seq[domain.ID[domain.Emp]])(mapper: Iterator[domain.Emp] => R): R =
     findByIdsImpl[R](id)(mapper)
   @Select("""
 SELECT * FROM emp WHERE id IN /* id */()
   """, strategy = SelectType.ITERATOR)
-  def findByIdsImpl[R: ClassTag](id: Seq[domain.ID[domain.Emp]])(mapper: Iterator[Emp] => R): R
+  protected def findByIdsImpl[R: ClassTag](id: Seq[domain.ID[domain.Emp]])(mapper: Iterator[Emp] => R): R
 
   def findAll[R: ClassTag](mapper: Iterator[domain.Emp] => R): R = findAllImpl[R](mapper)
   @Select("""
 SELECT * FROM emp
   """, strategy = SelectType.ITERATOR)
-  def findAllImpl[R: ClassTag](mapper: Iterator[Emp] => R): R
+  protected def findAllImpl[R: ClassTag](mapper: Iterator[Emp] => R): R
 
   def entry(entity: domain.Emp): Int = saveImpl(Seq(Emp.of(entity))).head
 

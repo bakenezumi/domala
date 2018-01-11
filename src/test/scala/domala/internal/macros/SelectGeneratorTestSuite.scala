@@ -1,6 +1,6 @@
 package domala.internal.macros
 
-import domala.internal.macros.generator.DaoGenerator
+import domala.internal.macros.meta.generator.DaoGenerator
 import domala.message.Message
 import org.scalatest.FunSuite
 

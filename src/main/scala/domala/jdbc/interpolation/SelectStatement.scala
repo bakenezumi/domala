@@ -1,7 +1,8 @@
 package domala.jdbc.interpolation
 
-import domala.internal.interpolation.util.TypeUtil
+import domala.internal.reflect.util.RuntimeTypeConverter
 import domala.jdbc.builder.SelectBuilder
+import domala.jdbc.`type`.Types
 import domala.message.Message
 import org.seasar.doma.{DomaException, MapKeyNamingType}
 
@@ -15,27 +16,27 @@ import scala.reflect.runtime.universe._
 class SelectStatement(builder: SelectBuilder) {
   def getSingle[T](implicit cTag: ClassTag[T], tTag: TypeTag[T]): T = {
     val tpe = typeOf[T]
-    if (TypeUtil.isEntity(tpe)) {
-      builder.getEntitySingleResult[T](cTag.runtimeClass.asInstanceOf[Class[T]])
-    } else if (TypeUtil.isHolder(tpe) || TypeUtil.isBasic(tpe) || TypeUtil.isAnyVal(tpe)) {
-      builder.getScalarSingleResult[T](cTag.runtimeClass.asInstanceOf[Class[T]])
-    } else if (TypeUtil.isMap(tpe)) {
-      getMapSingle.asInstanceOf[T]
-    } else {
-      throw new DomaException(Message.DOMALA4008, tpe, "SelectStatement", "getSingle")
+    RuntimeTypeConverter.toType(tpe) match {
+      case _: Types.Entity =>
+        builder.getEntitySingleResult[T]
+      case t if t.isHolder || t.isBasic =>
+        builder.getScalarSingleResult[T]
+      case Types.Map =>
+        getMapSingle.asInstanceOf[T]
+      case _ => throw new DomaException(Message.DOMALA4008, tpe, "SelectStatement", "getSingle")
     }
   }
 
   def getOption[T](implicit cTag: ClassTag[T], tTag: TypeTag[T]): Option[T] = {
     val tpe = typeOf[T]
-    if (TypeUtil.isEntity(tpe)) {
-      builder.getOptionEntitySingleResult[T](cTag.runtimeClass.asInstanceOf[Class[T]])
-    } else if (TypeUtil.isHolder(tpe) || TypeUtil.isBasic(tpe) || TypeUtil.isAnyVal(tpe)) {
-      builder.getOptionScalarSingleResult[T](cTag.runtimeClass.asInstanceOf[Class[T]])
-    } else if (TypeUtil.isMap(tpe)) {
-      getOptionMapSingle.asInstanceOf[Option[T]]
-    } else {
-      throw new DomaException(Message.DOMALA4008, tpe, "SelectStatement", "getOption")
+    RuntimeTypeConverter.toType(tpe) match {
+      case _: Types.Entity =>
+        builder.getOptionEntitySingleResult[T]
+      case t if t.isHolder || t.isBasic =>
+        builder.getOptionScalarSingleResult[T]
+      case Types.Map =>
+        getOptionMapSingle.asInstanceOf[Option[T]]
+      case _ => throw new DomaException(Message.DOMALA4008, tpe, "SelectStatement", "getOption")
     }
   }
 
@@ -73,31 +74,29 @@ class SelectStatement(builder: SelectBuilder) {
 
   def getSeq[T](implicit cTag: ClassTag[T], tTag: TypeTag[T]): Seq[T] = {
     val tpe = typeOf[T]
-    if (TypeUtil.isEntity(tpe)) {
-      builder.getEntityResultSeq[T](cTag.runtimeClass.asInstanceOf[Class[T]])
-    } else if (TypeUtil.isHolder(tpe) || TypeUtil.isBasic(tpe) || TypeUtil.isAnyVal(tpe)) {
-      builder.getScalarResultSeq[T](cTag.runtimeClass.asInstanceOf[Class[T]])
-    } else if (TypeUtil.isMap(tpe)) {
-      getMapSeq.asInstanceOf[Seq[T]]
-    } else {
-      throw new DomaException(Message.DOMALA4008, tpe, "SelectStatement", "getSeq")
+    RuntimeTypeConverter.toType(tpe) match {
+      case _: Types.Entity =>
+        builder.getEntityResultSeq[T]
+      case t if t.isHolder || t.isBasic =>
+        builder.getScalarResultSeq[T]
+      case Types.Map =>
+        getMapSeq.asInstanceOf[Seq[T]]
+      case _ => throw new DomaException(Message.DOMALA4008, tpe, "SelectStatement", "getSeq")
     }
   }
 
   def getList[T](implicit cTag: ClassTag[T], tTag: TypeTag[T]): List[T] = {
-    getSeq[T](cTag, tTag).toList
+    getSeq[T].toList
   }
 
   def apply[TARGET, RESULT](mapper: Iterator[TARGET] => RESULT)(implicit cTag: ClassTag[TARGET], tTag: TypeTag[TARGET]): RESULT = {
     val tpe = typeOf[TARGET]
-    if (TypeUtil.isEntity(tpe)) {
-      builder.iteratorEntity[TARGET, RESULT](cTag.runtimeClass.asInstanceOf[Class[TARGET]], mapper)
-    } else if (TypeUtil.isHolder(tpe) || TypeUtil.isBasic(tpe) || TypeUtil.isAnyVal(tpe)) {
-      builder.iteratorScalar[RESULT, TARGET](cTag.runtimeClass.asInstanceOf[Class[TARGET]], mapper)
-    } else if (TypeUtil.isMap(tpe)) {
-      builder.iteratorMap[RESULT](mapper.asInstanceOf[Iterator[Map[String, AnyRef]] => RESULT])
-    } else {
-      throw new DomaException(Message.DOMALA4008, tpe, "SelectStatement", "apply")
+    RuntimeTypeConverter.toType(tpe) match {
+      case _: Types.Entity =>
+        builder.iteratorEntity[TARGET, RESULT](mapper)
+      case t if t.isHolder || t.isBasic =>
+        builder.iteratorScalar[RESULT, TARGET](mapper)
+      case _ => throw new DomaException(Message.DOMALA4008, tpe, "SelectStatement", "apply")
     }
   }
 

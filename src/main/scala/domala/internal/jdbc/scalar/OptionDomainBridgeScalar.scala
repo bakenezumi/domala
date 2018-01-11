@@ -2,9 +2,9 @@ package domala.internal.jdbc.scalar
 
 import java.util.Optional
 
+import domala.wrapper.Wrapper
 import org.seasar.doma.internal.jdbc.scalar.Scalar
 import org.seasar.doma.internal.util.AssertionUtil
-import org.seasar.doma.wrapper.Wrapper
 
 class OptionDomainBridgeScalar[BASIC, DOMAIN](optionalScalar: Scalar[BASIC, Optional[DOMAIN]])
     extends Scalar[BASIC, Option[DOMAIN]] {

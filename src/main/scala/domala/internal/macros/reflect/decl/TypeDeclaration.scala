@@ -1,6 +1,7 @@
 package domala.internal.macros.reflect.decl
 
-import domala.internal.macros.reflect.util.{ElementUtil, TypeUtil}
+import domala.internal.macros.reflect.util.{ElementUtil, MacroTypeConverter, AnyValHolderDescGenerator}
+import domala.jdbc.`type`.Types
 
 import scala.reflect.macros.blackbox
 import org.seasar.doma.internal.util.AssertionUtil.{assertNotNull, assertTrue}
@@ -12,6 +13,10 @@ class TypeDeclaration[C <: blackbox.Context](c: C)(
     val tpe: C#Type
 ) {
   import c.universe._
+
+  private[this] val converter = MacroTypeConverter.of(c)
+  val convertedType: Types = converter.toType(tpe)
+
   val NUMBER_PRIORITY_MAP: Map[String, Int] = Map(
     c.typeOf[java.math.BigDecimal].toString -> 80,
     c.typeOf[BigDecimal].toString -> 80,
@@ -27,7 +32,7 @@ class TypeDeclaration[C <: blackbox.Context](c: C)(
   )
 
   val numberPriority: Option[Int] = {
-    if (TypeUtil.isFunction(c)(tpe) && tpe.typeArgs.nonEmpty) {
+    if (convertedType.isFunction && tpe.typeArgs.nonEmpty) {
       NUMBER_PRIORITY_MAP.get(tpe.typeArgs.last.toString)
     } else NUMBER_PRIORITY_MAP.get(tpe.toString)
   }

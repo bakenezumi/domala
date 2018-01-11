@@ -9,10 +9,10 @@ class SqlFileDeleteQuery[E](
   sqlFilePath: String,
   versionIgnored: Boolean = false,
   optimisticLockExceptionSuppressed: Boolean = false
-)(entityAndEntityType: Option[EntityAndEntityType[E]] = None)(implicit sqlNodeRepository: SqlNodeRepository)
+)(entityAndEntityDesc: Option[EntityAndEntityDesc[E]] = None)(implicit sqlNodeRepository: SqlNodeRepository)
   extends SqlFileModifyQuery(SqlKind.UPDATE, sqlFilePath) with DeleteQuery {
 
-  val entityHandler: Option[EntityHandler[E]] = entityAndEntityType.map(e => new this.EntityHandler(e.name, e.entity, e.entityType, versionIgnored, optimisticLockExceptionSuppressed))
+  val entityHandler: Option[EntityHandler[E]] = entityAndEntityDesc.map(e => new this.EntityHandler(e.name, e.entity, e.entityDesc, versionIgnored, optimisticLockExceptionSuppressed))
 
   override def prepare(): Unit = {
     super.prepare()

@@ -1,7 +1,8 @@
 package domala.internal.macros.reflect
 
+import domala.internal.macros.reflect.util.MacroTypeConverter
+import domala.jdbc.`type`.Types
 import scala.language.existentials
-import domala.internal.macros.reflect.util.TypeUtil._
 
 import scala.reflect.macros.blackbox
 
@@ -16,12 +17,12 @@ object ParamType {
   case class Other[C <: blackbox.Context](c: C, tpe: C#Type) extends ParamType
 
   def convert[C <: blackbox.Context](c: C)(tpe: C#Type): ParamType = {
-    tpe match {
-      case t if isIterable(c)(t) => ParamType.Iterable(c, convert(c)(t.typeArgs.head))
-      case t if isEntity(c)(t) => ParamType.Entity(c, t)
-      case t if isOption(c)(t) => ParamType.Option(c, convert(c)(t.typeArgs.head))
-      case t if isHolder(c)(t) => ParamType.Holder(c, t)
-      case t if isBasic(c)(t) => ParamType.Basic(c, t)
+    MacroTypeConverter.of(c).toType(tpe) match {
+      case Types.Iterable(_) => ParamType.Iterable(c, convert(c)(tpe.typeArgs.head.asInstanceOf[C#Type]))
+      case Types.GeneratedEntityType => ParamType.Entity(c, tpe)
+      case Types.Option(_) => ParamType.Option(c, convert(c)(tpe.typeArgs.head.asInstanceOf[C#Type]))
+      case t if t.isHolder => ParamType.Holder(c, tpe)
+      case t if t.isBasic  => ParamType.Basic(c, tpe)
       case _ => ParamType.Other(c, tpe)
     }
   }

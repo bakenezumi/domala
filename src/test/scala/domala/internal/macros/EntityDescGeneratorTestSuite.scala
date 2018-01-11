@@ -1,6 +1,6 @@
 package domala.internal.macros
 
-import domala.internal.macros.generator.EntityDescGenerator
+import domala.internal.macros.meta.generator.EntityDescGenerator
 import domala.message.Message
 import org.scalatest.FunSuite
 
@@ -31,7 +31,7 @@ case class Person(
         domala.internal.macros.reflect.EntityReflectionMacros.validateListener(classOf[Person], classOf[org.seasar.doma.jdbc.entity.NullEntityListener[Person]])
         val listener = new org.seasar.doma.jdbc.entity.NullEntityListener[Person]()
       }
-      private[this] val __namingType: org.seasar.doma.jdbc.entity.NamingType = null
+      private[this] val __namingType: domala.jdbc.entity.NamingType = null
       private[this] val __idGenerator = new org.seasar.doma.jdbc.id.BuiltinIdentityIdGenerator()
       import scala.collection.JavaConverters._
       private[this] val __propertyMap = Seq(domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyDesc[Option[ID[Person]], Person, ID[Person]](classOf[Person], "id", __namingType, true, true, __idGenerator, false, false, false, null, "", true, true, false), domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyDesc[Option[Name], Person, Name](classOf[Person], "name", __namingType, false, false, __idGenerator, false, false, false, null, "", true, false, false), domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyDesc[Option[Int], Person, Integer](classOf[Person], "age", __namingType, false, false, __idGenerator, false, false, true, () => new org.seasar.doma.wrapper.IntegerWrapper(): org.seasar.doma.wrapper.Wrapper[Integer], "", true, true, false), domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyDesc[Address, Person, Address](classOf[Person], "address", __namingType, false, false, __idGenerator, false, false, false, null, "", true, true, false), domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyDesc[Option[Int], Person, Integer](classOf[Person], "departmentId", __namingType, false, false, __idGenerator, false, false, true, () => new org.seasar.doma.wrapper.IntegerWrapper(): org.seasar.doma.wrapper.Wrapper[Integer], "", true, true, false), domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyDesc[Option[Int], Person, Integer](classOf[Person], "version", __namingType, false, false, __idGenerator, true, false, true, () => new org.seasar.doma.wrapper.IntegerWrapper(): org.seasar.doma.wrapper.Wrapper[Integer], "", true, true, false)).flatten.toMap
@@ -48,13 +48,13 @@ case class Person(
       private[this] val __idPropertyTypes = java.util.Collections.unmodifiableList(__idList)
       private[this] val __entityPropertyTypes = java.util.Collections.unmodifiableList(__list)
       private[this] val __entityPropertyTypeMap: java.util.Map[String, domala.jdbc.entity.EntityPropertyDesc[Person, _]] = java.util.Collections.unmodifiableMap(__map)
-      override def getNamingType: org.seasar.doma.jdbc.entity.NamingType = __namingType
+      override def getNamingType: domala.jdbc.entity.NamingType = __namingType
       override def isImmutable: Boolean = __immutable
       override def getName: String = __name
       override def getCatalogName: String = __catalogName
       override def getSchemaName: String = __schemaName
       override def getTableName: String = getTableName(org.seasar.doma.jdbc.Naming.DEFAULT.apply _)
-      override def getTableName(namingFunction: java.util.function.BiFunction[org.seasar.doma.jdbc.entity.NamingType, String, String]): String = {
+      override def getTableName(namingFunction: java.util.function.BiFunction[domala.jdbc.entity.NamingType, String, String]): String = {
         if (__tableName.isEmpty) {
           namingFunction.apply(__namingType, __name)
         } else {

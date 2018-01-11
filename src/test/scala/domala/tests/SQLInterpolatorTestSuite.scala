@@ -1,5 +1,7 @@
 package domala.tests
 
+import java.util.Calendar
+
 import org.scalatest.{BeforeAndAfter, FunSuite}
 import domala._
 import domala.jdbc.Config
@@ -121,7 +123,7 @@ class SQLInterpolatorTestSuite extends FunSuite with BeforeAndAfter {
     val statement = select"select * from person"
 
     val caught1 = intercept[DomaException] {
-      statement.getSingle[Address]
+      statement.getSingle[Calendar]
     }
     assert(caught1.getMessageResource == Message.DOMALA4008)
 
@@ -131,7 +133,7 @@ class SQLInterpolatorTestSuite extends FunSuite with BeforeAndAfter {
     assert(caught2.getMessageResource == Message.DOMALA4008)
 
     val caught3 = intercept[DomaException] {
-      statement.getList[Address]
+      statement.getList[Calendar]
     }
     assert(caught3.getMessageResource == Message.DOMALA4008)
 

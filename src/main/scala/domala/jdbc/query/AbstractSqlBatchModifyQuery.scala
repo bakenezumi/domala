@@ -2,13 +2,13 @@ package domala.jdbc.query
 
 import java.lang.reflect.Method
 
+import domala.jdbc.entity.EntityDesc
 import org.seasar.doma.internal.jdbc.entity._
 import org.seasar.doma.internal.jdbc.sql.SqlContext
 import org.seasar.doma.internal.jdbc.sql.node.{ExpandNode, PopulateNode}
 import org.seasar.doma.internal.util.AssertionUtil
 import org.seasar.doma.internal.util.AssertionUtil.assertNotNull
 import org.seasar.doma.jdbc._
-import org.seasar.doma.jdbc.entity.EntityType
 import org.seasar.doma.jdbc.query.{AbstractQuery, BatchModifyQuery}
 
 abstract class AbstractSqlBatchModifyQuery[ELEMENT](
@@ -108,46 +108,46 @@ abstract class AbstractSqlBatchModifyQuery[ELEMENT](
     this.sqlExecutionSkipCause = null
   }
 
-  protected class BatchInsertEntityHandler(var entityType: EntityType[ELEMENT]) {
-    assertNotNull(entityType, "")
+  protected class BatchInsertEntityHandler(var entityDesc: EntityDesc[ELEMENT]) {
+    assertNotNull(entityDesc, "")
 
     def preInsert(): Unit = {
-      val context = new SqlBatchPreInsertContext[ELEMENT](entityType, method, config)
-      entityType.preInsert(currentEntity, context)
+      val context = new SqlBatchPreInsertContext[ELEMENT](entityDesc, method, config)
+      entityDesc.preInsert(currentEntity, context)
       if (context.getNewEntity != null) currentEntity = context.getNewEntity
     }
 
     def postInsert(): Unit = {
-      val context = new SqlBatchPostInsertContext[ELEMENT](entityType, method, config)
-      entityType.postInsert(currentEntity, context)
+      val context = new SqlBatchPostInsertContext[ELEMENT](entityDesc, method, config)
+      entityDesc.postInsert(currentEntity, context)
       if (context.getNewEntity != null) currentEntity = context.getNewEntity
     }
   }
 
-  protected class SqlBatchPreInsertContext[E](entityType: EntityType[E], method: Method, config: Config) extends AbstractPreInsertContext[E](entityType, method, config) {}
+  protected class SqlBatchPreInsertContext[E](entityDesc: EntityDesc[E], method: Method, config: Config) extends AbstractPreInsertContext[E](entityDesc, method, config) {}
 
-  protected class SqlBatchPostInsertContext[E](entityType: EntityType[E], method: Method, config: Config) extends AbstractPostInsertContext[E](entityType, method, config) {}
+  protected class SqlBatchPostInsertContext[E](entityDesc: EntityDesc[E], method: Method, config: Config) extends AbstractPostInsertContext[E](entityDesc, method, config) {}
 
   protected class BatchUpdateEntityHandler(
-    entityType: EntityType[ELEMENT],
+    entityDesc: EntityDesc[ELEMENT],
     versionIgnored: Boolean,
     optimisticLockExceptionSuppressed: Boolean) {
     import org.seasar.doma.jdbc.entity.EntityPropertyType
     import org.seasar.doma.jdbc.query.BatchUpdateQueryHelper
 
-    assertNotNull(entityType, "")
+    assertNotNull(entityDesc, "")
 
-    private val versionPropertyType = entityType.getVersionPropertyType
+    private val versionPropertyType = entityDesc.getVersionPropertyType
     protected var targetPropertyTypes: java.util.List[EntityPropertyType[ELEMENT, _]] = _
     protected var helper: BatchUpdateQueryHelper[ELEMENT] = _
 
     def init(): Unit = {
-      helper = new BatchUpdateQueryHelper[ELEMENT](config, entityType, includedPropertyNames, excludedPropertyNames, versionIgnored, optimisticLockExceptionSuppressed)
+      helper = new BatchUpdateQueryHelper[ELEMENT](config, entityDesc, includedPropertyNames, excludedPropertyNames, versionIgnored, optimisticLockExceptionSuppressed)
     }
 
     def preUpdate(): Unit = {
-      val context = new SqlBatchPreUpdateContext[ELEMENT](entityType, method, config)
-      entityType.preUpdate(currentEntity, context)
+      val context = new SqlBatchPreUpdateContext[ELEMENT](entityDesc, method, config)
+      entityDesc.preUpdate(currentEntity, context)
       if (context.getNewEntity != null) currentEntity = context.getNewEntity
     }
 
@@ -156,8 +156,8 @@ abstract class AbstractSqlBatchModifyQuery[ELEMENT](
     }
 
     def postUpdate(): Unit = {
-      val context = new SqlBatchPostUpdateContext[ELEMENT](entityType, method, config)
-      entityType.postUpdate(currentEntity, context)
+      val context = new SqlBatchPostUpdateContext[ELEMENT](entityDesc, method, config)
+      entityDesc.postUpdate(currentEntity, context)
       if (context.getNewEntity != null) currentEntity = context.getNewEntity
     }
 
@@ -171,7 +171,7 @@ abstract class AbstractSqlBatchModifyQuery[ELEMENT](
       if (versionPropertyType != null && !versionIgnored) {
         val it = elements.listIterator
         while ( {it.hasNext}) {
-          val newEntity = versionPropertyType.increment(entityType, it.next)
+          val newEntity = versionPropertyType.increment(entityDesc, it.next)
           it.set(newEntity)
         }
       }
@@ -182,7 +182,7 @@ abstract class AbstractSqlBatchModifyQuery[ELEMENT](
     }
   }
 
-  protected class SqlBatchPreUpdateContext[E](entityType: EntityType[E], method: Method, config: Config) extends AbstractPreUpdateContext[E](entityType, method, config) {
+  protected class SqlBatchPreUpdateContext[E](entityDesc: EntityDesc[E], method: Method, config: Config) extends AbstractPreUpdateContext[E](entityDesc, method, config) {
     override def isEntityChanged: Boolean = true
     override def isPropertyChanged(propertyName: String): Boolean = {
       validatePropertyDefined(propertyName)
@@ -190,7 +190,7 @@ abstract class AbstractSqlBatchModifyQuery[ELEMENT](
     }
   }
 
-  protected class SqlBatchPostUpdateContext[E](entityType: EntityType[E], method: Method, config: Config) extends AbstractPostUpdateContext[E](entityType, method, config) {
+  protected class SqlBatchPostUpdateContext[E](entityDesc: EntityDesc[E], method: Method, config: Config) extends AbstractPostUpdateContext[E](entityDesc, method, config) {
     override def isPropertyChanged(propertyName: String): Boolean = {
       validatePropertyDefined(propertyName)
       true
@@ -198,22 +198,22 @@ abstract class AbstractSqlBatchModifyQuery[ELEMENT](
   }
 
   protected class BatchDeleteEntityHandler(
-    entityType: EntityType[ELEMENT],
+    entityDesc: EntityDesc[ELEMENT],
     versionIgnored: Boolean,
     optimisticLockExceptionSuppressed: Boolean) {
-    assertNotNull(entityType, "")
+    assertNotNull(entityDesc, "")
 
-    private val versionPropertyType = entityType.getVersionPropertyType
+    private val versionPropertyType = entityDesc.getVersionPropertyType
 
     def preDelete(): Unit = {
-      val context = new SqlBatchPreDeleteContext[ELEMENT](entityType, method, config)
-      entityType.preDelete(currentEntity, context)
+      val context = new SqlBatchPreDeleteContext[ELEMENT](entityDesc, method, config)
+      entityDesc.preDelete(currentEntity, context)
       if (context.getNewEntity != null) currentEntity = context.getNewEntity
     }
 
     def postDelete(): Unit = {
-      val context = new SqlBatchPostDeleteContext[ELEMENT](entityType, method, config)
-      entityType.postDelete(currentEntity, context)
+      val context = new SqlBatchPostDeleteContext[ELEMENT](entityDesc, method, config)
+      entityDesc.postDelete(currentEntity, context)
       if (context.getNewEntity != null) currentEntity = context.getNewEntity
     }
 
@@ -222,7 +222,7 @@ abstract class AbstractSqlBatchModifyQuery[ELEMENT](
     }
   }
 
-  protected class SqlBatchPreDeleteContext[E](entityType: EntityType[E], method: Method, config: Config) extends AbstractPreDeleteContext[E](entityType, method, config) {}
+  protected class SqlBatchPreDeleteContext[E](entityDesc: EntityDesc[E], method: Method, config: Config) extends AbstractPreDeleteContext[E](entityDesc, method, config) {}
 
-  protected class SqlBatchPostDeleteContext[E](entityType: EntityType[E], method: Method, config: Config) extends AbstractPostDeleteContext[E](entityType, method, config) {}
+  protected class SqlBatchPostDeleteContext[E](entityDesc: EntityDesc[E], method: Method, config: Config) extends AbstractPostDeleteContext[E](entityDesc, method, config) {}
 }
