@@ -83,7 +83,10 @@ class ExpressionEvaluator(variableValues: java.util.Map[String, Value] =
               typeArguments(0) match {
                 case valueClass: Class[_] =>
                   val elementValue: Any = option.orNull
-                  return new EvaluationResult(elementValue, valueClass)
+                  if(elementValue != null && !elementValue.getClass.isAssignableFrom(valueClass))
+                    return new EvaluationResult(elementValue, elementValue.getClass)
+                  else
+                    return new EvaluationResult(elementValue, valueClass)
                 case parameterizedType: ParameterizedType if parameterizedType.getRawType.isInstanceOf[Class[_]] =>
                   val  elementValue: Any = option.orNull
                   return new EvaluationResult(elementValue, parameterizedType.getRawType.asInstanceOf[Class[_]])

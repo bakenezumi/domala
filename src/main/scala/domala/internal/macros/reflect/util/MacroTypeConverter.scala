@@ -70,7 +70,7 @@ class MacroTypeConverter[C <: blackbox.Context](c: C) extends TypeConverter {
 
   override def isGeneratedEntity(tpe: T): Boolean = tpe.companion <:< typeOf[EntityCompanion[_]]
 
-  override def isRuntimeEntity(tpe: T): Boolean = tpe <:< typeOf[Product] && {
+  override def isRuntimeEntity(tpe: T): Boolean = !(tpe <:< typeOf[AnyVal]) && tpe <:< typeOf[Product] && {
     val constructor = tpe.decl(termNames.CONSTRUCTOR).asMethod
     constructor.paramLists.flatten.forall { p =>
       toType(p.typeSignature.asInstanceOf[T]) match {
@@ -78,6 +78,7 @@ class MacroTypeConverter[C <: blackbox.Context](c: C) extends TypeConverter {
         case _: Types.Holder[_, _] => true
         case Types.Option(_: Types.Basic[_]) => true
         case Types.Option(_: Types.Holder[_, _]) => true
+        case t if t.isRuntimeEmbeddable => true
         case _ => false
       }
     }
@@ -85,7 +86,7 @@ class MacroTypeConverter[C <: blackbox.Context](c: C) extends TypeConverter {
 
   override def isGeneratedHolder(tpe: T): Boolean = tpe.companion <:< typeOf[HolderCompanion[_, _]]
 
-  override def isAnyValHolder(tpe: T): Boolean = tpe <:< typeOf[AnyVal] && hasParam(tpe) && toType(headParamType(tpe)).isInstanceOf[Types.Basic[_]]
+  override def isAnyValHolder(tpe: T): Boolean = tpe <:< typeOf[AnyVal] && hasParam(tpe) && toType(headParamType(tpe)).isBasic
 
   override def isGeneratedEmbeddable(tpe: T): Boolean = tpe.companion <:< typeOf[EmbeddableCompanion[_]]
 

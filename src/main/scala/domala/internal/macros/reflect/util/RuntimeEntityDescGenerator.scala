@@ -11,9 +11,9 @@ object RuntimeEntityDescGenerator {
     val entityDesc: c.Expr[EntityDesc[T]] = {
       val entityTypeName = tpe.typeSymbol.name.toTypeName
       c.Expr[EntityDesc[T]](
-          q"""{
-            val Right(desc) = domala.jdbc.entity.RuntimeEntityDesc.of[$entityTypeName]
-            desc
+         q"""{
+            object Desc extends domala.jdbc.entity.RuntimeEntityDesc[$entityTypeName]
+            Desc
           }
           """
       )

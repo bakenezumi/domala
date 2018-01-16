@@ -93,9 +93,9 @@ object EntityReflectionMacros {
     val wtt = weakTypeOf[T]
     if (MacroTypeConverter.of(c).toType(wtt).isEmbeddable) {
       reify {
-        val embeddable =
+        val embeddableDesc =
           ReflectionUtil.getEmbeddableDesc(propertyClassTag.splice)
-        embeddable
+        embeddableDesc
           .newEmbeddable[E](propertyName.splice, args.splice)
           .asInstanceOf[T]
       }

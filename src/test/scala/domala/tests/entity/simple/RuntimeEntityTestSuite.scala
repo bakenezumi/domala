@@ -4,12 +4,12 @@ import java.time.{LocalDate, LocalDateTime}
 
 import domala._
 import domala.jdbc.{BatchResult, Config, Result}
-import domala.tests.TestConfig
+import domala.tests.H2TestConfigTemplate
 import org.scalatest.{BeforeAndAfter, FunSuite}
 import org.seasar.doma.BatchInsert
 
 class RuntimeEntityTestSuite extends FunSuite with BeforeAndAfter {
-  implicit val config: Config = TestConfig
+  implicit val config: Config = new H2TestConfigTemplate("runtime-entity"){}
   val dao: RuntimeEntityDao = RuntimeEntityDao.impl
 
   val entity = RuntimeEntity(Some(ID(1)), Name("foo"), MyTime(LocalDateTime.of(2017, 1, 12, 12, 59, 59, 999999999)), 123.456, BigDecimal(987.654), LocalDate.of(2018, 1, 12))

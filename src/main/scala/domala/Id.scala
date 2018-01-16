@@ -121,4 +121,3 @@ class TableGenerator(
   allocationSize: Long = 1,
   implementer:Class[_ <:  TableIdGenerator] = classOf[BuiltinTableIdGenerator]
 ) extends scala.annotation.StaticAnnotation
-

@@ -41,12 +41,9 @@ class GuildService (implicit guildDao: GuildDao, characterDao: CharacterDao, gui
 
 }
 
+case class ID[ENTITY](value: Int) extends AnyVal
 
-@Holder
-case class ID[ENTITY](value: Int)
-
-@Holder
-case class Name(value: String)
+case class Name(value: String) extends AnyVal
 
 @Entity
 case class Guild(

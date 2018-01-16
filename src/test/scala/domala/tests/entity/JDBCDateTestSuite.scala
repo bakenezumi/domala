@@ -57,7 +57,6 @@ case class SqlDateEntity(
    optionDateTime : Option[Timestamp]
 )
 
-
 @Dao(config = TestConfig)
 trait SqlDateDao {
 

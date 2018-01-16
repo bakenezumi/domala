@@ -77,13 +77,13 @@ object PropertyDescUtil {
           )
         }
         reify {
-          val embeddable =
+          val embeddableDesc =
             ReflectionUtil.getEmbeddableDesc(propertyClassTag.splice)
           import scala.collection.JavaConverters._
           new EmbeddedPropertyDesc[E, T](
             paramName.splice,
             entityClass.splice,
-            embeddable.getEmbeddablePropertyTypes(
+            embeddableDesc.getEmbeddablePropertyTypes(
               paramName.splice,
               entityClass.splice,
               namingType.splice
@@ -91,7 +91,7 @@ object PropertyDescUtil {
         }
       case _ => converter.toType(nakedTpe) match {
         case Types.GeneratedHolderType(valueType) =>
-          val holder =
+          val holderDesc =
             reify(ReflectionUtil.getHolderDesc(nakedClassTag.splice))
           if (isIdLiteral) {
             if (isIdGenerateActualLiteral) {
@@ -106,7 +106,7 @@ object PropertyDescUtil {
                 Map(paramName.splice -> GeneratedIdPropertyDesc.ofHolder(
                   entityClass.splice,
                   propertyClassTag.splice.runtimeClass,
-                  holder.splice.asInstanceOf[AbstractHolderDesc[Number, _]],
+                  holderDesc.splice.asInstanceOf[AbstractHolderDesc[Number, _]],
                   paramName.splice,
                   columnName.splice,
                   namingType.splice,
@@ -119,7 +119,7 @@ object PropertyDescUtil {
                 Map(paramName.splice -> AssignedIdPropertyDesc.ofHolder(
                   entityClass.splice,
                   propertyClassTag.splice.runtimeClass,
-                  holder.splice,
+                  holderDesc.splice,
                   paramName.splice,
                   columnName.splice,
                   namingType.splice,
@@ -139,7 +139,7 @@ object PropertyDescUtil {
               Map(paramName.splice -> VersionPropertyDesc.ofHolder(
                 entityClass.splice,
                 propertyClassTag.splice.runtimeClass,
-                holder.splice.asInstanceOf[HolderDesc[Number, _]],
+                holderDesc.splice.asInstanceOf[HolderDesc[Number, _]],
                 paramName.splice,
                 columnName.splice,
                 namingType.splice,
@@ -151,7 +151,7 @@ object PropertyDescUtil {
               Map(paramName.splice -> TenantIdPropertyDesc.ofHolder(
                 entityClass.splice,
                 propertyClassTag.splice.runtimeClass,
-                holder.splice,
+                holderDesc.splice,
                 paramName.splice,
                 columnName.splice,
                 namingType.splice,
@@ -163,7 +163,7 @@ object PropertyDescUtil {
               Map(paramName.splice -> DefaultPropertyDesc.ofHolder(
                 entityClass.splice,
                 propertyClassTag.splice.runtimeClass,
-                holder.splice,
+                holderDesc.splice,
                 paramName.splice,
                 columnName.splice,
                 namingType.splice,
@@ -174,8 +174,8 @@ object PropertyDescUtil {
             }
           }
         case Types.AnyValHolderType(valueType) =>
-          val holder = AnyValHolderDescGenerator.get[blackbox.Context, N](c)(nakedTpe)
-          if (holder.isEmpty) {
+          val holderDesc = AnyValHolderDescGenerator.get[blackbox.Context, N](c)(nakedTpe)
+          if (holderDesc.isEmpty) {
             ReflectionUtil.abort(Message.DOMALA6017,
               extractionClassString(entityClass.toString))
           }
@@ -192,7 +192,7 @@ object PropertyDescUtil {
                 Map(paramName.splice -> GeneratedIdPropertyDesc.ofHolder(
                   entityClass.splice,
                   propertyClassTag.splice.runtimeClass,
-                  holder.get.splice.asInstanceOf[AbstractAnyValHolderDesc[Number, _]],
+                  holderDesc.get.splice.asInstanceOf[AbstractAnyValHolderDesc[Number, _]],
                   paramName.splice,
                   columnName.splice,
                   namingType.splice,
@@ -205,7 +205,7 @@ object PropertyDescUtil {
                 Map(paramName.splice -> AssignedIdPropertyDesc.ofHolder(
                   entityClass.splice,
                   propertyClassTag.splice.runtimeClass,
-                  holder.get.splice,
+                  holderDesc.get.splice,
                   paramName.splice,
                   columnName.splice,
                   namingType.splice,
@@ -225,7 +225,7 @@ object PropertyDescUtil {
               Map(paramName.splice -> VersionPropertyDesc.ofHolder(
                 entityClass.splice,
                 propertyClassTag.splice.runtimeClass,
-                holder.get.splice.asInstanceOf[AbstractAnyValHolderDesc[Number, _]],
+                holderDesc.get.splice.asInstanceOf[AbstractAnyValHolderDesc[Number, _]],
                 paramName.splice,
                 columnName.splice,
                 namingType.splice,
@@ -237,7 +237,7 @@ object PropertyDescUtil {
               Map(paramName.splice -> TenantIdPropertyDesc.ofHolder(
                 entityClass.splice,
                 propertyClassTag.splice.runtimeClass,
-                holder.get.splice,
+                holderDesc.get.splice,
                 paramName.splice,
                 columnName.splice,
                 namingType.splice,
@@ -249,7 +249,7 @@ object PropertyDescUtil {
               Map(paramName.splice -> DefaultPropertyDesc.ofHolder(
                 entityClass.splice,
                 propertyClassTag.splice.runtimeClass,
-                holder.get.splice,
+                holderDesc.get.splice,
                 paramName.splice,
                 columnName.splice,
                 namingType.splice,

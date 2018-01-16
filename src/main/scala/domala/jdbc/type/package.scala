@@ -16,6 +16,7 @@ package object `type` {
     val isAnyValHolder: Boolean = false
     val isNumber: Boolean = false
     val isEmbeddable: Boolean = false
+    val isRuntimeEmbeddable: Boolean = false
     val isIterable: Boolean = false
     val isOption: Boolean = false
     val isMap: Boolean = false
@@ -127,8 +128,9 @@ package object `type` {
       override val isEntity: Boolean = true
     }
     object GeneratedEntityType extends Types.Entity
-    object RuntimeEntityType extends Types.Entity {
+    object RuntimeEntityType extends Types.Entity with Types.Embeddable {
       override val isRuntimeEntity: Boolean = true
+      override val isRuntimeEmbeddable : Boolean = true
     }
 
     sealed trait Embeddable extends Types {
