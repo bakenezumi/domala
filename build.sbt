@@ -21,7 +21,7 @@ lazy val root = (project in file(".")).settings(
   metaMacroSettings,
   compile in Test := ((compile in Test) dependsOn (copyResources in Test)).value,
   libraryDependencies ++= Seq(
-    "org.seasar.doma" % "doma" % "2.19.0",
+    "org.seasar.doma" % "doma" % "2.19.1",
     "org.scalameta" %% "scalameta" % "1.8.0" % Provided,
     "org.scala-lang" % "scala-reflect" % scalaVersion.value,
     "com.h2database" % "h2" % "1.4.193" % Test,
