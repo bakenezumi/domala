@@ -2,7 +2,7 @@ package domala.internal.jdbc.entity
 
 import domala.internal.reflect.util.{ReflectionUtil, RuntimeTypeConverter}
 import domala.jdbc.`type`.Types
-import domala.jdbc.entity.{EntityDesc, RuntimeEntityDesc}
+import domala.jdbc.entity.EntityDesc
 import domala.message.Message
 import org.seasar.doma.DomaException
 import org.seasar.doma.jdbc.ClassHelper

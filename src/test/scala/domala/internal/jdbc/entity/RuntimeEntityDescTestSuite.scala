@@ -1,4 +1,4 @@
-package domala.jdbc.entity
+package domala.internal.jdbc.entity
 
 import java.time.LocalDateTime
 

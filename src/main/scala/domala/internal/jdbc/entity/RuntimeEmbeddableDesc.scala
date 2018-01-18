@@ -1,10 +1,11 @@
-package domala.jdbc.entity
+package domala.internal.jdbc.entity
 
 import java.util
 
 import domala.Column
 import domala.internal.reflect.util.RuntimeTypeConverter
-import domala.jdbc.entity.RuntimeEntityDesc.toTypeTag
+import domala.internal.jdbc.entity.RuntimeEntityDesc.toTypeTag
+import domala.jdbc.entity._
 import domala.message.Message
 import org.seasar.doma.DomaException
 
@@ -15,7 +16,6 @@ import scala.reflect.runtime.{universe => ru}
 import ru._
 
 class RuntimeEmbeddableDesc[EMBEDDABLE: TypeTag] {
-
   def getEmbeddablePropertyTypes[ENTITY: TypeTag : ClassTag](embeddedPropertyName: String, namingType: NamingType): util.List[EntityPropertyDesc[ENTITY, _]] = {
     val tpe = typeOf[EMBEDDABLE]
     val constructor = tpe.decl(termNames.CONSTRUCTOR).asMethod

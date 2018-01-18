@@ -1,14 +1,15 @@
-package domala.jdbc.entity
+package domala.internal.jdbc.entity
 
 import java.util
 import java.util.function.Supplier
 
-import domala.{Column, Table}
 import domala.internal.jdbc.holder.AnyValHolderDescRepository
 import domala.internal.macros.meta.util.MetaHelper
-import domala.jdbc.`type`.Types
 import domala.internal.reflect.util.{ReflectionUtil, RuntimeTypeConverter}
+import domala.jdbc.`type`.Types
+import domala.jdbc.entity._
 import domala.message.Message
+import domala.{Column, Table}
 import org.seasar.doma.DomaException
 import org.seasar.doma.jdbc.ConfigSupport
 import org.seasar.doma.wrapper.Wrapper
