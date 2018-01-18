@@ -10,15 +10,14 @@ import scala.reflect.{ClassTag, classTag}
 
 abstract class AbstractEntityDesc[ENTITY: ClassTag] extends AbstractEntityType[ENTITY] {
   type ENTITY_LISTENER <: EntityListener[ENTITY]
-  val table: Table
-  val listener: ENTITY_LISTENER
+  protected val table: Table
+  protected val listener: ENTITY_LISTENER
   protected val propertyDescMap: Map[String, EntityPropertyDesc[ENTITY, _]]
+  protected val idPropertyDescList: List[EntityPropertyDesc[ENTITY, _]]
 
   private[this] val entityClass: Class[ENTITY] = classTag[ENTITY].runtimeClass.asInstanceOf[Class[ENTITY]]
-  lazy private[this] val propertyDescList = propertyDescMap.values.toList.asJava
-  lazy private[this] val idPropertyDescList = propertyDescMap.values.collect {
-    case p:AssignedIdPropertyDesc[ENTITY, ENTITY, _, _] => p: EntityPropertyDesc[ENTITY, _]
-  }.toList.asJava
+  private[this] lazy val propertyDescList = propertyDescMap.values.toList.asJava
+  private[this] lazy val _idPropertyDescList = idPropertyDescList.asJava
 
   override def getOriginalStates(entity: ENTITY): ENTITY = null.asInstanceOf[ENTITY]
 
@@ -30,7 +29,7 @@ abstract class AbstractEntityDesc[ENTITY: ClassTag] extends AbstractEntityType[E
 
   override def isQuoteRequired: Boolean = table.quote
 
-  override def getIdPropertyTypes: util.List[EntityPropertyDesc[ENTITY, _]] = idPropertyDescList
+  override def getIdPropertyTypes: util.List[EntityPropertyDesc[ENTITY, _]] = _idPropertyDescList
 
   override def isImmutable: Boolean = true
 

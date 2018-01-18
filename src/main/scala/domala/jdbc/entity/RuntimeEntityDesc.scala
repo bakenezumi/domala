@@ -31,7 +31,12 @@ class RuntimeEntityDesc[ENTITY: TypeTag : ClassTag] extends AbstractEntityDesc[E
     }.getOrElse(Table())
   }
 
-  override val propertyDescMap: Map[String, EntityPropertyDesc[ENTITY, _]] = RuntimeEntityDesc.generatePropertyDescMap[ENTITY](getNamingType)
+  override protected val propertyDescMap: Map[String, EntityPropertyDesc[ENTITY, _]] = RuntimeEntityDesc.generatePropertyDescMap[ENTITY](getNamingType)
+
+  override protected val idPropertyDescList: List[EntityPropertyDesc[ENTITY, _]] = propertyDescMap.values.collect {
+    case p:AssignedIdPropertyDesc[ENTITY, ENTITY, _, _] => p: EntityPropertyDesc[ENTITY, _]
+  }.toList
+
 
   override def getNamingType: NamingType = null
 

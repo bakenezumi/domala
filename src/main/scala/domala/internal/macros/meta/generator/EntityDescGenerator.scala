@@ -34,20 +34,14 @@ object EntityDescGenerator {
       args.collectFirst { case arg"naming = $x" => Term.Name(x.syntax) }.getOrElse(q"null")
     )
     val tableSetting = TableArgs.of(cls.mods)
-    val fields = generateFields(cls.name, cls.ctor, entityArgs)
-    val constructor = generateConstructor(cls.name, cls.ctor, entityArgs, tableSetting)
+    val fields = generateFields(cls.name, cls.ctor, entityArgs, tableSetting)
     val methods = generateMethods(cls.name, cls.ctor, entityArgs)
 
     val generatedCompanion = q"""
     object ${Term.Name(cls.name.syntax)} extends domala.jdbc.entity.EntityCompanion[${cls.name}] {
       val entityDesc: domala.jdbc.entity.EntityDesc[${cls.name}] = EntityDesc
-      object EntityDesc extends org.seasar.doma.jdbc.entity.AbstractEntityType[${cls.name}] {
-        object ListenerHolder {
-          domala.internal.macros.reflect.EntityReflectionMacros.validateListener(classOf[${cls.name}], classOf[${entityArgs.listener}])
-          val listener =
-            new ${entityArgs.listener.syntax.parse[Ctor.Call].get}()
-        }
-        ..${fields ++ constructor ++ methods}
+      object EntityDesc extends domala.jdbc.entity.AbstractEntityDesc[${cls.name}] {
+        ..${fields ++ methods}
       }
       ..${Seq(CaseClassGenerator.generateApply(cls, maybeOriginalCompanion), CaseClassGenerator.generateUnapply(cls, maybeOriginalCompanion))}
     }
@@ -91,26 +85,25 @@ object EntityDescGenerator {
     }
   }
 
-  protected def generateFields(clsName: Type.Name, ctor: Ctor.Primary, entitySetting: EntityArgs): Seq[Stat] = {
-    val namingTypeField =
-      q"private[this]  val __namingType: domala.jdbc.entity.NamingType = ${entitySetting.naming}"
+  protected def generateFields(clsName: Type.Name, ctor: Ctor.Primary, entityArgs: EntityArgs, tableArgs: TableArgs): Seq[Stat] = {
     val idGeneratorField = generateIdGeneratorFields(clsName, ctor)
 
     val idSet = q"Set(..${idParamsFilter(ctor.paramss.flatten).map(_.name.literal)})"
     val propertyTypesFields =
       q"""
-      import scala.collection.JavaConverters._
-      private[this] val __propertyMap = Seq(..${generatePropertyDescMap(clsName, ctor)}).flatten.toMap
-      private[this] val __idList = __propertyMap.filterKeys($idSet).values.toList.asJava
-      private[this] val __list = __propertyMap.values.toList.asJava
-      private[this] val __map = __propertyMap.asJava
+      override type ENTITY_LISTENER = ${entityArgs.listener}
+      override protected val table: domala.Table = domala.Table(
+        ${Term.Name(tableArgs.catalog.syntax)},
+        ${Term.Name(tableArgs.schema.syntax)},
+        ${Term.Name(tableArgs.name.syntax)},
+        ${tableArgs.quote})
+      override protected val propertyDescMap: Map[String, domala.jdbc.entity.EntityPropertyDesc[$clsName, _]] = Seq(..${generatePropertyDescMap(clsName, ctor)}).flatten.toMap
+      override protected val listener =
+              new ${entityArgs.listener.syntax.parse[Ctor.Call].get}()
+      override protected val idPropertyDescList: List[domala.jdbc.entity.EntityPropertyDesc[$clsName, _]] = propertyDescMap.filterKeys($idSet).values.toList
       """.stats
 
-
-    namingTypeField +: (
-      idGeneratorField ++
-      propertyTypesFields
-    )
+    idGeneratorField ++ propertyTypesFields
   }
 
   def idParamsFilter(params: Seq[Term.Param]): Seq[Term.Param] = {
@@ -251,7 +244,7 @@ object EntityDescGenerator {
       domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyDesc[$tpe, $clsName, $nakedTpe](
         classOf[$clsName],
         ${name.literal},
-        __namingType,
+        getNamingType,
         ${if(isId) q"true" else q"false"},
         ${if(isIdGenerate) q"true" else q"false"},
         __idGenerator,
@@ -268,29 +261,10 @@ object EntityDescGenerator {
     }
   }
 
-  protected def generateConstructor(clsName: Type.Name, ctor: Ctor.Primary, entitySetting: EntityArgs, tableSetting: TableArgs): Seq[Stat] = {
-    q"""
-    private[this] val __listenerSupplier: java.util.function.Supplier[${entitySetting.listener}] =
-      () => ListenerHolder.listener
-    private[this] val __immutable = true
-    private[this] val __name = ${Term.Name("\"" + clsName.syntax + "\"")}
-    private[this] val __catalogName = ${Term.Name(tableSetting.catalog.syntax)}
-    private[this] val __schemaName = ${Term.Name(tableSetting.schema.syntax)}
-    private[this] val __tableName = ${Term.Name(tableSetting.name.syntax)}
-    private[this] val __isQuoteRequired = ${tableSetting.quote}
-    private[this] val __idPropertyTypes = java.util.Collections.unmodifiableList(__idList)
-    private[this] val __entityPropertyTypes = java.util.Collections.unmodifiableList(__list)
-    private[this] val __entityPropertyTypeMap: java.util.Map[
-      String,
-      domala.jdbc.entity.EntityPropertyDesc[$clsName, _]] =
-      java.util.Collections.unmodifiableMap(__map)
-    """.stats
-  }
-
   protected def generateGeneratedIdPropertyDesc(clsName: Type.Name, ctor: Ctor.Primary): Term = {
     ctor.paramss.flatten.collectFirst {
       case param if param.mods.exists(mod => mod.syntax.startsWith("@GeneratedValue")) =>
-        q"__propertyMap(${param.name.literal}).asInstanceOf[domala.jdbc.entity.GeneratedIdPropertyDesc[$clsName, $clsName, _ <: Number, _]]"
+        q"propertyDescMap(${param.name.literal}).asInstanceOf[domala.jdbc.entity.GeneratedIdPropertyDesc[$clsName, $clsName, _ <: Number, _]]"
     }.getOrElse(q"null")
   }
 
@@ -300,7 +274,7 @@ object EntityDescGenerator {
     }
     if(versionProperties.length > 1) MetaHelper.abort(Message.DOMALA4024, clsName.syntax, versionProperties(1).name.syntax)
     versionProperties.headOption.map(param =>
-      q"__propertyMap(${param.name.literal}).asInstanceOf[domala.jdbc.entity.VersionPropertyDesc[$clsName, $clsName, _ <: Number, _]]"
+      q"propertyDescMap(${param.name.literal}).asInstanceOf[domala.jdbc.entity.VersionPropertyDesc[$clsName, $clsName, _ <: Number, _]]"
     ).getOrElse(q"null")
   }
 
@@ -310,112 +284,15 @@ object EntityDescGenerator {
     }
     if(tenantIdProperties.length > 1) MetaHelper.abort(Message.DOMALA4442,  clsName.syntax, tenantIdProperties(1).name.syntax)
     tenantIdProperties.headOption.map(param =>
-      q"__propertyMap(${param.name.literal}).asInstanceOf[domala.jdbc.entity.TenantIdPropertyDesc[$clsName, $clsName, _, _]]"
+      q"propertyDescMap(${param.name.literal}).asInstanceOf[domala.jdbc.entity.TenantIdPropertyDesc[$clsName, $clsName, _, _]]"
 
     ).getOrElse(q"null")
   }
 
-  protected def generateMethods(clsName: Type.Name, ctor: Ctor.Primary, entitySetting: EntityArgs): Seq[Stat] = {
+  protected def generateMethods(clsName: Type.Name, ctor: Ctor.Primary, entityArgs: EntityArgs): Seq[Stat] = {
     q"""
 
-    override def getNamingType: domala.jdbc.entity.NamingType = __namingType
-
-    override def isImmutable: Boolean = __immutable
-
-    override def getName: String = __name
-
-    override def getCatalogName: String = __catalogName
-
-    override def getSchemaName: String = __schemaName
-
-    override def getTableName: String =
-      getTableName(org.seasar.doma.jdbc.Naming.DEFAULT.apply _)
-
-    override def getTableName(
-      namingFunction: java.util.function.BiFunction[
-        domala.jdbc.entity.NamingType,
-        String,
-        String]): String = {
-      if (__tableName.isEmpty) {
-        namingFunction.apply(__namingType, __name)
-      } else {
-        __tableName
-      }
-    }
-
-    override def isQuoteRequired: Boolean = __isQuoteRequired
-
-    override def preInsert(
-        entity: $clsName,
-        context: org.seasar.doma.jdbc.entity.PreInsertContext[$clsName]): Unit = {
-      val __listenerClass =
-        classOf[${entitySetting.listener}]
-      val __listener =
-        context.getConfig.getEntityListenerProvider
-          .get[$clsName, ${entitySetting.listener}](__listenerClass, __listenerSupplier)
-      __listener.preInsert(entity, context)
-    }
-
-    override def preUpdate(
-        entity: $clsName,
-        context: org.seasar.doma.jdbc.entity.PreUpdateContext[$clsName]): Unit = {
-      val __listenerClass =
-        classOf[${entitySetting.listener}]
-      val __listener =
-        context.getConfig.getEntityListenerProvider
-          .get[$clsName, ${entitySetting.listener}](__listenerClass, __listenerSupplier)
-      __listener.preUpdate(entity, context)
-    }
-
-    override def preDelete(
-        entity: $clsName,
-        context: org.seasar.doma.jdbc.entity.PreDeleteContext[$clsName]): Unit = {
-      val __listenerClass =
-        classOf[${entitySetting.listener}]
-      val __listener =
-        context.getConfig.getEntityListenerProvider
-          .get[$clsName, ${entitySetting.listener}](__listenerClass, __listenerSupplier)
-      __listener.preDelete(entity, context)
-    }
-
-    override def postInsert(
-        entity: $clsName,
-        context: org.seasar.doma.jdbc.entity.PostInsertContext[$clsName]): Unit = {
-      val __listenerClass =
-        classOf[${entitySetting.listener}]
-      val __listener =
-        context.getConfig.getEntityListenerProvider
-          .get[$clsName,${entitySetting.listener}](__listenerClass, __listenerSupplier)
-      __listener.postInsert(entity, context)
-    }
-
-    override def postUpdate(
-        entity: $clsName,
-        context: org.seasar.doma.jdbc.entity.PostUpdateContext[$clsName]): Unit = {
-      val __listenerClass =
-        classOf[${entitySetting.listener}]
-      val __listener =
-        context.getConfig.getEntityListenerProvider
-          .get[$clsName, ${entitySetting.listener}](__listenerClass, __listenerSupplier)
-      __listener.postUpdate(entity, context)
-    }
-
-    override def postDelete(
-        entity: $clsName,
-        context: org.seasar.doma.jdbc.entity.PostDeleteContext[$clsName]): Unit = {
-      val __listenerClass =
-        classOf[${entitySetting.listener}]
-      val __listener =
-        context.getConfig.getEntityListenerProvider
-          .get[$clsName, ${entitySetting.listener}](__listenerClass, __listenerSupplier)
-      __listener.postDelete(entity, context)
-    }
-
-    override def getEntityPropertyTypes: java.util.List[domala.jdbc.entity.EntityPropertyDesc[$clsName, _]] = __entityPropertyTypes
-
-    override def getEntityPropertyType(__name: String): domala.jdbc.entity.EntityPropertyDesc[$clsName, _] = __entityPropertyTypeMap.get(__name)
-
-    override def getIdPropertyTypes: java.util.List[domala.jdbc.entity.EntityPropertyDesc[$clsName, _]] = __idPropertyTypes
+    override def getNamingType: domala.jdbc.entity.NamingType = ${entityArgs.naming}
 
     override def getGeneratedIdPropertyType: domala.jdbc.entity.GeneratedIdPropertyDesc[_ >: $clsName, $clsName, _, _] = ${generateGeneratedIdPropertyDesc(clsName, ctor)}
 
@@ -438,13 +315,8 @@ object EntityDescGenerator {
             )
           """)
     } ++
-    q"""
+    Seq(q"""
     override def getEntityClass: Class[$clsName] = classOf[$clsName]
-
-    override def getOriginalStates(__entity: $clsName): $clsName = null
-
-    override def saveCurrentStates(__entity: $clsName): Unit = {}
-
-    """.stats
+    """)
   }
 }
