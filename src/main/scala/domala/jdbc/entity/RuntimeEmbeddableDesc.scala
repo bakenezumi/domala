@@ -26,8 +26,7 @@ class RuntimeEmbeddableDesc[EMBEDDABLE: TypeTag] {
         case a: ru.Annotation if a.tree.tpe =:= typeOf[domala.Column] =>
           Column.reflect(ru)(a)
       }.getOrElse(Column())
-      val Right(desc) = RuntimeEntityDesc.generateDefaultPropertyDesc[ENTITY](embeddedPropertyName + "." + p.name.toString, p.typeSignature, column, namingType).head._2
-      desc
+      RuntimeEntityDesc.generateDefaultPropertyDesc[ENTITY](embeddedPropertyName + "." + p.name.toString, p.typeSignature, column, namingType).head._2
     }.asJava
   }
 

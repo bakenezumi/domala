@@ -16,11 +16,7 @@ object EntityDescRepository {
       case Types.GeneratedEntityType =>
           ReflectionUtil.getEntityDesc(cTag)
       case Types.RuntimeEntityType =>
-        RuntimeEntityDesc.of[E] match {
-          case Right(v) => v
-          case Left(_) => throw new DomaException(
-            Message.DOMALA6025, cTag.runtimeClass.getName)
-        }
+        RuntimeEntityDesc.of[E]
       case _ => throw new DomaException(
               Message.DOMALA6025, cTag.runtimeClass.getName)
     }

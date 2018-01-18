@@ -6,7 +6,6 @@ package object entity {
   // Alias of Doma type
   type EntityDesc[ENTITY] = doma.jdbc.entity.EntityType[ENTITY]
   type EntityPropertyDesc[ENTITY, BASIC] = doma.jdbc.entity.EntityPropertyType[ENTITY, BASIC]
-  type AbstractEntityDesc[ENTITY] = doma.jdbc.entity.AbstractEntityType[ENTITY]
   type NamingType = doma.jdbc.entity.NamingType
   object NamingType {
     val NONE = doma.jdbc.entity.NamingType.NONE
