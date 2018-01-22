@@ -79,4 +79,3 @@ object RuntimeEmbeddableDesc {
   }
 
 }
-

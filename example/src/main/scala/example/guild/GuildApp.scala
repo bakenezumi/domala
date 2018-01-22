@@ -45,20 +45,17 @@ case class ID[ENTITY](value: Int) extends AnyVal
 
 case class Name(value: String) extends AnyVal
 
-@Entity
 case class Guild(
   id: ID[Guild],
   name: Name
 )
 
-@Entity
 case class Character(
   id: ID[Character],
   name: Name,
   guildId: ID[Guild]
 )
 
-@Entity
 case class GuildHouse(
   id: ID[GuildHouse],
   name: Name,

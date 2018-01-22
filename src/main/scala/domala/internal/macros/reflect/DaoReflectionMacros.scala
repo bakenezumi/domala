@@ -5,7 +5,7 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
 import domala.internal.jdbc.command.{OptionEntitySingleResultHandler, OptionHolderSingleResultHandler}
-import domala.internal.macros.reflect.util.{AnyValHolderDescGenerator, MacroTypeConverter, RuntimeEntityDescGenerator}
+import domala.internal.macros.reflect.util.{AnyValHolderDescGenerator, MacroTypeConverter, PropertyDescUtil, RuntimeEntityDescGenerator}
 import domala.internal.macros.{DaoParam, DaoParamClass}
 import domala.internal.reflect.util.ReflectionUtil
 import domala.internal.{WrapIterator, WrapStream}
@@ -79,7 +79,7 @@ object DaoReflectionMacros {
         }
       case _ =>
         ReflectionUtil.abort(Message.DOMALA4245,
-          tpe, daoTpe, methodNameLiteral)
+          tpe, daoTpe, methodNameLiteral, getPropertyErrorMessage(c)(tpe))
     }
   }
   def getStreamHandler[D, T, R](f: Stream[T] => R,
@@ -128,7 +128,7 @@ object DaoReflectionMacros {
       case _ =>
         val Literal(Constant(methodNameText: String)) = methodName.tree
         ReflectionUtil.abort(Message.DOMALA6012,
-          tpe, daoTpe, methodNameText)
+          tpe, daoTpe, methodNameText, getPropertyErrorMessage(c)(tpe))
     }
   }
   def getIteratorHandler[D, T, R](f: Iterator[T] => R,
@@ -167,7 +167,7 @@ object DaoReflectionMacros {
         }
       case _ =>
         ReflectionUtil.abort(Message.DOMALA4007,
-          tpe, daoTpe, methodNameLiteral)
+          tpe, daoTpe, methodNameLiteral, getPropertyErrorMessage(c)(tpe))
     }
   }
   def getResultListHandler[D, T](daoClass: Class[D], methodName: String)(
@@ -205,7 +205,7 @@ object DaoReflectionMacros {
         }
       case _ =>
         ReflectionUtil.abort(Message.DOMALA4235,
-          tpe, daoTpe, methodNameText)
+          tpe, daoTpe, methodNameText, getPropertyErrorMessage(c)(tpe))
     }
   }
   def getOptionSingleResultHandler[D, T](daoClass: Class[D], methodName: String)(
@@ -623,5 +623,41 @@ object DaoReflectionMacros {
     validatePropertyName[D, T](c)(weakTypeOf[D], defName, weakTypeOf[T], excludeNames, Message.DOMALA4085)
   }
   def validateExclude[D, T](daoTrt: Class[D], defName: String, paramClass: Class[T], excludes: String*): Unit = macro validateExcludeImpl[D, T]
+
+  def getPropertyErrorMessage(c: blackbox.Context)(tpe: c.Type): String = {
+    import c.universe._
+    if (tpe <:< typeOf[Product])
+      findInvalidProperty(c)(tpe).map {
+        case (propertyName, typeName) =>
+          Message.DOMALA9903.getSimpleMessage(propertyName, typeName)
+      }.getOrElse("")
+    else ""
+  }
+
+  def findInvalidProperty(c: blackbox.Context)(tpe: c.Type): Option[(String, String)] = {
+    import c.universe._
+
+    def inner(names: Seq[String], t: c.Type): Option[(String, String)] = {
+      val constructor = t.decl(termNames.CONSTRUCTOR).asMethod
+      val params = constructor.paramLists.flatten
+      if(params.isEmpty && names.nonEmpty)
+        Some((names.reverse.mkString("."), t.toString))
+      else
+        params.map { p =>
+          MacroTypeConverter.of(c).toType(p.typeSignature) match {
+            case _: Types.Basic[_] => None
+            case _: Types.Holder[_, _] => None
+            case Types.Option(_: Types.Basic[_]) => None
+            case Types.Option(_: Types.Holder[_, _]) => None
+            case _ if p.typeSignature <:< typeOf[Product] => inner(p.name.toString +: names, p.typeSignature)
+            case _ => Some(((p.name.toString +: names).reverse.mkString("."), p.typeSignature.toString))
+          }
+        }.find {
+          case None => false
+          case _ => true
+        }.flatten
+    }
+    inner(Nil, tpe)
+  }
 
 }

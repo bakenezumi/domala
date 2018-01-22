@@ -40,7 +40,7 @@ public enum Message implements MessageResource {
     DOMALA4002(org.seasar.doma.message.Message.DOMA4002.getMessagePattern()),
     DOMALA4003(org.seasar.doma.message.Message.DOMA4003.getMessagePattern()),
     DOMALA4005(org.seasar.doma.message.Message.DOMA4005.getMessagePattern()),
-    DOMALA4007("戻り値のSeqに対する実型引数の型[{0}]はサポートされていません。 at {1}.{2}"),
+    DOMALA4007("戻り値のSeqに対する実型引数の型[{0}]はサポートされていません。{3} at {1}.{2}"),
     DOMALA4008(org.seasar.doma.message.Message.DOMA4008.getMessagePattern()),
     DOMALA4014("@Daoはトレイト以外には注釈できません。"),
     DOMALA4015("クラス以外には注釈できません。"),
@@ -158,11 +158,11 @@ public enum Message implements MessageResource {
     // Entityの継承未実装 DOMA4227 - DOMA4231
     // エンティティのワイルドカード検査メッセージはDOMALA4205に統合 DOMA4232 - DOMA4233
     // 抽象型Entity未実装 DOMA4234
-    DOMALA4235("Optionに対する実型引数の型[{0}]はサポートされていません。サポートされている型は次のものです。基本型、ホルダークラス、エンティティクラス。  at {1}.{2}"),
+    DOMALA4235("Optionに対する実型引数の型[{0}]はサポートされていません。{3}サポートされている型は次のものです。基本型、ホルダークラス、エンティティクラス。 at {1}.{2}"),
     // パラメータのワイルドカード検査メッセージはDOMALA4209に統合 DOMA4236 - DOMA4242
     DOMALA4243(org.seasar.doma.message.Message.DOMA4243.getMessagePattern()),
     DOMALA4244("Functionの1番目の実型引数の型は、Streamでなければいけません。 at {0}.{1}"),
-    DOMALA4245("Streamの実型引数の型[{0}]はサポートされていません。 at {1}.{2}"),
+    DOMALA4245("Streamの実型引数の型[{0}]はサポートされていません。{3} at {1}.{2}"),
     DOMALA4246(org.seasar.doma.message.Message.DOMA4246.getMessagePattern()),
     DOMALA4247("@Selectのstrategy要素にSelectStrategyType.STREAMを設定した場合、Stream[?] => ?型のパラメータが必要です。 at {0}.{1}"),
     DOMALA4249("Stream[?] => ?型のパラメータは複数指定できません。"),
@@ -206,7 +206,7 @@ public enum Message implements MessageResource {
     DOMALA6009("@Selectのstrategy要素にSelectStrategyType.ITERATORを設定した場合、Iterator[?] => ?型のパラメータが必要です。 at {0}.{1}"),
     DOMALA6010("Iterator[?] => ?型のパラメータは複数指定できません。"),
     DOMALA6011("Functionの1番目の実型引数の型は、Iteratorでなければいけません。 at {0}.{1}"),
-    DOMALA6012("Iteratorの実型引数の型[{0}]はサポートされていません。 at {1}.{2}"),
+    DOMALA6012("Iteratorの実型引数の型[{0}]はサポートされていません。{3} at {1}.{2}"),
     DOMALA6013("script\"...\"内での変数利用はできません。"),
     DOMALA6014("AnyValのサブクラスを永続対象とする場合、要素の型は基本型でなければなりません。 at {0}.{1}"),
     DOMALA6015("sqlは文字列リテラルでなければなりません。 at {0}.{1}"),
@@ -224,6 +224,7 @@ public enum Message implements MessageResource {
     // a part of message
     DOMALA9901("[{0}.{1}]のSQL"),
     DOMALA9902("SQLファイル[{0}]"),
+    DOMALA9903("プロパティ[{0}]の型[{1}]はサポートされていません。"),
     ;
 
     private final String messagePattern;

@@ -116,13 +116,12 @@ object RuntimeEntityDesc {
           Column.reflect(ru)(a)
       }.getOrElse(Column())
         if (isId) {
-          if(!column.insertable)
+          if (!column.insertable)
             MetaHelper.abort(Message.DOMALA4088, tpe.typeSymbol.name.toString, p.name.toString)
-          if(!column.updatable)
+          if (!column.updatable)
             MetaHelper.abort(Message.DOMALA4089, tpe.typeSymbol.name.toString, p.name.toString)
           generateIdPropertyDesc[E](p.name.toString, p.typeSignature, column, namingType)
-        }
-        else
+        } else
           generateDefaultPropertyDesc[E](p.name.toString, p.typeSignature, column, namingType)
     }.toMap
   }
