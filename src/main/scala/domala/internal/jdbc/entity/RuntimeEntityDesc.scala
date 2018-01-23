@@ -8,21 +8,31 @@ import domala.internal.macros.meta.util.MetaHelper
 import domala.internal.reflect.util.{ReflectionUtil, RuntimeTypeConverter}
 import domala.jdbc.`type`.Types
 import domala.jdbc.entity._
+import domala.jdbc.holder.HolderDesc
 import domala.message.Message
 import domala.{Column, Table}
 import org.seasar.doma.DomaException
 import org.seasar.doma.jdbc.ConfigSupport
+import org.seasar.doma.jdbc.id.BuiltinIdentityIdGenerator
 import org.seasar.doma.wrapper.Wrapper
 
 import scala.collection.JavaConverters._
 import scala.language.existentials
 import scala.reflect._
 import scala.reflect.runtime.{universe => ru}
-import ru._
+import scala.reflect.runtime.universe._
 
 class RuntimeEntityDesc[ENTITY: TypeTag : ClassTag] extends AbstractEntityDesc[ENTITY] {
 
   override type ENTITY_LISTENER = NullEntityListener[ENTITY]
+
+  private[this] val _propertyDescMap = RuntimeEntityDesc.generatePropertyDescMap[ENTITY](getNamingType)
+
+  private[this] val _idPropertyDescList = _propertyDescMap.values.collect {
+    case p: AssignedIdPropertyDesc[ENTITY, ENTITY, _, _] => p: EntityPropertyDesc[ENTITY, _]
+    case p: GeneratedIdPropertyDesc[ENTITY, ENTITY, _, _] => p: EntityPropertyDesc[ENTITY, _]
+  }.toList
+
   override val listener = new NullEntityListener[ENTITY]()
 
   override val table: Table = {
@@ -32,22 +42,23 @@ class RuntimeEntityDesc[ENTITY: TypeTag : ClassTag] extends AbstractEntityDesc[E
     }.getOrElse(Table())
   }
 
-  override protected val propertyDescMap: Map[String, EntityPropertyDesc[ENTITY, _]] = RuntimeEntityDesc.generatePropertyDescMap[ENTITY](getNamingType)
+  override protected val propertyDescMap: Map[String, EntityPropertyDesc[ENTITY, _]] = _propertyDescMap
 
-  override protected val idPropertyDescList: List[EntityPropertyDesc[ENTITY, _]] = propertyDescMap.values.collect {
-    case p:AssignedIdPropertyDesc[ENTITY, ENTITY, _, _] => p: EntityPropertyDesc[ENTITY, _]
-  }.toList
-
+  override protected val idPropertyDescList: List[EntityPropertyDesc[ENTITY, _]] = _idPropertyDescList
 
   override def getNamingType: NamingType = null
 
   override def getTenantIdPropertyType: TenantIdPropertyDesc[_ >: ENTITY, ENTITY, _, _] = null
 
-  override def getVersionPropertyType: VersionPropertyDesc[_ >: ENTITY, ENTITY, _ <: Number, _] = null
+  override def getVersionPropertyType: VersionPropertyDesc[_ >: ENTITY, ENTITY, _ <: Number, _] = _propertyDescMap.values.collectFirst {
+    case p: VersionPropertyDesc[_, _, _, _] => p
+  }.orNull.asInstanceOf[VersionPropertyDesc[_ >: ENTITY, ENTITY, _ <: Number, _]]
 
   override def newEntity(__args: util.Map[String, Property[ENTITY, _]]): ENTITY = RuntimeEntityDesc.fromMap[ENTITY](__args.asScala.toMap)
 
-  override def getGeneratedIdPropertyType: GeneratedIdPropertyDesc[_ >: ENTITY, ENTITY, _ <: Number, _] = null
+  override def getGeneratedIdPropertyType: GeneratedIdPropertyDesc[_ >: ENTITY, ENTITY, _ <: Number, _] = _propertyDescMap.values.collectFirst {
+    case p: GeneratedIdPropertyDesc[_, _, _, _] => p
+  }.orNull.asInstanceOf[GeneratedIdPropertyDesc[_ >: ENTITY, ENTITY, _ <: Number, _]]
 
 }
 
@@ -111,18 +122,23 @@ object RuntimeEntityDesc {
       val isId = annotations.exists { a: ru.Annotation =>
         a.tree.tpe =:= typeOf[domala.Id]
       }
+      val isVersion = annotations.exists { a: ru.Annotation =>
+        a.tree.tpe =:= typeOf[domala.Version]
+      }
       val column: Column = annotations.collectFirst {
         case a: ru.Annotation if a.tree.tpe =:= typeOf[domala.Column] =>
           Column.reflect(ru)(a)
       }.getOrElse(Column())
-        if (isId) {
-          if (!column.insertable)
-            MetaHelper.abort(Message.DOMALA4088, tpe.typeSymbol.name.toString, p.name.toString)
-          if (!column.updatable)
-            MetaHelper.abort(Message.DOMALA4089, tpe.typeSymbol.name.toString, p.name.toString)
-          generateIdPropertyDesc[E](p.name.toString, p.typeSignature, column, namingType)
-        } else
-          generateDefaultPropertyDesc[E](p.name.toString, p.typeSignature, column, namingType)
+      if (isId) {
+        if (!column.insertable)
+          MetaHelper.abort(Message.DOMALA4088, tpe.typeSymbol.name.toString, p.name.toString)
+        if (!column.updatable)
+          MetaHelper.abort(Message.DOMALA4089, tpe.typeSymbol.name.toString, p.name.toString)
+        generateIdPropertyDesc[E](p.name.toString, p.typeSignature, column, namingType, p)
+      } else if (isVersion) {
+        generateVersionPropertyDesc[E](p.name.toString, p.typeSignature, column, namingType)
+      } else
+        generateDefaultPropertyDesc[E](p.name.toString, p.typeSignature, column, namingType)
     }.toMap
   }
 
@@ -204,24 +220,43 @@ object RuntimeEntityDesc {
     paramName: String,
     propertyType: Type,
     column: Column,
-    namingType: NamingType
+    namingType: NamingType,
+    paramSymbol: Symbol
   )(
     implicit
     entityTypeTag: TypeTag[E],
     entityClassTag: ClassTag[E],
   ): Map[String, EntityPropertyDesc[E, _]] = {
     val propertyClass = mirror.runtimeClass(propertyType)
-
+    val idGenerator = paramSymbol.annotations.collectFirst {
+      case a: ru.Annotation if a.tree.tpe =:= typeOf[domala.GeneratedValue] =>
+        a.tree.children.tail.head match {
+          case Select(_, TermName("IDENTITY")) => new BuiltinIdentityIdGenerator()
+          case x => throw new DomaException(Message.DOMALA6026, entityClassTag.runtimeClass.getName, paramName, x)
+        }
+    }
     def basicPropertyDesc(tpe: Types.Basic[_], nakedClass: Class[Any]) = {
       val wrapperSupplier = tpe.wrapperSupplier
-      AssignedIdPropertyDesc.ofBasic[E, Any, Any](
-        entityClassTag.runtimeClass.asInstanceOf[Class[E]],
-        propertyClass,
-        nakedClass,
-        wrapperSupplier.asInstanceOf[Supplier[Wrapper[Any]]],
-        paramName,
-        column,
-        namingType
+      idGenerator.map(g =>
+        GeneratedIdPropertyDesc.ofBasic[E, Number, Any](
+          entityClassTag.runtimeClass.asInstanceOf[Class[E]],
+          propertyClass,
+          nakedClass.asInstanceOf[Class[Number]],
+          wrapperSupplier.asInstanceOf[Supplier[Wrapper[Number]]],
+          paramName,
+          column,
+          namingType,
+          g)
+      ).getOrElse(
+        AssignedIdPropertyDesc.ofBasic[E, Any, Any](
+          entityClassTag.runtimeClass.asInstanceOf[Class[E]],
+          propertyClass,
+          nakedClass,
+          wrapperSupplier.asInstanceOf[Supplier[Wrapper[Any]]],
+          paramName,
+          column,
+          namingType
+        )
       ).asInstanceOf[EntityPropertyDesc[E, _]]
     }
 
@@ -231,13 +266,25 @@ object RuntimeEntityDesc {
           ReflectionUtil.getHolderDesc(nakedClass)
         else
           AnyValHolderDescRepository.getByClass(nakedClass, ConfigSupport.defaultClassHelper)
-      AssignedIdPropertyDesc.ofHolder(
-        entityClassTag.runtimeClass.asInstanceOf[Class[E]],
-        propertyClass,
-        holderDesc,
-        paramName,
-        column,
-        namingType
+      idGenerator.map(g =>
+        GeneratedIdPropertyDesc.ofHolder[E, Number, Any](
+          entityClassTag.runtimeClass.asInstanceOf[Class[E]],
+          propertyClass,
+          holderDesc.asInstanceOf[HolderDesc[Number, Any]],
+          paramName,
+          column,
+          namingType,
+          g
+        )
+      ).getOrElse(
+        AssignedIdPropertyDesc.ofHolder(
+          entityClassTag.runtimeClass.asInstanceOf[Class[E]],
+          propertyClass,
+          holderDesc,
+          paramName,
+          column,
+          namingType
+        )
       )
     }
 
@@ -258,6 +305,67 @@ object RuntimeEntityDesc {
         case _ =>
           throw new DomaException(Message.DOMALA4096, propertyType, entityClassTag.runtimeClass.getName, paramName)
      })
+    )
+  }
+
+  def generateVersionPropertyDesc[E](
+    paramName: String,
+    propertyType: Type,
+    column: Column,
+    namingType: NamingType
+  )(
+    implicit
+    entityTypeTag: TypeTag[E],
+    entityClassTag: ClassTag[E],
+  ): Map[String, EntityPropertyDesc[E, _]] = {
+    val propertyClass = mirror.runtimeClass(propertyType)
+
+    def basicPropertyDesc(tpe: Types.Basic[_], nakedClass: Class[Number]) = {
+      val wrapperSupplier = tpe.wrapperSupplier
+      VersionPropertyDesc.ofBasic[E, Number, Any](
+        entityClassTag.runtimeClass.asInstanceOf[Class[E]],
+        propertyClass,
+        nakedClass,
+        wrapperSupplier.asInstanceOf[Supplier[Wrapper[Number]]],
+        paramName,
+        column,
+        namingType
+      ).asInstanceOf[EntityPropertyDesc[E, _]]
+    }
+
+    def holderPropertyDesc(tpe: Types.Holder[_, _], nakedClass: Class[Number]) = {
+      val holderDesc =
+        if (!tpe.isAnyValHolder)
+          ReflectionUtil.getHolderDesc(nakedClass)
+        else
+          AnyValHolderDescRepository.getByClass(nakedClass, ConfigSupport.defaultClassHelper)
+      VersionPropertyDesc.ofHolder[E, Number, Any](
+        entityClassTag.runtimeClass.asInstanceOf[Class[E]],
+        propertyClass,
+        holderDesc.asInstanceOf[HolderDesc[Number, Any]],
+        paramName,
+        column,
+        namingType
+      )
+    }
+
+    Map(paramName ->
+      (RuntimeTypeConverter.toType(propertyType) match {
+        case tpe: Types.Basic[_] if tpe.isNumber =>
+          basicPropertyDesc(tpe, propertyClass.asInstanceOf[Class[Number]])
+        case Types.Option(tpe: Types.Basic[_]) if tpe.isNumber =>
+          val nakedType = propertyType.typeArgs.head
+          val nakedClass = mirror.runtimeClass(nakedType)
+          basicPropertyDesc(tpe, nakedClass.asInstanceOf[Class[Number]])
+        case tpe: Types.Holder[_, _]  if tpe.isNumber =>
+          holderPropertyDesc(tpe, propertyClass.asInstanceOf[Class[Number]])
+        case Types.Option(tpe: Types.Holder[_, _]) if tpe.isNumber =>
+          val nakedType = propertyType.typeArgs.head
+          val nakedClass = mirror.runtimeClass(nakedType)
+          holderPropertyDesc(tpe, nakedClass.asInstanceOf[Class[Number]])
+        case _ =>
+          throw new DomaException(Message.DOMALA4096, propertyType, entityClassTag.runtimeClass.getName, paramName)
+      })
     )
   }
 

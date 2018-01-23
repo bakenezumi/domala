@@ -2,47 +2,48 @@ package domala.internal.jdbc.entity
 
 import java.time.LocalDateTime
 
+import domala.jdbc.entity.EntityDesc
 import org.scalatest.FunSuite
 
 class RuntimeEntityDescTestSuite extends FunSuite{
   test("Basic") {
-    assert(BasicEntity.getEntityPropertyTypes.size == 3)
-    val p0 = BasicEntity.getEntityPropertyTypes.get(0)
-    val p1 = BasicEntity.getEntityPropertyTypes.get(1)
-    val p2 = BasicEntity.getEntityPropertyTypes.get(2)
-    assert(p0 == BasicEntity.getEntityPropertyType("id"))
-    assert(p1 == BasicEntity.getEntityPropertyType("name"))
-    assert(p2 == BasicEntity.getEntityPropertyType("time"))
+    assert(BasicEntity.entityDesc.getEntityPropertyTypes.size == 3)
+    val p0 = BasicEntity.entityDesc.getEntityPropertyTypes.get(0)
+    val p1 = BasicEntity.entityDesc.getEntityPropertyTypes.get(1)
+    val p2 = BasicEntity.entityDesc.getEntityPropertyTypes.get(2)
+    assert(p0 == BasicEntity.entityDesc.getEntityPropertyType("id"))
+    assert(p1 == BasicEntity.entityDesc.getEntityPropertyType("name"))
+    assert(p2 == BasicEntity.entityDesc.getEntityPropertyType("time"))
   }
 
   test("Option Basic") {
-    assert(OptionBasicEntity.getEntityPropertyTypes.size == 3)
-    val p0 = OptionBasicEntity.getEntityPropertyTypes.get(0)
-    val p1 = OptionBasicEntity.getEntityPropertyTypes.get(1)
-    val p2 = OptionBasicEntity.getEntityPropertyTypes.get(2)
-    assert(p0 == OptionBasicEntity.getEntityPropertyType("id"))
-    assert(p1 == OptionBasicEntity.getEntityPropertyType("name"))
-    assert(p2 == OptionBasicEntity.getEntityPropertyType("time"))
+    assert(OptionBasicEntity.entityDesc.getEntityPropertyTypes.size == 3)
+    val p0 = OptionBasicEntity.entityDesc.getEntityPropertyTypes.get(0)
+    val p1 = OptionBasicEntity.entityDesc.getEntityPropertyTypes.get(1)
+    val p2 = OptionBasicEntity.entityDesc.getEntityPropertyTypes.get(2)
+    assert(p0 == OptionBasicEntity.entityDesc.getEntityPropertyType("id"))
+    assert(p1 == OptionBasicEntity.entityDesc.getEntityPropertyType("name"))
+    assert(p2 == OptionBasicEntity.entityDesc.getEntityPropertyType("time"))
   }
 
   test("AnyVal") {
-    assert(AnyValHolderEntity.getEntityPropertyTypes.size == 3)
-    val p0 = AnyValHolderEntity.getEntityPropertyTypes.get(0)
-    val p1 = AnyValHolderEntity.getEntityPropertyTypes.get(1)
-    val p2 = AnyValHolderEntity.getEntityPropertyTypes.get(2)
-    assert(p0 == AnyValHolderEntity.getEntityPropertyType("id"))
-    assert(p1 == AnyValHolderEntity.getEntityPropertyType("name"))
-    assert(p2 == AnyValHolderEntity.getEntityPropertyType("time"))
+    assert(AnyValHolderEntity.entityDesc.getEntityPropertyTypes.size == 3)
+    val p0 = AnyValHolderEntity.entityDesc.getEntityPropertyTypes.get(0)
+    val p1 = AnyValHolderEntity.entityDesc.getEntityPropertyTypes.get(1)
+    val p2 = AnyValHolderEntity.entityDesc.getEntityPropertyTypes.get(2)
+    assert(p0 == AnyValHolderEntity.entityDesc.getEntityPropertyType("id"))
+    assert(p1 == AnyValHolderEntity.entityDesc.getEntityPropertyType("name"))
+    assert(p2 == AnyValHolderEntity.entityDesc.getEntityPropertyType("time"))
   }
 
   test("Option AnyVal") {
-    assert(OptionAnyValHolderEntity.getEntityPropertyTypes.size == 3)
-    val p0 = OptionAnyValHolderEntity.getEntityPropertyTypes.get(0)
-    val p1 = OptionAnyValHolderEntity.getEntityPropertyTypes.get(1)
-    val p2 = OptionAnyValHolderEntity.getEntityPropertyTypes.get(2)
-    assert(p0 == OptionAnyValHolderEntity.getEntityPropertyType("id"))
-    assert(p1 == OptionAnyValHolderEntity.getEntityPropertyType("name"))
-    assert(p2 == OptionAnyValHolderEntity.getEntityPropertyType("time"))
+    assert(OptionAnyValHolderEntity.entityDesc.getEntityPropertyTypes.size == 3)
+    val p0 = OptionAnyValHolderEntity.entityDesc.getEntityPropertyTypes.get(0)
+    val p1 = OptionAnyValHolderEntity.entityDesc.getEntityPropertyTypes.get(1)
+    val p2 = OptionAnyValHolderEntity.entityDesc.getEntityPropertyTypes.get(2)
+    assert(p0 == OptionAnyValHolderEntity.entityDesc.getEntityPropertyType("id"))
+    assert(p1 == OptionAnyValHolderEntity.entityDesc.getEntityPropertyType("name"))
+    assert(p2 == OptionAnyValHolderEntity.entityDesc.getEntityPropertyType("time"))
   }
 
 }
@@ -53,7 +54,9 @@ case class BasicEntity(
   time: LocalDateTime
 )
 
-object BasicEntity extends RuntimeEntityDesc[BasicEntity]
+object BasicEntity {
+  val entityDesc: EntityDesc[BasicEntity] = RuntimeEntityDesc.of[BasicEntity]
+}
 
 case class OptionBasicEntity(
   id: Option[Int],
@@ -61,7 +64,9 @@ case class OptionBasicEntity(
   time: Option[LocalDateTime]
 )
 
-object OptionBasicEntity extends RuntimeEntityDesc[OptionBasicEntity]
+object OptionBasicEntity {
+  val entityDesc: EntityDesc[OptionBasicEntity] = RuntimeEntityDesc.of[OptionBasicEntity]
+}
 
 case class IDAnyVal[T](value: Int) extends AnyVal
 case class NameAnyVal(value: String) extends AnyVal
@@ -73,7 +78,9 @@ case class AnyValHolderEntity(
   time: TimeAnyVal
 )
 
-object AnyValHolderEntity extends RuntimeEntityDesc[AnyValHolderEntity]
+object AnyValHolderEntity {
+  val entityDesc: EntityDesc[AnyValHolderEntity] = RuntimeEntityDesc.of[AnyValHolderEntity]
+}
 
 case class OptionAnyValHolderEntity(
   id: Option[IDAnyVal[OptionAnyValHolderEntity]],
@@ -81,4 +88,6 @@ case class OptionAnyValHolderEntity(
   time: Option[TimeAnyVal]
 )
 
-object OptionAnyValHolderEntity extends RuntimeEntityDesc[OptionAnyValHolderEntity]
+object OptionAnyValHolderEntity {
+  val entityDesc: EntityDesc[OptionAnyValHolderEntity] = RuntimeEntityDesc.of[OptionAnyValHolderEntity]
+}
