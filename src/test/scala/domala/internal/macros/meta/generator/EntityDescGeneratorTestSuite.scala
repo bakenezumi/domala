@@ -1,6 +1,6 @@
-package domala.internal.macros
+package domala.internal.macros.meta.generator
 
-import domala.internal.macros.meta.generator.EntityDescGenerator
+import domala.internal.macros.MacrosAbortException
 import domala.message.Message
 import org.scalatest.FunSuite
 

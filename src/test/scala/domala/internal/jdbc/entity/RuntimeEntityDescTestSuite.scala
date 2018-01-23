@@ -2,6 +2,7 @@ package domala.internal.jdbc.entity
 
 import java.time.LocalDateTime
 
+import domala.Table
 import domala.jdbc.entity.EntityDesc
 import org.scalatest.FunSuite
 

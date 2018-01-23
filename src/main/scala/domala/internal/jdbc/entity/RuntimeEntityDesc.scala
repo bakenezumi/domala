@@ -35,13 +35,6 @@ object RuntimeEntityDesc {
       new AbstractEntityDesc[ENTITY] {
         override type ENTITY_LISTENER = NullEntityListener[ENTITY]
 
-        private[this] val _propertyDescMap = generatePropertyDescMap[ENTITY](getNamingType)
-
-        private[this] val _idPropertyDescList = _propertyDescMap.values.collect {
-          case p: AssignedIdPropertyDesc[_, _, _, _] => p: EntityPropertyDesc[ENTITY, _]
-          case p: GeneratedIdPropertyDesc[_, _, _, _] => p: EntityPropertyDesc[ENTITY, _]
-        }.toList
-
         override val listener = new NullEntityListener[ENTITY]()
 
         override val table: Table = {
@@ -51,22 +44,25 @@ object RuntimeEntityDesc {
           }.getOrElse(Table())
         }
 
-        override protected val propertyDescMap: Map[String, EntityPropertyDesc[ENTITY, _]] = _propertyDescMap
+        override protected val propertyDescMap: Map[String, EntityPropertyDesc[ENTITY, _]] = generatePropertyDescMap[ENTITY](getNamingType)
 
-        override protected val idPropertyDescList: List[EntityPropertyDesc[ENTITY, _]] = _idPropertyDescList
+        override protected val idPropertyDescList: List[EntityPropertyDesc[ENTITY, _]] = propertyDescMap.values.collect {
+          case p: AssignedIdPropertyDesc[_, _, _, _] => p: EntityPropertyDesc[ENTITY, _]
+          case p: GeneratedIdPropertyDesc[_, _, _, _] => p: EntityPropertyDesc[ENTITY, _]
+        }.toList
 
         override def getNamingType: NamingType = null
 
         override def getTenantIdPropertyType: TenantIdPropertyDesc[_ >: ENTITY, ENTITY, _, _] = null
 
-        override def getVersionPropertyType: VersionPropertyDesc[_ >: ENTITY, ENTITY, _ <: Number, _] = _propertyDescMap.values.collectFirst {
+        override def getVersionPropertyType: VersionPropertyDesc[_ >: ENTITY, ENTITY, _ <: Number, _] = propertyDescMap.values.collectFirst {
           case p: VersionPropertyDesc[_, _, _, _] => p
         }.orNull.asInstanceOf[VersionPropertyDesc[_ >: ENTITY, ENTITY, _ <: Number, _]]
 
         override def newEntity(__args: util.Map[String, Property[ENTITY, _]]): ENTITY = fromMap[ENTITY](__args.asScala.toMap)
 
-        override def getGeneratedIdPropertyType: GeneratedIdPropertyDesc[_ >: ENTITY, ENTITY, _ <: Number, _] = _propertyDescMap.values.collectFirst {
-          case p: GeneratedIdPropertyDesc[_, _, _, _] => p
+        override def getGeneratedIdPropertyType: org.seasar.doma.jdbc.entity.GeneratedIdPropertyType[_ >: ENTITY, ENTITY, _ <: Number, _] = propertyDescMap.values.collectFirst {
+          case p: org.seasar.doma.jdbc.entity.GeneratedIdPropertyType[_, _, _, _] => p
         }.orNull.asInstanceOf[GeneratedIdPropertyDesc[_ >: ENTITY, ENTITY, _ <: Number, _]]
       }
     }).asInstanceOf[AbstractEntityDesc[ENTITY]]
@@ -152,14 +148,17 @@ object RuntimeEntityDesc {
 
     def basicPropertyDesc(tpe: Types.Basic[_], nakedClass: Class[Any]) = {
       val wrapperSupplier = tpe.wrapperSupplier
-      DefaultPropertyDesc.ofBasic[ENTITY, Any, Any](
-        entityClassTag.runtimeClass.asInstanceOf[Class[ENTITY]],
-        propertyClass,
-        nakedClass,
-        wrapperSupplier.asInstanceOf[Supplier[Wrapper[Any]]],
-        paramName,
-        column,
-        namingType
+      DefaultPropertyDesc[ENTITY, Any, Any](
+        EntityPropertyDescParam(
+          entityClassTag.runtimeClass.asInstanceOf[Class[ENTITY]],
+          propertyClass,
+          BasicTypeDesc(
+            nakedClass,
+            wrapperSupplier.asInstanceOf[Supplier[Wrapper[Any]]]),
+          paramName,
+          column,
+          namingType
+        )
       ).asInstanceOf[EntityPropertyDesc[ENTITY, _]]
     }
 
@@ -169,13 +168,15 @@ object RuntimeEntityDesc {
           ReflectionUtil.getHolderDesc(nakedClass)
         else
           AnyValHolderDescRepository.getByClass(nakedClass, ConfigSupport.defaultClassHelper)
-      DefaultPropertyDesc.ofHolder(
-        entityClassTag.runtimeClass.asInstanceOf[Class[ENTITY]],
-        propertyClass,
-        holderDesc,
-        paramName,
-        column,
-        namingType
+      DefaultPropertyDesc(
+        EntityPropertyDescParam(
+          entityClassTag.runtimeClass.asInstanceOf[Class[ENTITY]],
+          propertyClass,
+          holderDesc,
+          paramName,
+          column,
+          namingType
+        )
       )
     }
 
@@ -223,7 +224,7 @@ object RuntimeEntityDesc {
     entityTypeTag: TypeTag[ENTITY],
     entityClassTag: ClassTag[ENTITY],
   ): Map[String, EntityPropertyDesc[ENTITY, _]] = {
-    val propertyClass = mirror.runtimeClass(propertyType)
+    val propertyClass: Class[_] = mirror.runtimeClass(propertyType)
     val idGenerator = paramSymbol.annotations.collectFirst {
       case a: ru.Annotation if a.tree.tpe =:= typeOf[domala.GeneratedValue] =>
         a.tree.children.tail.head match {
@@ -231,55 +232,61 @@ object RuntimeEntityDesc {
           case x => throw new DomaException(Message.DOMALA6026, entityClassTag.runtimeClass.getName, paramName, x)
         }
     }
-    def basicPropertyDesc(tpe: Types.Basic[_], nakedClass: Class[Any]) = {
+    def basicPropertyDesc(tpe: Types.Basic[_], nakedClass: Class[_]) = {
       val wrapperSupplier = tpe.wrapperSupplier
       idGenerator.map(g =>
-        GeneratedIdPropertyDesc.ofBasic[ENTITY, Number, Any](
-          entityClassTag.runtimeClass.asInstanceOf[Class[ENTITY]],
-          propertyClass,
-          nakedClass.asInstanceOf[Class[Number]],
-          wrapperSupplier.asInstanceOf[Supplier[Wrapper[Number]]],
-          paramName,
-          column,
-          namingType,
-          g)
+        GeneratedIdPropertyDesc(g)(
+          EntityPropertyDescParam(
+            entityClassTag.runtimeClass.asInstanceOf[Class[ENTITY]],
+            propertyClass,
+            BasicTypeDesc[Number](nakedClass.asInstanceOf[Class[Number]],
+            wrapperSupplier.asInstanceOf[Supplier[Wrapper[Number]]]),
+            paramName,
+            column,
+            namingType
+          ))
       ).getOrElse(
-        AssignedIdPropertyDesc.ofBasic[ENTITY, Any, Any](
-          entityClassTag.runtimeClass.asInstanceOf[Class[ENTITY]],
-          propertyClass,
-          nakedClass,
-          wrapperSupplier.asInstanceOf[Supplier[Wrapper[Any]]],
-          paramName,
-          column,
-          namingType
+        AssignedIdPropertyDesc(
+          EntityPropertyDescParam(
+            entityClassTag.runtimeClass.asInstanceOf[Class[ENTITY]],
+            propertyClass,
+            BasicTypeDesc(
+              nakedClass.asInstanceOf[Class[Any]],
+              wrapperSupplier.asInstanceOf[Supplier[Wrapper[Any]]]),
+            paramName,
+            column,
+            namingType
+          )
         )
       ).asInstanceOf[EntityPropertyDesc[ENTITY, _]]
     }
 
-    def holderPropertyDesc(tpe: Types.Holder[_, _], nakedClass: Class[Any]) = {
+    def holderPropertyDesc(tpe: Types.Holder[_, _], nakedClass: Class[_]) = {
       val holderDesc =
         if (!tpe.isAnyValHolder)
           ReflectionUtil.getHolderDesc(nakedClass)
         else
           AnyValHolderDescRepository.getByClass(nakedClass, ConfigSupport.defaultClassHelper)
       idGenerator.map(g =>
-        GeneratedIdPropertyDesc.ofHolder[ENTITY, Number, Any](
-          entityClassTag.runtimeClass.asInstanceOf[Class[ENTITY]],
-          propertyClass,
-          holderDesc.asInstanceOf[HolderDesc[Number, Any]],
-          paramName,
-          column,
-          namingType,
-          g
-        )
+        GeneratedIdPropertyDesc(g)(
+          EntityPropertyDescParam(
+            entityClassTag.runtimeClass.asInstanceOf[Class[ENTITY]],
+            propertyClass,
+            holderDesc.asInstanceOf[HolderDesc[Number, _]],
+            paramName,
+            column,
+            namingType
+          ))
       ).getOrElse(
-        AssignedIdPropertyDesc.ofHolder(
-          entityClassTag.runtimeClass.asInstanceOf[Class[ENTITY]],
-          propertyClass,
-          holderDesc,
-          paramName,
-          column,
-          namingType
+        AssignedIdPropertyDesc(
+          EntityPropertyDescParam(
+            entityClassTag.runtimeClass.asInstanceOf[Class[ENTITY]],
+            propertyClass,
+            holderDesc.asInstanceOf[HolderDesc[Any, Any]],
+            paramName,
+            column,
+            namingType
+          )
         )
       )
     }
@@ -287,17 +294,17 @@ object RuntimeEntityDesc {
     Map(paramName ->
       (RuntimeTypeConverter.toType(propertyType) match {
         case tpe: Types.Basic[_] =>
-          basicPropertyDesc(tpe, propertyClass.asInstanceOf[Class[Any]])
+          basicPropertyDesc(tpe, propertyClass)
         case Types.Option(tpe: Types.Basic[_]) =>
           val nakedType = propertyType.typeArgs.head
-          val nakedClass = mirror.runtimeClass(nakedType)
-          basicPropertyDesc(tpe, nakedClass.asInstanceOf[Class[Any]])
+          val nakedClass = mirror.runtimeClass(nakedType).asInstanceOf[Class[Any]]
+          basicPropertyDesc(tpe, nakedClass)
         case tpe: Types.Holder[_, _] =>
-          holderPropertyDesc(tpe, propertyClass.asInstanceOf[Class[Any]])
+          holderPropertyDesc(tpe, propertyClass)
         case Types.Option(tpe: Types.Holder[_, _]) =>
           val nakedType = propertyType.typeArgs.head
-          val nakedClass = mirror.runtimeClass(nakedType)
-          holderPropertyDesc(tpe, nakedClass.asInstanceOf[Class[Any]])
+          val nakedClass = mirror.runtimeClass(nakedType).asInstanceOf[Class[Any]]
+          holderPropertyDesc(tpe, nakedClass)
         case _ =>
           throw new DomaException(Message.DOMALA4096, propertyType, entityClassTag.runtimeClass.getName, paramName)
      })
@@ -314,34 +321,39 @@ object RuntimeEntityDesc {
     entityTypeTag: TypeTag[ENTITY],
     entityClassTag: ClassTag[ENTITY],
   ): Map[String, EntityPropertyDesc[ENTITY, _]] = {
-    val propertyClass = mirror.runtimeClass(propertyType)
+    val propertyClass: Class[_] = mirror.runtimeClass(propertyType)
 
     def basicPropertyDesc(tpe: Types.Basic[_], nakedClass: Class[Number]) = {
       val wrapperSupplier = tpe.wrapperSupplier
-      VersionPropertyDesc.ofBasic[ENTITY, Number, Any](
-        entityClassTag.runtimeClass.asInstanceOf[Class[ENTITY]],
-        propertyClass,
-        nakedClass,
-        wrapperSupplier.asInstanceOf[Supplier[Wrapper[Number]]],
-        paramName,
-        column,
-        namingType
+      VersionPropertyDesc[ENTITY, Number, Any](
+        EntityPropertyDescParam(
+          entityClassTag.runtimeClass.asInstanceOf[Class[ENTITY]],
+          propertyClass,
+          BasicTypeDesc(
+            nakedClass,
+            wrapperSupplier.asInstanceOf[Supplier[Wrapper[Number]]]),
+          paramName,
+          column,
+          namingType
+         )
       ).asInstanceOf[EntityPropertyDesc[ENTITY, _]]
     }
 
-    def holderPropertyDesc(tpe: Types.Holder[_, _], nakedClass: Class[Number]) = {
+    def holderPropertyDesc(tpe: Types.Holder[_, _], nakedClass: Class[_]) = {
       val holderDesc =
         if (!tpe.isAnyValHolder)
           ReflectionUtil.getHolderDesc(nakedClass)
         else
           AnyValHolderDescRepository.getByClass(nakedClass, ConfigSupport.defaultClassHelper)
-      VersionPropertyDesc.ofHolder[ENTITY, Number, Any](
-        entityClassTag.runtimeClass.asInstanceOf[Class[ENTITY]],
-        propertyClass,
-        holderDesc.asInstanceOf[HolderDesc[Number, Any]],
-        paramName,
-        column,
-        namingType
+      VersionPropertyDesc(
+        EntityPropertyDescParam(
+          entityClassTag.runtimeClass.asInstanceOf[Class[ENTITY]],
+          propertyClass,
+          holderDesc.asInstanceOf[HolderDesc[Number, _]],
+          paramName,
+          column,
+          namingType
+        )
       )
     }
 
@@ -354,11 +366,11 @@ object RuntimeEntityDesc {
           val nakedClass = mirror.runtimeClass(nakedType)
           basicPropertyDesc(tpe, nakedClass.asInstanceOf[Class[Number]])
         case tpe: Types.Holder[_, _]  if tpe.isNumber =>
-          holderPropertyDesc(tpe, propertyClass.asInstanceOf[Class[Number]])
+          holderPropertyDesc(tpe, propertyClass)
         case Types.Option(tpe: Types.Holder[_, _]) if tpe.isNumber =>
           val nakedType = propertyType.typeArgs.head
           val nakedClass = mirror.runtimeClass(nakedType)
-          holderPropertyDesc(tpe, nakedClass.asInstanceOf[Class[Number]])
+          holderPropertyDesc(tpe, nakedClass)
         case _ =>
           throw new DomaException(Message.DOMALA4096, propertyType, entityClassTag.runtimeClass.getName, paramName)
       })

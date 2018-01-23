@@ -1,7 +1,7 @@
 package domala.internal.macros.reflect
 
 import domala._
-import domala.jdbc.entity.{DefaultPropertyDesc, EntityPropertyDesc, GeneratedIdPropertyDesc, NamingType, VersionPropertyDesc}
+import domala.jdbc.entity._
 import org.scalatest.{BeforeAndAfter, FunSuite}
 import org.seasar.doma.wrapper.{IntegerWrapper, StringWrapper, Wrapper}
 

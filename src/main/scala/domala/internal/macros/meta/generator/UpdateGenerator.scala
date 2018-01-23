@@ -1,7 +1,7 @@
 package domala.internal.macros.meta.generator
 
 import domala.Update
-import domala.internal.macros.QueryDefDecl
+import domala.internal.macros.meta.QueryDefDecl
 import domala.internal.macros.meta.args.DaoMethodCommonArgs
 
 import scala.collection.immutable.Seq

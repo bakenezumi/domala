@@ -6,6 +6,7 @@ import domala.Column
 import domala.internal.macros.reflect.util.{MacroTypeConverter, PropertyDescUtil}
 import domala.internal.reflect.util.ReflectionUtil
 import domala.internal.reflect.util.ReflectionUtil.extractionClassString
+import domala.jdbc.`type`.Types
 import domala.jdbc.entity.EntityPropertyDesc
 import domala.message.Message
 import org.seasar.doma.jdbc.entity._
@@ -83,20 +84,30 @@ object EntityReflectionMacros {
       propertyClassTag: c.Expr[ClassTag[T]]): c.Expr[T] = handle(c)(entityClass) {
     import c.universe._
     val wtt = weakTypeOf[T]
-    if (MacroTypeConverter.of(c).toType(wtt).isEmbeddable) {
-      reify {
-        val embeddableDesc =
-          ReflectionUtil.getEmbeddableDesc(propertyClassTag.splice)
-        embeddableDesc
-          .newEmbeddable[E](propertyName.splice, args.splice)
-          .asInstanceOf[T]
-      }
-    } else {
-      reify {
-        (if (args.splice.get(propertyName.splice) != null)
-           args.splice.get(propertyName.splice).get
-         else null).asInstanceOf[T]
-      }
+    MacroTypeConverter.of(c).toType(wtt) match {
+      case Types.GeneratedEmbeddableType =>
+        reify {
+          val embeddableDesc =
+            ReflectionUtil.getEmbeddableDesc(propertyClassTag.splice)
+          embeddableDesc
+            .newEmbeddable[E](propertyName.splice, args.splice)
+            .asInstanceOf[T]
+        }
+      case Types.RuntimeEntityType =>
+        c.Expr[T] {
+          q"""
+            {
+              import scala.collection.JavaConverters._
+              domala.internal.jdbc.entity.RuntimeEmbeddableDesc.of[$wtt].newEmbeddable($propertyName, $args.asScala.toMap)
+            }
+          """
+        }
+      case _ =>
+        reify {
+          (if (args.splice.get(propertyName.splice) != null)
+            args.splice.get(propertyName.splice).get
+          else null).asInstanceOf[T]
+        }
     }
   }
 

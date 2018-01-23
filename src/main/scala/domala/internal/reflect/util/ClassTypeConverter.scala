@@ -1,5 +1,6 @@
 package domala.internal.reflect.util
 
+import java.math.BigInteger
 import java.sql.{Blob, Clob, NClob, SQLXML, Time, Timestamp}
 import java.time.{LocalDate, LocalDateTime, LocalTime}
 
@@ -35,7 +36,11 @@ object ClassTypeConverter extends TypeConverter {
 
   override def isBigDecimal(tpe: T): Boolean = tpe == classOf[BigDecimal]
 
+  override def isJavaBigDecimal(tpe: T): Boolean = tpe == classOf[java.math.BigDecimal]
+
   override def isBigInt(tpe: T): Boolean = tpe == classOf[BigInt]
+
+  override def isBigInteger(tpe: T): Boolean = tpe == classOf[BigInteger]
 
   override def isTime(tpe: T): Boolean = tpe == classOf[Time]
 

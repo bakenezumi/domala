@@ -1,5 +1,6 @@
 package domala.internal.macros.reflect.util
 
+import java.math.BigInteger
 import java.sql.{Blob, Clob, NClob, SQLXML, Time, Timestamp}
 import java.time.{LocalDate, LocalDateTime, LocalTime}
 
@@ -42,7 +43,11 @@ class MacroTypeConverter[C <: blackbox.Context](c: C) extends TypeConverter {
 
   override def isBigDecimal(tpe: T): Boolean = tpe =:= typeOf[BigDecimal]
 
+  override def isJavaBigDecimal(tpe: T): Boolean = tpe =:= typeOf[java.math.BigDecimal]
+
   override def isBigInt(tpe: T): Boolean = tpe =:= typeOf[BigInt]
+
+  override def isBigInteger(tpe: T): Boolean = tpe =:= typeOf[BigInteger]
 
   override def isTime(tpe: T): Boolean = tpe =:= typeOf[Time]
 

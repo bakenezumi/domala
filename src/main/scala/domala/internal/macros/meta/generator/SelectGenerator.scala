@@ -3,8 +3,7 @@ package domala.internal.macros.meta.generator
 import domala.{Select, SelectType}
 import domala.internal.macros.meta.args.DaoMethodCommonArgs
 import domala.internal.macros.meta.util.NameConverters._
-import domala.internal.macros.QueryDefDecl
-import domala.internal.macros.meta.Types
+import domala.internal.macros.meta.{QueryDefDecl, Types}
 import domala.internal.macros.meta.util.{MetaHelper, TypeUtil}
 import domala.message.Message
 

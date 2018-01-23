@@ -14,32 +14,24 @@ import org.seasar.doma.jdbc.InParameter
 import org.seasar.doma.wrapper.Wrapper
 
 class DefaultPropertyDesc[PARENT, ENTITY <: PARENT, BASIC, HOLDER] private (
-  entityClass: Class[ENTITY],
-  entityPropertyClass: Class[_],
-  basicClassClass: Class[BASIC],
-  wrapperSupplier: Supplier[Wrapper[BASIC]],
-  parentEntityPropertyDesc: EntityPropertyDesc[PARENT, BASIC],
-  holderDesc: HolderDesc[BASIC, HOLDER],
-  name: String,
-  column: Column,
-  namingType: NamingType,
+  descParam: EntityPropertyDescParam[ENTITY, BASIC, HOLDER]
 ) extends org.seasar.doma.jdbc.entity.DefaultPropertyType[
   PARENT,
   ENTITY,
   BASIC,
   HOLDER](
-  entityClass,
-  entityPropertyClass,
-  basicClassClass,
-  wrapperSupplier,
-  parentEntityPropertyDesc,
-  holderDesc,
-  name,
-  column.name,
-  namingType,
-  column.insertable,
-  column.updatable,
-  column.quote
+  descParam.entityClass,
+  descParam.entityPropertyClass,
+  descParam.typeDesc.getBasicClass,
+  descParam.typeDesc.wrapperProvider,
+  null,
+  HolderDesc.of(descParam.typeDesc),
+  descParam.name,
+  descParam.column.name,
+  descParam.namingType,
+  descParam.column.insertable,
+  descParam.column.updatable,
+  descParam.column.quote
 ) {
 
   override def createProperty: entity.DefaultProperty[_, ENTITY, BASIC] =
@@ -47,7 +39,7 @@ class DefaultPropertyDesc[PARENT, ENTITY <: PARENT, BASIC, HOLDER] private (
       field,
       entityPropertyClass,
       wrapperSupplier,
-      holderDesc)()
+      HolderDesc.of(descParam.typeDesc))()
 
 }
 
@@ -105,47 +97,12 @@ object DefaultPropertyDesc {
         }
     }
 
-  def ofBasic[ENTITY, BASIC, HOLDER](
-    entityClass: Class[ENTITY],
-    entityPropertyClass: Class[_],
-    basicClassClass: Class[BASIC],
-    wrapperSupplier: Supplier[Wrapper[BASIC]],
-    name: String,
-    column: Column,
-    namingType: NamingType
+  def apply[ENTITY, BASIC, HOLDER](
+    descParam: EntityPropertyDescParam[ENTITY, BASIC, HOLDER]
   ): DefaultPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER] =
     new DefaultPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER](
-      entityClass,
-      entityPropertyClass,
-      basicClassClass,
-      wrapperSupplier,
-      null,
-      null,
-      name,
-      column,
-      namingType
+      descParam
     )
-
-  def ofHolder[ENTITY, BASIC, HOLDER](
-    entityClass: Class[ENTITY],
-    entityPropertyClass: Class[_],
-    holderDesc: HolderDesc[BASIC, HOLDER],
-    name: String,
-    column: Column,
-    namingType: NamingType
-  ): DefaultPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER] = {
-    new DefaultPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER](
-      entityClass,
-      entityPropertyClass,
-      holderDesc.getBasicClass,
-      holderDesc.wrapperProvider,
-      null,
-      holderDesc,
-      name,
-      column,
-      namingType
-    )
-  }
 
 }
 

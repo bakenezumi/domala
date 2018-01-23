@@ -26,7 +26,9 @@ object AnyValHolderDescGenerator {
     import c.universe._
     MacroTypeConverter.of(c).toType(tpe) match {
       case Types.BigDecimalType => reify { Types.BigDecimalType.wrapperSupplier }
+      case Types.JavaBigDecimalType => reify { Types.JavaBigDecimalType.wrapperSupplier }
       case Types.BigIntType => reify { Types.BigIntType.wrapperSupplier }
+      case Types.BigIntegerType => reify { Types.BigIntegerType.wrapperSupplier }
       case Types.IntType => reify { Types.IntType.wrapperSupplier }
       case Types.AnyType => reify { Types.AnyType.wrapperSupplier }
       case Types.BytesType => reify { Types.BytesType.wrapperSupplier }

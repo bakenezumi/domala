@@ -1,7 +1,7 @@
-package domala.internal.macros
+package domala.internal.macros.meta.generator
 
 import domala.Holder
-import domala.internal.macros.meta.generator.HolderDescGenerator
+import domala.internal.macros._
 import domala.message.Message
 import org.scalatest.FunSuite
 

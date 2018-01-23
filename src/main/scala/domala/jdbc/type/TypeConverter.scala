@@ -18,7 +18,9 @@ abstract class TypeConverter {
     case _ if isDouble(tpe) => Types.DoubleType
     case _ if isAny(tpe) => Types.AnyType
     case _ if isBigDecimal(tpe) => Types.BigDecimalType
+    case _ if isJavaBigDecimal(tpe) => Types.JavaBigDecimalType
     case _ if isBigInt(tpe) => Types.BigIntType
+    case _ if isBigInteger(tpe) => Types.BigIntegerType
     case _ if isTime(tpe) => Types.TimeType
     case _ if isTimestamp(tpe) => Types.TimestampType
     case _ if isDate(tpe) => Types.DateType
@@ -56,7 +58,9 @@ abstract class TypeConverter {
   protected def isDouble(tpe: T): Boolean
   protected def isAny(tpe: T): Boolean
   protected def isBigDecimal(tpe: T): Boolean
+  protected def isJavaBigDecimal(tpe: T): Boolean
   protected def isBigInt(tpe: T): Boolean
+  protected def isBigInteger(tpe: T): Boolean
   protected def isTime(tpe: T): Boolean
   protected def isTimestamp(tpe: T): Boolean
   protected def isDate(tpe: T): Boolean

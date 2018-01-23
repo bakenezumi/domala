@@ -1,6 +1,5 @@
-package domala.internal.macros
+package domala.internal.macros.meta.generator
 
-import domala.internal.macros.meta.generator.EmbeddableDescGenerator
 import org.scalatest.FunSuite
 
 import scala.meta._

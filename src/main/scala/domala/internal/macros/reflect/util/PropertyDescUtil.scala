@@ -1,12 +1,13 @@
 package domala.internal.macros.reflect.util
 
+import java.util
 import java.util.function.Supplier
 
 import domala.Column
+import domala.internal.jdbc.entity.RuntimeEmbeddableDesc
 import domala.internal.reflect.util.ReflectionUtil
 import domala.internal.reflect.util.ReflectionUtil.{extractionClassString, extractionQuotedString}
 import domala.jdbc.entity._
-import domala.jdbc.holder.HolderDesc
 import domala.jdbc.id.IdGenerator
 import domala.jdbc.`type`.Types
 import domala.message.Message
@@ -16,6 +17,13 @@ import scala.reflect.ClassTag
 import scala.reflect.macros.blackbox
 
 object PropertyDescUtil {
+
+  def abortPropertyDescUtil(entityClassName: String, paramName: String)(message: Message): Unit =
+    ReflectionUtil.abort(
+      message,
+      entityClassName,
+      paramName
+    )
 
   def generatePropertyDescImpl[
   T: c.WeakTypeTag,
@@ -36,7 +44,7 @@ object PropertyDescUtil {
     propertyClassTag: c.Expr[ClassTag[T]],
     nakedClassTag: c.Expr[ClassTag[N]]): c.Expr[Map[String, EntityPropertyDesc[E, _]]] = {
     import c.universe._
-    val Literal(Constant(isBasicLiteral: Boolean)) = isBasic.tree
+
     val Literal(Constant(isIdLiteral: Boolean)) = isId.tree
     val Literal(Constant(isIdGenerateActualLiteral: Boolean)) = isIdGenerate.tree
     val Literal(Constant(isVersionLiteral: Boolean)) = isVersion.tree
@@ -44,36 +52,15 @@ object PropertyDescUtil {
     val tpe = weakTypeOf[T]
     val nakedTpe = weakTypeOf[N]
     val converter = MacroTypeConverter.of(c)
+
+    def abort = abortPropertyDescUtil(extractionClassString(entityClass.toString),extractionQuotedString(paramName.toString())) _
+
     converter.toType(tpe) match {
       case Types.GeneratedEmbeddableType =>
-        if (isIdLiteral) {
-          ReflectionUtil.abort(
-            Message.DOMALA4302,
-            extractionClassString(entityClass.toString),
-            extractionQuotedString(paramName.toString())
-          )
-        }
-        if (isIdGenerateActualLiteral) {
-          ReflectionUtil.abort(
-            Message.DOMALA4303,
-            extractionClassString(entityClass.toString),
-            extractionQuotedString(paramName.toString())
-          )
-        }
-        if (isVersionLiteral) {
-          ReflectionUtil.abort(
-            Message.DOMALA4304,
-            extractionClassString(entityClass.toString),
-            extractionQuotedString(paramName.toString())
-          )
-        }
-        if (isTenantIdLiteral) {
-          ReflectionUtil.abort(
-            Message.DOMALA4443,
-            extractionClassString(entityClass.toString),
-            extractionQuotedString(paramName.toString())
-          )
-        }
+        if (isIdLiteral) abort(Message.DOMALA4302)
+        if (isIdGenerateActualLiteral) abort(Message.DOMALA4303)
+        if (isVersionLiteral) abort(Message.DOMALA4304)
+        if (isTenantIdLiteral) abort(Message.DOMALA4443)
         reify {
           val embeddableDesc =
             ReflectionUtil.getEmbeddableDesc(propertyClassTag.splice)
@@ -87,69 +74,37 @@ object PropertyDescUtil {
               namingType.splice
             )).getEmbeddablePropertyTypeMap.asScala.toMap
         }
-      case _ => converter.toType(nakedTpe) match {
-        case convertedType if convertedType.isHolder =>
-          val holderDesc = convertedType match {
-            case Types.GeneratedHolderType(_) =>
-              reify(ReflectionUtil.getHolderDesc(nakedClassTag.splice))
-            case _ => AnyValHolderDescGenerator.get[blackbox.Context, N](c)(nakedTpe).getOrElse(
-              ReflectionUtil.abort(Message.DOMALA6017,
-                extractionClassString(entityClass.toString))
-            )
-          }
-          if (isIdLiteral) {
-            if (isIdGenerateActualLiteral) {
-              if (!convertedType.isNumber) {
-                ReflectionUtil.abort(
-                  Message.DOMALA4095,
-                  extractionClassString(entityClass.toString),
-                  extractionQuotedString(paramName.toString())
+      case Types.RuntimeEntityType =>
+        if (isIdLiteral) abort(Message.DOMALA4302)
+        if (isIdGenerateActualLiteral) abort(Message.DOMALA4303)
+        if (isVersionLiteral) abort(Message.DOMALA4304)
+        if (isTenantIdLiteral) abort(Message.DOMALA4443)
+        val embeddableDesc = c.Expr[util.List[EntityPropertyDesc[E, _]]] {
+          q"domala.internal.jdbc.entity.RuntimeEmbeddableDesc.of[$tpe].getEmbeddablePropertyTypes($paramName, $namingType)"
+        }
+
+        reify {
+          import scala.collection.JavaConverters._
+          new EmbeddedPropertyDesc[E, T](
+            paramName.splice,
+            entityClass.splice,
+            embeddableDesc.splice).getEmbeddablePropertyTypeMap.asScala.toMap
+        }
+      case _ =>
+        val convertedType = converter.toType(nakedTpe)
+        val entityPropertyDescParam = convertedType match {
+          case _ if convertedType.isHolder =>
+            val holderDesc = convertedType match {
+              case Types.GeneratedHolderType(_) =>
+                reify(ReflectionUtil.getHolderDesc(nakedClassTag.splice))
+              case _ =>
+                AnyValHolderDescGenerator.get[blackbox.Context, N](c)(nakedTpe).getOrElse(
+                  ReflectionUtil.abort(Message.DOMALA6017,
+                    extractionClassString(entityClass.toString))
                 )
-              }
-              reify {
-                Map(paramName.splice -> GeneratedIdPropertyDesc.ofHolder(
-                  entityClass.splice,
-                  propertyClassTag.splice.runtimeClass,
-                  holderDesc.splice.asInstanceOf[HolderDesc[Number, _]],
-                  paramName.splice,
-                  column.splice,
-                  namingType.splice,
-                  idGenerator.splice
-                ))
-              }
-            } else {
-              reify {
-                Map(paramName.splice -> AssignedIdPropertyDesc.ofHolder(
-                  entityClass.splice,
-                  propertyClassTag.splice.runtimeClass,
-                  holderDesc.splice,
-                  paramName.splice,
-                  column.splice,
-                  namingType.splice
-                ))
-              }
             }
-          } else if (isVersionLiteral) {
-            if (!convertedType.isNumber) {
-              ReflectionUtil.abort(
-                Message.DOMALA4093,
-                extractionClassString(entityClass.toString),
-                extractionQuotedString(paramName.toString())
-              )
-            }
-            reify {
-              Map(paramName.splice -> VersionPropertyDesc.ofHolder(
-                entityClass.splice,
-                propertyClassTag.splice.runtimeClass,
-                holderDesc.splice.asInstanceOf[HolderDesc[Number, _]],
-                paramName.splice,
-                column.splice,
-                namingType.splice
-              ))
-            }
-          } else if (isTenantIdLiteral) {
-            reify {
-              Map(paramName.splice -> TenantIdPropertyDesc.ofHolder(
+            reify(
+              EntityPropertyDescParam(
                 entityClass.splice,
                 propertyClassTag.splice.runtimeClass,
                 holderDesc.splice,
@@ -157,107 +112,43 @@ object PropertyDescUtil {
                 column.splice,
                 namingType.splice
               ))
-            }
-          } else {
-            reify {
-              Map(paramName.splice -> DefaultPropertyDesc.ofHolder(
+          case _: Types.Basic[_] =>
+            reify(
+              EntityPropertyDescParam(
                 entityClass.splice,
                 propertyClassTag.splice.runtimeClass,
-                holderDesc.splice,
+                BasicTypeDesc(
+                  nakedClassTag.splice.runtimeClass.asInstanceOf[Class[N]],
+                  wrapperSupplier.splice),
                 paramName.splice,
                 column.splice,
                 namingType.splice
               ))
-            }
-          }
-        case convertedType =>
-          if (!isBasicLiteral) {
-            ReflectionUtil.abort(
-              Message.DOMALA4096,
-              extractionClassString(propertyClassTag.toString()),
-              extractionClassString(entityClass.toString),
-              extractionQuotedString(paramName.toString())
-            )
-          }
+          case _ => ReflectionUtil.abort(Message.DOMALA4096,nakedTpe.typeSymbol.fullName.toString,
+            extractionClassString(entityClass.toString), extractionQuotedString(paramName.toString()))
+        }
+        val entityPropertyDesc: c.Expr[EntityPropertyDesc[E, _]] =
           if (isIdLiteral) {
             if (isIdGenerateActualLiteral) {
-              if (!convertedType.isNumber) {
-                ReflectionUtil.abort(
-                  Message.DOMALA4095,
-                  extractionClassString(entityClass.toString),
-                  extractionQuotedString(paramName.toString())
-                )
-              }
-              reify {
-                Map(paramName.splice -> domala.jdbc.entity.GeneratedIdPropertyDesc.ofBasic(
-                  entityClass.splice,
-                  propertyClassTag.splice.runtimeClass,
-                  nakedClassTag.splice.runtimeClass.asInstanceOf[Class[Number]],
-                  wrapperSupplier.splice.asInstanceOf[Supplier[Wrapper[Number]]],
-                  paramName.splice,
-                  column.splice,
-                  namingType.splice,
-                  idGenerator.splice
-                ))
-              }
+              if (!convertedType.isNumber) abort(Message.DOMALA4095)
+              reify(GeneratedIdPropertyDesc(idGenerator.splice)
+                (entityPropertyDescParam.splice.asInstanceOf[EntityPropertyDescParam[E, Number, N]]))
             } else {
-              reify {
-                Map(paramName.splice -> AssignedIdPropertyDesc.ofBasic(
-                  entityClass.splice,
-                  propertyClassTag.splice.runtimeClass,
-                  nakedClassTag.splice.runtimeClass.asInstanceOf[Class[Any]],
-                  wrapperSupplier.splice.asInstanceOf[Supplier[Wrapper[Any]]],
-                  paramName.splice,
-                  column.splice,
-                  namingType.splice
-                ))
-              }
+              reify(AssignedIdPropertyDesc(entityPropertyDescParam.splice))
             }
           } else if (isVersionLiteral) {
-            if (!convertedType.isNumber) {
-              ReflectionUtil.abort(
-                Message.DOMALA4093,
-                extractionClassString(entityClass.toString),
-                extractionQuotedString(paramName.toString())
-              )
-            }
-            reify {
-              Map(paramName.splice -> VersionPropertyDesc.ofBasic(
-                entityClass.splice,
-                propertyClassTag.splice.runtimeClass,
-                nakedClassTag.splice.runtimeClass.asInstanceOf[Class[Number]],
-                wrapperSupplier.splice.asInstanceOf[Supplier[Wrapper[Number]]],
-                paramName.splice,
-                column.splice,
-                namingType.splice
-              ))
-            }
+            if (!convertedType.isNumber) abort(Message.DOMALA4093)
+            reify(VersionPropertyDesc(entityPropertyDescParam.splice.asInstanceOf[EntityPropertyDescParam[E, Number, N]]))
           } else if (isTenantIdLiteral) {
-            reify {
-              Map(paramName.splice -> TenantIdPropertyDesc.ofBasic(
-                entityClass.splice,
-                propertyClassTag.splice.runtimeClass,
-                nakedClassTag.splice.runtimeClass.asInstanceOf[Class[Number]],
-                wrapperSupplier.splice.asInstanceOf[Supplier[Wrapper[Number]]],
-                paramName.splice,
-                column.splice,
-                namingType.splice
-              ))
-            }
+            reify(TenantIdPropertyDesc(entityPropertyDescParam.splice))
           } else {
-            reify {
-              Map(paramName.splice -> DefaultPropertyDesc.ofBasic(
-                entityClass.splice,
-                propertyClassTag.splice.runtimeClass,
-                nakedClassTag.splice.runtimeClass.asInstanceOf[Class[Any]],
-                wrapperSupplier.splice.asInstanceOf[Supplier[Wrapper[Any]]],
-                paramName.splice,
-                column.splice,
-                namingType.splice
-              ))
-            }
+            reify(DefaultPropertyDesc(entityPropertyDescParam.splice))
           }
-      }
+
+        reify {
+          Map(paramName.splice -> entityPropertyDesc.splice)
+        }
+
     }
   }
 

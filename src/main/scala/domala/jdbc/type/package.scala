@@ -1,5 +1,6 @@
 package domala.jdbc
 
+import java.math.BigInteger
 import java.sql.{Blob, Clob, NClob, SQLXML, Time, Timestamp}
 import java.time.{LocalDate, LocalDateTime, LocalTime}
 import java.util.function.Supplier
@@ -32,9 +33,17 @@ package object `type` {
       override val isNumber = true
       override def wrapperSupplier: Supplier[Wrapper[BigDecimal]] = () => new BigDecimalWrapper()
     }
+    case object JavaBigDecimalType extends Types.Basic[java.math.BigDecimal] {
+      override val isNumber = true
+      override def wrapperSupplier: Supplier[Wrapper[java.math.BigDecimal]] = () => new org.seasar.doma.wrapper.BigDecimalWrapper()
+    }
     case object BigIntType extends Types.Basic[BigInt] {
       override val isNumber = true
       override def wrapperSupplier: Supplier[Wrapper[BigInt]] = () => new BigIntWrapper()
+    }
+    case object BigIntegerType extends Types.Basic[BigInteger] {
+      override val isNumber = true
+      override def wrapperSupplier: Supplier[Wrapper[BigInteger]] = () => new BigIntegerWrapper()
     }
     case object IntType extends Types.Basic[Integer]{
       override val isPrimitive = true

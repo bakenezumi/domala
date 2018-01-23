@@ -1,6 +1,6 @@
 package domala.internal.macros.meta.generator
 
-import domala.internal.macros.QueryDefDecl
+import domala.internal.macros.meta.QueryDefDecl
 import domala.internal.macros.meta.util.MetaHelper
 
 import scala.collection.immutable.Seq
