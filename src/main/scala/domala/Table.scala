@@ -13,17 +13,17 @@ package domala
   * }
   * }}}
   *
+  * @param name The table name. If not specified, the name is
   * @param catalog The catalog name.
   * @param schema The schema name.
-  * @param name The table name. If not specified, the name is
   *  resolved by [[domala.Entity Entity#naming]].
   * @param quote Whether quotation marks are used for the catalog name,
   *  the schema name and the table name.
   */
 case class Table(
+  name: String = "",
   catalog: String = "",
   schema: String = "",
-  name: String = "",
   quote: Boolean = false
 ) extends scala.annotation.StaticAnnotation
 

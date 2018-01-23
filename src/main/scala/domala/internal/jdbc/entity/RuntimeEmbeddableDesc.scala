@@ -25,7 +25,12 @@ class RuntimeEmbeddableDesc[EMBEDDABLE: TypeTag] {
       val column: Column = annotations.collectFirst {
         case a: ru.Annotation if a.tree.tpe =:= typeOf[domala.Column] =>
           Column.reflect(ru)(a)
-      }.getOrElse(Column())
+      }.getOrElse {
+        if (typeOf[ENTITY].decl(termNames.CONSTRUCTOR).asMethod.paramLists.flatten.exists {
+          _.name.toString == p.name.toString
+        }) Column(name = embeddedPropertyName + "." + p.name.toString)
+        else Column()
+      }
       RuntimeEntityDesc.generateDefaultPropertyDesc[ENTITY](embeddedPropertyName + "." + p.name.toString, p.typeSignature, column, namingType).head._2
     }.asJava
   }

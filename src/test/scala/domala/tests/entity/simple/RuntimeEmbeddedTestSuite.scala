@@ -157,7 +157,7 @@ class RuntimeEmbeddedTestSuite extends FunSuite with BeforeAndAfter {
 
 }
 
-@Table("", "", "runtime_entity")
+@Table("runtime_entity")
 case class RuntimeEmbedded(
   @Id
   id: Option[ID[RuntimeEmbedded]],

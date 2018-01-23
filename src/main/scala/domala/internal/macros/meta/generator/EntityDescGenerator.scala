@@ -33,8 +33,8 @@ object EntityDescGenerator {
       }.getOrElse(t"org.seasar.doma.jdbc.entity.NullEntityListener[${cls.name}]"),
       args.collectFirst { case arg"naming = $x" => Term.Name(x.syntax) }.getOrElse(q"null")
     )
-    val tableSetting = TableArgs.of(cls.mods)
-    val fields = generateFields(cls.name, cls.ctor, entityArgs, tableSetting)
+    val tableArgs = TableArgs.of(cls.mods)
+    val fields = generateFields(cls.name, cls.ctor, entityArgs, tableArgs)
     val methods = generateMethods(cls.name, cls.ctor, entityArgs)
 
     val generatedCompanion = q"""
@@ -93,9 +93,9 @@ object EntityDescGenerator {
       q"""
       override type ENTITY_LISTENER = ${entityArgs.listener}
       override protected val table: domala.Table = domala.Table(
+        ${Term.Name(tableArgs.name.syntax)},
         ${Term.Name(tableArgs.catalog.syntax)},
         ${Term.Name(tableArgs.schema.syntax)},
-        ${Term.Name(tableArgs.name.syntax)},
         ${tableArgs.quote})
       override protected val propertyDescMap: Map[String, domala.jdbc.entity.EntityPropertyDesc[$clsName, _]] = Seq(..${generatePropertyDescMap(clsName, ctor)}).flatten.toMap
       override protected val listener =
