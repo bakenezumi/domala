@@ -2,6 +2,7 @@ package domala.internal.macros.reflect
 
 import java.util.function.Supplier
 
+import domala.Column
 import domala.internal.macros.reflect.util.{MacroTypeConverter, PropertyDescUtil}
 import domala.internal.reflect.util.ReflectionUtil
 import domala.internal.reflect.util.ReflectionUtil.extractionClassString
@@ -39,10 +40,7 @@ object EntityReflectionMacros {
     isTenantId: c.Expr[Boolean],
     isBasic: c.Expr[Boolean],
     wrapperSupplier: c.Expr[Supplier[Wrapper[N]]],
-    columnName: c.Expr[String],
-    columnInsertable: c.Expr[Boolean],
-    columnUpdatable: c.Expr[Boolean],
-    columnQuote: c.Expr[Boolean]
+    column: c.Expr[Column]
   )(
     propertyClassTag: c.Expr[ClassTag[T]],
     nakedClassTag: c.Expr[ClassTag[N]]
@@ -58,10 +56,7 @@ object EntityReflectionMacros {
       isTenantId,
       isBasic,
       wrapperSupplier,
-      columnName,
-      columnInsertable,
-      columnUpdatable,
-      columnQuote
+      column
     )(propertyClassTag, nakedClassTag)
   }
   def generatePropertyDesc[T, E, N](
@@ -75,10 +70,7 @@ object EntityReflectionMacros {
       isTenantId: Boolean,
       isBasic: Boolean,
       wrapperSupplier: Supplier[Wrapper[N]],
-      columnName: String,
-      columnInsertable: Boolean,
-      columnUpdatable: Boolean,
-      columnQuote: Boolean
+      column: Column
   )(
       implicit propertyClassTag: ClassTag[T],
       nakedClassTag: ClassTag[N]

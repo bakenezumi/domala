@@ -2,6 +2,7 @@ package domala.jdbc.entity
 
 import java.util.function.Supplier
 
+import domala.Column
 import domala.jdbc.entity
 import domala.jdbc.holder.HolderDesc
 import org.seasar.doma.jdbc.id.IdGenerator
@@ -15,9 +16,8 @@ class GeneratedIdPropertyDesc[PARENT, ENTITY <: PARENT, BASIC <: Number, HOLDER]
   parentEntityPropertyDesc: EntityPropertyDesc[PARENT, BASIC],
   holderDesc: HolderDesc[BASIC, HOLDER],
   name: String,
-  columnName: String,
+  column: Column,
   namingType: NamingType,
-  quoteRequired: Boolean,
   idGenerator: IdGenerator
 ) extends org.seasar.doma.jdbc.entity.GeneratedIdPropertyType[PARENT, ENTITY, BASIC, HOLDER] (
   entityClass,
@@ -27,9 +27,9 @@ class GeneratedIdPropertyDesc[PARENT, ENTITY <: PARENT, BASIC <: Number, HOLDER]
   parentEntityPropertyDesc,
   holderDesc,
   name,
-  columnName,
+  column.name,
   namingType,
-  quoteRequired,
+  column.quote,
   idGenerator) {
 
  override def createProperty: entity.DefaultProperty[_, ENTITY, BASIC] = DefaultPropertyDesc.createPropertySupplier[ENTITY, BASIC, HOLDER](field, entityPropertyClass, wrapperSupplier, holderDesc)()
@@ -43,9 +43,8 @@ object GeneratedIdPropertyDesc {
     basicClass: Class[BASIC],
     wrapperSupplier: Supplier[Wrapper[BASIC]],
     name: String,
-    columnName: String,
+    column: Column,
     namingType: NamingType,
-    quoteRequired: Boolean,
     idGenerator: IdGenerator
   ) : GeneratedIdPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER] =
     new GeneratedIdPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER](
@@ -56,9 +55,8 @@ object GeneratedIdPropertyDesc {
     null,
     null,
     name,
-    columnName,
+    column,
     namingType,
-    quoteRequired,
     idGenerator)
 
   def ofHolder[ENTITY, BASIC <: Number, HOLDER](
@@ -66,9 +64,8 @@ object GeneratedIdPropertyDesc {
     entityPropertyClass: Class[_],
     holderDesc: HolderDesc[BASIC, HOLDER],
     name: String,
-    columnName: String,
+    column: Column,
     namingType: NamingType,
-    quoteRequired: Boolean,
     idGenerator: IdGenerator
   ): GeneratedIdPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER] = {
     new GeneratedIdPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER](
@@ -79,9 +76,8 @@ object GeneratedIdPropertyDesc {
       null,
       holderDesc,
       name,
-      columnName,
+      column,
       namingType,
-      quoteRequired,
       idGenerator
     )
   }

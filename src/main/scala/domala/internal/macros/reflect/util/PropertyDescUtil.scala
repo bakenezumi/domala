@@ -2,6 +2,7 @@ package domala.internal.macros.reflect.util
 
 import java.util.function.Supplier
 
+import domala.Column
 import domala.internal.reflect.util.ReflectionUtil
 import domala.internal.reflect.util.ReflectionUtil.{extractionClassString, extractionQuotedString}
 import domala.jdbc.entity._
@@ -30,10 +31,7 @@ object PropertyDescUtil {
     isTenantId: c.Expr[Boolean],
     isBasic: c.Expr[Boolean],
     wrapperSupplier: c.Expr[Supplier[Wrapper[N]]],
-    columnName: c.Expr[String],
-    columnInsertable: c.Expr[Boolean],
-    columnUpdatable: c.Expr[Boolean],
-    columnQuote: c.Expr[Boolean]
+    column: c.Expr[Column]
   )(
     propertyClassTag: c.Expr[ClassTag[T]],
     nakedClassTag: c.Expr[ClassTag[N]]): c.Expr[Map[String, EntityPropertyDesc[E, _]]] = {
@@ -108,9 +106,8 @@ object PropertyDescUtil {
                   propertyClassTag.splice.runtimeClass,
                   holderDesc.splice.asInstanceOf[AbstractHolderDesc[Number, _]],
                   paramName.splice,
-                  columnName.splice,
+                  column.splice,
                   namingType.splice,
-                  columnQuote.splice,
                   idGenerator.splice
                 ))
               }
@@ -121,9 +118,8 @@ object PropertyDescUtil {
                   propertyClassTag.splice.runtimeClass,
                   holderDesc.splice,
                   paramName.splice,
-                  columnName.splice,
-                  namingType.splice,
-                  columnQuote.splice
+                  column.splice,
+                  namingType.splice
                 ))
               }
             }
@@ -141,9 +137,8 @@ object PropertyDescUtil {
                 propertyClassTag.splice.runtimeClass,
                 holderDesc.splice.asInstanceOf[HolderDesc[Number, _]],
                 paramName.splice,
-                columnName.splice,
-                namingType.splice,
-                columnQuote.splice
+                column.splice,
+                namingType.splice
               ))
             }
           } else if (isTenantIdLiteral) {
@@ -153,9 +148,8 @@ object PropertyDescUtil {
                 propertyClassTag.splice.runtimeClass,
                 holderDesc.splice,
                 paramName.splice,
-                columnName.splice,
-                namingType.splice,
-                columnQuote.splice
+                column.splice,
+                namingType.splice
               ))
             }
           } else {
@@ -165,11 +159,8 @@ object PropertyDescUtil {
                 propertyClassTag.splice.runtimeClass,
                 holderDesc.splice,
                 paramName.splice,
-                columnName.splice,
-                namingType.splice,
-                columnInsertable.splice,
-                columnUpdatable.splice,
-                columnQuote.splice
+                column.splice,
+                namingType.splice
               ))
             }
           }
@@ -194,9 +185,8 @@ object PropertyDescUtil {
                   propertyClassTag.splice.runtimeClass,
                   holderDesc.get.splice.asInstanceOf[AbstractAnyValHolderDesc[Number, _]],
                   paramName.splice,
-                  columnName.splice,
+                  column.splice,
                   namingType.splice,
-                  columnQuote.splice,
                   idGenerator.splice
                 ))
               }
@@ -207,9 +197,8 @@ object PropertyDescUtil {
                   propertyClassTag.splice.runtimeClass,
                   holderDesc.get.splice,
                   paramName.splice,
-                  columnName.splice,
-                  namingType.splice,
-                  columnQuote.splice
+                  column.splice,
+                  namingType.splice
                 ))
               }
             }
@@ -227,9 +216,8 @@ object PropertyDescUtil {
                 propertyClassTag.splice.runtimeClass,
                 holderDesc.get.splice.asInstanceOf[AbstractAnyValHolderDesc[Number, _]],
                 paramName.splice,
-                columnName.splice,
-                namingType.splice,
-                columnQuote.splice
+                column.splice,
+                namingType.splice
               ))
             }
           } else if (isTenantIdLiteral) {
@@ -239,9 +227,8 @@ object PropertyDescUtil {
                 propertyClassTag.splice.runtimeClass,
                 holderDesc.get.splice,
                 paramName.splice,
-                columnName.splice,
-                namingType.splice,
-                columnQuote.splice
+                column.splice,
+                namingType.splice
               ))
             }
           } else {
@@ -251,11 +238,8 @@ object PropertyDescUtil {
                 propertyClassTag.splice.runtimeClass,
                 holderDesc.get.splice,
                 paramName.splice,
-                columnName.splice,
-                namingType.splice,
-                columnInsertable.splice,
-                columnUpdatable.splice,
-                columnQuote.splice
+                column.splice,
+                namingType.splice
               ))
             }
           }
@@ -284,9 +268,8 @@ object PropertyDescUtil {
                   nakedClassTag.splice.runtimeClass.asInstanceOf[Class[Number]],
                   wrapperSupplier.splice.asInstanceOf[Supplier[Wrapper[Number]]],
                   paramName.splice,
-                  columnName.splice,
+                  column.splice,
                   namingType.splice,
-                  columnQuote.splice,
                   idGenerator.splice
                 ))
               }
@@ -298,9 +281,8 @@ object PropertyDescUtil {
                   nakedClassTag.splice.runtimeClass.asInstanceOf[Class[Any]],
                   wrapperSupplier.splice.asInstanceOf[Supplier[Wrapper[Any]]],
                   paramName.splice,
-                  columnName.splice,
-                  namingType.splice,
-                  columnQuote.splice
+                  column.splice,
+                  namingType.splice
                 ))
               }
             }
@@ -319,9 +301,8 @@ object PropertyDescUtil {
                 nakedClassTag.splice.runtimeClass.asInstanceOf[Class[Number]],
                 wrapperSupplier.splice.asInstanceOf[Supplier[Wrapper[Number]]],
                 paramName.splice,
-                columnName.splice,
-                namingType.splice,
-                columnQuote.splice
+                column.splice,
+                namingType.splice
               ))
             }
           } else if (isTenantIdLiteral) {
@@ -332,9 +313,8 @@ object PropertyDescUtil {
                 nakedClassTag.splice.runtimeClass.asInstanceOf[Class[Number]],
                 wrapperSupplier.splice.asInstanceOf[Supplier[Wrapper[Number]]],
                 paramName.splice,
-                columnName.splice,
-                namingType.splice,
-                columnQuote.splice
+                column.splice,
+                namingType.splice
               ))
             }
           } else {
@@ -345,11 +325,8 @@ object PropertyDescUtil {
                 nakedClassTag.splice.runtimeClass.asInstanceOf[Class[Any]],
                 wrapperSupplier.splice.asInstanceOf[Supplier[Wrapper[Any]]],
                 paramName.splice,
-                columnName.splice,
-                namingType.splice,
-                columnInsertable.splice,
-                columnUpdatable.splice,
-                columnQuote.splice
+                column.splice,
+                namingType.splice
               ))
             }
           }

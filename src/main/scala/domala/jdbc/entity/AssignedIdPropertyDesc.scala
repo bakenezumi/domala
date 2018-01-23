@@ -2,6 +2,7 @@ package domala.jdbc.entity
 
 import java.util.function.Supplier
 
+import domala.Column
 import domala.jdbc.entity
 import domala.jdbc.holder.HolderDesc
 import org.seasar.doma.wrapper.Wrapper
@@ -14,9 +15,8 @@ class AssignedIdPropertyDesc[PARENT, ENTITY <: PARENT, BASIC, HOLDER] private (
   parentEntityPropertyDesc: EntityPropertyDesc[PARENT, BASIC],
   holderDesc: HolderDesc[BASIC, HOLDER],
   name: String,
-  columnName: String,
-  namingType: NamingType,
-  quoteRequired: Boolean
+  column: Column,
+  namingType: NamingType
 ) extends org.seasar.doma.jdbc.entity.AssignedIdPropertyType[PARENT, ENTITY, BASIC, HOLDER] (
   entityClass,
   entityPropertyClass,
@@ -25,9 +25,9 @@ class AssignedIdPropertyDesc[PARENT, ENTITY <: PARENT, BASIC, HOLDER] private (
   parentEntityPropertyDesc,
   holderDesc,
   name,
-  columnName,
+  column.name,
   namingType,
-  quoteRequired) {
+  column.quote) {
 
  override def createProperty: entity.DefaultProperty[_, ENTITY, BASIC] = DefaultPropertyDesc.createPropertySupplier[ENTITY, BASIC, HOLDER](field, entityPropertyClass, wrapperSupplier, holderDesc)()
 
@@ -40,9 +40,8 @@ object AssignedIdPropertyDesc {
     basicClass: Class[BASIC],
     wrapperSupplier: Supplier[Wrapper[BASIC]],
     name: String,
-    columnName: String,
-    namingType: NamingType,
-    quoteRequired: Boolean
+    column: Column,
+    namingType: NamingType
   ): AssignedIdPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER] = {
     new AssignedIdPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER](
       entityClass,
@@ -52,9 +51,8 @@ object AssignedIdPropertyDesc {
       null,
       null,
       name,
-      columnName,
-      namingType,
-      quoteRequired)
+      column,
+      namingType)
   }
 
   def ofHolder[ENTITY, BASIC, HOLDER](
@@ -62,9 +60,8 @@ object AssignedIdPropertyDesc {
     entityPropertyClass: Class[_],
     holderDesc: HolderDesc[BASIC, HOLDER],
     name: String,
-    columnName: String,
-    namingType: NamingType,
-    quoteRequired: Boolean
+    column: Column,
+    namingType: NamingType
   ): AssignedIdPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER] = {
     new AssignedIdPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER](
       entityClass,
@@ -74,9 +71,8 @@ object AssignedIdPropertyDesc {
       null,
       holderDesc,
       name,
-      columnName,
-      namingType,
-      quoteRequired
+      column,
+      namingType
     )
   }
 

@@ -3,6 +3,7 @@ package domala.jdbc.entity
 import java.util.function.Supplier
 import java.util.{Optional, OptionalDouble, OptionalInt, OptionalLong}
 
+import domala.Column
 import domala.internal.jdbc.scalar.{OptionBasicScalar, OptionDomainBridgeScalar}
 import domala.jdbc.entity
 import domala.jdbc.holder.HolderDesc
@@ -20,11 +21,8 @@ class DefaultPropertyDesc[PARENT, ENTITY <: PARENT, BASIC, HOLDER] private (
   parentEntityPropertyDesc: EntityPropertyDesc[PARENT, BASIC],
   holderDesc: HolderDesc[BASIC, HOLDER],
   name: String,
-  columnName: String,
+  column: Column,
   namingType: NamingType,
-  insertable: Boolean,
-  updatable: Boolean,
-  quoteRequired: Boolean
 ) extends org.seasar.doma.jdbc.entity.DefaultPropertyType[
   PARENT,
   ENTITY,
@@ -37,11 +35,11 @@ class DefaultPropertyDesc[PARENT, ENTITY <: PARENT, BASIC, HOLDER] private (
   parentEntityPropertyDesc,
   holderDesc,
   name,
-  columnName,
+  column.name,
   namingType,
-  insertable,
-  updatable,
-  quoteRequired
+  column.insertable,
+  column.updatable,
+  column.quote
 ) {
 
   override def createProperty: entity.DefaultProperty[_, ENTITY, BASIC] =
@@ -113,11 +111,8 @@ object DefaultPropertyDesc {
     basicClassClass: Class[BASIC],
     wrapperSupplier: Supplier[Wrapper[BASIC]],
     name: String,
-    columnName: String,
-    namingType: NamingType,
-    insertable: Boolean,
-    updatable: Boolean,
-    quoteRequired: Boolean
+    column: Column,
+    namingType: NamingType
   ): DefaultPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER] =
     new DefaultPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER](
       entityClass,
@@ -127,11 +122,8 @@ object DefaultPropertyDesc {
       null,
       null,
       name,
-      columnName,
-      namingType,
-      insertable,
-      updatable,
-      quoteRequired
+      column,
+      namingType
     )
 
   def ofHolder[ENTITY, BASIC, HOLDER](
@@ -139,11 +131,8 @@ object DefaultPropertyDesc {
     entityPropertyClass: Class[_],
     holderDesc: HolderDesc[BASIC, HOLDER],
     name: String,
-    columnName: String,
-    namingType: NamingType,
-    insertable: Boolean,
-    updatable: Boolean,
-    quoteRequired: Boolean
+    column: Column,
+    namingType: NamingType
   ): DefaultPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER] = {
     new DefaultPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER](
       entityClass,
@@ -153,11 +142,8 @@ object DefaultPropertyDesc {
       null,
       holderDesc,
       name,
-      columnName,
-      namingType,
-      insertable,
-      updatable,
-      quoteRequired
+      column,
+      namingType
     )
   }
 

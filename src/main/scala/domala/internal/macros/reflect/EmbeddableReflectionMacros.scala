@@ -2,6 +2,7 @@ package domala.internal.macros.reflect
 
 import java.util.function.Supplier
 
+import domala.Column
 import domala.internal.macros.reflect.util.{MacroTypeConverter, PropertyDescUtil}
 import domala.internal.reflect.util.ReflectionUtil
 import domala.jdbc.entity.{EntityPropertyDesc, NamingType}
@@ -33,10 +34,7 @@ object EmbeddableReflectionMacros {
     namingType: c.Expr[NamingType],
     isBasic: c.Expr[Boolean],
     wrapperSupplier: c.Expr[Supplier[Wrapper[N]]],
-    columnName: c.Expr[String],
-    columnInsertable: c.Expr[Boolean],
-    columnUpdatable: c.Expr[Boolean],
-    columnQuote: c.Expr[Boolean]
+    column: c.Expr[Column]
   )(
     propertyClassTag: c.Expr[ClassTag[T]],
     nakedClassTag: c.Expr[ClassTag[N]]
@@ -60,10 +58,7 @@ object EmbeddableReflectionMacros {
       c.Expr(Literal(Constant(false))),
       isBasic,
       wrapperSupplier,
-      columnName,
-      columnInsertable,
-      columnUpdatable,
-      columnQuote
+      column
     )(propertyClassTag, nakedClassTag)
   }
 
@@ -75,10 +70,7 @@ object EmbeddableReflectionMacros {
     namingType: NamingType,
     isBasic: Boolean,
     wrapperSupplier: Supplier[Wrapper[N]],
-    columnName: String,
-    columnInsertable: Boolean,
-    columnUpdatable: Boolean,
-    columnQuote: Boolean
+    column: Column,
   )(
     implicit propertyClassTag: ClassTag[T],
     nakedClassTag: ClassTag[N]

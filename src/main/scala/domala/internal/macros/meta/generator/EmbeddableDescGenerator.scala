@@ -76,10 +76,12 @@ object EmbeddableDescGenerator {
           namingType,
           ${if(p.isBasic) q"true" else q"false"},
           ${p.newWrapperExpr},
-          ${p.columnArgs.name},
-          ${p.columnArgs.insertable},
-          ${p.columnArgs.updatable},
-          ${p.columnArgs.quote}
+          domala.Column(
+            ${p.columnArgs.name},
+            ${p.columnArgs.insertable},
+            ${p.columnArgs.updatable},
+            ${p.columnArgs.quote}
+          )
         ).values.head
         """
       }

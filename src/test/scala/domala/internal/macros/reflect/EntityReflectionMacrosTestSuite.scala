@@ -20,10 +20,11 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
       false,
       true,
       () => new StringWrapper(): Wrapper[String],
-      "",
-      true,
-      true,
-      false
+      Column(
+        "",
+        true,
+        true,
+        false)
     )
     assert(
       propertyType.values.head
@@ -43,10 +44,10 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
       false,
       true,
       () => new IntegerWrapper(): Wrapper[Integer],
-      "",
-      true,
-      true,
-      false
+      Column("",
+        true,
+        true,
+        false)
     )
     assert(propertyType.values.head.isInstanceOf[GeneratedIdPropertyDesc[_, _, _, _]])
   }
@@ -63,10 +64,10 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
       false,
       true,
       () => new IntegerWrapper(): Wrapper[Integer],
-      "",
-      true,
-      true,
-      false
+      Column("",
+        true,
+        true,
+        false)
     )
     assert(propertyType.values.head.isInstanceOf[VersionPropertyDesc[_, _, _, _]])
   }
@@ -83,10 +84,10 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
       false,
       false,
       null,
-      "",
-      true,
-      true,
-      false
+      Column("",
+        true,
+        true,
+        false)
     )
     assert(propertyType.values.head.isInstanceOf[DefaultPropertyDesc[_, _, _, _]])
   }

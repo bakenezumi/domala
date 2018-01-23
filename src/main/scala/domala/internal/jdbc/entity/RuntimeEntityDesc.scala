@@ -146,11 +146,8 @@ object RuntimeEntityDesc {
         nakedClass,
         wrapperSupplier.asInstanceOf[Supplier[Wrapper[Any]]],
         paramName,
-        column.name,
-        namingType,
-        insertable = column.insertable,
-        updatable = column.updatable,
-        quoteRequired = column.quote
+        column,
+        namingType
       ).asInstanceOf[EntityPropertyDesc[E, _]]
     }
 
@@ -165,11 +162,8 @@ object RuntimeEntityDesc {
         propertyClass,
         holderDesc,
         paramName,
-        column.name,
-        namingType,
-        insertable = column.insertable,
-        updatable = column.updatable,
-        quoteRequired = column.quote
+        column,
+        namingType
       )
     }
 
@@ -226,9 +220,8 @@ object RuntimeEntityDesc {
         nakedClass,
         wrapperSupplier.asInstanceOf[Supplier[Wrapper[Any]]],
         paramName,
-        column.name,
-        namingType,
-        quoteRequired = column.quote
+        column,
+        namingType
       ).asInstanceOf[EntityPropertyDesc[E, _]]
     }
 
@@ -243,9 +236,8 @@ object RuntimeEntityDesc {
         propertyClass,
         holderDesc,
         paramName,
-        column.name,
-        namingType,
-        quoteRequired = column.quote
+        column,
+        namingType
       )
     }
 

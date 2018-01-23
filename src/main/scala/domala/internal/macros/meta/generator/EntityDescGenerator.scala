@@ -252,10 +252,12 @@ object EntityDescGenerator {
         ${if(isTenantId) q"true" else q"false"},
         ${if(isBasic) q"true" else q"false"},
         $newWrapperExpr,
-        ${columnArgs.name},
-        ${columnArgs.insertable},
-        ${columnArgs.updatable},
-        ${columnArgs.quote}
+        domala.Column(
+          ${columnArgs.name},
+          ${columnArgs.insertable},
+          ${columnArgs.updatable},
+          ${columnArgs.quote}
+        )
       )
       """
     }

@@ -2,6 +2,7 @@ package domala.jdbc.entity
 
 import java.util.function.Supplier
 
+import domala.Column
 import domala.jdbc.entity
 import domala.jdbc.holder.HolderDesc
 import org.seasar.doma.wrapper.Wrapper
@@ -14,9 +15,8 @@ class VersionPropertyDesc[PARENT, ENTITY <: PARENT, BASIC <: Number, HOLDER] pri
   parentEntityPropertyDesc: EntityPropertyDesc[PARENT, BASIC],
   holderDesc: HolderDesc[BASIC, HOLDER],
   name: String,
-  columnName: String,
+  column: Column,
   namingType: NamingType,
-  quoteRequired: Boolean
 ) extends org.seasar.doma.jdbc.entity.VersionPropertyType[PARENT, ENTITY, BASIC, HOLDER](
   entityClass,
   entityPropertyClass,
@@ -25,9 +25,9 @@ class VersionPropertyDesc[PARENT, ENTITY <: PARENT, BASIC <: Number, HOLDER] pri
   parentEntityPropertyDesc,
   holderDesc,
   name,
-  columnName,
+  column.name,
   namingType,
-  quoteRequired
+  column.quote
 ) {
 
   override def createProperty: entity.DefaultProperty[_, ENTITY, BASIC] = DefaultPropertyDesc.createPropertySupplier[ENTITY, BASIC, HOLDER](field, entityPropertyClass, wrapperSupplier, holderDesc)()
@@ -41,9 +41,8 @@ object VersionPropertyDesc {
     basicClass: Class[BASIC],
     wrapperSupplier: Supplier[Wrapper[BASIC]],
     name: String,
-    columnName: String,
+    column: Column,
     namingType: NamingType,
-    quoteRequired: Boolean
   ): VersionPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER] = {
     new VersionPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER](
       entityClass,
@@ -53,9 +52,8 @@ object VersionPropertyDesc {
       null,
       null,
       name,
-      columnName,
+      column,
       namingType,
-      quoteRequired
     )
   }
 
@@ -64,9 +62,8 @@ object VersionPropertyDesc {
     entityPropertyClass: Class[_],
     holderDesc: HolderDesc[BASIC, HOLDER],
     name: String,
-    columnName: String,
+    column: Column,
     namingType: NamingType,
-    quoteRequired: Boolean
   ): VersionPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER] = {
     new VersionPropertyDesc[ENTITY, ENTITY, BASIC, HOLDER](
       entityClass,
@@ -76,9 +73,8 @@ object VersionPropertyDesc {
       null,
       holderDesc,
       name,
-      columnName,
-      namingType,
-      quoteRequired
+      column,
+      namingType
     )
   }
 
