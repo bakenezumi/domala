@@ -45,12 +45,12 @@ object RuntimeEmbeddableDesc {
   private[this] val embeddableConstructorMirrorCache = scala.collection.concurrent.TrieMap[String, ru.MethodMirror]()
   private[this] val mirror = ru.runtimeMirror(Thread.currentThread.getContextClassLoader)
 
-  def of[E](implicit tTag: TypeTag[E]): RuntimeEmbeddableDesc[E] = {
+  def of[EMBEDDABLE](implicit tTag: TypeTag[EMBEDDABLE]): RuntimeEmbeddableDesc[EMBEDDABLE] = {
     embeddableDescCache.getOrElseUpdate(
     tTag.toString() + tTag.hashCode(),
     {
-      new RuntimeEmbeddableDesc[E]
-    }).asInstanceOf[RuntimeEmbeddableDesc[E]]
+      new RuntimeEmbeddableDesc[EMBEDDABLE]
+    }).asInstanceOf[RuntimeEmbeddableDesc[EMBEDDABLE]]
   }
 
   def clear(): Unit = {

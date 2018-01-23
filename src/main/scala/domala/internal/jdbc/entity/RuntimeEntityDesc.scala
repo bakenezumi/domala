@@ -22,58 +22,54 @@ import scala.reflect._
 import scala.reflect.runtime.{universe => ru}
 import scala.reflect.runtime.universe._
 
-class RuntimeEntityDesc[ENTITY: TypeTag : ClassTag] extends AbstractEntityDesc[ENTITY] {
-
-  override type ENTITY_LISTENER = NullEntityListener[ENTITY]
-
-  private[this] val _propertyDescMap = RuntimeEntityDesc.generatePropertyDescMap[ENTITY](getNamingType)
-
-  private[this] val _idPropertyDescList = _propertyDescMap.values.collect {
-    case p: AssignedIdPropertyDesc[ENTITY, ENTITY, _, _] => p: EntityPropertyDesc[ENTITY, _]
-    case p: GeneratedIdPropertyDesc[ENTITY, ENTITY, _, _] => p: EntityPropertyDesc[ENTITY, _]
-  }.toList
-
-  override val listener = new NullEntityListener[ENTITY]()
-
-  override val table: Table = {
-    typeOf[ENTITY].typeSymbol.asClass.annotations.collectFirst {
-      case a: ru.Annotation if a.tree.tpe =:= typeOf[domala.Table] =>
-        Table.reflect(ru)(a)
-    }.getOrElse(Table())
-  }
-
-  override protected val propertyDescMap: Map[String, EntityPropertyDesc[ENTITY, _]] = _propertyDescMap
-
-  override protected val idPropertyDescList: List[EntityPropertyDesc[ENTITY, _]] = _idPropertyDescList
-
-  override def getNamingType: NamingType = null
-
-  override def getTenantIdPropertyType: TenantIdPropertyDesc[_ >: ENTITY, ENTITY, _, _] = null
-
-  override def getVersionPropertyType: VersionPropertyDesc[_ >: ENTITY, ENTITY, _ <: Number, _] = _propertyDescMap.values.collectFirst {
-    case p: VersionPropertyDesc[_, _, _, _] => p
-  }.orNull.asInstanceOf[VersionPropertyDesc[_ >: ENTITY, ENTITY, _ <: Number, _]]
-
-  override def newEntity(__args: util.Map[String, Property[ENTITY, _]]): ENTITY = RuntimeEntityDesc.fromMap[ENTITY](__args.asScala.toMap)
-
-  override def getGeneratedIdPropertyType: GeneratedIdPropertyDesc[_ >: ENTITY, ENTITY, _ <: Number, _] = _propertyDescMap.values.collectFirst {
-    case p: GeneratedIdPropertyDesc[_, _, _, _] => p
-  }.orNull.asInstanceOf[GeneratedIdPropertyDesc[_ >: ENTITY, ENTITY, _ <: Number, _]]
-
-}
-
 object RuntimeEntityDesc {
 
-  private[this] val entityDescCache = scala.collection.concurrent.TrieMap[String,  RuntimeEntityDesc[_]]()
+  private[this] val entityDescCache = scala.collection.concurrent.TrieMap[String,  AbstractEntityDesc[_]]()
   private[this] val entityConstructorCache = scala.collection.concurrent.TrieMap[String, (ru.MethodMirror, List[(String, Option[RuntimeEmbeddableDesc[_]])])]()
   private[this] val mirror = ru.runtimeMirror(Thread.currentThread.getContextClassLoader)
 
-  def of[E: TypeTag: ClassTag]: RuntimeEntityDesc[E] = {
+  def of[ENTITY: TypeTag: ClassTag]: AbstractEntityDesc[ENTITY] = {
     entityDescCache.getOrElseUpdate(
-      classTag[E].toString() + classTag[E].hashCode(),
+      classTag[ENTITY].toString() + classTag[ENTITY].hashCode(),
     {
-      new RuntimeEntityDesc[E]
-    }).asInstanceOf[RuntimeEntityDesc[E]]
+      new AbstractEntityDesc[ENTITY] {
+        override type ENTITY_LISTENER = NullEntityListener[ENTITY]
+
+        private[this] val _propertyDescMap = generatePropertyDescMap[ENTITY](getNamingType)
+
+        private[this] val _idPropertyDescList = _propertyDescMap.values.collect {
+          case p: AssignedIdPropertyDesc[_, _, _, _] => p: EntityPropertyDesc[ENTITY, _]
+          case p: GeneratedIdPropertyDesc[_, _, _, _] => p: EntityPropertyDesc[ENTITY, _]
+        }.toList
+
+        override val listener = new NullEntityListener[ENTITY]()
+
+        override val table: Table = {
+          typeOf[ENTITY].typeSymbol.asClass.annotations.collectFirst {
+            case a: ru.Annotation if a.tree.tpe =:= typeOf[domala.Table] =>
+              Table.reflect(ru)(a)
+          }.getOrElse(Table())
+        }
+
+        override protected val propertyDescMap: Map[String, EntityPropertyDesc[ENTITY, _]] = _propertyDescMap
+
+        override protected val idPropertyDescList: List[EntityPropertyDesc[ENTITY, _]] = _idPropertyDescList
+
+        override def getNamingType: NamingType = null
+
+        override def getTenantIdPropertyType: TenantIdPropertyDesc[_ >: ENTITY, ENTITY, _, _] = null
+
+        override def getVersionPropertyType: VersionPropertyDesc[_ >: ENTITY, ENTITY, _ <: Number, _] = _propertyDescMap.values.collectFirst {
+          case p: VersionPropertyDesc[_, _, _, _] => p
+        }.orNull.asInstanceOf[VersionPropertyDesc[_ >: ENTITY, ENTITY, _ <: Number, _]]
+
+        override def newEntity(__args: util.Map[String, Property[ENTITY, _]]): ENTITY = fromMap[ENTITY](__args.asScala.toMap)
+
+        override def getGeneratedIdPropertyType: GeneratedIdPropertyDesc[_ >: ENTITY, ENTITY, _ <: Number, _] = _propertyDescMap.values.collectFirst {
+          case p: GeneratedIdPropertyDesc[_, _, _, _] => p
+        }.orNull.asInstanceOf[GeneratedIdPropertyDesc[_ >: ENTITY, ENTITY, _ <: Number, _]]
+      }
+    }).asInstanceOf[AbstractEntityDesc[ENTITY]]
   }
 
   def clear(): Unit = {
@@ -81,13 +77,13 @@ object RuntimeEntityDesc {
     entityConstructorCache.clear()
   }
 
-  def fromMap[E: TypeTag: ClassTag](propertyMap: Map[String, Property[E, _]]): E = {
+  def fromMap[ENTITY: TypeTag: ClassTag](propertyMap: Map[String, Property[ENTITY, _]]): ENTITY = {
     val (constructorMirror, constructorParams) = entityConstructorCache.getOrElseUpdate(
-      classTag[E].toString() + classTag[E].hashCode(),
+      classTag[ENTITY].toString() + classTag[ENTITY].hashCode(),
       {
-        val classTest = typeOf[E].typeSymbol.asClass
+        val classTest = typeOf[ENTITY].typeSymbol.asClass
         val classMirror = mirror.reflectClass(classTest)
-        val constructor = typeOf[E].decl(termNames.CONSTRUCTOR).asMethod
+        val constructor = typeOf[ENTITY].decl(termNames.CONSTRUCTOR).asMethod
         val cMirror = classMirror.reflectConstructor(constructor)
 
         val cParams: List[(String, Option[RuntimeEmbeddableDesc[_]])] =
@@ -106,15 +102,15 @@ object RuntimeEntityDesc {
       })
 
     val constructorArgs = constructorParams.map {
-      case (paramName, Some(embeddableDesc)) => embeddableDesc.newEmbeddable[E](paramName, propertyMap)
+      case (paramName, Some(embeddableDesc)) => embeddableDesc.newEmbeddable[ENTITY](paramName, propertyMap)
       case (paramName, None) => propertyMap.get(paramName).map(_.get).getOrElse(
-            throw new DomaException(Message.DOMALA6024, typeOf[E], paramName, paramName))
+            throw new DomaException(Message.DOMALA6024, typeOf[ENTITY], paramName, paramName))
     }
-    constructorMirror(constructorArgs:_*).asInstanceOf[E]
+    constructorMirror(constructorArgs:_*).asInstanceOf[ENTITY]
   }
 
-  def generatePropertyDescMap[E: TypeTag: ClassTag](namingType: NamingType): Map[String, EntityPropertyDesc[E, _]] = {
-    val tpe = typeOf[E]
+  def generatePropertyDescMap[ENTITY: TypeTag: ClassTag](namingType: NamingType): Map[String, EntityPropertyDesc[ENTITY, _]] = {
+    val tpe = typeOf[ENTITY]
     val constructor = tpe.decl(termNames.CONSTRUCTOR).asMethod
 
     constructor.paramLists.flatten.flatMap { (p: Symbol) =>
@@ -134,37 +130,37 @@ object RuntimeEntityDesc {
           MetaHelper.abort(Message.DOMALA4088, tpe.typeSymbol.name.toString, p.name.toString)
         if (!column.updatable)
           MetaHelper.abort(Message.DOMALA4089, tpe.typeSymbol.name.toString, p.name.toString)
-        generateIdPropertyDesc[E](p.name.toString, p.typeSignature, column, namingType, p)
+        generateIdPropertyDesc[ENTITY](p.name.toString, p.typeSignature, column, namingType, p)
       } else if (isVersion) {
-        generateVersionPropertyDesc[E](p.name.toString, p.typeSignature, column, namingType)
+        generateVersionPropertyDesc[ENTITY](p.name.toString, p.typeSignature, column, namingType)
       } else
-        generateDefaultPropertyDesc[E](p.name.toString, p.typeSignature, column, namingType)
+        generateDefaultPropertyDesc[ENTITY](p.name.toString, p.typeSignature, column, namingType)
     }.toMap
   }
 
-  def generateDefaultPropertyDesc[E](
+  def generateDefaultPropertyDesc[ENTITY](
     paramName: String,
     propertyType: Type,
     column: Column,
     namingType: NamingType
   )(
     implicit
-      entityTypeTag: TypeTag[E],
-      entityClassTag: ClassTag[E],
-  ): Map[String, EntityPropertyDesc[E, _]] = {
+      entityTypeTag: TypeTag[ENTITY],
+      entityClassTag: ClassTag[ENTITY],
+  ): Map[String, EntityPropertyDesc[ENTITY, _]] = {
     val propertyClass = mirror.runtimeClass(propertyType)
 
     def basicPropertyDesc(tpe: Types.Basic[_], nakedClass: Class[Any]) = {
       val wrapperSupplier = tpe.wrapperSupplier
-      DefaultPropertyDesc.ofBasic[E, Any, Any](
-        entityClassTag.runtimeClass.asInstanceOf[Class[E]],
+      DefaultPropertyDesc.ofBasic[ENTITY, Any, Any](
+        entityClassTag.runtimeClass.asInstanceOf[Class[ENTITY]],
         propertyClass,
         nakedClass,
         wrapperSupplier.asInstanceOf[Supplier[Wrapper[Any]]],
         paramName,
         column,
         namingType
-      ).asInstanceOf[EntityPropertyDesc[E, _]]
+      ).asInstanceOf[EntityPropertyDesc[ENTITY, _]]
     }
 
     def holderPropertyDesc(tpe: Types.Holder[_, _], nakedClass: Class[Any]) = {
@@ -174,7 +170,7 @@ object RuntimeEntityDesc {
         else
           AnyValHolderDescRepository.getByClass(nakedClass, ConfigSupport.defaultClassHelper)
       DefaultPropertyDesc.ofHolder(
-        entityClassTag.runtimeClass.asInstanceOf[Class[E]],
+        entityClassTag.runtimeClass.asInstanceOf[Class[ENTITY]],
         propertyClass,
         holderDesc,
         paramName,
@@ -183,14 +179,14 @@ object RuntimeEntityDesc {
       )
     }
 
-    def embeddedPropertyDesc(tpe: Types): Map[String, EntityPropertyDesc[E, _]] = {
+    def embeddedPropertyDesc(tpe: Types): Map[String, EntityPropertyDesc[ENTITY, _]] = {
       val embeddableTypeTag = toTypeTag(propertyType)
       val embeddableDesc =
         RuntimeEmbeddableDesc.of(embeddableTypeTag)
-      new EmbeddedPropertyDesc[E, Any](
+      new EmbeddedPropertyDesc[ENTITY, Any](
         paramName,
-        entityClassTag.runtimeClass.asInstanceOf[Class[E]],
-        embeddableDesc.getEmbeddablePropertyTypes[E](
+        entityClassTag.runtimeClass.asInstanceOf[Class[ENTITY]],
+        embeddableDesc.getEmbeddablePropertyTypes[ENTITY](
           paramName,
           namingType
         )).getEmbeddablePropertyTypeMap.asScala.toMap
@@ -216,7 +212,7 @@ object RuntimeEntityDesc {
     }
   }
 
-  def generateIdPropertyDesc[E](
+  def generateIdPropertyDesc[ENTITY](
     paramName: String,
     propertyType: Type,
     column: Column,
@@ -224,9 +220,9 @@ object RuntimeEntityDesc {
     paramSymbol: Symbol
   )(
     implicit
-    entityTypeTag: TypeTag[E],
-    entityClassTag: ClassTag[E],
-  ): Map[String, EntityPropertyDesc[E, _]] = {
+    entityTypeTag: TypeTag[ENTITY],
+    entityClassTag: ClassTag[ENTITY],
+  ): Map[String, EntityPropertyDesc[ENTITY, _]] = {
     val propertyClass = mirror.runtimeClass(propertyType)
     val idGenerator = paramSymbol.annotations.collectFirst {
       case a: ru.Annotation if a.tree.tpe =:= typeOf[domala.GeneratedValue] =>
@@ -238,8 +234,8 @@ object RuntimeEntityDesc {
     def basicPropertyDesc(tpe: Types.Basic[_], nakedClass: Class[Any]) = {
       val wrapperSupplier = tpe.wrapperSupplier
       idGenerator.map(g =>
-        GeneratedIdPropertyDesc.ofBasic[E, Number, Any](
-          entityClassTag.runtimeClass.asInstanceOf[Class[E]],
+        GeneratedIdPropertyDesc.ofBasic[ENTITY, Number, Any](
+          entityClassTag.runtimeClass.asInstanceOf[Class[ENTITY]],
           propertyClass,
           nakedClass.asInstanceOf[Class[Number]],
           wrapperSupplier.asInstanceOf[Supplier[Wrapper[Number]]],
@@ -248,8 +244,8 @@ object RuntimeEntityDesc {
           namingType,
           g)
       ).getOrElse(
-        AssignedIdPropertyDesc.ofBasic[E, Any, Any](
-          entityClassTag.runtimeClass.asInstanceOf[Class[E]],
+        AssignedIdPropertyDesc.ofBasic[ENTITY, Any, Any](
+          entityClassTag.runtimeClass.asInstanceOf[Class[ENTITY]],
           propertyClass,
           nakedClass,
           wrapperSupplier.asInstanceOf[Supplier[Wrapper[Any]]],
@@ -257,7 +253,7 @@ object RuntimeEntityDesc {
           column,
           namingType
         )
-      ).asInstanceOf[EntityPropertyDesc[E, _]]
+      ).asInstanceOf[EntityPropertyDesc[ENTITY, _]]
     }
 
     def holderPropertyDesc(tpe: Types.Holder[_, _], nakedClass: Class[Any]) = {
@@ -267,8 +263,8 @@ object RuntimeEntityDesc {
         else
           AnyValHolderDescRepository.getByClass(nakedClass, ConfigSupport.defaultClassHelper)
       idGenerator.map(g =>
-        GeneratedIdPropertyDesc.ofHolder[E, Number, Any](
-          entityClassTag.runtimeClass.asInstanceOf[Class[E]],
+        GeneratedIdPropertyDesc.ofHolder[ENTITY, Number, Any](
+          entityClassTag.runtimeClass.asInstanceOf[Class[ENTITY]],
           propertyClass,
           holderDesc.asInstanceOf[HolderDesc[Number, Any]],
           paramName,
@@ -278,7 +274,7 @@ object RuntimeEntityDesc {
         )
       ).getOrElse(
         AssignedIdPropertyDesc.ofHolder(
-          entityClassTag.runtimeClass.asInstanceOf[Class[E]],
+          entityClassTag.runtimeClass.asInstanceOf[Class[ENTITY]],
           propertyClass,
           holderDesc,
           paramName,
@@ -308,29 +304,29 @@ object RuntimeEntityDesc {
     )
   }
 
-  def generateVersionPropertyDesc[E](
+  def generateVersionPropertyDesc[ENTITY](
     paramName: String,
     propertyType: Type,
     column: Column,
     namingType: NamingType
   )(
     implicit
-    entityTypeTag: TypeTag[E],
-    entityClassTag: ClassTag[E],
-  ): Map[String, EntityPropertyDesc[E, _]] = {
+    entityTypeTag: TypeTag[ENTITY],
+    entityClassTag: ClassTag[ENTITY],
+  ): Map[String, EntityPropertyDesc[ENTITY, _]] = {
     val propertyClass = mirror.runtimeClass(propertyType)
 
     def basicPropertyDesc(tpe: Types.Basic[_], nakedClass: Class[Number]) = {
       val wrapperSupplier = tpe.wrapperSupplier
-      VersionPropertyDesc.ofBasic[E, Number, Any](
-        entityClassTag.runtimeClass.asInstanceOf[Class[E]],
+      VersionPropertyDesc.ofBasic[ENTITY, Number, Any](
+        entityClassTag.runtimeClass.asInstanceOf[Class[ENTITY]],
         propertyClass,
         nakedClass,
         wrapperSupplier.asInstanceOf[Supplier[Wrapper[Number]]],
         paramName,
         column,
         namingType
-      ).asInstanceOf[EntityPropertyDesc[E, _]]
+      ).asInstanceOf[EntityPropertyDesc[ENTITY, _]]
     }
 
     def holderPropertyDesc(tpe: Types.Holder[_, _], nakedClass: Class[Number]) = {
@@ -339,8 +335,8 @@ object RuntimeEntityDesc {
           ReflectionUtil.getHolderDesc(nakedClass)
         else
           AnyValHolderDescRepository.getByClass(nakedClass, ConfigSupport.defaultClassHelper)
-      VersionPropertyDesc.ofHolder[E, Number, Any](
-        entityClassTag.runtimeClass.asInstanceOf[Class[E]],
+      VersionPropertyDesc.ofHolder[ENTITY, Number, Any](
+        entityClassTag.runtimeClass.asInstanceOf[Class[ENTITY]],
         propertyClass,
         holderDesc.asInstanceOf[HolderDesc[Number, Any]],
         paramName,
