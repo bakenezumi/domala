@@ -12,7 +12,6 @@ package object `type` {
     val isEntity: Boolean = false
     val isRuntimeEntity: Boolean = false
     val isHolder: Boolean = false
-    val isNumberHolder: Boolean = false
     val isAnyValHolder: Boolean = false
     val isNumber: Boolean = false
     val isEmbeddable: Boolean = false
@@ -118,6 +117,7 @@ package object `type` {
     sealed trait Holder[BASIC, HOLDER] extends Types {
       override val isHolder: Boolean = true
       val basic: Types
+      override val isNumber: Boolean = basic.isNumber
     }
     final case class GeneratedHolderType[BASIC, HOLDER](basic: Types.Basic[BASIC]) extends Types.Holder[BASIC, HOLDER]
     final case class AnyValHolderType[BASIC, HOLDER](basic: Types.Basic[BASIC]) extends Types.Holder[BASIC, HOLDER] {

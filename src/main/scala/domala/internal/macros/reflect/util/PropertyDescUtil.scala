@@ -6,7 +6,7 @@ import domala.Column
 import domala.internal.reflect.util.ReflectionUtil
 import domala.internal.reflect.util.ReflectionUtil.{extractionClassString, extractionQuotedString}
 import domala.jdbc.entity._
-import domala.jdbc.holder.{AbstractAnyValHolderDesc, AbstractHolderDesc, HolderDesc}
+import domala.jdbc.holder.HolderDesc
 import domala.jdbc.id.IdGenerator
 import domala.jdbc.`type`.Types
 import domala.message.Message
@@ -88,12 +88,18 @@ object PropertyDescUtil {
             )).getEmbeddablePropertyTypeMap.asScala.toMap
         }
       case _ => converter.toType(nakedTpe) match {
-        case Types.GeneratedHolderType(valueType) =>
-          val holderDesc =
-            reify(ReflectionUtil.getHolderDesc(nakedClassTag.splice))
+        case convertedType if convertedType.isHolder =>
+          val holderDesc = convertedType match {
+            case Types.GeneratedHolderType(_) =>
+              reify(ReflectionUtil.getHolderDesc(nakedClassTag.splice))
+            case _ => AnyValHolderDescGenerator.get[blackbox.Context, N](c)(nakedTpe).getOrElse(
+              ReflectionUtil.abort(Message.DOMALA6017,
+                extractionClassString(entityClass.toString))
+            )
+          }
           if (isIdLiteral) {
             if (isIdGenerateActualLiteral) {
-              if (!valueType.isNumber) {
+              if (!convertedType.isNumber) {
                 ReflectionUtil.abort(
                   Message.DOMALA4095,
                   extractionClassString(entityClass.toString),
@@ -104,7 +110,7 @@ object PropertyDescUtil {
                 Map(paramName.splice -> GeneratedIdPropertyDesc.ofHolder(
                   entityClass.splice,
                   propertyClassTag.splice.runtimeClass,
-                  holderDesc.splice.asInstanceOf[AbstractHolderDesc[Number, _]],
+                  holderDesc.splice.asInstanceOf[HolderDesc[Number, _]],
                   paramName.splice,
                   column.splice,
                   namingType.splice,
@@ -124,7 +130,7 @@ object PropertyDescUtil {
               }
             }
           } else if (isVersionLiteral) {
-            if (!valueType.isNumber) {
+            if (!convertedType.isNumber) {
               ReflectionUtil.abort(
                 Message.DOMALA4093,
                 extractionClassString(entityClass.toString),
@@ -158,85 +164,6 @@ object PropertyDescUtil {
                 entityClass.splice,
                 propertyClassTag.splice.runtimeClass,
                 holderDesc.splice,
-                paramName.splice,
-                column.splice,
-                namingType.splice
-              ))
-            }
-          }
-        case Types.AnyValHolderType(valueType) =>
-          val holderDesc = AnyValHolderDescGenerator.get[blackbox.Context, N](c)(nakedTpe)
-          if (holderDesc.isEmpty) {
-            ReflectionUtil.abort(Message.DOMALA6017,
-              extractionClassString(entityClass.toString))
-          }
-          if (isIdLiteral) {
-            if (isIdGenerateActualLiteral) {
-              if (!valueType.isNumber) {
-                ReflectionUtil.abort(
-                  Message.DOMALA4095,
-                  extractionClassString(entityClass.toString),
-                  extractionQuotedString(paramName.toString())
-                )
-              }
-              reify {
-                Map(paramName.splice -> GeneratedIdPropertyDesc.ofHolder(
-                  entityClass.splice,
-                  propertyClassTag.splice.runtimeClass,
-                  holderDesc.get.splice.asInstanceOf[AbstractAnyValHolderDesc[Number, _]],
-                  paramName.splice,
-                  column.splice,
-                  namingType.splice,
-                  idGenerator.splice
-                ))
-              }
-            } else {
-              reify {
-                Map(paramName.splice -> AssignedIdPropertyDesc.ofHolder(
-                  entityClass.splice,
-                  propertyClassTag.splice.runtimeClass,
-                  holderDesc.get.splice,
-                  paramName.splice,
-                  column.splice,
-                  namingType.splice
-                ))
-              }
-            }
-          } else if (isVersionLiteral) {
-            if (!valueType.isNumber) {
-              ReflectionUtil.abort(
-                Message.DOMALA4093,
-                extractionClassString(entityClass.toString),
-                extractionQuotedString(paramName.toString())
-              )
-            }
-            reify {
-              Map(paramName.splice -> VersionPropertyDesc.ofHolder(
-                entityClass.splice,
-                propertyClassTag.splice.runtimeClass,
-                holderDesc.get.splice.asInstanceOf[AbstractAnyValHolderDesc[Number, _]],
-                paramName.splice,
-                column.splice,
-                namingType.splice
-              ))
-            }
-          } else if (isTenantIdLiteral) {
-            reify {
-              Map(paramName.splice -> TenantIdPropertyDesc.ofHolder(
-                entityClass.splice,
-                propertyClassTag.splice.runtimeClass,
-                holderDesc.get.splice,
-                paramName.splice,
-                column.splice,
-                namingType.splice
-              ))
-            }
-          } else {
-            reify {
-              Map(paramName.splice -> DefaultPropertyDesc.ofHolder(
-                entityClass.splice,
-                propertyClassTag.splice.runtimeClass,
-                holderDesc.get.splice,
                 paramName.splice,
                 column.splice,
                 namingType.splice
