@@ -1,6 +1,7 @@
 package domala.internal.macros.reflect
 
 import domala._
+import domala.internal.jdbc.entity.RuntimeEntityDesc
 import domala.jdbc.entity._
 import org.scalatest.{BeforeAndAfter, FunSuite}
 import org.seasar.doma.wrapper.{IntegerWrapper, StringWrapper, Wrapper}
@@ -73,7 +74,7 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
   }
 
   test("generatePropertyType domain") {
-    val propertyType = EntityReflectionMacros.generatePropertyDesc[DummyDomain, DummyEntity, DummyDomain](
+    val propertyType = EntityReflectionMacros.generatePropertyDesc[DummyHolder, DummyEntity, DummyHolder](
       classOf[DummyEntity],
       "domain",
       NamingType.NONE,
@@ -94,16 +95,16 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
 
 }
 
-@Entity
 case class DummyEntity(
   @Id @GeneratedValue(strategy = GenerationType.IDENTITY) id: Int,
-  domain: DummyDomain,
+  domain: DummyHolder,
   basic: String,
   @Version version: Int
 )
+object DummyEntity{
+  val entityDesc: EntityDesc[DummyEntity] = RuntimeEntityDesc.of[DummyEntity]
+}
 
-@Holder
-case class DummyDomain(value: String)
+case class DummyHolder(value: String) extends AnyVal
 
-@Embeddable
 case class DummyEmbeddable(value1: Int, value2: String)

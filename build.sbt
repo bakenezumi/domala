@@ -3,37 +3,60 @@ import Dependencies._
 lazy val _scalaVersion = "2.12.4"
 lazy val _version = "0.1.0-beta.9-SNAPSHOT"
 
-lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(
-  addCompilerPlugin("org.scalameta" % "paradise" % "3.0.0-M10" cross CrossVersion.full),
-  scalacOptions += "-Xplugin-require:macroparadise",
-  scalacOptions in (Compile, console) ~= (_ filterNot (_ contains "paradise")) // macroparadise plugin doesn't work in repl yet.
+lazy val baseSettings = Seq(
+  organization := "com.github.domala",
+  version := _version,
+  scalaVersion := _scalaVersion,
+  javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-encoding", "UTF-8", "-Xlint:-options"),
+  javacOptions in doc := Seq("-source", "1.8")
 )
 
 lazy val root = (project in file(".")).settings(
-  inThisBuild(List(
-    scalaVersion := _scalaVersion,
-    //crossScalaVersions := Seq(_scalaVersion, "2.11.11"),  // can't compile 2.11 because SAM conversion using
-    version      := _version
-  )),
+  baseSettings
+) aggregate (core, meta, paradise)
+
+lazy val core = (project in file("core")).settings(
   name := "domala",
-  organization := "com.github.domala",
-  javacOptions ++= List("-encoding", "utf8"),
-  metaMacroSettings,
+  baseSettings,
   compile in Test := ((compile in Test) dependsOn (copyResources in Test)).value,
   libraryDependencies ++= Seq(
     "org.seasar.doma" % "doma" % "2.19.1",
-    "org.scalameta" %% "scalameta" % "1.8.0" % Provided,
     "org.scala-lang" % "scala-reflect" % scalaVersion.value,
     "com.h2database" % "h2" % "1.4.193" % Test,
     scalaTest % Test
   )
 )
 
+lazy val meta = (project in file("meta")).settings(
+  name := "domala-meta",
+  baseSettings,
+  libraryDependencies ++= Seq(
+    "org.scalameta" %% "scalameta" % "1.8.0" % Provided,
+    "com.h2database" % "h2" % "1.4.193" % Test,
+    scalaTest % Test
+  )
+) dependsOn core
+
+lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(
+  addCompilerPlugin("org.scalameta" % "paradise" % "3.0.0-M10" cross CrossVersion.full),
+  scalacOptions += "-Xplugin-require:macroparadise",
+  scalacOptions in (Compile, console) ~= (_ filterNot (_ contains "paradise")) // macroparadise plugin doesn't work in repl yet.
+)
+
+lazy val paradise = (project in file("paradise")).settings(
+  name := "domala-paradise",
+  baseSettings,
+  metaMacroSettings,
+  compile in Test := ((compile in Test) dependsOn (copyResources in Test)).value,
+  libraryDependencies ++= Seq(
+    "org.scalameta" %% "scalameta" % "1.8.0" % Provided,
+    "com.h2database" % "h2" % "1.4.193" % Test,
+    scalaTest % Test
+  )
+) dependsOn meta
+
 lazy val example = project.settings (
-  inThisBuild(List(
-    scalaVersion := _scalaVersion,
-    version      := _version
-  )),
+  baseSettings,
   metaMacroSettings,
   compile in Compile := ((compile in Compile) dependsOn (copyResources in Compile)).value,
   libraryDependencies ++= Seq(
@@ -41,7 +64,7 @@ lazy val example = project.settings (
     "com.h2database" % "h2" % "1.4.193",
     scalaTest % Test
   )
-) dependsOn root
+) dependsOn paradise
 
 licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt"))
 homepage := Some(url("https://github.com/bakenezumi"))

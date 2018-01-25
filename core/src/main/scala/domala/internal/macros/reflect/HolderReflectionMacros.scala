@@ -1,8 +1,8 @@
 package domala.internal.macros.reflect
 
-import domala.internal.macros.meta.util.MetaHelper
 import domala.internal.reflect.util.ReflectionUtil
 import domala.message.Message
+import org.seasar.doma.DomaException
 
 import scala.language.experimental.macros
 import scala.reflect.macros.blackbox
@@ -37,7 +37,7 @@ object HolderReflectionMacros {
     // domala.internal.macros.reflect.HolderReflectionMacros.assertUnique(handler)(Child1.value, Child2.value, ...)
     val holderTypeName = c.Expr(Literal(Constant(holderType.typeSymbol.fullName)))
     val handler = reify {
-      () => MetaHelper.abort(Message.DOMALA6016, holderTypeName.splice.toString)
+      () => throw new DomaException(Message.DOMALA6016, holderTypeName.splice.toString)
     }
     val paramName = holderType.members.filter(m => m.isConstructor).head.asMethod.paramLists.head.head.name.toString
 

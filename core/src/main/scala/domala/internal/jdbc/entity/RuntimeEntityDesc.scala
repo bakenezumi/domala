@@ -4,7 +4,6 @@ import java.util
 import java.util.function.Supplier
 
 import domala.internal.jdbc.holder.AnyValHolderDescRepository
-import domala.internal.macros.meta.util.MetaHelper
 import domala.internal.reflect.util.{ReflectionUtil, RuntimeTypeConverter}
 import domala.jdbc.`type`.Types
 import domala.jdbc.entity._
@@ -19,8 +18,8 @@ import org.seasar.doma.wrapper.Wrapper
 import scala.collection.JavaConverters._
 import scala.language.existentials
 import scala.reflect._
-import scala.reflect.runtime.{universe => ru}
 import scala.reflect.runtime.universe._
+import scala.reflect.runtime.{universe => ru}
 
 object RuntimeEntityDesc {
 
@@ -123,9 +122,9 @@ object RuntimeEntityDesc {
       }.getOrElse(Column())
       if (isId) {
         if (!column.insertable)
-          MetaHelper.abort(Message.DOMALA4088, tpe.typeSymbol.name.toString, p.name.toString)
+          throw new DomaException(Message.DOMALA4088, tpe.typeSymbol.name.toString, p.name.toString)
         if (!column.updatable)
-          MetaHelper.abort(Message.DOMALA4089, tpe.typeSymbol.name.toString, p.name.toString)
+          throw new DomaException(Message.DOMALA4089, tpe.typeSymbol.name.toString, p.name.toString)
         generateIdPropertyDesc[ENTITY](p.name.toString, p.typeSignature, column, namingType, p)
       } else if (isVersion) {
         generateVersionPropertyDesc[ENTITY](p.name.toString, p.typeSignature, column, namingType)

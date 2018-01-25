@@ -14,7 +14,7 @@ class DaoReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
   }
 
   test("getOptionSingleResultHandler for Domain") {
-    assert(DaoReflectionMacros.getOptionSingleResultHandler[DaoReflectionMacrosTestSuite, DummyDomain](classOf[DaoReflectionMacrosTestSuite], "get Handler for Domain").isInstanceOf[OptionHolderSingleResultHandler[_, _]])
+    assert(DaoReflectionMacros.getOptionSingleResultHandler[DaoReflectionMacrosTestSuite, DummyHolder](classOf[DaoReflectionMacrosTestSuite], "get Handler for Domain").isInstanceOf[OptionHolderSingleResultHandler[_, _]])
   }
 
   test("getOptionSingleResultHandler for Other") {
@@ -27,7 +27,7 @@ class DaoReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
   }
 
   test("getResultListHandler for Domain") {
-    assert(DaoReflectionMacros.getResultListHandler[DaoReflectionMacrosTestSuite, DummyDomain](classOf[DaoReflectionMacrosTestSuite], "get Handler for Domain").isInstanceOf[DomainResultListHandler[_, _]])
+    assert(DaoReflectionMacros.getResultListHandler[DaoReflectionMacrosTestSuite, DummyHolder](classOf[DaoReflectionMacrosTestSuite], "get Handler for Domain").isInstanceOf[DomainResultListHandler[_, _]])
   }
 
   test("getResultListHandler for Other") {
@@ -40,7 +40,7 @@ class DaoReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
   }
 
   test("getStreamHandler for Domain") {
-    assert(DaoReflectionMacros.getStreamHandler((p: Stream[DummyDomain]) => p.toString, classOf[DaoReflectionMacrosTestSuite], "get Handler for Entity").isInstanceOf[DomainStreamHandler[_, _, _]])
+    assert(DaoReflectionMacros.getStreamHandler((p: Stream[DummyHolder]) => p.toString, classOf[DaoReflectionMacrosTestSuite], "get Handler for Entity").isInstanceOf[DomainStreamHandler[_, _, _]])
   }
 
   test("getStreamHandler for Other") {
@@ -49,15 +49,15 @@ class DaoReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
   }
 
   test("getEntityAndEntityDesc has entity") {
-    val entity1 = DummyEntity(1, null, "aa", 2)
-    val entity2 = DummyEntity(2, null, "bb", 3)
+    val entity1 = DummyEntity(1, DummyHolder("aa"), "aa", 2)
+    val entity2 = DummyEntity(2, DummyHolder("bb"), "bb", 3)
     val ret = DaoReflectionMacros.getEntityAndEntityDesc(classOf[DummyEntity], "method1", classOf[Int], DaoParam("aaa", 1, classOf[Int]), DaoParam("bbb", entity1, classOf[DummyEntity]), DaoParam("ccc", entity2, classOf[DummyEntity]))
     assert(ret == Some(EntityAndEntityDesc("bbb", entity1, DummyEntity.entityDesc)))
   }
 
   test("getEntityAndEntityDesc has entity and return Result") {
-    val entity1 = DummyEntity(1, null, "aa", 2)
-    val entity2 = DummyEntity(2, null, "bb", 3)
+    val entity1 = DummyEntity(1, DummyHolder("aa"), "aa", 2)
+    val entity2 = DummyEntity(2, DummyHolder("bb"), "bb", 3)
     val ret = DaoReflectionMacros.getEntityAndEntityDesc(classOf[DummyEntity], "method1", classOf[Result[DummyEntity]], DaoParam("aaa", 1, classOf[Int]), DaoParam("bbb", entity1, classOf[DummyEntity]), DaoParam("ccc", entity2, classOf[DummyEntity]))
     assert(ret == Some(EntityAndEntityDesc("bbb", entity1, DummyEntity.entityDesc)))
   }
