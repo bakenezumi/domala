@@ -1,4 +1,5 @@
 import Dependencies._
+import sbt.Keys.publishArtifact
 
 lazy val _scalaVersion = "2.12.4"
 lazy val _version = "0.1.0-beta.9-SNAPSHOT"
@@ -8,11 +9,22 @@ lazy val baseSettings = Seq(
   version := _version,
   scalaVersion := _scalaVersion,
   javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-encoding", "UTF-8", "-Xlint:-options"),
-  javacOptions in doc := Seq("-source", "1.8")
+  javacOptions in doc := Seq("-source", "1.8"),
+  publishMavenStyle := true,
+    publishArtifact in Test := false,
+  publishTo := Some(
+    if (isSnapshot.value)
+      Opts.resolver.sonatypeSnapshots
+    else
+      Opts.resolver.sonatypeStaging
+    )
 )
 
 lazy val root = (project in file(".")).settings(
-  baseSettings
+  baseSettings,
+  publish := {},
+  publishLocal := {},
+  skip in publish := true
 ) aggregate (core, meta, paradise)
 
 lazy val core = (project in file("core")).settings(
@@ -68,15 +80,6 @@ lazy val example = project.settings (
 
 licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt"))
 homepage := Some(url("https://github.com/bakenezumi"))
-
-publishMavenStyle := true
-publishArtifact in Test := false
-publishTo := Some(
-  if (isSnapshot.value)
-    Opts.resolver.sonatypeSnapshots
-  else
-    Opts.resolver.sonatypeStaging
-)
 
 scmInfo := Some(
   ScmInfo(
