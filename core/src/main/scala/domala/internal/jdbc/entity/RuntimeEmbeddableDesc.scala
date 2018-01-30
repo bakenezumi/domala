@@ -15,28 +15,10 @@ import scala.reflect._
 import scala.reflect.runtime.{universe => ru}
 import ru._
 
-class RuntimeEmbeddableDesc[EMBEDDABLE: TypeTag] {
-  def getEmbeddablePropertyTypes[ENTITY: TypeTag : ClassTag](embeddedPropertyName: String, namingType: NamingType): util.List[EntityPropertyDesc[ENTITY, _]] = {
-    val tpe = typeOf[EMBEDDABLE]
-    val constructor = tpe.decl(termNames.CONSTRUCTOR).asMethod
+abstract class RuntimeEmbeddableDesc[EMBEDDABLE: TypeTag] {
+  def getEmbeddablePropertyTypes[ENTITY: TypeTag : ClassTag](embeddedPropertyName: String, namingType: NamingType): util.List[EntityPropertyDesc[ENTITY, _]]
 
-    constructor.paramLists.flatten.map { (p: Symbol) =>
-      val annotations = p.annotations
-      val column: Column = annotations.collectFirst {
-        case a: ru.Annotation if a.tree.tpe =:= typeOf[domala.Column] =>
-          Column.reflect(ru)(a)
-      }.getOrElse {
-        if (typeOf[ENTITY].decl(termNames.CONSTRUCTOR).asMethod.paramLists.flatten.exists {
-          _.name.toString == p.name.toString
-        }) Column(name = embeddedPropertyName + "." + p.name.toString)
-        else Column()
-      }
-      RuntimeEntityDesc.generateDefaultPropertyDesc[ENTITY](embeddedPropertyName + "." + p.name.toString, p.typeSignature, column, namingType).head._2
-    }.asJava
-  }
-
-  def newEmbeddable[ENTITY: TypeTag : ClassTag](embeddedPropertyName: String, __args: Map[String, Property[ENTITY, _]]): EMBEDDABLE =
-    RuntimeEmbeddableDesc.fromMap[EMBEDDABLE, ENTITY](embeddedPropertyName, __args)
+  def newEmbeddable[ENTITY: TypeTag : ClassTag](embeddedPropertyName: String, __args: Map[String, Property[ENTITY, _]]): EMBEDDABLE
 }
 
 object RuntimeEmbeddableDesc {
@@ -49,7 +31,29 @@ object RuntimeEmbeddableDesc {
     embeddableDescCache.getOrElseUpdate(
     tTag.toString() + tTag.hashCode(),
     {
-      new RuntimeEmbeddableDesc[EMBEDDABLE]
+      new RuntimeEmbeddableDesc[EMBEDDABLE] {
+        def getEmbeddablePropertyTypes[ENTITY: TypeTag : ClassTag](embeddedPropertyName: String, namingType: NamingType): util.List[EntityPropertyDesc[ENTITY, _]] = {
+          val tpe = typeOf[EMBEDDABLE]
+          val constructor = tpe.decl(termNames.CONSTRUCTOR).asMethod
+
+          constructor.paramLists.flatten.map { (p: Symbol) =>
+            val annotations = p.annotations
+            val column: Column = annotations.collectFirst {
+              case a: ru.Annotation if a.tree.tpe =:= typeOf[domala.Column] =>
+                Column.reflect(ru)(a)
+            }.getOrElse {
+              if (typeOf[ENTITY].decl(termNames.CONSTRUCTOR).asMethod.paramLists.flatten.exists {
+                _.name.toString == p.name.toString
+              }) Column(name = embeddedPropertyName + "." + p.name.toString)
+              else Column()
+            }
+            RuntimeEntityDesc.generateDefaultPropertyDesc[ENTITY](embeddedPropertyName + "." + p.name.toString, p.typeSignature, column, namingType).head._2
+          }.asJava
+        }
+
+        def newEmbeddable[ENTITY: TypeTag : ClassTag](embeddedPropertyName: String, __args: Map[String, Property[ENTITY, _]]): EMBEDDABLE =
+          RuntimeEmbeddableDesc.fromMap[EMBEDDABLE, ENTITY](embeddedPropertyName, __args)
+      }
     }).asInstanceOf[RuntimeEmbeddableDesc[EMBEDDABLE]]
   }
 
@@ -80,7 +84,7 @@ object RuntimeEmbeddableDesc {
           throw new DomaException(Message.DOMALA6024, typeOf[ENTITY], propertyName, paramName))
       }
     })
-    constructorMirror(constructorArgs:_*).asInstanceOf[EMBEDDABLE]
+    constructorMirror(constructorArgs: _*).asInstanceOf[EMBEDDABLE]
   }
 
 }

@@ -39,8 +39,6 @@ object EntityReflectionMacros {
     idGenerator: c.Expr[IdGenerator],
     isVersion: c.Expr[Boolean],
     isTenantId: c.Expr[Boolean],
-    isBasic: c.Expr[Boolean],
-    wrapperSupplier: c.Expr[Supplier[Wrapper[N]]],
     column: c.Expr[Column]
   )(
     propertyClassTag: c.Expr[ClassTag[T]],
@@ -55,8 +53,6 @@ object EntityReflectionMacros {
       idGenerator,
       isVersion,
       isTenantId,
-      isBasic,
-      wrapperSupplier,
       column
     )(propertyClassTag, nakedClassTag)
   }
@@ -69,8 +65,6 @@ object EntityReflectionMacros {
       idGenerator: IdGenerator,
       isVersion: Boolean,
       isTenantId: Boolean,
-      isBasic: Boolean,
-      wrapperSupplier: Supplier[Wrapper[N]],
       column: Column
   )(
       implicit propertyClassTag: ClassTag[T],

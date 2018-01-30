@@ -3,10 +3,12 @@ package domala.internal.macros.reflect.util
 import java.math.BigInteger
 import java.sql.{Blob, Clob, NClob, SQLXML, Time, Timestamp}
 import java.time.{LocalDate, LocalDateTime, LocalTime}
+import java.util.function.Supplier
 
 import domala.jdbc.`type`.{TypeConverter, Types}
 import domala.jdbc.entity.{EmbeddableCompanion, EntityCompanion}
 import domala.jdbc.holder.HolderCompanion
+import domala.wrapper.Wrapper
 
 import scala.reflect.macros.blackbox
 
@@ -75,10 +77,10 @@ class MacroTypeConverter[C <: blackbox.Context](c: C) extends TypeConverter {
 
   override def isGeneratedEntity(tpe: T): Boolean = tpe.companion <:< typeOf[EntityCompanion[_]]
 
-  override def isRuntimeEntity(tpe: T): Boolean = !(tpe <:< typeOf[AnyVal]) && tpe <:< typeOf[Product] && {
+  override def isRuntimeEntity(tpe: T): Boolean = !(tpe <:< typeOf[AnyVal]) && tpe.typeSymbol.asClass.isCaseClass && {
     val constructor = tpe.decl(termNames.CONSTRUCTOR).asMethod
     constructor.paramLists.flatten.forall { p =>
-      toType(p.typeSignature.asInstanceOf[T]) match {
+      this.toType(p.typeSignature.asInstanceOf[T]) match {
         case _: Types.Basic[_] => true
         case _: Types.Holder[_, _] => true
         case Types.Option(_: Types.Basic[_]) => true
@@ -91,7 +93,7 @@ class MacroTypeConverter[C <: blackbox.Context](c: C) extends TypeConverter {
 
   override def isGeneratedHolder(tpe: T): Boolean = tpe.companion <:< typeOf[HolderCompanion[_, _]]
 
-  override def isAnyValHolder(tpe: T): Boolean = tpe <:< typeOf[AnyVal] && hasParam(tpe) && toType(headParamType(tpe)).isBasic
+  override def isAnyValHolder(tpe: T): Boolean = tpe <:< typeOf[AnyVal] && hasParam(tpe) && this.toType(headParamType(tpe)).isBasic
 
   override def isGeneratedEmbeddable(tpe: T): Boolean = tpe.companion <:< typeOf[EmbeddableCompanion[_]]
 

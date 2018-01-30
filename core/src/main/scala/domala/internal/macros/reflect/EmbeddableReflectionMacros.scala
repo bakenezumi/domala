@@ -1,13 +1,12 @@
 package domala.internal.macros.reflect
 
-import java.util.function.Supplier
-
 import domala.Column
+import domala.internal.jdbc.entity.MacroEmbeddableDesc
 import domala.internal.macros.reflect.util.{MacroTypeConverter, PropertyDescUtil}
 import domala.internal.reflect.util.ReflectionUtil
+import domala.jdbc.`type`.Types
 import domala.jdbc.entity.{EntityPropertyDesc, NamingType}
 import domala.message.Message
-import org.seasar.doma.wrapper.Wrapper
 
 import scala.language.experimental.macros
 import scala.reflect.ClassTag
@@ -32,8 +31,6 @@ object EmbeddableReflectionMacros {
     entityClass: c.Expr[Class[E]],
     paramName: c.Expr[String],
     namingType: c.Expr[NamingType],
-    isBasic: c.Expr[Boolean],
-    wrapperSupplier: c.Expr[Supplier[Wrapper[N]]],
     column: c.Expr[Column]
   )(
     propertyClassTag: c.Expr[ClassTag[T]],
@@ -41,7 +38,7 @@ object EmbeddableReflectionMacros {
   ): c.Expr[Map[String, EntityPropertyDesc[E, _]]] = handle(c)(embeddableClass) {
     import c.universe._
     val tpe = weakTypeOf[T]
-    if(MacroTypeConverter.of(c).toType(tpe).isEmbeddable) {
+    if(MacroTypeConverter.of(c).toType(tpe).isGeneratedEmbeddable) {
       val Literal(Constant(propertyNameLiteral: String)) = propertyName.tree
       ReflectionUtil.abort(
         Message.DOMALA4297,
@@ -56,24 +53,114 @@ object EmbeddableReflectionMacros {
       c.Expr(Literal(Constant(null))),
       c.Expr(Literal(Constant(false))),
       c.Expr(Literal(Constant(false))),
-      isBasic,
-      wrapperSupplier,
       column
     )(propertyClassTag, nakedClassTag)
   }
-
   def generatePropertyDesc[EM, T, E, N](
     embeddableClass: Class[EM],
     propertyName: String,
     entityClass: Class[E],
     paramName: String,
     namingType: NamingType,
-    isBasic: Boolean,
-    wrapperSupplier: Supplier[Wrapper[N]],
     column: Column,
   )(
     implicit propertyClassTag: ClassTag[T],
     nakedClassTag: ClassTag[N]
-  ): Map[String, EntityPropertyDesc[E, _]] =  macro generatePropertyDescImpl[EM, T, E, N]
+  ): Map[String, EntityPropertyDesc[E, _]] = macro generatePropertyDescImpl[EM, T, E, N]
+
+  def generatePropertyDescMapImpl[EM: c.WeakTypeTag, E: c.WeakTypeTag](c: blackbox.Context)(
+    embeddableClass: c.Expr[Class[E]],
+    entityClass: c.Expr[Class[E]],
+    propertyName: c.Expr[String],
+    namingType: c.Expr[NamingType]
+  ): c.Expr[Map[String, EntityPropertyDesc[E, _]]] = {
+    import c.universe._
+    val embeddableType = weakTypeOf[EM]
+    val entityType = weakTypeOf[E]
+
+    val propertyDescList = embeddableType.typeSymbol.asClass.primaryConstructor.asMethod.paramLists.flatten.map((param: Symbol) => {
+
+      val propertyType = param.typeSignature
+      val column = param.annotations.collectFirst {
+        case a: Annotation if a.tree.tpe =:= typeOf[domala.Column] =>
+          c.Expr[Column](q"domala.Column(..${a.tree.children.tail})")
+      }.getOrElse {
+        c.Expr[Column](
+          q"""
+            if($entityClass.getDeclaredConstructors.head.getParameters.exists(_.getName == ${param.name.toString}))
+              domala.Column(name = $propertyName + "." + ${param.name.toString})
+            else domala.Column()
+           """
+        )
+      }
+
+      val nakedTpe = MacroTypeConverter.of(c).toType(propertyType) match {
+        case _: Types.Basic[_] => propertyType
+        case _: Types.Option => propertyType.typeArgs.head
+        case Types.RuntimeEntityType => propertyType
+        case _ => ReflectionUtil.abort(Message.DOMALA4096, propertyType, embeddableType, param.name)
+      }
+      c.Expr[Map[String, EntityPropertyDesc[E, _]]] {
+        q"""
+        domala.internal.macros.reflect.EmbeddableReflectionMacros.generatePropertyDesc[$embeddableType, $propertyType, $entityType, $nakedTpe](classOf[$embeddableType], ${param.name.toString}, $entityClass, $propertyName + "." + ${param.name.toString}, $namingType, $column)
+        """
+      }
+    })
+
+    c.Expr[Map[String, EntityPropertyDesc[E, _]]] {
+      q"Seq(..$propertyDescList).flatten.toMap"
+    }
+  }
+  def generatePropertyDescMap[EM, E](embeddableClass: Class[EM], entityClass: Class[E], propertyName: String, namingType: NamingType): Map[String, EntityPropertyDesc[E, _]] = macro generatePropertyDescMapImpl[EM, E]
+
+
+
+  def generateEmbeddableDescImpl[EM: c.WeakTypeTag](c: blackbox.Context)(
+    embeddableClass: c.Expr[Class[EM]]
+  ): c.Expr[MacroEmbeddableDesc[EM]] = {
+    import c.universe._
+    val embeddableType = weakTypeOf[EM]
+    val companion = embeddableType.companion.typeSymbol
+    val apply = companion.typeSignature.member(TermName("apply")).asMethod
+    val applyParams: Seq[Tree] = apply.paramLists.head.map { p =>
+      val parameterType = p.typeSignature
+      MacroTypeConverter.of(c).toType(parameterType) match {
+        case Types.RuntimeEntityType =>
+          q"""
+          val propertyName = embeddedPropertyName + "." + ${p.name.toString}
+          val desc = domala.internal.macros.reflect.EmbeddableReflectionMacros.generateEmbeddableDesc(classOf[$parameterType])
+          desc.newEmbeddable[ENTITY](propertyName, map, entityClass)
+          """
+        case _ =>
+          q"""
+          val paramName = ${p.name.toString}
+          val propertyName = embeddedPropertyName + "." + paramName
+          map.get(propertyName).map(_.asInstanceOf[domala.jdbc.entity.Property[ENTITY, Any]].get().asInstanceOf[$parameterType]).getOrElse(
+          throw new org.seasar.doma.DomaException(domala.message.Message.DOMALA6024, entityClass.getName(), propertyName, paramName))
+          """
+      }
+    }
+
+    c.Expr[MacroEmbeddableDesc[EM]] {
+      q"""{
+        val op = () => {
+          import scala.collection.JavaConverters._
+          new domala.internal.jdbc.entity.MacroEmbeddableDesc[$embeddableType] {
+            type EMBEDDABLE = $embeddableType
+            override def getEmbeddablePropertyTypes[ENTITY](embeddedPropertyName: String, namingType: domala.jdbc.entity.NamingType, entityClass: Class[ENTITY]) =
+              domala.internal.macros.reflect.EmbeddableReflectionMacros.generatePropertyDescMap(
+                classOf[EMBEDDABLE],
+                entityClass,
+                embeddedPropertyName,
+                namingType).values.toList.asJava
+            override def newEmbeddable[ENTITY](embeddedPropertyName: String, map: Map[String, domala.jdbc.entity.Property[ENTITY, _]], entityClass: Class[ENTITY]): EMBEDDABLE = $apply(..$applyParams)
+          }
+        }
+        domala.internal.jdbc.entity.MacroEmbeddableDesc.of(classOf[$embeddableType], op())
+      }"""
+
+    }
+  }
+  def generateEmbeddableDesc[EM](embeddableClass: Class[EM]): MacroEmbeddableDesc[EM] = macro generateEmbeddableDescImpl[EM]
 
 }

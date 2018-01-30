@@ -1,7 +1,7 @@
 package domala.internal.macros.reflect
 
 import domala._
-import domala.internal.jdbc.entity.RuntimeEntityDesc
+import domala.internal.macros.reflect.mock.{MockEntity, MockHolder}
 import domala.jdbc.entity._
 import org.scalatest.{BeforeAndAfter, FunSuite}
 import org.seasar.doma.wrapper.{IntegerWrapper, StringWrapper, Wrapper}
@@ -10,8 +10,8 @@ import org.seasar.doma.wrapper.{IntegerWrapper, StringWrapper, Wrapper}
 class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
 
   test("generatePropertyType basic") {
-    val propertyType: Map[String, EntityPropertyDesc[DummyEntity, _]] = EntityReflectionMacros.generatePropertyDesc[String, DummyEntity, String](
-      classOf[DummyEntity],
+    val propertyType: Map[String, EntityPropertyDesc[MockEntity, _]] = EntityReflectionMacros.generatePropertyDesc[String, MockEntity, String](
+      classOf[MockEntity],
       "basic",
       NamingType.NONE,
       false,
@@ -19,8 +19,6 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
       null,
       false,
       false,
-      true,
-      () => new StringWrapper(): Wrapper[String],
       Column(
         "",
         true,
@@ -34,8 +32,8 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
 
   test("generatePropertyType id") {
     val __idGenerator = new org.seasar.doma.jdbc.id.BuiltinIdentityIdGenerator()
-    val propertyType = EntityReflectionMacros.generatePropertyDesc[Int, DummyEntity, Integer](
-      classOf[DummyEntity],
+    val propertyType = EntityReflectionMacros.generatePropertyDesc[Int, MockEntity, Integer](
+      classOf[MockEntity],
       "id",
       NamingType.NONE,
       true,
@@ -43,8 +41,6 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
       __idGenerator,
       false,
       false,
-      true,
-      () => new IntegerWrapper(): Wrapper[Integer],
       Column("",
         true,
         true,
@@ -54,8 +50,8 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
   }
 
   test("generatePropertyType version") {
-    val propertyType = EntityReflectionMacros.generatePropertyDesc[Int, DummyEntity, Integer](
-      classOf[DummyEntity],
+    val propertyType = EntityReflectionMacros.generatePropertyDesc[Int, MockEntity, Integer](
+      classOf[MockEntity],
       "version",
       NamingType.NONE,
       false,
@@ -63,8 +59,6 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
       null,
       true,
       false,
-      true,
-      () => new IntegerWrapper(): Wrapper[Integer],
       Column("",
         true,
         true,
@@ -74,8 +68,8 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
   }
 
   test("generatePropertyType domain") {
-    val propertyType = EntityReflectionMacros.generatePropertyDesc[DummyHolder, DummyEntity, DummyHolder](
-      classOf[DummyEntity],
+    val propertyType = EntityReflectionMacros.generatePropertyDesc[MockHolder, MockEntity, MockHolder](
+      classOf[MockEntity],
       "domain",
       NamingType.NONE,
       false,
@@ -83,8 +77,6 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
       null,
       false,
       false,
-      false,
-      null,
       Column("",
         true,
         true,
@@ -95,16 +87,3 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
 
 }
 
-case class DummyEntity(
-  @Id @GeneratedValue(strategy = GenerationType.IDENTITY) id: Int,
-  domain: DummyHolder,
-  basic: String,
-  @Version version: Int
-)
-object DummyEntity{
-  val entityDesc: EntityDesc[DummyEntity] = RuntimeEntityDesc.of[DummyEntity]
-}
-
-case class DummyHolder(value: String) extends AnyVal
-
-case class DummyEmbeddable(value1: Int, value2: String)

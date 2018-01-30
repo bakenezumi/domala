@@ -34,11 +34,11 @@ object EmbeddableDescGenerator {
       val Term.Param(mods, name, Some(decltpe), _) = p
       val tpe = Type.Name(decltpe.toString)
       val columnArgs = ColumnArgs.of(mods)
-      val (isBasic, isOption, nakedTpe, newWrapperExpr) = Types.ofEntityProperty(decltpe) match {
-        case Types.Basic(_, convertedType, wrapperSupplier, _) => (true, false, convertedType, wrapperSupplier)
-        case Types.Option(Types.Basic(_, convertedType, wrapperSupplier, _), _) => (true, true, convertedType, wrapperSupplier)
-        case Types.EntityOrHolderOrEmbeddable(otherType) => (false, false, otherType, q"null")
-        case Types.Option(Types.EntityOrHolderOrEmbeddable(otherType), _) => (false, true, otherType,  q"null")
+      val (isOption, nakedTpe) = Types.ofEntityProperty(decltpe) match {
+        case Types.Basic(_, convertedType, _, _) => (false, convertedType)
+        case Types.Option(Types.Basic(_, convertedType, _, _), _) => (true, convertedType)
+        case Types.EntityOrHolderOrEmbeddable(otherType) => (false, otherType)
+        case Types.Option(Types.EntityOrHolderOrEmbeddable(otherType), _) => (true, otherType)
         case _ => MetaHelper.abort(Message.DOMALA4096, decltpe.syntax, clsName.syntax, name.syntax)
       }
       mods.collect {
@@ -62,7 +62,7 @@ object EmbeddableDescGenerator {
         case mod"@TenantId" | mod"@domala.TenantId" | mod"@TenantId()" | mod"@domala.TenantId()"=>
           MetaHelper.abort(Message.DOMALA4443, decltpe.syntax, name.syntax)
       }
-      EmbeddableProperty(name, columnArgs, isBasic, isOption, tpe, nakedTpe, newWrapperExpr)
+      EmbeddableProperty(name, columnArgs, isOption, tpe, nakedTpe)
     }
 
     Seq({
@@ -74,8 +74,6 @@ object EmbeddableDescGenerator {
           entityClass,
           embeddedPropertyName + "." + ${p.name.literal},
           namingType,
-          ${if(p.isBasic) q"true" else q"false"},
-          ${p.newWrapperExpr},
           domala.Column(
             ${p.columnArgs.name},
             ${p.columnArgs.insertable},
@@ -107,11 +105,9 @@ object EmbeddableDescGenerator {
   private[macros] case class EmbeddableProperty(
     name: Term.Param.Name,
     columnArgs: ColumnArgs,
-    isBasic: Boolean,
     isOption: Boolean,
     tpe: Type,
-    nakedTpe: Type,
-    newWrapperExpr: Term)
+    nakedTpe: Type)
 
 }
 

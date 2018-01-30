@@ -4,7 +4,6 @@ import java.util
 import java.util.function.Supplier
 
 import domala.Column
-import domala.internal.jdbc.entity.RuntimeEmbeddableDesc
 import domala.internal.reflect.util.ReflectionUtil
 import domala.internal.reflect.util.ReflectionUtil.{extractionClassString, extractionQuotedString}
 import domala.jdbc.entity._
@@ -37,8 +36,6 @@ object PropertyDescUtil {
     idGenerator: c.Expr[IdGenerator],
     isVersion: c.Expr[Boolean],
     isTenantId: c.Expr[Boolean],
-    isBasic: c.Expr[Boolean],
-    wrapperSupplier: c.Expr[Supplier[Wrapper[N]]],
     column: c.Expr[Column]
   )(
     propertyClassTag: c.Expr[ClassTag[T]],
@@ -55,12 +52,16 @@ object PropertyDescUtil {
 
     def abort = abortPropertyDescUtil(extractionClassString(entityClass.toString),extractionQuotedString(paramName.toString())) _
 
+    def validateForEmbeddable(): Unit = {
+      if (isIdLiteral) abort(Message.DOMALA4302)
+      if (isIdGenerateActualLiteral) abort(Message.DOMALA4303)
+      if (isVersionLiteral) abort(Message.DOMALA4304)
+      if (isTenantIdLiteral) abort(Message.DOMALA4443)
+    }
+
     converter.toType(tpe) match {
       case Types.GeneratedEmbeddableType =>
-        if (isIdLiteral) abort(Message.DOMALA4302)
-        if (isIdGenerateActualLiteral) abort(Message.DOMALA4303)
-        if (isVersionLiteral) abort(Message.DOMALA4304)
-        if (isTenantIdLiteral) abort(Message.DOMALA4443)
+        validateForEmbeddable()
         reify {
           val embeddableDesc =
             ReflectionUtil.getEmbeddableDesc(propertyClassTag.splice)
@@ -75,14 +76,10 @@ object PropertyDescUtil {
             )).getEmbeddablePropertyTypeMap.asScala.toMap
         }
       case Types.RuntimeEntityType =>
-        if (isIdLiteral) abort(Message.DOMALA4302)
-        if (isIdGenerateActualLiteral) abort(Message.DOMALA4303)
-        if (isVersionLiteral) abort(Message.DOMALA4304)
-        if (isTenantIdLiteral) abort(Message.DOMALA4443)
+        validateForEmbeddable()
         val embeddableDesc = c.Expr[util.List[EntityPropertyDesc[E, _]]] {
-          q"domala.internal.jdbc.entity.RuntimeEmbeddableDesc.of[$tpe].getEmbeddablePropertyTypes($paramName, $namingType)"
+          q"domala.internal.macros.reflect.EmbeddableReflectionMacros.generateEmbeddableDesc[$tpe](classOf[$tpe]).getEmbeddablePropertyTypes($paramName, $namingType, entityClass)"
         }
-
         reify {
           import scala.collection.JavaConverters._
           new EmbeddedPropertyDesc[E, T](
@@ -113,13 +110,14 @@ object PropertyDescUtil {
                 namingType.splice
               ))
           case _: Types.Basic[_] =>
+            val wrapperSupplier = TypeUtil.generateWrapperSupplier(c)(nakedTpe)
             reify(
               EntityPropertyDescParam(
                 entityClass.splice,
                 propertyClassTag.splice.runtimeClass,
                 BasicTypeDesc(
                   nakedClassTag.splice.runtimeClass.asInstanceOf[Class[N]],
-                  wrapperSupplier.splice),
+                  wrapperSupplier.splice.asInstanceOf[Supplier[Wrapper[N]]]),
                 paramName.splice,
                 column.splice,
                 namingType.splice

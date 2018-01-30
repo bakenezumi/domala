@@ -16,6 +16,7 @@ package object `type` {
     val isAnyValHolder: Boolean = false
     val isNumber: Boolean = false
     val isEmbeddable: Boolean = false
+    val isGeneratedEmbeddable: Boolean = false
     val isRuntimeEmbeddable: Boolean = false
     val isIterable: Boolean = false
     val isOption: Boolean = false
@@ -145,7 +146,9 @@ package object `type` {
     sealed trait Embeddable extends Types {
       override val isEmbeddable: Boolean = true
     }
-    object GeneratedEmbeddableType extends Types.Embeddable
+    object GeneratedEmbeddableType extends Types.Embeddable {
+      override val isGeneratedEmbeddable: Boolean = true
+    }
 
     final case object Map extends Types {
       override val isMap: Boolean = true

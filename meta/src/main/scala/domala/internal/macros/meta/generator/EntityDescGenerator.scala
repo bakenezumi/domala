@@ -199,11 +199,11 @@ object EntityDescGenerator {
       if(name.syntax.startsWith(MetaConstants.RESERVED_NAME_PREFIX)) {
         MetaHelper.abort(Message.DOMALA4025, MetaConstants.RESERVED_NAME_PREFIX, clsName.syntax, name.syntax)
       }
-      val (isBasic, nakedTpe, newWrapperExpr) = Types.ofEntityProperty(decltpe) match {
-        case Types.Basic(_, convertedType, wrapperSupplier, _) => (true, convertedType, wrapperSupplier)
-        case Types.Option(Types.Basic(_, convertedType, wrapperSupplier, _), _) => (true, convertedType, wrapperSupplier)
-        case Types.EntityOrHolderOrEmbeddable(otherType) => (false, otherType, q"null")
-        case Types.Option(Types.EntityOrHolderOrEmbeddable(otherType), _) => (false, otherType,  q"null")
+      val nakedTpe = Types.ofEntityProperty(decltpe) match {
+        case Types.Basic(_, convertedType, _, _) => convertedType
+        case Types.Option(Types.Basic(_, convertedType, _, _), _) => convertedType
+        case Types.EntityOrHolderOrEmbeddable(otherType) => otherType
+        case Types.Option(Types.EntityOrHolderOrEmbeddable(otherType), _) => otherType
         case _ => MetaHelper.abort(Message.DOMALA4096, decltpe.syntax, clsName.syntax, name.syntax)
       }
 
@@ -250,8 +250,6 @@ object EntityDescGenerator {
         __idGenerator,
         ${if(isVersion) q"true" else q"false"},
         ${if(isTenantId) q"true" else q"false"},
-        ${if(isBasic) q"true" else q"false"},
-        $newWrapperExpr,
         domala.Column(
           ${columnArgs.name},
           ${columnArgs.insertable},

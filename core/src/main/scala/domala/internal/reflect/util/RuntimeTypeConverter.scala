@@ -75,10 +75,10 @@ object RuntimeTypeConverter extends TypeConverter {
 
   override def isGeneratedEntity(tpe: T): Boolean = tpe.companion <:< typeOf[EntityCompanion[_]]
 
-  override def isRuntimeEntity(tpe: T): Boolean = !(tpe <:< typeOf[AnyVal]) && tpe <:< typeOf[Product] && {
+  override def isRuntimeEntity(tpe: T): Boolean = !(tpe <:< typeOf[AnyVal]) && tpe.typeSymbol.asClass.isCaseClass && {
     val constructor = tpe.decl(termNames.CONSTRUCTOR).asMethod
     constructor.paramLists.flatten.forall { (p: Symbol) =>
-      RuntimeTypeConverter.toType(p.typeSignature) match {
+      this.toType(p.typeSignature) match {
         case _: Types.Basic[_] => true
         case _: Types.Holder[_, _] => true
         case Types.Option(_: Types.Basic[_]) => true
@@ -91,7 +91,7 @@ object RuntimeTypeConverter extends TypeConverter {
 
   override def isGeneratedHolder(tpe: T): Boolean = tpe.companion <:< typeOf[HolderCompanion[_, _]]
 
-  override def isAnyValHolder(tpe: T): Boolean = tpe <:< typeOf[AnyVal] && hasParam(tpe) && toType(headParamType(tpe)).isBasic
+  override def isAnyValHolder(tpe: T): Boolean = tpe <:< typeOf[AnyVal] && hasParam(tpe) && this.toType(headParamType(tpe)).isBasic
 
   override def isGeneratedEmbeddable(tpe: T): Boolean = tpe.companion <:< typeOf[EmbeddableCompanion[_]]
 
