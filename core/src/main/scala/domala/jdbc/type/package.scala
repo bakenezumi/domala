@@ -16,10 +16,11 @@ package object `type` {
     val isAnyValHolder: Boolean = false
     val isNumber: Boolean = false
     val isEmbeddable: Boolean = false
-    val isGeneratedEmbeddable: Boolean = false
     val isRuntimeEmbeddable: Boolean = false
     val isIterable: Boolean = false
     val isOption: Boolean = false
+    val isBasicOption: Boolean = false
+    val isHolderOption: Boolean = false
     val isMap: Boolean = false
     val isSeq: Boolean = false
     val isFunction: Boolean = false
@@ -146,9 +147,6 @@ package object `type` {
     sealed trait Embeddable extends Types {
       override val isEmbeddable: Boolean = true
     }
-    object GeneratedEmbeddableType extends Types.Embeddable {
-      override val isGeneratedEmbeddable: Boolean = true
-    }
 
     final case object Map extends Types {
       override val isMap: Boolean = true
@@ -163,6 +161,8 @@ package object `type` {
     }
     final case class Option(elementType: Types) extends ContainerType {
       override val isOption: Boolean = true
+      override val isBasicOption: Boolean = elementType.isBasic
+      override val isHolderOption: Boolean = elementType.isHolder
     }
 
     final case class Iterable(elementType: Types) extends ContainerType {

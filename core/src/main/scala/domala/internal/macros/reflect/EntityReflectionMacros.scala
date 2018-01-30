@@ -1,7 +1,5 @@
 package domala.internal.macros.reflect
 
-import java.util.function.Supplier
-
 import domala.Column
 import domala.internal.macros.reflect.util.{MacroTypeConverter, PropertyDescUtil}
 import domala.internal.reflect.util.ReflectionUtil
@@ -11,7 +9,6 @@ import domala.jdbc.entity.EntityPropertyDesc
 import domala.message.Message
 import org.seasar.doma.jdbc.entity._
 import org.seasar.doma.jdbc.id.{IdGenerator, SequenceIdGenerator, TableIdGenerator}
-import org.seasar.doma.wrapper.Wrapper
 
 import scala.language.experimental.macros
 import scala.reflect.ClassTag
@@ -79,21 +76,11 @@ object EntityReflectionMacros {
     import c.universe._
     val wtt = weakTypeOf[T]
     MacroTypeConverter.of(c).toType(wtt) match {
-      case Types.GeneratedEmbeddableType =>
-        reify {
-          val embeddableDesc =
-            ReflectionUtil.getEmbeddableDesc(propertyClassTag.splice)
-          embeddableDesc
-            .newEmbeddable[E](propertyName.splice, args.splice)
-            .asInstanceOf[T]
-        }
       case Types.RuntimeEntityType =>
         c.Expr[T] {
           q"""
-            {
-              import scala.collection.JavaConverters._
-              domala.internal.jdbc.entity.RuntimeEmbeddableDesc.of[$wtt].newEmbeddable($propertyName, $args.asScala.toMap)
-            }
+            import scala.collection.JavaConverters._
+            domala.internal.macros.reflect.EmbeddableReflectionMacros.generateEmbeddableDesc[$wtt](classOf[$wtt]).newEmbeddable($propertyName, $args.asScala.toMap, $entityClass)
           """
         }
       case _ =>

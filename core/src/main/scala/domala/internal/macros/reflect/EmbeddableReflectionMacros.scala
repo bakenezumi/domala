@@ -37,13 +37,6 @@ object EmbeddableReflectionMacros {
     nakedClassTag: c.Expr[ClassTag[N]]
   ): c.Expr[Map[String, EntityPropertyDesc[E, _]]] = handle(c)(embeddableClass) {
     import c.universe._
-    val tpe = weakTypeOf[T]
-    if(MacroTypeConverter.of(c).toType(tpe).isGeneratedEmbeddable) {
-      val Literal(Constant(propertyNameLiteral: String)) = propertyName.tree
-      ReflectionUtil.abort(
-        Message.DOMALA4297,
-        tpe, weakTypeOf[EM], propertyNameLiteral)
-    }
     PropertyDescUtil.generatePropertyDescImpl[T, E, N](c)(
       entityClass,
       paramName,
@@ -73,12 +66,23 @@ object EmbeddableReflectionMacros {
     entityClass: c.Expr[Class[E]],
     propertyName: c.Expr[String],
     namingType: c.Expr[NamingType]
-  ): c.Expr[Map[String, EntityPropertyDesc[E, _]]] = {
+  ): c.Expr[Map[String, EntityPropertyDesc[E, _]]] = handle(c)(embeddableClass) {
     import c.universe._
     val embeddableType = weakTypeOf[EM]
     val entityType = weakTypeOf[E]
 
     val propertyDescList = embeddableType.typeSymbol.asClass.primaryConstructor.asMethod.paramLists.flatten.map((param: Symbol) => {
+
+      param.annotations.collect {
+        case a: Annotation if a.tree.tpe =:= typeOf[domala.Id] =>
+          ReflectionUtil.abort(Message.DOMALA4289, embeddableType.typeSymbol.fullName.toString, param.name.toString)
+        case a: Annotation if a.tree.tpe =:= typeOf[domala.GeneratedValue] =>
+          ReflectionUtil.abort(Message.DOMALA4291, embeddableType.typeSymbol.fullName.toString, param.name.toString)
+        case a: Annotation if a.tree.tpe =:= typeOf[domala.Version] =>
+          ReflectionUtil.abort(Message.DOMALA4290, embeddableType.typeSymbol.fullName.toString, param.name.toString)
+        case a: Annotation if a.tree.tpe =:= typeOf[domala.TenantId] =>
+          ReflectionUtil.abort(Message.DOMALA4443, embeddableType.typeSymbol.fullName.toString, param.name.toString)
+      }
 
       val propertyType = param.typeSignature
       val column = param.annotations.collectFirst {
@@ -97,8 +101,9 @@ object EmbeddableReflectionMacros {
       val nakedTpe = MacroTypeConverter.of(c).toType(propertyType) match {
         case _: Types.Basic[_] => propertyType
         case _: Types.Option => propertyType.typeArgs.head
+        case t if t.isHolder => propertyType
         case Types.RuntimeEntityType => propertyType
-        case _ => ReflectionUtil.abort(Message.DOMALA4096, propertyType, embeddableType, param.name)
+        case _ => ReflectionUtil.abort(Message.DOMALA4096, propertyType, embeddableType.typeSymbol.fullName, param.name)
       }
       c.Expr[Map[String, EntityPropertyDesc[E, _]]] {
         q"""
@@ -117,7 +122,7 @@ object EmbeddableReflectionMacros {
 
   def generateEmbeddableDescImpl[EM: c.WeakTypeTag](c: blackbox.Context)(
     embeddableClass: c.Expr[Class[EM]]
-  ): c.Expr[MacroEmbeddableDesc[EM]] = {
+  ): c.Expr[MacroEmbeddableDesc[EM]] = handle(c)(embeddableClass) {
     import c.universe._
     val embeddableType = weakTypeOf[EM]
     val companion = embeddableType.companion.typeSymbol
@@ -135,7 +140,7 @@ object EmbeddableReflectionMacros {
           q"""
           val paramName = ${p.name.toString}
           val propertyName = embeddedPropertyName + "." + paramName
-          map.get(propertyName).map(_.asInstanceOf[domala.jdbc.entity.Property[ENTITY, Any]].get().asInstanceOf[$parameterType]).getOrElse(
+          map.get(propertyName).map(_.asInstanceOf[domala.jdbc.entity.Property[ENTITY, _]].get().asInstanceOf[$parameterType]).getOrElse(
           throw new org.seasar.doma.DomaException(domala.message.Message.DOMALA6024, entityClass.getName(), propertyName, paramName))
           """
       }

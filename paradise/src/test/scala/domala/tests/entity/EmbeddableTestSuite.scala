@@ -72,17 +72,13 @@ object Embedded {
   def test = 1
 }
 
-@Embeddable
 case class E1(int: Int)
 
-@Embeddable
 case class E2(double: Double, date: MyDate)
 
-@Embeddable
 case class E3(option1: Option[String], option2: Option[Int] , option3: Option[MyDate])
 
-@Holder
-case class MyDate(value: LocalDateTime)
+case class MyDate(value: LocalDateTime) extends AnyVal
 
 @Dao(config = TestConfig)
 trait EmbeddableDao {

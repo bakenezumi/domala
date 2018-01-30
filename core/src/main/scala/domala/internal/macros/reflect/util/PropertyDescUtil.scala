@@ -60,25 +60,10 @@ object PropertyDescUtil {
     }
 
     converter.toType(tpe) match {
-      case Types.GeneratedEmbeddableType =>
-        validateForEmbeddable()
-        reify {
-          val embeddableDesc =
-            ReflectionUtil.getEmbeddableDesc(propertyClassTag.splice)
-          import scala.collection.JavaConverters._
-          new EmbeddedPropertyDesc[E, T](
-            paramName.splice,
-            entityClass.splice,
-            embeddableDesc.getEmbeddablePropertyTypes(
-              paramName.splice,
-              entityClass.splice,
-              namingType.splice
-            )).getEmbeddablePropertyTypeMap.asScala.toMap
-        }
       case Types.RuntimeEntityType =>
         validateForEmbeddable()
         val embeddableDesc = c.Expr[util.List[EntityPropertyDesc[E, _]]] {
-          q"domala.internal.macros.reflect.EmbeddableReflectionMacros.generateEmbeddableDesc[$tpe](classOf[$tpe]).getEmbeddablePropertyTypes($paramName, $namingType, entityClass)"
+          q"domala.internal.macros.reflect.EmbeddableReflectionMacros.generateEmbeddableDesc[$tpe](classOf[$tpe]).getEmbeddablePropertyTypes($paramName, $namingType, $entityClass)"
         }
         reify {
           import scala.collection.JavaConverters._
