@@ -60,7 +60,7 @@ object DaoReflectionMacros {
         val entityDesc = RuntimeEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
         reify {
           new EntityStreamHandler(
-            entityDesc.get.splice,
+            entityDesc.splice,
             (p: java.util.stream.Stream[T]) => f.splice.apply(WrapStream.of(p)))
         }
       case Types.GeneratedHolderType(_) =>
@@ -108,7 +108,7 @@ object DaoReflectionMacros {
         val entityDesc = RuntimeEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
         reify {
           new EntityStreamHandler(
-            entityDesc.get.splice,
+            entityDesc.splice,
             (p: java.util.stream.Stream[T]) => f.splice.apply(WrapIterator.of(p)))
         }
       case Types.GeneratedHolderType(_) =>
@@ -153,7 +153,7 @@ object DaoReflectionMacros {
       case Types.RuntimeEntityType =>
         val entityDesc = RuntimeEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
         reify {
-          new EntityResultListHandler(entityDesc.get.splice)
+          new EntityResultListHandler(entityDesc.splice)
         }
       case Types.GeneratedHolderType(_) =>
         reify {
@@ -191,7 +191,7 @@ object DaoReflectionMacros {
       case Types.RuntimeEntityType =>
         val entityDesc = RuntimeEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
         reify {
-          new OptionEntitySingleResultHandler(entityDesc.get.splice)
+          new OptionEntitySingleResultHandler(entityDesc.splice)
         }
       case Types.GeneratedHolderType(_) =>
         reify {
@@ -229,7 +229,7 @@ object DaoReflectionMacros {
       case ResultType.RuntimeEntity(_, _) =>
         val entityDesc = RuntimeEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
         reify {
-          val handler = new EntitySingleResultHandler(entityDesc.get.splice)
+          val handler = new EntitySingleResultHandler(entityDesc.splice)
           commandImplementors.splice.createSelectCommand(method.splice, query.splice, handler).execute()
         }
       case ResultType.GeneratedHolder(_, _) =>
@@ -276,7 +276,7 @@ object DaoReflectionMacros {
       case Types.RuntimeEntityType =>
         val entityDesc = RuntimeEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
         reify {
-          query.splice.setEntityType(entityDesc.get.splice)
+          query.splice.setEntityType(entityDesc.splice)
         }
       case _ => reify((): Unit) // No operation
     }
@@ -325,7 +325,7 @@ object DaoReflectionMacros {
             Some(
               EntityAndEntityDesc(param.splice.name,
                 param.splice.value,
-                entityDesc.get.splice.asInstanceOf[EntityDesc[Any]]))
+                entityDesc.splice.asInstanceOf[EntityDesc[Any]]))
           }
       }
       .getOrElse(
@@ -375,7 +375,7 @@ object DaoReflectionMacros {
             case Types.RuntimeEntityType =>
               val entityDesc = RuntimeEntityDescGenerator.get[blackbox.Context, Any](c)(paramType)
               reify {
-                Some(entityDesc.get.splice.asInstanceOf[EntityDesc[Any]])
+                Some(entityDesc.splice.asInstanceOf[EntityDesc[Any]])
               }
             case _ =>
               reify(None)
@@ -533,7 +533,7 @@ object DaoReflectionMacros {
         reify(ReflectionUtil.getEntityDesc(classTag.splice))
       case Types.RuntimeEntityType =>
         val entityDesc = RuntimeEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
-        reify(entityDesc.get.splice)
+        reify(entityDesc.splice)
       case _ =>
         ReflectionUtil.abort(
           Message.DOMALA4003,
@@ -562,7 +562,7 @@ object DaoReflectionMacros {
           reify(ReflectionUtil.getEntityDesc(classTag.splice))
         case Types.RuntimeEntityType =>
           val entityDesc = RuntimeEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
-          reify(entityDesc.get.splice)
+          reify(entityDesc.splice)
         case _ =>
           ReflectionUtil.abort(
             Message.DOMALA4043,

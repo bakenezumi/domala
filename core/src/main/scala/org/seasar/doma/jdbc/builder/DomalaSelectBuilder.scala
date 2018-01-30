@@ -5,6 +5,7 @@ import java.util.stream
 
 import domala.internal.jdbc.entity.EntityDescRepository
 import domala.internal.jdbc.scalar.Scalars
+import domala.internal.macros.reflect.EntityReflectionMacros
 import domala.internal.{OptionConverters, WrapIterator}
 import domala.jdbc.Config
 import domala.jdbc.query.SqlSelectQuery
@@ -91,11 +92,10 @@ class DomalaSelectBuilder(
     builder
   }
 
-  def getEntitySingleResult[RESULT: TypeTag: ClassTag]: RESULT = {
+  def getEntitySingleResult[RESULT: TypeTag](implicit cTag: ClassTag[RESULT]): RESULT = {
     if (query.getMethodName == null)
       query.setCallerMethodName("getEntitySingleResult")
-    val entityDesc =
-      EntityDescRepository.get[RESULT]
+    val entityDesc = EntityDescRepository.get[RESULT]
     query.setEntityType(entityDesc)
     val handler = new EntitySingleResultHandler[RESULT](entityDesc)
     execute(handler)

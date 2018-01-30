@@ -1,7 +1,7 @@
 package domala.internal.reflect.util
 
 import domala.internal.macros.reflect.ReflectAbortException
-import domala.jdbc.entity.{EmbeddableCompanion, EntityCompanion, EntityDesc}
+import domala.jdbc.entity.{EntityCompanion, EntityDesc}
 import domala.jdbc.holder.{HolderCompanion, HolderDesc}
 import org.seasar.doma.jdbc.entity.EmbeddableType
 import org.seasar.doma.message.MessageResource
@@ -30,10 +30,6 @@ object ReflectionUtil {
     getCompanion(classTag).asInstanceOf[HolderCompanion[Any, T]].holderDesc
   }
 
-  def getEmbeddableDesc[T](classTag: ClassTag[T]): EmbeddableType[T] = {
-    getCompanion(classTag).asInstanceOf[EmbeddableCompanion[T]].embeddableDesc
-  }
-
   def getCompanion[T](clazz: Class[T]): Any = {
     Class
       .forName(clazz.getName + "$", false, clazz.getClassLoader)
@@ -47,10 +43,6 @@ object ReflectionUtil {
 
   def getHolderDesc[T](clazz: Class[T]): HolderDesc[Any, T] = {
     getCompanion(clazz).asInstanceOf[HolderCompanion[Any, T]].holderDesc
-  }
-
-  def getEmbeddableDesc[T](clazz: Class[T]): EmbeddableType[T] = {
-    getCompanion(clazz).asInstanceOf[EmbeddableCompanion[T]].embeddableDesc
   }
 
 

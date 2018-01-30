@@ -76,7 +76,6 @@ abstract class TypeConverter {
   protected def isGeneratedEntity(tpe: T): Boolean
   protected def isGeneratedHolder(tpe: T): Boolean
   protected def isAnyValHolder(tpe: T): Boolean
-  protected def isGeneratedEmbeddable(tpe: T): Boolean
   protected def isMap(tpe: T): Boolean
   protected def isOption(tpe: T): Boolean
   protected def isSeq(tpe: T): Boolean

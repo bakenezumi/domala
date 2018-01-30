@@ -74,8 +74,6 @@ object ClassTypeConverter extends TypeConverter {
 
   override def isAnyValHolder(tpe: T): Boolean = false // Can not be determined
 
-  override def isGeneratedEmbeddable(tpe: T): Boolean = false // Can not be determined
-
   override def isMap(tpe: T): Boolean = tpe == classOf[Map[String, Any]] || tpe == classOf[Map[String, AnyRef]] || tpe == classOf[Map[String, Object]]
 
   override def isOption(tpe: T): Boolean = tpe == classOf[Option[_]]

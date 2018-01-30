@@ -5,7 +5,7 @@ import java.sql.{Blob, Clob, NClob, SQLXML, Time, Timestamp}
 import java.time.{LocalDate, LocalDateTime, LocalTime}
 
 import domala.jdbc.`type`.{TypeConverter, Types}
-import domala.jdbc.entity.{EmbeddableCompanion, EntityCompanion}
+import domala.jdbc.entity.EntityCompanion
 import domala.jdbc.holder.HolderCompanion
 
 import scala.reflect.runtime.{universe => ru}
@@ -92,8 +92,6 @@ object RuntimeTypeConverter extends TypeConverter {
   override def isGeneratedHolder(tpe: T): Boolean = tpe.companion <:< typeOf[HolderCompanion[_, _]]
 
   override def isAnyValHolder(tpe: T): Boolean = tpe <:< typeOf[AnyVal] && hasParam(tpe) && this.toType(headParamType(tpe)).isBasic
-
-  override def isGeneratedEmbeddable(tpe: T): Boolean = tpe.companion <:< typeOf[EmbeddableCompanion[_]]
 
   override def isMap(tpe: T): Boolean = tpe <:< typeOf[Map[String, Any]] || tpe <:< typeOf[Map[String, AnyRef]] || tpe <:< typeOf[Map[String, Object]]
 

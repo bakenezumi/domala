@@ -6,19 +6,16 @@ import scala.reflect.macros.blackbox
 
 object RuntimeEntityDescGenerator {
 
-  def get[C <: blackbox.Context, T: c.WeakTypeTag](c: C)(tpe: c.universe.Type): Option[c.Expr[EntityDesc[T]]] = {
+  def get[C <: blackbox.Context, T: c.WeakTypeTag](c: C)(tpe: c.universe.Type): c.Expr[EntityDesc[T]] = {
     import c.universe._
-    val entityDesc: c.Expr[EntityDesc[T]] = {
+    c.Expr[EntityDesc[T]] {
       val entityTypeName = tpe.typeSymbol.name.toTypeName
-      c.Expr[EntityDesc[T]] {
-        q"""
-        {
-          domala.internal.jdbc.entity.RuntimeEntityDesc.of[$entityTypeName]
-        }
-        """
+      q"""
+      {
+        domala.internal.macros.reflect.EntityReflectionMacros.generateEntityDesc[$entityTypeName]
       }
+      """
     }
-    Some(entityDesc)
   }
 
 }

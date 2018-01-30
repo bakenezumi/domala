@@ -148,7 +148,7 @@ object EmbeddableReflectionMacros {
 
     c.Expr[MacroEmbeddableDesc[EM]] {
       q"""{
-        val op = () => {
+        domala.internal.jdbc.entity.MacroEmbeddableDesc.of($embeddableClass, {
           import scala.collection.JavaConverters._
           new domala.internal.jdbc.entity.MacroEmbeddableDesc[$embeddableType] {
             type EMBEDDABLE = $embeddableType
@@ -158,10 +158,9 @@ object EmbeddableReflectionMacros {
                 entityClass,
                 embeddedPropertyName,
                 namingType).values.toList.asJava
-            override def newEmbeddable[ENTITY](embeddedPropertyName: String, map: Map[String, domala.jdbc.entity.Property[ENTITY, _]], entityClass: Class[ENTITY]): EMBEDDABLE = $apply(..$applyParams)
+            override def newEmbeddable[ENTITY](embeddedPropertyName: String, map: Map[String, domala.jdbc.entity.Property[ENTITY, _]], entityClass: Class[ENTITY]): EMBEDDABLE = ${apply.asTerm}(..$applyParams)
           }
-        }
-        domala.internal.jdbc.entity.MacroEmbeddableDesc.of(classOf[$embeddableType], op())
+        })
       }"""
 
     }

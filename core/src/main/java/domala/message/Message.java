@@ -220,7 +220,7 @@ public enum Message implements MessageResource {
     DOMALA6023("AdHocConfigを利用する場合、クエリは発行時に自動コミットされます。トランザクション制御が必要な場合はdomala.jdbc.LocalTransactionConfigを利用して下さい。"),
     DOMALA6024("エンティティクラス[{0}]のプロパティ{1}に結果セットのカラムの値がマッピングされませんでした。マッピングには結果セットがカラム{2}を含んでいる必要があります。SQLが正しいことを確認してください。"),
     DOMALA6025("クラス[{0}]はエンティティクラスではありません。"),
-    DOMALA6026("@GeneratedValue(strategy = {2})を指定する場合エンテティクラスに@Entityを注釈しなければいけません。 at {0}.{1}"),
+    DOMALA6026("@GeneratedValue(strategy = {2})を指定する場合はエンテティクラスに@Entityを注釈しなければいけません。 at {0}.{1}"),
 
     // a part of message
     DOMALA9901("[{0}.{1}]のSQL"),
