@@ -3,7 +3,6 @@ package domala.jdbc.entity
 import java.util.function.Supplier
 import java.util.{Optional, OptionalDouble, OptionalInt, OptionalLong}
 
-import domala.Column
 import domala.internal.jdbc.scalar.{OptionBasicScalar, OptionDomainBridgeScalar}
 import domala.jdbc.entity
 import domala.jdbc.holder.HolderDesc

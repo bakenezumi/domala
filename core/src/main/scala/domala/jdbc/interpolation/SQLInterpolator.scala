@@ -7,7 +7,7 @@ import org.seasar.doma.DomaException
 
 object SQLInterpolator {
   def select(context: StringContext, args: Seq[Any], config: Config): SelectStatement = {
-    val builder = SelectBuilder.newInstance(config)
+    val builder: SelectBuilder = SelectBuilder.newInstance(config)
     val params = args.toIterator
     context.parts.foreach{ part =>
       builder.sql(part)
@@ -21,6 +21,7 @@ object SQLInterpolator {
         }
       }
     }
+
     SelectStatement(builder)
   }
 

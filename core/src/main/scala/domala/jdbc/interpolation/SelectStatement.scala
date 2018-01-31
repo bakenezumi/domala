@@ -1,44 +1,23 @@
 package domala.jdbc.interpolation
 
-import domala.internal.reflect.util.RuntimeTypeConverter
-import domala.jdbc.builder.SelectBuilder
+import domala.internal.macros.reflect.util.MacroTypeConverter
 import domala.jdbc.`type`.Types
+import domala.jdbc.builder.SelectBuilder
+import domala.jdbc.entity.EntityDesc
 import domala.message.Message
 import org.seasar.doma.{DomaException, MapKeyNamingType}
 
-import scala.reflect.ClassTag
-import scala.reflect.runtime.universe._
+import scala.language.experimental.macros
 
 /** The object used for executing a SELECT SQL statement and returning the results it produces.
   *
   * @param builder a builder for SELECT SQL already built
   */
-class SelectStatement(builder: SelectBuilder) {
-  def getSingle[T](implicit cTag: ClassTag[T], tTag: TypeTag[T]): T = {
-    val tpe = typeOf[T]
-    RuntimeTypeConverter.toType(tpe) match {
-      case _: Types.Entity =>
-        builder.getEntitySingleResult[T]
-      case t if t.isHolder || t.isBasic =>
-        builder.getScalarSingleResult[T]
-      case Types.Map =>
-        getMapSingle.asInstanceOf[T]
-      case _ => throw new DomaException(Message.DOMALA4008, tpe, "SelectStatement", "getSingle")
-    }
-  }
+class SelectStatement private (val builder: SelectBuilder) {
 
-  def getOption[T](implicit cTag: ClassTag[T], tTag: TypeTag[T]): Option[T] = {
-    val tpe = typeOf[T]
-    RuntimeTypeConverter.toType(tpe) match {
-      case _: Types.Entity =>
-        builder.getOptionEntitySingleResult[T]
-      case t if t.isHolder || t.isBasic =>
-        builder.getOptionScalarSingleResult[T]
-      case Types.Map =>
-        getOptionMapSingle.asInstanceOf[Option[T]]
-      case _ => throw new DomaException(Message.DOMALA4008, tpe, "SelectStatement", "getOption")
-    }
-  }
+  def getSingle[T]: T = macro SelectStatementMacro.getSingle[T]
+
+  def getOption[T]: Option[T] = macro SelectStatementMacro.getOption[T]
 
   def getMapSingle(mapKeyNamingType: MapKeyNamingType): Map[String, AnyRef] = {
     builder.getMapSingleResult(mapKeyNamingType)
@@ -72,36 +51,103 @@ class SelectStatement(builder: SelectBuilder) {
     builder.getMapResultSeq(MapKeyNamingType.NONE).toList
   }
 
-  def getSeq[T](implicit cTag: ClassTag[T], tTag: TypeTag[T]): Seq[T] = {
-    val tpe = typeOf[T]
-    RuntimeTypeConverter.toType(tpe) match {
-      case _: Types.Entity =>
-        builder.getEntityResultSeq[T]
-      case t if t.isHolder || t.isBasic =>
-        builder.getScalarResultSeq[T]
-      case Types.Map =>
-        getMapSeq.asInstanceOf[Seq[T]]
-      case _ => throw new DomaException(Message.DOMALA4008, tpe, "SelectStatement", "getSeq")
-    }
-  }
+  def getSeq[T]: Seq[T] = macro SelectStatementMacro.getSeq[T]
 
-  def getList[T](implicit cTag: ClassTag[T], tTag: TypeTag[T]): List[T] = {
-    getSeq[T].toList
-  }
+  def getList[T]: List[T] = macro SelectStatementMacro.getList[T]
 
-  def apply[TARGET, RESULT](mapper: Iterator[TARGET] => RESULT)(implicit cTag: ClassTag[TARGET], tTag: TypeTag[TARGET]): RESULT = {
-    val tpe = typeOf[TARGET]
-    RuntimeTypeConverter.toType(tpe) match {
-      case _: Types.Entity =>
-        builder.iteratorEntity[TARGET, RESULT](mapper)
-      case t if t.isHolder || t.isBasic =>
-        builder.iteratorScalar[RESULT, TARGET](mapper)
-      case _ => throw new DomaException(Message.DOMALA4008, tpe, "SelectStatement", "apply")
-    }
-  }
+  def apply[TARGET, RESULT](mapper: Iterator[TARGET] => RESULT): RESULT = macro SelectStatementMacro.apply[TARGET, RESULT]
 
 }
 
 object SelectStatement {
   def apply(builder: SelectBuilder): SelectStatement = new SelectStatement(builder)
+}
+
+object SelectStatementMacro {
+  import scala.reflect.macros.blackbox
+
+  def getSingle[T: c.WeakTypeTag](c: blackbox.Context): c.Expr[T] = {
+    import c.universe._
+    val tpe = weakTypeOf[T]
+    val self = c.prefix
+
+    c.Expr[T] {
+      MacroTypeConverter.of(c).toType(tpe) match {
+        case _: Types.Entity =>
+          val entityDesc = c.Expr[EntityDesc[T]]{q"domala.internal.macros.reflect.EntityReflectionMacros.generateEntityDesc[$tpe]"}
+          q"$self.builder.getEntitySingleResult[$tpe]($entityDesc)"
+        case t if t.isHolder || t.isBasic =>
+          q"$self.builder.getScalarSingleResult[$tpe]"
+        case Types.Map =>
+          q"$self.getMapSingle.asInstanceOf[$tpe]"
+        case _ => throw new DomaException(Message.DOMALA4008, tpe, "SelectStatement", "getSingle")
+      }
+    }
+  }
+
+  def getOption[T: c.WeakTypeTag](c: blackbox.Context): c.Expr[Option[T]] = {
+    import c.universe._
+    val tpe = weakTypeOf[T]
+    val self = c.prefix
+
+    c.Expr[Option[T]] {
+      MacroTypeConverter.of(c).toType(tpe) match {
+        case _: Types.Entity =>
+          val entityDesc = c.Expr[EntityDesc[T]]{q"domala.internal.macros.reflect.EntityReflectionMacros.generateEntityDesc[$tpe]"}
+          q"$self.builder.getOptionEntitySingleResult[$tpe]($entityDesc)"
+        case t if t.isHolder || t.isBasic =>
+          q"$self.builder.getOptionScalarSingleResult[$tpe]"
+        case Types.Map =>
+          q"$self.getOptionMapSingle.asInstanceOf[Option[$tpe]]"
+        case _ => throw new DomaException(Message.DOMALA4008, tpe, "SelectStatement", "getOption")
+      }
+    }
+  }
+
+  def getSeq[T: c.WeakTypeTag](c: blackbox.Context): c.Expr[Seq[T]] = {
+    import c.universe._
+    val tpe = weakTypeOf[T]
+    val self = c.prefix
+    c.Expr[Seq[T]] {
+      MacroTypeConverter.of(c).toType(tpe) match {
+        case _: Types.Entity =>
+          val entityDesc = c.Expr[EntityDesc[T]]{q"domala.internal.macros.reflect.EntityReflectionMacros.generateEntityDesc[$tpe]"}
+          q"$self.builder.getEntityResultSeq[$tpe]($entityDesc)"
+        case t if t.isHolder || t.isBasic =>
+          q"$self.builder.getScalarResultSeq[$tpe]"
+        case Types.Map =>
+          q"$self.getMapSeq.asInstanceOf[Option[$tpe]]"
+        case _ => throw new DomaException(Message.DOMALA4008, tpe, "SelectStatement", "getSeq")
+      }
+    }
+  }
+
+  def getList[T: c.WeakTypeTag](c: blackbox.Context): c.Expr[List[T]] = {
+    import c.universe._
+    val tpe = weakTypeOf[T]
+    val self = c.prefix
+    c.Expr[List[T]] {
+      q"$self.getSeq[$tpe].toList"
+    }
+  }
+
+  def apply[TARGET: c.WeakTypeTag, RESULT: c.WeakTypeTag](c: blackbox.Context)(mapper: c.Expr[Iterator[TARGET] => RESULT]): c.Expr[RESULT] = {
+    import c.universe._
+    val targetTpe = weakTypeOf[TARGET]
+    val resultTpe = weakTypeOf[RESULT]
+    val self = c.prefix
+    c.Expr[RESULT] {
+      MacroTypeConverter.of(c).toType(targetTpe) match {
+        case _: Types.Entity =>
+          val entityDesc = c.Expr[EntityDesc[TARGET]]{q"domala.internal.macros.reflect.EntityReflectionMacros.generateEntityDesc[$targetTpe]"}
+          q"$self.builder.iteratorEntity[$targetTpe, $resultTpe]($mapper)($entityDesc)"
+        case t if t.isHolder || t.isBasic =>
+          q"$self.builder.iteratorScalar[$resultTpe, $targetTpe]($mapper)"
+        case Types.Map =>
+          q"$self.builder.iteratorMap($mapper, org.seasar.doma.MapKeyNamingType.NONE)"
+        case _ => throw new DomaException(Message.DOMALA4008, targetTpe, "SelectStatement", "apply")
+      }
+    }
+  }
+
 }

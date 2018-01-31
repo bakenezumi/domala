@@ -3,11 +3,10 @@ package org.seasar.doma.jdbc.builder
 import java.util.function.{Function, Supplier}
 import java.util.stream
 
-import domala.internal.jdbc.entity.EntityDescRepository
 import domala.internal.jdbc.scalar.Scalars
-import domala.internal.macros.reflect.EntityReflectionMacros
 import domala.internal.{OptionConverters, WrapIterator}
 import domala.jdbc.Config
+import domala.jdbc.entity.EntityDesc
 import domala.jdbc.query.SqlSelectQuery
 import org.seasar.doma.internal.jdbc.command._
 import org.seasar.doma.internal.jdbc.scalar.{Scalar, ScalarException}
@@ -16,9 +15,9 @@ import org.seasar.doma.jdbc.{ClassHelper, Sql, SqlLogType}
 import org.seasar.doma.message.Message
 import org.seasar.doma.{DomaIllegalArgumentException, DomaNullPointerException, FetchType, MapKeyNamingType}
 
-import scala.reflect._
-import scala.reflect.runtime.universe._
 import scala.collection.JavaConverters._
+import scala.language.experimental.macros
+import scala.reflect._
 
 // Domaのパッケージプライベートクラスを利用しているためここに配置
 // org.seasar.doma.jdbc.builder.SelectBuilderを元にしており、
@@ -92,20 +91,17 @@ class DomalaSelectBuilder(
     builder
   }
 
-  def getEntitySingleResult[RESULT: TypeTag](implicit cTag: ClassTag[RESULT]): RESULT = {
+  def getEntitySingleResult[RESULT](implicit entityDesc: EntityDesc[RESULT]): RESULT = {
     if (query.getMethodName == null)
       query.setCallerMethodName("getEntitySingleResult")
-    val entityDesc = EntityDescRepository.get[RESULT]
     query.setEntityType(entityDesc)
     val handler = new EntitySingleResultHandler[RESULT](entityDesc)
     execute(handler)
   }
 
-  def getOptionEntitySingleResult[RESULT: ClassTag: TypeTag]: Option[RESULT] = {
+  def getOptionEntitySingleResult[RESULT](implicit entityDesc: EntityDesc[RESULT]): Option[RESULT] = {
     if (query.getMethodName == null)
       query.setCallerMethodName("getOptionalEntitySingleResult")
-    val entityDesc =
-      EntityDescRepository.get[RESULT]
     query.setEntityType(entityDesc)
     val handler = new OptionalEntitySingleResultHandler[RESULT](entityDesc)
     OptionConverters.asScala(execute(handler))
@@ -148,11 +144,9 @@ class DomalaSelectBuilder(
     OptionConverters.asScala(execute(handler)).map(_.asScala.toMap)
   }
 
-  def getEntityResultSeq[ELEMENT: ClassTag: TypeTag]: Seq[ELEMENT] = {
+  def getEntityResultSeq[ELEMENT](implicit entityDesc: EntityDesc[ELEMENT]): Seq[ELEMENT] = {
     if (query.getMethodName == null)
       query.setCallerMethodName("getEntityResultSeq")
-    val entityDesc =
-      EntityDescRepository.get[ELEMENT]
     query.setEntityType(entityDesc)
     val handler = new EntityResultListHandler[ELEMENT](entityDesc)
     execute(handler).asScala
@@ -185,23 +179,21 @@ class DomalaSelectBuilder(
     execute(handler).asScala.map(_.asScala.toMap)
   }
 
-  def iteratorEntity[TARGET: TypeTag](implicit cTag: ClassTag[TARGET]): Iterator[TARGET] = {
+  def iteratorEntity[TARGET](implicit entityDesc: EntityDesc[TARGET]): Iterator[TARGET] = {
     query.setResultStream(true)
-    iteratorEntityInternal[TARGET, Iterator[TARGET]](cTag, x => x)
+    iteratorEntityInternal[TARGET, Iterator[TARGET]](x => x)
   }
 
-  def iteratorEntity[TARGET: TypeTag, RESULT](
-      mapper: Iterator[TARGET] => RESULT)(implicit cTag: ClassTag[TARGET]): RESULT = {
+  def iteratorEntity[TARGET, RESULT](
+      mapper: Iterator[TARGET] => RESULT)(implicit entityDesc: EntityDesc[TARGET]): RESULT = {
     if (mapper == null) throw new DomaNullPointerException("mapper")
-    iteratorEntityInternal(cTag, mapper)
+    iteratorEntityInternal(mapper)
   }
 
-  protected def iteratorEntityInternal[TARGET: ClassTag: TypeTag, RESULT](
-      cTag: ClassTag[TARGET],
-      mapper: Iterator[TARGET] => RESULT): RESULT = {
+  protected def iteratorEntityInternal[TARGET, RESULT](
+      mapper: Iterator[TARGET] => RESULT)(implicit entityDesc: EntityDesc[TARGET]): RESULT = {
     if (query.getMethodName == null) query.setCallerMethodName("iteratorEntity")
-    val entityDesc =
-      EntityDescRepository.get[TARGET]
+
     query.setEntityType(entityDesc)
     val handler = new EntityStreamHandler(entityDesc, (p: java.util.stream.Stream[TARGET]) => mapper(WrapIterator.of(p)))
     execute(handler)
@@ -269,7 +261,7 @@ class DomalaSelectBuilder(
     execute(handler)
   }
 
-  private def execute[RESULT](resultSetHandler: ResultSetHandler[RESULT]) = {
+  def execute[RESULT](resultSetHandler: ResultSetHandler[RESULT]) = {
     prepare()
     val command = new SelectCommand[RESULT](query, resultSetHandler)
     val result = command.execute
@@ -367,4 +359,5 @@ object DomalaSelectBuilder {
     if (config == null) throw new DomaNullPointerException("config")
     new DomalaSelectBuilder(config)
   }
+
 }

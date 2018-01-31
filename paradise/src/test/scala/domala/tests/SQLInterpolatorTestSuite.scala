@@ -1,14 +1,10 @@
 package domala.tests
 
-import java.util.Calendar
-
-import org.scalatest.{BeforeAndAfter, FunSuite}
 import domala._
 import domala.jdbc.Config
-import domala.message.Message
-import org.seasar.doma.{DomaException, MapKeyNamingType}
+import org.scalatest.{BeforeAndAfter, FunSuite}
+import org.seasar.doma.MapKeyNamingType
 import org.seasar.doma.jdbc.JdbcException
-
 
 class SQLInterpolatorTestSuite extends FunSuite with BeforeAndAfter {
   implicit val config: Config = SQLInterpolatorTestConfig
@@ -122,25 +118,30 @@ class SQLInterpolatorTestSuite extends FunSuite with BeforeAndAfter {
   test("return a not support type select") {
     val statement = select"select * from person"
 
-    val caught1 = intercept[DomaException] {
-      statement.getSingle[Calendar]
-    }
-    assert(caught1.getMessageResource == Message.DOMALA4008)
+    // compile error
+//    val caught1 = intercept[DomaException] {
+//      statement.getSingle[Calendar]
+//    }
+//    assert(caught1.getMessageResource == Message.DOMALA4008)
 
-    val caught2 = intercept[DomaException] {
-      statement.getOption[PersonDao]
-    }
-    assert(caught2.getMessageResource == Message.DOMALA4008)
+    // compile error
+//    val caught2 = intercept[DomaException] {
+//      statement.getOption[PersonDao]
+//    }
+//    assert(caught2.getMessageResource == Message.DOMALA4008)
 
-    val caught3 = intercept[DomaException] {
-      statement.getList[Calendar]
-    }
-    assert(caught3.getMessageResource == Message.DOMALA4008)
+    // compile error
+//    val caught3 = intercept[DomaException] {
+//      statement.getList[Calendar]
+//    }
+//    assert(caught3.getMessageResource == Message.DOMALA4008)
 
-    val caught4 = intercept[DomaException] {
-      statement { (_: Iterator[PersonDao]) => 1}
-    }
-    assert(caught4.getMessageResource == Message.DOMALA4008)
+
+    // compile error
+//    val caught4 = intercept[DomaException] {
+//      statement { (_: Iterator[PersonDao]) => 1}
+//    }
+//    assert(caught4.getMessageResource == Message.DOMALA4008)
 
   }
 
