@@ -60,7 +60,7 @@ object PropertyDescUtil {
     }
 
     converter.toType(tpe) match {
-      case Types.RuntimeEntityType =>
+      case Types.MacroEntityType =>
         validateForEmbeddable()
         val embeddableDesc = c.Expr[util.List[EntityPropertyDesc[E, _]]] {
           q"domala.internal.macros.reflect.EmbeddableReflectionMacros.generateEmbeddableDesc[$tpe](classOf[$tpe]).getEmbeddablePropertyTypes($paramName, $namingType, $entityClass)"

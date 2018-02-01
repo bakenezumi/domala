@@ -3,7 +3,6 @@ package domala.internal.reflect.util
 import domala.internal.macros.reflect.ReflectAbortException
 import domala.jdbc.entity.{EntityCompanion, EntityDesc}
 import domala.jdbc.holder.{HolderCompanion, HolderDesc}
-import org.seasar.doma.jdbc.entity.EmbeddableType
 import org.seasar.doma.message.MessageResource
 
 import scala.reflect.ClassTag

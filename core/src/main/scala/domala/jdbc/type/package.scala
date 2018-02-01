@@ -11,12 +11,12 @@ package object `type` {
   sealed trait Types {
     val isBasic: Boolean = false
     val isEntity: Boolean = false
-    val isRuntimeEntity: Boolean = false
+    val isMacroEntity: Boolean = false
     val isHolder: Boolean = false
     val isAnyValHolder: Boolean = false
     val isNumber: Boolean = false
     val isEmbeddable: Boolean = false
-    val isRuntimeEmbeddable: Boolean = false
+    val isMacroEmbeddable: Boolean = false
     val isIterable: Boolean = false
     val isOption: Boolean = false
     val isBasicOption: Boolean = false
@@ -139,9 +139,9 @@ package object `type` {
       override val isEntity: Boolean = true
     }
     object GeneratedEntityType extends Types.Entity
-    object RuntimeEntityType extends Types.Entity with Types.Embeddable {
-      override val isRuntimeEntity: Boolean = true
-      override val isRuntimeEmbeddable : Boolean = true
+    object MacroEntityType extends Types.Entity with Types.Embeddable {
+      override val isMacroEntity: Boolean = true
+      override val isMacroEmbeddable : Boolean = true
     }
 
     sealed trait Embeddable extends Types {

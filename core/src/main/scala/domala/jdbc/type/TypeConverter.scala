@@ -36,7 +36,7 @@ abstract class TypeConverter {
     case _ if isGeneratedEntity(tpe) => Types.GeneratedEntityType
     case _ if isGeneratedHolder(tpe) => Types.GeneratedHolderType(toType(headParamType(tpe)).asInstanceOf[Types.Basic[_]])
     case _ if isAnyValHolder(tpe) => Types.AnyValHolderType(toType(headParamType(tpe)).asInstanceOf[Types.Basic[_]])
-    case _ if isRuntimeEntity(tpe) => Types.RuntimeEntityType
+    case _ if isRuntimeEntity(tpe) => Types.MacroEntityType
     case _ if isMap(tpe) => Types.Map
     case _ if isOption(tpe) => Types.Option(toType(typeArgs(tpe).head))
     case _ if isSeq(tpe) => Types.Seq(toType(typeArgs(tpe).head))

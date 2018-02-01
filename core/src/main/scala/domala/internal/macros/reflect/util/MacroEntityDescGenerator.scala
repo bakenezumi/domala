@@ -4,7 +4,7 @@ import domala.jdbc.entity.EntityDesc
 
 import scala.reflect.macros.blackbox
 
-object RuntimeEntityDescGenerator {
+object MacroEntityDescGenerator {
 
   def get[C <: blackbox.Context, T: c.WeakTypeTag](c: C)(tpe: c.universe.Type): c.Expr[EntityDesc[T]] = {
     import c.universe._

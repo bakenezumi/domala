@@ -83,7 +83,7 @@ class MacroTypeConverter[C <: blackbox.Context](c: C) extends TypeConverter {
         case _: Types.Holder[_, _] => true
         case Types.Option(_: Types.Basic[_]) => true
         case Types.Option(_: Types.Holder[_, _]) => true
-        case t if t.isRuntimeEmbeddable => true
+        case t if t.isMacroEmbeddable => true
         case _ => false
       }
     }

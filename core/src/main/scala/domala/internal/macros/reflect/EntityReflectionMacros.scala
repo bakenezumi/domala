@@ -76,7 +76,7 @@ object EntityReflectionMacros {
     import c.universe._
     val wtt = weakTypeOf[T]
     MacroTypeConverter.of(c).toType(wtt) match {
-      case Types.RuntimeEntityType =>
+      case Types.MacroEntityType =>
         c.Expr[T] {
           q"""
             import scala.collection.JavaConverters._
@@ -206,7 +206,7 @@ object EntityReflectionMacros {
           case _: Types.Basic[_] => propertyType
           case _: Types.Option => propertyType.typeArgs.head
           case t if t.isHolder => propertyType
-          case Types.RuntimeEntityType => propertyType
+          case Types.MacroEntityType => propertyType
           case _ => ReflectionUtil.abort(Message.DOMALA4096, propertyType, entityType.typeSymbol.fullName, param.name)
         }
         c.Expr[Map[String, EntityPropertyDesc[E, _]]] {
@@ -236,7 +236,7 @@ object EntityReflectionMacros {
     val applyParams: Seq[Tree] = apply.paramLists.head.map { p =>
       val parameterType = p.typeSignature
       MacroTypeConverter.of(c).toType(parameterType) match {
-        case Types.RuntimeEntityType =>
+        case Types.MacroEntityType =>
           q"""
           val propertyName = ${p.name.toString}
           val desc = domala.internal.macros.reflect.EmbeddableReflectionMacros.generateEmbeddableDesc(classOf[$parameterType])

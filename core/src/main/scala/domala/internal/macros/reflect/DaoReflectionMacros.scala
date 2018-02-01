@@ -5,7 +5,7 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
 import domala.internal.jdbc.command.{OptionEntitySingleResultHandler, OptionHolderSingleResultHandler}
-import domala.internal.macros.reflect.util.{AnyValHolderDescGenerator, MacroTypeConverter, PropertyDescUtil, RuntimeEntityDescGenerator}
+import domala.internal.macros.reflect.util.{AnyValHolderDescGenerator, MacroTypeConverter, PropertyDescUtil, MacroEntityDescGenerator}
 import domala.internal.macros.{DaoParam, DaoParamClass}
 import domala.internal.reflect.util.ReflectionUtil
 import domala.internal.{WrapIterator, WrapStream}
@@ -56,8 +56,8 @@ object DaoReflectionMacros {
             entityDesc,
             (p: java.util.stream.Stream[T]) => f.splice.apply(WrapStream.of(p)))
         }
-      case Types.RuntimeEntityType =>
-        val entityDesc = RuntimeEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
+      case Types.MacroEntityType =>
+        val entityDesc = MacroEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
         reify {
           new EntityStreamHandler(
             entityDesc.splice,
@@ -104,8 +104,8 @@ object DaoReflectionMacros {
             entityDesc,
             (p: java.util.stream.Stream[T]) => f.splice.apply(WrapIterator.of(p)))
         }
-      case Types.RuntimeEntityType =>
-        val entityDesc = RuntimeEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
+      case Types.MacroEntityType =>
+        val entityDesc = MacroEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
         reify {
           new EntityStreamHandler(
             entityDesc.splice,
@@ -150,8 +150,8 @@ object DaoReflectionMacros {
           val entityDesc = ReflectionUtil.getEntityDesc(classTag.splice)
           new EntityResultListHandler(entityDesc)
         }
-      case Types.RuntimeEntityType =>
-        val entityDesc = RuntimeEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
+      case Types.MacroEntityType =>
+        val entityDesc = MacroEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
         reify {
           new EntityResultListHandler(entityDesc.splice)
         }
@@ -188,8 +188,8 @@ object DaoReflectionMacros {
           val entityDesc = ReflectionUtil.getEntityDesc(classTag.splice)
           new OptionEntitySingleResultHandler(entityDesc)
         }
-      case Types.RuntimeEntityType =>
-        val entityDesc = RuntimeEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
+      case Types.MacroEntityType =>
+        val entityDesc = MacroEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
         reify {
           new OptionEntitySingleResultHandler(entityDesc.splice)
         }
@@ -227,7 +227,7 @@ object DaoReflectionMacros {
           commandImplementors.splice.createSelectCommand(method.splice, query.splice, handler).execute()
         }
       case ResultType.RuntimeEntity(_, _) =>
-        val entityDesc = RuntimeEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
+        val entityDesc = MacroEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
         reify {
           val handler = new EntitySingleResultHandler(entityDesc.splice)
           commandImplementors.splice.createSelectCommand(method.splice, query.splice, handler).execute()
@@ -273,8 +273,8 @@ object DaoReflectionMacros {
           val entityDesc = ReflectionUtil.getEntityDesc(classTag.splice)
           query.splice.setEntityType(entityDesc)
         }
-      case Types.RuntimeEntityType =>
-        val entityDesc = RuntimeEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
+      case Types.MacroEntityType =>
+        val entityDesc = MacroEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
         reify {
           query.splice.setEntityType(entityDesc.splice)
         }
@@ -319,8 +319,8 @@ object DaoReflectionMacros {
                                   param.splice.value,
                                   entityDesc))
           }
-        case Some((param, Types.RuntimeEntityType)) =>
-          val entityDesc = RuntimeEntityDescGenerator.get[blackbox.Context, Any](c)(param.actualType.typeArgs.head)
+        case Some((param, Types.MacroEntityType)) =>
+          val entityDesc = MacroEntityDescGenerator.get[blackbox.Context, Any](c)(param.actualType.typeArgs.head)
           reify {
             Some(
               EntityAndEntityDesc(param.splice.name,
@@ -372,8 +372,8 @@ object DaoReflectionMacros {
               reify {
                 Some(entityDesc.splice)
               }
-            case Types.RuntimeEntityType =>
-              val entityDesc = RuntimeEntityDescGenerator.get[blackbox.Context, Any](c)(paramType)
+            case Types.MacroEntityType =>
+              val entityDesc = MacroEntityDescGenerator.get[blackbox.Context, Any](c)(paramType)
               reify {
                 Some(entityDesc.splice.asInstanceOf[EntityDesc[Any]])
               }
@@ -531,8 +531,8 @@ object DaoReflectionMacros {
     MacroTypeConverter.of(c).toType(tpe) match {
       case Types.GeneratedEntityType =>
         reify(ReflectionUtil.getEntityDesc(classTag.splice))
-      case Types.RuntimeEntityType =>
-        val entityDesc = RuntimeEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
+      case Types.MacroEntityType =>
+        val entityDesc = MacroEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
         reify(entityDesc.splice)
       case _ =>
         ReflectionUtil.abort(
@@ -560,8 +560,8 @@ object DaoReflectionMacros {
       converter.toType(tpe) match {
         case Types.GeneratedEntityType =>
           reify(ReflectionUtil.getEntityDesc(classTag.splice))
-        case Types.RuntimeEntityType =>
-          val entityDesc = RuntimeEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
+        case Types.MacroEntityType =>
+          val entityDesc = MacroEntityDescGenerator.get[blackbox.Context, T](c)(tpe)
           reify(entityDesc.splice)
         case _ =>
           ReflectionUtil.abort(

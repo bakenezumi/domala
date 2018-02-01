@@ -26,7 +26,7 @@ object ResultType {
       case Types.Option(_) => ResultType.Option(c, convert(c)(tpe.typeArgs.head.asInstanceOf[C#Type]))
       case t if t.isBasic => ResultType.Basic(c, tpe)
       case Types.GeneratedEntityType => ResultType.GeneratedEntity(c, tpe)
-      case Types.RuntimeEntityType => ResultType.RuntimeEntity(c, tpe)
+      case Types.MacroEntityType => ResultType.RuntimeEntity(c, tpe)
       case Types.GeneratedHolderType(_) => ResultType.GeneratedHolder(c, tpe)
       case Types.AnyValHolderType(_) => ResultType.AnyValHolder(c, tpe)
       case _ => ResultType.UnSupport(c, tpe)
