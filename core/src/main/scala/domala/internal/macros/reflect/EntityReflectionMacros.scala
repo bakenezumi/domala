@@ -176,14 +176,13 @@ object EntityReflectionMacros {
           c.Expr[EntityDesc[E]] {
             q"domala.internal.reflect.util.ReflectionUtil.getEntityDesc[$entityType]"
           }
-        case _ =>
-          val entityClass = c.Expr[Class[E]](q"classOf[$entityType]")
-            val table = entityType.typeSymbol.annotations.collectFirst {
-              case a: Annotation if a.tree.tpe =:= typeOf[Table] =>
-                c.Expr[Table](q"domala.Table(..${a.tree.children.tail})")
-            }.getOrElse {
-              c.Expr[Table](q" domala.Table()")
-            }
+        case t if t.isMacroEntity =>
+          val table = entityType.typeSymbol.annotations.collectFirst {
+            case a: Annotation if a.tree.tpe =:= typeOf[Table] =>
+              c.Expr[Table](q"domala.Table(..${a.tree.children.tail})")
+          }.getOrElse {
+            c.Expr[Table](q" domala.Table()")
+          }
           val generatePropertyDescMap = {
             val propertyDescList = entityType.typeSymbol.asClass.primaryConstructor.asMethod.paramLists.flatten.map((param: Symbol) => {
 
@@ -302,11 +301,17 @@ object EntityReflectionMacros {
                   override def getGeneratedIdPropertyType: org.seasar.doma.jdbc.entity.GeneratedIdPropertyType[_ >: $entityType, $entityType, _ <: Number, _] = propertyDescMap.values.collectFirst {
                     case p: org.seasar.doma.jdbc.entity.GeneratedIdPropertyType[_, _, _, _] => p
                   }.orNull.asInstanceOf[GeneratedIdPropertyDesc[_ >: $entityType, $entityType, _ <: Number, _]]
+
+                  override def getName = ${entityType.typeSymbol.name.toString}
                 }
               })
             }"""
           }
-        }
+        case _ =>
+          ReflectionUtil.abort(
+            Message.DOMALA6025,
+            entityType.typeSymbol.fullName)
+      }
     }
   }
 

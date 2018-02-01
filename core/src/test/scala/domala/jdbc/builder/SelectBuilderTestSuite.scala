@@ -3,7 +3,7 @@ package domala.jdbc.builder
 import domala._
 import domala.jdbc.builder.mock._
 import domala.jdbc.entity.EntityDesc
-import domala.jdbc.{Config, EntityDescProvider, LocalTransactionConfig}
+import domala.jdbc.{Config, EntityDescProvider, EntityManager, LocalTransactionConfig}
 import org.scalatest.{BeforeAndAfter, FunSuite}
 import org.seasar.doma.jdbc.Naming
 import org.seasar.doma.jdbc.dialect.H2Dialect
@@ -99,6 +99,7 @@ class SelectBuilderTestSuite extends FunSuite with BeforeAndAfter {
         .sql("select /*%expand*/* from person")
         .iteratorEntity((it: Iterator[Person]) => it.map(_.name).toList)
       assert(result == initialPersons.map(_.name))
+      EntityManager.batchDelete(initialPersons)
     }
   }
 }

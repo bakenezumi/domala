@@ -15,13 +15,14 @@ abstract class AbstractEntityDesc[ENTITY: ClassTag] extends AbstractEntityType[E
   protected val propertyDescMap: Map[String, EntityPropertyDesc[ENTITY, _]]
   protected val idPropertyDescList: List[EntityPropertyDesc[ENTITY, _]]
 
-  private[this] val entityClass: Class[ENTITY] = classTag[ENTITY].runtimeClass.asInstanceOf[Class[ENTITY]]
+  private[this] lazy val entityClass: Class[ENTITY] = classTag[ENTITY].runtimeClass.asInstanceOf[Class[ENTITY]]
   private[this] lazy val propertyDescList = propertyDescMap.values.toList.asJava
   private[this] lazy val _idPropertyDescList = idPropertyDescList.asJava
+  private[this] lazy val simpleName = entityClass.getSimpleName
 
   override def getOriginalStates(entity: ENTITY): ENTITY = null.asInstanceOf[ENTITY]
 
-  override def getName: String = classTag[ENTITY].runtimeClass.getSimpleName
+  override def getName: String = simpleName
 
   override def getSchemaName: String = table.schema
 
