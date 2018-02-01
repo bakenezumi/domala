@@ -7,7 +7,7 @@ import domala.wrapper.Wrapper
 
 import scala.reflect.macros.blackbox
 
-object TypeUtil {
+object MacroUtil {
 
   def generateWrapperSupplier[C <: blackbox.Context](c: C)(tpe: c.universe.Type): c.Expr[Supplier[_ <: Wrapper[_]]] = {
     import c.universe._
@@ -38,6 +38,31 @@ object TypeUtil {
       case Types.NClobType => reify { Types.NClobType.wrapperSupplier }
       case Types.SQLXMLType => reify { Types.SQLXMLType.wrapperSupplier }
       case _ => c.abort(c.enclosingPosition, "error")
+    }
+  }
+
+  def generateImport[C <: blackbox.Context, T: c.WeakTypeTag](c: C)(tpe: c.universe.Type): Option[c.universe.Import] = {
+    import c.universe._
+    def getOwner(s: Symbol): Symbol = {
+      if (s.isPackage) s
+      else getOwner(s.owner)
+    }
+    val fullName = tpe.typeSymbol.fullName.split('.').toList
+    if(fullName.length <= 1) None
+    else {
+      val owner = getOwner(c.internal.enclosingOwner)
+      val ownerPackage = owner.fullName.split('.').toList
+      val packageNameList = getOwner(tpe.typeSymbol).fullName.split('.').toList
+      val className = TermName(fullName(packageNameList.size))
+      if(packageNameList == ownerPackage) None
+      else {
+        val packageNameIterator = packageNameList.toIterator
+        val top: Tree = Ident(TermName(packageNameIterator.next))
+        val packageSelect = packageNameIterator.foldLeft(top)((acc, name) => Select(acc, TermName(name)))
+        Some(
+          Import(packageSelect, List(ImportSelector(className, -1, className, -1)))
+        )
+      }
     }
   }
 

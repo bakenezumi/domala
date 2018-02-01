@@ -17,31 +17,6 @@ object AnyValHolderDescGenerator {
     else tpe
   }
 
-  private def generateImport[C <: blackbox.Context, T: c.WeakTypeTag](c: C)(tpe: c.universe.Type): Option[c.universe.Import ] = {
-    import c.universe._
-    val fullName = tpe.typeSymbol.fullName.split('.').toList
-    if(fullName.length <= 1) None
-    else {
-      def getOwner(s: Symbol): Symbol = {
-        if (s.isPackage) s
-        else getOwner(s.owner)
-      }
-      val owner = getOwner(c.internal.enclosingOwner)
-      val ownerPackage = owner.fullName.split('.').toList
-      val className = TermName(fullName.last)
-      val packageNameList = fullName.init
-      if(packageNameList.take(ownerPackage.length) == ownerPackage) None
-      else {
-        val packageNameIterator = packageNameList.toIterator
-        val top: Tree = Ident(TermName(packageNameIterator.next))
-        val packageSelect = packageNameIterator.foldLeft(top)((acc, name) => Select(acc, TermName(name)))
-        Some(
-          Import(packageSelect, List(ImportSelector(className, -1, className, -1)))
-        )
-      }
-    }
-  }
-
   def get[C <: blackbox.Context, T: c.WeakTypeTag](c: C)(tpe: c.universe.Type): Option[c.Expr[HolderDesc[Any, T]]] = {
     import c.universe._
     val valueType = tpe.members.find(_.isConstructor).get.asMethod.paramLists.flatten.head.typeSignature
@@ -59,15 +34,15 @@ object AnyValHolderDescGenerator {
           } else true
         }
       val holderValueName  = TermName(holderConstructor.paramLists.flatten.head.name.toString)
-      val basicImport = generateImport(c)(basicType).getOrElse(q"()")
-      val holderImport = generateImport(c)(tpe).getOrElse(q"()")
+      val basicImport = MacroUtil.generateImport(c)(basicType).getOrElse(q"()")
+      val holderImport = MacroUtil.generateImport(c)(tpe).getOrElse(q"()")
       c.Expr[HolderDesc[Any, T]](
         if (tpe.typeArgs.isEmpty) {
           val holderFactory =
             if(useApply)  q"${tpe.typeSymbol.name.toTermName}.apply (value)"
             else q"new $holderTypeName (value)"
           val newInstanceSupplier = q"""{
-            new domala.jdbc.holder.AbstractAnyValHolderDesc[$basicTypeName, $holderTypeName](${TypeUtil.generateWrapperSupplier(c)(basicType)}) {
+            new domala.jdbc.holder.AbstractAnyValHolderDesc[$basicTypeName, $holderTypeName](${MacroUtil.generateWrapperSupplier(c)(basicType)}) {
               override def newHolder(value: $basicTypeName): $holderTypeName = $holderFactory
               override def getBasicValue(holder: $holderTypeName) = holder.$holderValueName
             }: domala.jdbc.holder.HolderDesc[$basicTypeName, $holderTypeName [..${tpe.typeArgs}]]
@@ -84,7 +59,7 @@ object AnyValHolderDescGenerator {
             else q"new $holderTypeName [..${tpe.typeArgs}] (value)"
 
           val newInstanceSupplier = q"""{
-            new domala.jdbc.holder.AbstractAnyValHolderDesc[$basicTypeName, $holderTypeName [..${tpe.typeArgs}]](${TypeUtil.generateWrapperSupplier(c)(basicType)}) {
+            new domala.jdbc.holder.AbstractAnyValHolderDesc[$basicTypeName, $holderTypeName [..${tpe.typeArgs}]](${MacroUtil.generateWrapperSupplier(c)(basicType)}) {
               override def newHolder(value: $basicTypeName): $holderTypeName [..${tpe.typeArgs}] = $holderFactory
               override def getBasicValue(holder: $holderTypeName [..${tpe.typeArgs}]) = holder.$holderValueName
             }: domala.jdbc.holder.HolderDesc[$basicTypeName, $holderTypeName [..${tpe.typeArgs}]]

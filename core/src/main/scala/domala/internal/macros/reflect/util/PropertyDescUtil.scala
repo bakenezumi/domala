@@ -95,7 +95,7 @@ object PropertyDescUtil {
                 namingType.splice
               ))
           case _: Types.Basic[_] =>
-            val wrapperSupplier = TypeUtil.generateWrapperSupplier(c)(nakedTpe)
+            val wrapperSupplier = MacroUtil.generateWrapperSupplier(c)(nakedTpe)
             reify(
               EntityPropertyDescParam(
                 entityClass.splice,

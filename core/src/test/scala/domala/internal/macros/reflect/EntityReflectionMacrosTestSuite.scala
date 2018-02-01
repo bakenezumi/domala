@@ -2,6 +2,7 @@ package domala.internal.macros.reflect
 
 import domala._
 import domala.internal.macros.reflect.mock.{MockEmbeddable, MockEntity, MockHolder, MockProperty}
+import domala.jdbc.EntityDescProvider
 import domala.jdbc.entity._
 import org.scalatest.{BeforeAndAfter, FunSuite}
 
@@ -68,7 +69,7 @@ class EntityReflectionMacrosTestSuite extends FunSuite with BeforeAndAfter {
 
   test("generateEntityDesc") {
     import scala.collection.JavaConverters._
-    val desc = EntityReflectionMacros.generateEntityDesc[MockEntity]
+    val desc = EntityDescProvider.get[MockEntity]
     val map = Map(
       "id" -> MockProperty.of[MockEntity, Int](new Integer(1)),
       "holder" -> MockProperty.of[MockEntity, MockHolder](MockHolder("foo").asInstanceOf[AnyRef]),

@@ -5,7 +5,7 @@ import java.util.stream
 
 import domala.internal.jdbc.scalar.Scalars
 import domala.internal.{OptionConverters, WrapIterator}
-import domala.jdbc.Config
+import domala.jdbc.{Config, SelectOptions}
 import domala.jdbc.entity.EntityDesc
 import domala.jdbc.query.SqlSelectQuery
 import org.seasar.doma.internal.jdbc.command._
@@ -132,7 +132,7 @@ class DomalaSelectBuilder(
       query.setCallerMethodName("getMapSingleResult")
     val handler = new MapSingleResultHandler(mapKeyNamingType)
     Option(execute(handler)).map(_.asScala.toMap).orNull
-}
+  }
 
   def getOptionMapSingleResult(
       mapKeyNamingType: MapKeyNamingType = MapKeyNamingType.NONE): Option[Map[String, AnyRef]] = {
@@ -179,11 +179,6 @@ class DomalaSelectBuilder(
     execute(handler).asScala.map(_.asScala.toMap)
   }
 
-  def iteratorEntity[TARGET](implicit entityDesc: EntityDesc[TARGET]): Iterator[TARGET] = {
-    query.setResultStream(true)
-    iteratorEntityInternal[TARGET, Iterator[TARGET]](x => x)
-  }
-
   def iteratorEntity[TARGET, RESULT](
       mapper: Iterator[TARGET] => RESULT)(implicit entityDesc: EntityDesc[TARGET]): RESULT = {
     if (mapper == null) throw new DomaNullPointerException("mapper")
@@ -197,11 +192,6 @@ class DomalaSelectBuilder(
     query.setEntityType(entityDesc)
     val handler = new EntityStreamHandler(entityDesc, (p: java.util.stream.Stream[TARGET]) => mapper(WrapIterator.of(p)))
     execute(handler)
-  }
-
-  def iteratorScalar[TARGET](implicit cTag: ClassTag[TARGET]): Iterator[TARGET] = {
-    query.setResultStream(true)
-    iteratorScalarInternal[Iterator[TARGET], TARGET](cTag, x => x)
   }
 
   def iteratorScalar[RESULT, TARGET](
@@ -219,11 +209,6 @@ class DomalaSelectBuilder(
     val supplier = createScalarSupplier("targetClass", cTag.runtimeClass, false).asInstanceOf[Supplier[Scalar[Any, TARGET]]]
     val handler = new ScalarStreamHandler(supplier, (p: java.util.stream.Stream[TARGET]) => mapper(WrapIterator.of(p)))
     execute(handler)
-  }
-
-  def iteratorOptionalScalar[TARGET](implicit cTag: ClassTag[TARGET]): Iterator[Option[TARGET]] = {
-    query.setResultStream(true)
-    iteratorOptionalScalarInternal[Iterator[Option[TARGET]], TARGET](cTag, x => x)
   }
 
   def iteratorOptionalScalar[RESULT, TARGET](
@@ -261,7 +246,7 @@ class DomalaSelectBuilder(
     execute(handler)
   }
 
-  def execute[RESULT](resultSetHandler: ResultSetHandler[RESULT]) = {
+  def execute[RESULT](resultSetHandler: ResultSetHandler[RESULT]): RESULT = {
     prepare()
     val command = new SelectCommand[RESULT](query, resultSetHandler)
     val result = command.execute
@@ -317,7 +302,7 @@ class DomalaSelectBuilder(
     query.setCallerMethodName(methodName)
   }
 
-  def options(options: Nothing): Unit = {
+  def options(options: SelectOptions): Unit = {
     if (options == null) throw new DomaNullPointerException("options")
     query.setOptions(options)
   }

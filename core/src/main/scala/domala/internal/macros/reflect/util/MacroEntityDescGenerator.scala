@@ -12,7 +12,7 @@ object MacroEntityDescGenerator {
       val entityTypeName = tpe.typeSymbol.name.toTypeName
       q"""
       {
-        domala.internal.macros.reflect.EntityReflectionMacros.generateEntityDesc[$entityTypeName]
+        domala.jdbc.EntityDescProvider.get[$entityTypeName]
       }
       """
     }

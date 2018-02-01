@@ -1,6 +1,6 @@
 package domala.internal.macros.reflect.mock
 
-import domala.internal.macros.reflect.EntityReflectionMacros
+import domala.jdbc.EntityDescProvider
 import domala.jdbc.entity.EntityDesc
 import domala.{GeneratedValue, GenerationType, Id, Version}
 
@@ -14,5 +14,5 @@ case class MockEntity(
 )
 
 object MockEntity{
-  val entityDesc: EntityDesc[MockEntity] = EntityReflectionMacros.generateEntityDesc[MockEntity]
+  val entityDesc: EntityDesc[MockEntity] = EntityDescProvider.get[MockEntity]
 }

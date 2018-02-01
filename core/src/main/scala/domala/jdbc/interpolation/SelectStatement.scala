@@ -1,6 +1,6 @@
 package domala.jdbc.interpolation
 
-import domala.internal.macros.reflect.util.MacroTypeConverter
+import domala.internal.macros.reflect.util.{MacroEntityDescGenerator, MacroTypeConverter}
 import domala.jdbc.`type`.Types
 import domala.jdbc.builder.SelectBuilder
 import domala.jdbc.entity.EntityDesc
@@ -74,7 +74,7 @@ object SelectStatementMacro {
     c.Expr[T] {
       MacroTypeConverter.of(c).toType(tpe) match {
         case _: Types.Entity =>
-          val entityDesc = c.Expr[EntityDesc[T]]{q"domala.internal.macros.reflect.EntityReflectionMacros.generateEntityDesc[$tpe]"}
+          val entityDesc = MacroEntityDescGenerator.get(c)(tpe)
           q"$self.builder.getEntitySingleResult[$tpe]($entityDesc)"
         case t if t.isHolder || t.isBasic =>
           q"$self.builder.getScalarSingleResult[$tpe]"
@@ -93,7 +93,7 @@ object SelectStatementMacro {
     c.Expr[Option[T]] {
       MacroTypeConverter.of(c).toType(tpe) match {
         case _: Types.Entity =>
-          val entityDesc = c.Expr[EntityDesc[T]]{q"domala.internal.macros.reflect.EntityReflectionMacros.generateEntityDesc[$tpe]"}
+          val entityDesc = MacroEntityDescGenerator.get(c)(tpe)
           q"$self.builder.getOptionEntitySingleResult[$tpe]($entityDesc)"
         case t if t.isHolder || t.isBasic =>
           q"$self.builder.getOptionScalarSingleResult[$tpe]"
@@ -111,7 +111,7 @@ object SelectStatementMacro {
     c.Expr[Seq[T]] {
       MacroTypeConverter.of(c).toType(tpe) match {
         case _: Types.Entity =>
-          val entityDesc = c.Expr[EntityDesc[T]]{q"domala.internal.macros.reflect.EntityReflectionMacros.generateEntityDesc[$tpe]"}
+          val entityDesc = MacroEntityDescGenerator.get(c)(tpe)
           q"$self.builder.getEntityResultSeq[$tpe]($entityDesc)"
         case t if t.isHolder || t.isBasic =>
           q"$self.builder.getScalarResultSeq[$tpe]"
@@ -139,7 +139,7 @@ object SelectStatementMacro {
     c.Expr[RESULT] {
       MacroTypeConverter.of(c).toType(targetTpe) match {
         case _: Types.Entity =>
-          val entityDesc = c.Expr[EntityDesc[TARGET]]{q"domala.internal.macros.reflect.EntityReflectionMacros.generateEntityDesc[$targetTpe]"}
+          val entityDesc = MacroEntityDescGenerator.get[blackbox.Context, TARGET](c)(targetTpe)
           q"$self.builder.iteratorEntity[$targetTpe, $resultTpe]($mapper)($entityDesc)"
         case t if t.isHolder || t.isBasic =>
           q"$self.builder.iteratorScalar[$resultTpe, $targetTpe]($mapper)"
