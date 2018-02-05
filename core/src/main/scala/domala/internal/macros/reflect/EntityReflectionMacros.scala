@@ -183,6 +183,8 @@ object EntityReflectionMacros {
           }.getOrElse {
             c.Expr[Table](q" domala.Table()")
           }
+          // TODO: validate Annotation DOMALA4086, DOMALA4037, DOMALA4036, DOMALA4033, DOMALA4024, DOMALA4442
+
           val generatePropertyDescMap = {
             val propertyDescList = entityType.typeSymbol.asClass.primaryConstructor.asMethod.paramLists.flatten.map((param: Symbol) => {
 
@@ -310,7 +312,7 @@ object EntityReflectionMacros {
         case _ =>
           ReflectionUtil.abort(
             Message.DOMALA6025,
-            entityType.typeSymbol.fullName)
+            entityType.typeSymbol.fullName, MacroUtil.getPropertyErrorMessage(c)(entityType))
       }
     }
   }

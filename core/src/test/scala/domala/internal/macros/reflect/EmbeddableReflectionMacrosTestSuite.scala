@@ -1,12 +1,8 @@
 package domala.internal.macros.reflect
 
-import java.util.Optional
-
 import domala.internal.macros.reflect.mock._
-import domala.jdbc.entity.{NamingType, Property}
+import domala.jdbc.entity.NamingType
 import org.scalatest.FunSuite
-import org.seasar.doma.jdbc.InParameter
-import org.seasar.doma.wrapper.Wrapper
 
 class EmbeddableReflectionMacrosTestSuite extends FunSuite {
   test("generatePropertyDescMap") {
@@ -20,22 +16,8 @@ class EmbeddableReflectionMacrosTestSuite extends FunSuite {
   test("generateEmbeddableDesc") {
     val desc = EmbeddableReflectionMacros.generateEmbeddableDesc(classOf[MockEmbeddable])
     val newEmbeddable = desc.newEmbeddable[MockEntity]("embedded", Map(
-        "embedded.value1" -> new Property[MockEntity, Int]() {
-          override def get(): AnyRef = new Integer(1)
-          override def save(entity: MockEntity): Property[MockEntity, Int] = ???
-          override def load(entity: MockEntity): Property[MockEntity, Int] = ???
-          override def asInParameter(): InParameter[Int] = ???
-          override def getWrapper: Wrapper[Int] = ???
-          override def getDomainClass: Optional[Class[_]] = ???
-        },
-        "embedded.value2" -> new Property[MockEntity, String]() {
-          override def get(): AnyRef = "foo"
-          override def save(entity: MockEntity): Property[MockEntity, String] = ???
-          override def load(entity: MockEntity): Property[MockEntity, String] = ???
-          override def asInParameter(): InParameter[String] = ???
-          override def getWrapper: Wrapper[String] = ???
-          override def getDomainClass: Optional[Class[_]] = ???
-        }),
+        "embedded.value1" -> MockProperty.of[MockEntity, Int](new Integer(1)),
+        "embedded.value2" -> MockProperty.of[MockEntity, String]("foo")),
       classOf[MockEntity])
     assert(newEmbeddable == MockEmbeddable(1, "foo"))
   }

@@ -1,4 +1,4 @@
-package domala.jdbc.builder.mock
+package domala.jdbc.mock
 
 import domala._
 

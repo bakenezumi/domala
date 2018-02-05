@@ -2,7 +2,9 @@ package domala.internal.macros.reflect.util
 
 import java.util.function.Supplier
 
+import domala.internal.macros.reflect.DaoReflectionMacros.findInvalidProperty
 import domala.jdbc.`type`.Types
+import domala.message.Message
 import domala.wrapper.Wrapper
 
 import scala.reflect.macros.blackbox
@@ -64,6 +66,15 @@ object MacroUtil {
         )
       }
     }
+  }
+
+  def getPropertyErrorMessage(c: blackbox.Context)(tpe: c.Type): String = {
+    if (tpe.typeSymbol.isClass && tpe.typeSymbol.asClass.isCaseClass)
+      findInvalidProperty(c)(tpe).map {
+        case (propertyName, typeName) =>
+          Message.DOMALA9903.getSimpleMessage(propertyName, typeName)
+      }.getOrElse("")
+    else ""
   }
 
 }

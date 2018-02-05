@@ -1,3 +1,3 @@
-package domala.jdbc.builder.mock
+package domala.jdbc.mock
 
 case class Name(value: String) extends AnyVal

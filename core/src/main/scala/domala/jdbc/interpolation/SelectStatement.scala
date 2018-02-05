@@ -1,9 +1,8 @@
 package domala.jdbc.interpolation
 
-import domala.internal.macros.reflect.util.{MacroEntityDescGenerator, MacroTypeConverter}
+import domala.internal.macros.reflect.util.{MacroEntityDescGenerator, MacroTypeConverter, MacroUtil}
 import domala.jdbc.`type`.Types
 import domala.jdbc.builder.SelectBuilder
-import domala.jdbc.entity.EntityDesc
 import domala.message.Message
 import org.seasar.doma.{DomaException, MapKeyNamingType}
 
@@ -80,7 +79,7 @@ object SelectStatementMacro {
           q"$self.builder.getScalarSingleResult[$tpe]"
         case Types.Map =>
           q"$self.getMapSingle.asInstanceOf[$tpe]"
-        case _ => throw new DomaException(Message.DOMALA4008, tpe, "SelectStatement", "getSingle")
+        case _ => throw new DomaException(Message.DOMALA4008, tpe, "SelectStatement", "getSingle", MacroUtil.getPropertyErrorMessage(c)(tpe))
       }
     }
   }
@@ -99,7 +98,7 @@ object SelectStatementMacro {
           q"$self.builder.getOptionScalarSingleResult[$tpe]"
         case Types.Map =>
           q"$self.getOptionMapSingle.asInstanceOf[Option[$tpe]]"
-        case _ => throw new DomaException(Message.DOMALA4008, tpe, "SelectStatement", "getOption")
+        case _ => throw new DomaException(Message.DOMALA4008, tpe, "SelectStatement", "getOption", MacroUtil.getPropertyErrorMessage(c)(tpe))
       }
     }
   }
@@ -117,7 +116,7 @@ object SelectStatementMacro {
           q"$self.builder.getScalarResultSeq[$tpe]"
         case Types.Map =>
           q"$self.getMapSeq.asInstanceOf[Option[$tpe]]"
-        case _ => throw new DomaException(Message.DOMALA4008, tpe, "SelectStatement", "getSeq")
+        case _ => throw new DomaException(Message.DOMALA4008, tpe, "SelectStatement", "getSeq", MacroUtil.getPropertyErrorMessage(c)(tpe))
       }
     }
   }
@@ -145,7 +144,7 @@ object SelectStatementMacro {
           q"$self.builder.iteratorScalar[$resultTpe, $targetTpe]($mapper)"
         case Types.Map =>
           q"$self.builder.iteratorMap($mapper, org.seasar.doma.MapKeyNamingType.NONE)"
-        case _ => throw new DomaException(Message.DOMALA4008, targetTpe, "SelectStatement", "apply")
+        case _ => throw new DomaException(Message.DOMALA4008, targetTpe, "SelectStatement", "apply", MacroUtil.getPropertyErrorMessage(c)(targetTpe))
       }
     }
   }

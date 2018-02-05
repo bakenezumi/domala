@@ -41,7 +41,7 @@ public enum Message implements MessageResource {
     DOMALA4003(org.seasar.doma.message.Message.DOMA4003.getMessagePattern()),
     DOMALA4005(org.seasar.doma.message.Message.DOMA4005.getMessagePattern()),
     DOMALA4007("戻り値のSeqに対する実型引数の型[{0}]はサポートされていません。{3} at {1}.{2}"),
-    DOMALA4008(org.seasar.doma.message.Message.DOMA4008.getMessagePattern()),
+    DOMALA4008("戻り値の型[{0}]はサポートされていません。{3} at {1}.{2}"),
     DOMALA4014("@Daoはトレイト以外には注釈できません。"),
     DOMALA4015("クラス以外には注釈できません。"),
     DOMALA4019(org.seasar.doma.message.Message.DOMA4019.getMessagePattern()),
@@ -219,7 +219,7 @@ public enum Message implements MessageResource {
     DOMALA6022("AdHocConfigはトランザクションをサポートしていません。"),
     DOMALA6023("AdHocConfigを利用する場合、クエリは発行時に自動コミットされます。トランザクション制御が必要な場合はdomala.jdbc.LocalTransactionConfigを利用して下さい。"),
     DOMALA6024("エンティティクラス[{0}]のプロパティ{1}に結果セットのカラムの値がマッピングされませんでした。マッピングには結果セットがカラム{2}を含んでいる必要があります。SQLが正しいことを確認してください。"),
-    DOMALA6025("クラス[{0}]はエンティティクラスではありません。"),
+    DOMALA6025("クラス[{0}]はエンティティクラスとして利用できません。{1}"),
     DOMALA6026("@GeneratedValue(strategy = {2})を指定する場合はエンテティクラスに@Entityを注釈しなければいけません。 at {0}.{1}"),
 
     // a part of message
