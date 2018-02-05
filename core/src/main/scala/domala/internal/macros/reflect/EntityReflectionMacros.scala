@@ -165,11 +165,30 @@ object EntityReflectionMacros {
 
   def validateSequenceIdGenerator[E, G <: SequenceIdGenerator](entityClass: Class[E], generatorClass: Class[G]): Unit = macro validateSequenceIdGeneratorImpl[E, G]
 
-
   def generateEntityDescImpl[E: c.WeakTypeTag](c: blackbox.Context): c.Expr[EntityDesc[E]] = {
     import c.universe._
     val entityType = weakTypeOf[E]
     val entityClass = c.Expr[Class[E]](q"classOf[$entityType]")
+
+    case class EntityPropertyMeta(
+      propertyType: Type,
+      nakedType: Type,
+      name: String,
+      isId: Boolean,
+      isIdGenerate: Boolean,
+      idGenerator: Tree,
+      isVersion: Boolean,
+      isTenantId: Boolean,
+      column: c.Expr[Column]
+    ) {
+      Seq((isId, "@Id"), (isTenantId, "@TenantId"), (isVersion, "@Version")).collect {
+        case (true, annotationName) => annotationName
+      } match {
+        case x :: y :: _ => ReflectionUtil.abort(Message.DOMALA4086, x, y, entityType.typeSymbol.fullName, name)
+        case _ => ()
+      }
+    }
+
     handle(c)(entityClass) {
       MacroTypeConverter.of(c).toType(entityType) match {
         case Types.GeneratedEntityType =>
@@ -183,56 +202,69 @@ object EntityReflectionMacros {
           }.getOrElse {
             c.Expr[Table](q" domala.Table()")
           }
-          // TODO: validate Annotation DOMALA4086, DOMALA4037, DOMALA4036, DOMALA4033, DOMALA4024, DOMALA4442
+
+          val entityPropertyTypeSymbols = entityType.typeSymbol.asClass.primaryConstructor.asMethod.paramLists.flatten
+          def confirmAnnotation(annotations: Seq[Annotation], tpe: Type): Boolean = annotations.exists(_.tree.tpe =:= tpe)
+
+          val entityPropertyMetaList: Seq[EntityPropertyMeta] = entityPropertyTypeSymbols.map((param: Symbol) => {
+            val isId = confirmAnnotation(param.annotations, typeOf[domala.Id])
+            val idGenerator = if (isId) {
+              param.annotations.collectFirst {
+                case a: Annotation if a.tree.tpe =:= typeOf[domala.GeneratedValue] =>
+                  a.tree.children.tail.head match {
+                    case Select(_, TermName("IDENTITY")) => q"new org.seasar.doma.jdbc.id.BuiltinIdentityIdGenerator()"
+                    case x => ReflectionUtil.abort(Message.DOMALA6026, entityType.typeSymbol.fullName, param.name, x)
+                  }
+              }.getOrElse(q"null")
+            } else {
+              q"null"
+            }
+            val isIdGenerate = confirmAnnotation(param.annotations, typeOf[domala.GeneratedValue])
+            val isVersion = confirmAnnotation(param.annotations, typeOf[domala.Version])
+            val isTenantId = confirmAnnotation(param.annotations, typeOf[domala.TenantId])
+
+            val propertyType = param.typeSignature
+            val column = param.annotations.collectFirst {
+              case a: Annotation if a.tree.tpe =:= typeOf[domala.Column] =>
+                c.Expr[Column](q"domala.Column(..${a.tree.children.tail})")
+            }.getOrElse(c.Expr[Column](q"domala.Column()"))
+            val nakedTpe = MacroTypeConverter.of(c).toType(propertyType) match {
+              case _: Types.Basic[_] => propertyType
+              case _: Types.Option => propertyType.typeArgs.head
+              case t if t.isHolder => propertyType
+              case Types.MacroEntityType => propertyType
+              case _ => ReflectionUtil.abort(Message.DOMALA4096, propertyType, entityType.typeSymbol.fullName, param.name)
+            }
+            EntityPropertyMeta(propertyType, nakedTpe, param.name.toString, isId, isIdGenerate, idGenerator, isVersion, isTenantId, column)
+          })
+
+          if(entityPropertyMetaList.count(_.isIdGenerate) > 1)
+            ReflectionUtil.abort(Message.DOMALA4037, entityType.typeSymbol.fullName, entityPropertyMetaList.filter(_.isIdGenerate).tail.head.name)
+          entityPropertyMetaList.find(_.isIdGenerate).foreach { p =>
+            if(entityPropertyMetaList.count(_.isId) > 1)
+              ReflectionUtil.abort(Message.DOMALA4036, entityType.typeSymbol.fullName)
+            if(!p.isId)
+              ReflectionUtil.abort(Message.DOMALA4033, entityType.typeSymbol.fullName, p.name)
+          }
+          if(entityPropertyMetaList.count(_.isVersion) > 1)
+            ReflectionUtil.abort(Message.DOMALA4024, entityType.typeSymbol.fullName, entityPropertyMetaList.filter(_.isVersion).tail.head.name)
+          if(entityPropertyMetaList.count(_.isTenantId) > 1)
+            ReflectionUtil.abort(Message.DOMALA4442, entityType.typeSymbol.fullName, entityPropertyMetaList.filter(_.isTenantId).tail.head.name)
 
           val generatePropertyDescMap = {
-            val propertyDescList = entityType.typeSymbol.asClass.primaryConstructor.asMethod.paramLists.flatten.map((param: Symbol) => {
-
-              def confirmAnnotation(annotations: Seq[Annotation], tpe: Type): Boolean = annotations.exists(_.tree.tpe =:= tpe)
-
-              val isId = confirmAnnotation(param.annotations, typeOf[domala.Id])
-              val idGenerator = if (isId) {
-                param.annotations.collectFirst {
-                  case a: Annotation if a.tree.tpe =:= typeOf[domala.GeneratedValue] =>
-                    a.tree.children.tail.head match {
-                      case Select(_, TermName("IDENTITY")) => q"new org.seasar.doma.jdbc.id.BuiltinIdentityIdGenerator()"
-                      case x => ReflectionUtil.abort(Message.DOMALA6026, entityType.typeSymbol.fullName, param.name, x)
-                    }
-                }.getOrElse(q"null")
-              } else {
-                q"null"
-              }
-              val isIdGenerate = confirmAnnotation(param.annotations, typeOf[domala.GeneratedValue])
-              val isVersion = confirmAnnotation(param.annotations, typeOf[domala.Version])
-              val isTenantId = confirmAnnotation(param.annotations, typeOf[domala.TenantId])
-
-
-              val propertyType = param.typeSignature
-              val column = param.annotations.collectFirst {
-                case a: Annotation if a.tree.tpe =:= typeOf[domala.Column] =>
-                  c.Expr[Column](q"domala.Column(..${a.tree.children.tail})")
-              }.getOrElse(c.Expr[Column](q"domala.Column()"))
-
-
-              val nakedTpe = MacroTypeConverter.of(c).toType(propertyType) match {
-                case _: Types.Basic[_] => propertyType
-                case _: Types.Option => propertyType.typeArgs.head
-                case t if t.isHolder => propertyType
-                case Types.MacroEntityType => propertyType
-                case _ => ReflectionUtil.abort(Message.DOMALA4096, propertyType, entityType.typeSymbol.fullName, param.name)
-              }
-              c.Expr[Map[String, EntityPropertyDesc[E, _]]] {
+            val propertyDescList = entityPropertyMetaList.map((propertyMeta: EntityPropertyMeta) => {
+               c.Expr[Map[String, EntityPropertyDesc[E, _]]] {
                 q"""
-                  domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyDesc[$propertyType, $entityType, $nakedTpe](
+                  domala.internal.macros.reflect.EntityReflectionMacros.generatePropertyDesc[${propertyMeta.propertyType}, $entityType, ${propertyMeta.nakedType}](
                   $entityClass,
-                  ${param.name.toString},
+                  ${propertyMeta.name},
                   null,
-                  $isId,
-                  $isIdGenerate,
-                  $idGenerator,
-                  $isVersion,
-                  $isTenantId,
-                  $column)
+                  ${propertyMeta.isId},
+                  ${propertyMeta.isIdGenerate},
+                  ${propertyMeta.idGenerator},
+                  ${propertyMeta.isVersion},
+                  ${propertyMeta.isTenantId},
+                  ${propertyMeta.column})
                 """
               }
             })
@@ -292,7 +324,9 @@ object EntityReflectionMacros {
 
                   override def getNamingType: NamingType = null
 
-                  override def getTenantIdPropertyType: TenantIdPropertyDesc[_ >: $entityType, $entityType, _, _] = null
+                  override def getTenantIdPropertyType: TenantIdPropertyDesc[_ >: $entityType, $entityType, _, _] = propertyDescMap.values.collectFirst {
+                    case p: TenantIdPropertyDesc[_, _, _, _] => p
+                  }.orNull.asInstanceOf[TenantIdPropertyDesc[_ >: $entityType, $entityType, _, _]]
 
                   override def getVersionPropertyType: VersionPropertyDesc[_ >: $entityType, $entityType, _ <: Number, _] = propertyDescMap.values.collectFirst {
                     case p: VersionPropertyDesc[_, _, _, _] => p
