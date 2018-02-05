@@ -18,7 +18,7 @@ object EntityManagerMacros {
     c.Expr[Result[ENTITY]] {
       q"""{
         val __desc = domala.jdbc.EntityDescProvider.get[$tpe]
-        val __method = domala.jdbc.EntityManager.$method
+        val __method = domala.jdbc.EntityManagerMethods.$method
         $config.getJdbcLogger().logDaoMethodEntering("domala.jdbc.EntityManager", $methodNameLiteral, $entity)
         try {
           if ($entity == null) {
@@ -80,7 +80,7 @@ object EntityManagerMacros {
       q"""{
         import scala.collection.JavaConverters._
         val __desc = domala.jdbc.EntityDescProvider.get[$tpe]
-        val __method = domala.jdbc.EntityManager.$method
+        val __method = domala.jdbc.EntityManagerMethods.$method
         $config.getJdbcLogger().logDaoMethodEntering("domala.jdbc.EntityManager", $methodNameLiteral, $entities)
         try {
           if ($entities == null) {
