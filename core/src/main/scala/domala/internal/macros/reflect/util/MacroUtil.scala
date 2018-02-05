@@ -45,18 +45,24 @@ object MacroUtil {
 
   def generateImport[C <: blackbox.Context, T: c.WeakTypeTag](c: C)(tpe: c.universe.Type): Option[c.universe.Import] = {
     import c.universe._
-    def getOwner(s: Symbol): Symbol = {
-      if (s.isPackage) s
-      else getOwner(s.owner)
+    def getOwnerPackageList(s: Symbol): List[String] = {
+      if (s.isPackage)
+        s.fullName.split('.').toList
+      else{
+        // for REPL
+        if(s.owner.name.toString == "$iw")
+          s.owner.fullName.split('.').toList
+        else
+          getOwnerPackageList(s.owner)
+      }
     }
     val fullName = tpe.typeSymbol.fullName.split('.').toList
     if(fullName.length <= 1) None
     else {
-      val owner = getOwner(c.internal.enclosingOwner)
-      val ownerPackage = owner.fullName.split('.').toList
-      val packageNameList = getOwner(tpe.typeSymbol).fullName.split('.').toList
+      val ownerPackageList = getOwnerPackageList(c.internal.enclosingOwner)
+      val packageNameList = getOwnerPackageList(tpe.typeSymbol)
       val className = TermName(fullName(packageNameList.size))
-      if(packageNameList == ownerPackage) None
+      if(packageNameList == ownerPackageList) None
       else {
         val packageNameIterator = packageNameList.toIterator
         val top: Tree = Ident(TermName(packageNameIterator.next))
