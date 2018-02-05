@@ -15,6 +15,10 @@ Domala is a database access library for Scala. This wraps [Doma2](https://github
 
 ### Setup build
 
+#### when use annotation macro
+
+All functions are available under the setting below.
+
 ```scala
 lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(
   addCompilerPlugin("org.scalameta" % "paradise" % "3.0.0-M10" cross CrossVersion.full),
@@ -27,14 +31,31 @@ lazy val yourProject = project.settings(
   // required to validate SQL files at compile time
   compile in Compile := ((compile in Compile) dependsOn (copyResources in Compile)).value,
   libraryDependencies ++= Seq(
-    "com.github.domala" %% "domala" % "0.1.0-beta.8",
+    "com.github.domala" %% "domala" % "0.1.0-beta.9",
+    "com.github.domala" %% "domala-paradise" % "0.1.0-beta.9" % Provided,
     "org.scalameta" %% "scalameta" % "1.8.0" % Provided,    
     // ... your other library dependencies
   ),
   // ... your other project settings
 )
-
 ```
+
+#### when not use annotation macro
+
+`@Dao`, `@Entity`, `@Holder` can not be used under the setting below.
+```scala
+
+lazy val yourProject = project.settings(
+  libraryDependencies ++= Seq(
+    "com.github.domala" %% "domala" % "0.1.0-beta.9"
+    // ... your other library dependencies
+  ),
+  // ... your other project settings
+)
+```
+
+
+
 
 ### Example
 
@@ -51,12 +72,13 @@ case class Name(value: String)
 Partial class to embed in entity
 
 ```scala
-@Embeddable
 case class Address(city: String, street: String)
 ```
 
 #### Entity
 Classes whose instances can be stored in a database
+
+`@Entity` can be omitted, but [some functions are restricted]((./notes/specification.md#entity-class)).
 
 ```scala
 @Entity
@@ -199,12 +221,16 @@ select"select * from emp order by id".getMapList
 select"select id from emp".getList[Int]
 // => List(1, 2)
 
-// If the `Entity` class has already been compiled
-// then can the following 
-// case class ID[E] (value: Int) extends AnyVal
-// @Entity case class Emp(id: ID[Emp], name: String) 
+case class ID[E] (value: Int) extends AnyVal
+case class Emp(id: ID[Emp], name: String) 
 select"select * from emp order by id".getList[Emp]
-// => List(Emp(ID(1), "Scott"), Emp(ID(2), "Allen"))
+// => List(Emp(ID(1),Scott), Emp(ID(2),Allen))
+
+// EntityManager is assemble and execute SQL automatically from a entity type
+jdbc.EntityManager.insert(Emp(ID(3), "Smith"))
+
+select"select * from emp order by id".getList[Emp]
+// => List(Emp(ID(1),Scott), Emp(ID(2),Allen), Emp(ID(3),Smith))
 
 ```
 
