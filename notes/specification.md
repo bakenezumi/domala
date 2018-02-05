@@ -257,12 +257,11 @@ If the element of the `Holder` is `Numeric`, the `Holder` can also be used as `N
 
 `Embeddable` is that groups database columns and result sets of queries into multiple columns.
 
-`Embeddable` can be defined by to annote `@Embeddable` to `case class`.
+`Embeddable` can be defined by `case class`.
 
 ### Example of definition
 
   ```scala
-  @Embeddalbe
   case class Address(
     city: String,
     street: String,
@@ -300,6 +299,8 @@ An `Entity` corresponds to a database table or a query result set.
 
 `Entity` can be defined by to annote `@Entity` to `case class`.
 
+`@Entity` can be omitted, but some functions are restricted.
+
 ### Example of definition
 
   ```scala
@@ -323,6 +324,13 @@ The following functions of Doma can not be used by Domala.
   - [`@Transient`](http://doma.readthedocs.io/ja/2.19.0/entity/#id16)
   - [`@OriginalStates`](http://doma.readthedocs.io/ja/2.19.0/entity/#id17)
   - Definition of an `Entity` that inherits an `Entity` class
+
+When @Entity annotation is omitted, the following functions can not be used.
+  - Using `EntityListener`
+  - Individual `NamingType` changes
+  - Specify `GenerationType.SEQUENCE` with `GeneratedValue` annotation
+  - Specify `GenerationType.TABLE` with `GeneratedValue` annotation
+
 
 ### Further specification of Entity
 [See to the Doma guide.](http://doma.readthedocs.io/ja/2.19.0/entity/)
