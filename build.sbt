@@ -2,7 +2,7 @@ import Dependencies._
 import sbt.Keys.publishArtifact
 
 lazy val _scalaVersion = "2.12.4"
-lazy val _version = "0.1.0-beta.9-SNAPSHOT"
+lazy val _version = "0.1.0-beta.9"
 
 lazy val domaVersion = "2.19.1"
 lazy val h2Version = "1.4.196"
@@ -21,7 +21,11 @@ lazy val baseSettings = Seq(
       Opts.resolver.sonatypeSnapshots
     else
       Opts.resolver.sonatypeStaging
-    )
+    ),
+  licenses := _licenses,
+  homepage := _homepage,
+  scmInfo := _scmInfo,
+  developers := _developers
 )
 
 lazy val root = (project in file(".")).settings(
@@ -82,17 +86,17 @@ lazy val example = project.settings (
   )
 ) dependsOn paradise
 
-licenses := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt"))
-homepage := Some(url("https://github.com/bakenezumi"))
+lazy val _licenses = Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt"))
+lazy val _homepage = Some(url("https://github.com/bakenezumi"))
 
-scmInfo := Some(
+lazy val _scmInfo = Some(
   ScmInfo(
     url("https://github.com/bakenezumi/domala"),
     "scm:git@github.com:/bakenezumi/domala.git"
   )
 )
 
-developers := List(
+lazy val _developers = List(
   Developer(
     id    = "bakenezumi",
     name  = "Nobuhiko Hosonishi",
