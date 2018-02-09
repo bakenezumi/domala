@@ -1,4 +1,4 @@
-package domala.tests.entity.simple
+package domala.tests.entity.noanno
 
 import domala._
 import domala.jdbc.{BatchResult, Config}
@@ -11,14 +11,14 @@ class EmbeddedJoinTestSuite extends FunSuite with BeforeAndAfter {
   val empDao: EmpDao = EmpDao.impl
 
   val departments = Seq(
-    Dept(ID(1), Name("Salary")),
-    Dept(ID(2), Name("Marketing"))
+    Dept(ID.noAssigned, Name("Salary")),
+    Dept(ID.noAssigned, Name("Marketing"))
   )
 
   val employees = Seq(
-    EmpEntity(ID(1), Name("foo"), ID(2)),
-    EmpEntity(ID(2), Name("bar"), ID(1)),
-    EmpEntity(ID(3), Name("baz"), ID(2))
+    EmpEntity(ID.noAssigned, Name("foo"), ID(2)),
+    EmpEntity(ID.noAssigned, Name("bar"), ID(1)),
+    EmpEntity(ID.noAssigned, Name("baz"), ID(2))
   )
 
   before {
@@ -35,15 +35,17 @@ class EmbeddedJoinTestSuite extends FunSuite with BeforeAndAfter {
 
   test("select all") {
     Required {
-      deptDao.insert(departments)
-      empDao.insert(employees)
-      assert(empDao.selectAll() == employees.map(e => Emp(e.id, e.name, departments.find(_.id == e.deptId).get)))
+      val BatchResult(_, insertedDepartments) = deptDao.insert(departments)
+      val BatchResult(_, insertedEmployees) = empDao.insert(employees)
+      assert(empDao.selectAll() == insertedEmployees.map(e => Emp(e.id, e.name, insertedDepartments.find(_.id == e.deptId).get)))
     }
   }
 
 }
 
 case class Dept(
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   id: ID[Dept],
   name: Name
 )
@@ -54,8 +56,11 @@ case class Emp(
   dept: Dept
 )
 
+
 @Table(name = "Emp")
 case class EmpEntity(
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   id: ID[Emp],
   name: Name,
   deptId: ID[Dept]

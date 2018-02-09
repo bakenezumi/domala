@@ -1,4 +1,4 @@
-package domala.tests.entity.simple
+package domala.tests.entity.noanno
 
 import java.time.{LocalDate, LocalDateTime}
 
@@ -8,15 +8,15 @@ import domala.tests.H2TestConfigTemplate
 import org.scalatest.{BeforeAndAfter, FunSuite}
 import org.seasar.doma.BatchInsert
 
-class RuntimeEntityTestSuite extends FunSuite with BeforeAndAfter {
-  implicit val config: Config = new H2TestConfigTemplate("runtime-entity"){}
-  val dao: RuntimeEntityDao = RuntimeEntityDao.impl
+class EmbeddedTestSuite extends FunSuite with BeforeAndAfter {
+  implicit val config: Config = new H2TestConfigTemplate("runtime-embedded"){}
+  val dao: RuntimeEmbeddedDao = RuntimeEmbeddedDao.impl
 
-  val entity = RuntimeEntity(Some(ID(1)), Name("foo"), MyTime(LocalDateTime.of(2017, 1, 12, 12, 59, 59, 999999999)), 123.456, BigDecimal(987.654), LocalDate.of(2018, 1, 12))
+  val entity = Embedded(Some(ID(1)), Name("foo"), Times(Some(MyTime(LocalDateTime.of(2017, 1, 12, 12, 59, 59, 999999999))), LocalDate.of(2018, 1, 12)), Values(123.456, Some(BigDecimal(987.654))))
 
   val entities = Seq(
-    RuntimeEntity(Some(ID(2)), Name("bar"), MyTime(LocalDateTime.of(2017, 1, 13,  0,  0, 0, 0)), 234.567, BigDecimal(876.543), LocalDate.of(2018, 1, 13)),
-    RuntimeEntity(Some(ID(3)), Name("baz"), MyTime(LocalDateTime.of(2017, 1, 13,  0,  0, 0, 1)), 345.678, BigDecimal(765.432), LocalDate.of(2018, 1, 13))
+    Embedded(Some(ID(2)), Name("bar"), Times(None, LocalDate.of(2018, 1, 13)), Values(234.567, Some(BigDecimal(876.543)))),
+    Embedded(Some(ID(3)), Name("baz"), Times(Some(MyTime(LocalDateTime.of(2017, 1, 13,  0,  0, 0, 1))), LocalDate.of(2018, 1, 13)), Values(345.678, Some(BigDecimal(765.432))))
   )
 
   before {
@@ -68,7 +68,7 @@ class RuntimeEntityTestSuite extends FunSuite with BeforeAndAfter {
       val Result(cnt, inserted) = dao.insertWithSql(entity)
       assert(cnt == 1)
       assert(inserted == entity)
-      assert(dao.selectAll() == inserted.copy(value2 = null) :: Nil)
+      assert(dao.selectAll() == inserted.copy(values = inserted.values.copy(value2 = None)) :: Nil)
     }
   }
 
@@ -99,17 +99,17 @@ class RuntimeEntityTestSuite extends FunSuite with BeforeAndAfter {
       val BatchResult(cnt, inserted) = dao.batchInsertWithSql(entities)
       assert(cnt sameElements Array(1, 1))
       assert(inserted == entities)
-      assert(dao.selectAll() == entities.map(_.copy(value2 = null)))
+      assert(dao.selectAll() == entities.map(e => e.copy(values = e.values.copy(value2 = None))))
     }
   }
 
   test("batch update with sql") {
     Required {
       dao.batchInsert(entities)
-      val BatchResult(cnt, updated) = dao.batchUpdateWithSql(entities.map(e => e.copy(value2 = e.value)))
+      val BatchResult(cnt, updated) = dao.batchUpdateWithSql(entities.map(e => e.copy(values = e.values)))
       assert(cnt sameElements Array(1, 1))
-      assert(updated == entities.map(e => e.copy(value2 = e.value)))
-      assert(dao.selectAll() == entities.map(e => e.copy(value2 = e.value)))
+      assert(updated == entities.map(e => e.copy(values = e.values)))
+      assert(dao.selectAll() == entities.map(e => e.copy(values = e.values)))
     }
   }
 
@@ -125,31 +125,31 @@ class RuntimeEntityTestSuite extends FunSuite with BeforeAndAfter {
 
   test("sql interpolation") {
     Required {
-      val insert = (entity: RuntimeEntity) =>
+      val insert = (entity: Embedded) =>
         update"""
         insert into runtime_entity (id, name, time, value, value2, date) values(
-        ${entity.id}, ${entity.name}, ${entity.time}, ${entity.value}, ${entity.value2}, ${entity.date},
+        ${entity.id}, ${entity.name}, ${entity.times.time}, ${entity.values.value}, ${entity.values.value2}, ${entity.times.date},
         )"""
       insert(entity).execute()
       entities.foreach(insert andThen(_.execute()))
 
-      val update = (id: ID[RuntimeEntity], name: Name) =>
+      val update = (id: ID[Embedded], name: Name) =>
         update"""
         update runtime_entity set name = $name where id = $id
         """
       update(ID(2), Name("hoge")).execute()
-      val selectByIds = (ids: Seq[ID[RuntimeEntity]]) =>
+      val selectByIds = (ids: Seq[ID[Embedded]]) =>
         select"""
           select /*%expand*/* from runtime_entity where id in ($ids)
         """
-      assert(selectByIds(Seq(ID(1), ID(2), ID(3))).getList[RuntimeEntity] == entity +: entities.head.copy(name = Name("hoge")) +: entities.drop(1))
+      assert(selectByIds(Seq(ID(1), ID(2), ID(3))).getList[Embedded] == entity +: entities.head.copy(name = Name("hoge")) +: entities.drop(1))
 
-      val delete = (ids: Seq[ID[RuntimeEntity]]) =>
+      val delete = (ids: Seq[ID[Embedded]]) =>
         update"""
         delete runtime_entity where id in ($ids)
         """
       delete(Seq(ID(2))).execute()
-      assert(selectByIds(Seq(ID(1), ID(2), ID(3))).getList[RuntimeEntity] == entity +: entities.drop(1))
+      assert(selectByIds(Seq(ID(1), ID(2), ID(3))).getList[Embedded] == entity +: entities.drop(1))
 
     }
 
@@ -157,23 +157,28 @@ class RuntimeEntityTestSuite extends FunSuite with BeforeAndAfter {
 
 }
 
-
-case class ID[E](v: Long) extends AnyVal
-case class Name(v: String) extends AnyVal
-case class MyTime(v: LocalDateTime) extends AnyVal
-
-case class RuntimeEntity (
+@Table("runtime_entity")
+case class Embedded(
   @Id
-  id: Option[ID[RuntimeEntity]],
+  id: Option[ID[Embedded]],
   name: Name,
-  time: MyTime,
-  value: Double,
-  value2: BigDecimal,
-  date: LocalDate
+  times: Times,
+  values: Values
 )
 
+case class Times(
+  time: Option[MyTime],
+  date: LocalDate
+)
+case class Values(
+  value: Double,
+  value2: Option[BigDecimal]
+)
+
+
+
 @Dao
-trait RuntimeEntityDao {
+trait RuntimeEmbeddedDao {
   @Script(sql =
     """
 create table runtime_entity(
@@ -191,35 +196,35 @@ create table runtime_entity(
   def drop()
 
   @Select("select * from runtime_entity order by id")
-  def selectAll(): Seq[RuntimeEntity]
+  def selectAll(): Seq[Embedded]
 
   @Insert
-  def insert(entity: RuntimeEntity): Result[RuntimeEntity]
+  def insert(entity: Embedded): Result[Embedded]
 
   @Update
-  def update(entity: RuntimeEntity): Result[RuntimeEntity]
+  def update(entity: Embedded): Result[Embedded]
 
   @Delete
-  def delete(entity: RuntimeEntity): Result[RuntimeEntity]
+  def delete(entity: Embedded): Result[Embedded]
 
   @Insert(sql = """
 insert into runtime_entity (id, name, time, value, date)
 values(
   /* entity.id */0,
   /* entity.name */'foo',
-  /* entity.time */'2018-01-01 23:59:59.999999',
-  /* entity.value */0.0,
-  /* entity.date */'2018-01-01'
+  /* entity.times.time */'2018-01-01 23:59:59.999999',
+  /* entity.values.value */0.0,
+  /* entity.times.date */'2018-01-01'
 )
   """)
-  def insertWithSql(entity: RuntimeEntity): Result[RuntimeEntity]
+  def insertWithSql(entity: Embedded): Result[Embedded]
 
   @Update(sql = """
 update runtime_entity
 set /*%populate*/id
 where name = /* name */'hoge'
   """)
-  def updateWithSql(entity: RuntimeEntity, name: Name): Result[RuntimeEntity]
+  def updateWithSql(entity: Embedded, name: Name): Result[Embedded]
 
   @Update(sql = """
 delete from runtime_entity
@@ -228,7 +233,7 @@ where name = /* name */'hoge'
   def deleteWithSql(name: Name): Int
 
   @BatchInsert
-  def batchInsert(entity: Seq[RuntimeEntity]): BatchResult[RuntimeEntity]
+  def batchInsert(entity: Seq[Embedded]): BatchResult[Embedded]
 
 
   @BatchInsert("""
@@ -236,12 +241,12 @@ insert into runtime_entity (id, name, time, value, date)
 values(
   /* entity.id */0,
   /* entity.name */'foo',
-  /* entity.time */'2018-01-01 23:59:59.999999',
-  /* entity.value */0.0,
-  /* entity.date */'2018-01-01'
+  /* entity.times.time */'2018-01-01 23:59:59.999999',
+  /* entity.values.value */0.0,
+  /* entity.times.date */'2018-01-01'
 )
   """)
-  def batchInsertWithSql(entity: Seq[RuntimeEntity]): BatchResult[RuntimeEntity]
+  def batchInsertWithSql(entity: Seq[Embedded]): BatchResult[Embedded]
 
 
   @BatchUpdate(sql = """
@@ -249,12 +254,12 @@ update runtime_entity
 set /*%populate*/id
 where id = /* entity.id */0
   """)
-  def batchUpdateWithSql(entity: Seq[RuntimeEntity]): BatchResult[RuntimeEntity]
+  def batchUpdateWithSql(entity: Seq[Embedded]): BatchResult[Embedded]
 
   @BatchDelete(sql = """
 delete runtime_entity
 where id = /* entity.id */0
   """)
-  def batchDeleteWithSql(entity: Seq[RuntimeEntity]): BatchResult[RuntimeEntity]
+  def batchDeleteWithSql(entity: Seq[Embedded]): BatchResult[Embedded]
 
 }

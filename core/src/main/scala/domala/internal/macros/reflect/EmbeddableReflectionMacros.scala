@@ -73,17 +73,6 @@ object EmbeddableReflectionMacros {
 
     val propertyDescList = embeddableType.typeSymbol.asClass.primaryConstructor.asMethod.paramLists.flatten.map((param: Symbol) => {
 
-      param.annotations.collect {
-        case a: Annotation if a.tree.tpe =:= typeOf[domala.Id] =>
-          ReflectionUtil.abort(Message.DOMALA4289, embeddableType.typeSymbol.fullName.toString, param.name.toString)
-        case a: Annotation if a.tree.tpe =:= typeOf[domala.GeneratedValue] =>
-          ReflectionUtil.abort(Message.DOMALA4291, embeddableType.typeSymbol.fullName.toString, param.name.toString)
-        case a: Annotation if a.tree.tpe =:= typeOf[domala.Version] =>
-          ReflectionUtil.abort(Message.DOMALA4290, embeddableType.typeSymbol.fullName.toString, param.name.toString)
-        case a: Annotation if a.tree.tpe =:= typeOf[domala.TenantId] =>
-          ReflectionUtil.abort(Message.DOMALA4443, embeddableType.typeSymbol.fullName.toString, param.name.toString)
-      }
-
       val propertyType = param.typeSignature
       val column = param.annotations.collectFirst {
         case a: Annotation if a.tree.tpe =:= typeOf[domala.Column] =>

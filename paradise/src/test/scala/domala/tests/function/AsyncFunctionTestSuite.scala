@@ -75,10 +75,10 @@ class AsyncFunctionTestSuite extends AsyncFunSuite with BeforeAndAfter {
         }
       next(0)
     }
-    val selectFunction = dao.selectAll(_.map(_.salary).toList) _
+    val selectFunction: SelectOptions => List[Jpy] = dao.selectAll(_.map(_.salary).toList)
     val partitioningFunction = partition[Jpy, List[Jpy]](selectFunction)(33) // needs type parameter
-    Future(partitioningFunction).map{ x =>
-      assert(x.map{_.sum}.toList == Seq(Jpy(561), Jpy(1650), Jpy(2739), Jpy(100))) // (1 to 33).sum, (34 to 66).sum, (67 to 99).sum, 100,
+    Future(partitioningFunction).map { x =>
+      assert(x.map {_.sum}.toList == Seq(Jpy(561), Jpy(1650), Jpy(2739), Jpy(100))) // (1 to 33).sum, (34 to 66).sum, (67 to 99).sum, 100,
     }
   }
 
@@ -93,7 +93,7 @@ class AsyncFunctionTestSuite extends AsyncFunSuite with BeforeAndAfter {
     println("connection open!")
     import java.sql.DriverManager
     // noinspection SpellCheckingInspection
-    val connection = DriverManager.getConnection("jdbc:h2:mem:asyncfnctest3;DB_CLOSE_DELAY=-1", "sa", "")
+    val connection = DriverManager.getConnection("jdbc:h2:mem:async_function_test3;DB_CLOSE_DELAY=-1", "sa", "")
     connection.setAutoCommit(false)
     val dao: FunctionDao = FunctionDao.impl(connection)
 
@@ -111,10 +111,10 @@ class AsyncFunctionTestSuite extends AsyncFunSuite with BeforeAndAfter {
       }
       next(0)
     }
-    val selectFunction = dao.selectAll(_.map(_.salary).toList) _
+    val selectFunction: SelectOptions => List[Jpy] = dao.selectAll(_.map(_.salary).toList)
     val partitioningFunction = partition[Jpy, List[Jpy]](selectFunction)(33) // needs type parameter
 
-    val assertion = Future(partitioningFunction).map{ x =>
+    val assertion = Future(partitioningFunction).map { x =>
       assert(x.map(_.sum).toList == Seq(Jpy(561), Jpy(1650), Jpy(2739), Jpy(100))) // (1 to 33).sum, (34 to 66).sum, (67 to 99).sum, 100,
     }
 
@@ -158,7 +158,7 @@ class AsyncFunctionTestSuite extends AsyncFunSuite with BeforeAndAfter {
       }
       par
     }
-    val selectFunction = dao.selectAllEager(_.map(_.salary).toList) _
+    val selectFunction: SelectOptions => List[Jpy] = dao.selectAllEager(_.map(_.salary).toList)
     val partitioningFunction = parallelPartition[Jpy, List[Jpy]](selectFunction)(8) // needs type parameter
 
     partitioningFunction.map { x =>
@@ -192,10 +192,10 @@ class AsyncFunctionTestSuite extends AsyncFunSuite with BeforeAndAfter {
       nextBuffer(0)
     }
 
-    val selectFunction = dao.selectAllEager(_.map(_.salary).toList) _
+    val selectFunction: SelectOptions => List[Jpy] = dao.selectAllEager(_.map(_.salary).toList)
     val partitioningFunction = bufferedPartition[Jpy, List[Jpy]](selectFunction)(8) // needs type parameter
-    Future(Required(partitioningFunction)).map{ x =>
-      assert(x.map{_.sum}.sum == Jpy(5050))
+    Future(Required(partitioningFunction)).map { x =>
+      assert(x.map(_.sum).sum == Jpy(5050))
     }
   }
 
