@@ -1,4 +1,4 @@
-package domala.tests
+package domala.tests.models
 
 import domala._
 import domala.jdbc.{BatchResult, Result}
@@ -13,7 +13,7 @@ trait PersonSqlFileDao {
   def drop()
 
   @Select
-  def selectById(id: Int): Option[Person]
+  def selectById(id: ID[Person]): Option[Person]
 
   @Select("select count(1) from person")
   def selectCount: Int
@@ -22,7 +22,7 @@ trait PersonSqlFileDao {
   def selectAll: Seq[Person]
 
   @Select
-  def selectWithDepartmentEmbeddedById(id: Int): Option[PersonDepartmentEmbedded]
+  def selectWithDepartmentEmbeddedById(id: ID[Person]): Option[PersonDepartmentEmbedded]
 
   @Select(strategy = SelectType.ITERATOR)
   def selectAllIterator(f: Iterator[Person] => Int): Int
@@ -31,7 +31,7 @@ trait PersonSqlFileDao {
   def inSelect(ids: List[Int]): Seq[Person]
 
   @Select
-  def literalSelect(id: Int): Option[Person]
+  def literalSelect(id: ID[Person]): Option[Person]
 
   @Select
   def embeddedSelect(orderBy: String): Seq[Person]

@@ -2,7 +2,7 @@ package domala.tests.dao
 
 import domala._
 import domala.jdbc.{BatchResult, Config, Result}
-import domala.tests.{ID, Person, PersonDao}
+import domala.tests.models.{ID, Person, PersonDao}
 import org.scalatest.{BeforeAndAfter, FunSuite}
 import org.seasar.doma.jdbc.Naming
 import org.seasar.doma.jdbc.dialect.H2Dialect
@@ -16,6 +16,8 @@ class ModifyTestSuite extends FunSuite with BeforeAndAfter {
   before {
     Required {
       personDao.create()
+      personDao.registerInitialDepartment()
+      personDao.registerInitialPerson()
     }
   }
 

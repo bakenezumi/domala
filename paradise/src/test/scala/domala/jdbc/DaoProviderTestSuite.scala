@@ -3,7 +3,8 @@ package domala.jdbc
 import java.sql.DriverManager
 
 import domala.Required
-import domala.tests.{H2TestConfigTemplate, Person, PersonDao}
+import domala.tests.H2TestConfigTemplate
+import domala.tests.models.PersonDao
 import org.scalatest.FunSuite
 import org.seasar.doma.internal.jdbc.dao.DomalaAbstractDaoHelper
 

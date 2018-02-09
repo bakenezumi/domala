@@ -1,6 +1,6 @@
-package domala.tests
+package domala.tests.models
 
 case class Department(
   departmentId: ID[Department],
-  departmentName: String
+  departmentName: Name
 )

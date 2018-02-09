@@ -1,4 +1,4 @@
-package domala.jdbc.mock
+package domala.jdbc.models
 
 
 trait PersonDao {

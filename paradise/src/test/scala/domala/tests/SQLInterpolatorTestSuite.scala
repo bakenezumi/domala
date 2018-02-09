@@ -2,6 +2,7 @@ package domala.tests
 
 import domala._
 import domala.jdbc.Config
+import domala.tests.models._
 import org.scalatest.{BeforeAndAfter, FunSuite}
 import org.seasar.doma.MapKeyNamingType
 import org.seasar.doma.jdbc.JdbcException
@@ -12,14 +13,14 @@ class SQLInterpolatorTestSuite extends FunSuite with BeforeAndAfter {
   val singleResultStatement = select"select * from person where id = 1"
   val listResultStatement = select"select * from person"
 
-  val person1 = Person(Some(ID(1)),
+  val person1 = Person(ID(1),
     Some(Name("SMITH")),
     Some(10),
     Address("Tokyo", "Yaesu"),
     Some(2),
     Some(0))
   val person2 = Person(
-    Some(ID(2)),
+    ID(2),
     Some(Name("ALLEN")),
     Some(20),
     Address("Kyoto", "Karasuma"),
@@ -28,7 +29,11 @@ class SQLInterpolatorTestSuite extends FunSuite with BeforeAndAfter {
 
 
   before {
-    Required(dao.create())
+    Required {
+      dao.create()
+      dao.registerInitialDepartment()
+      dao.registerInitialPerson()
+    }
   }
 
   after {
@@ -100,7 +105,7 @@ class SQLInterpolatorTestSuite extends FunSuite with BeforeAndAfter {
   test("iterator entity select") {
     val statement = (ids: List[ID[Person]]) => select"select * from person where id in ($ids)"
     Required {
-      assert(statement(List(ID(1), ID(2))).apply((it: Iterator[Person]) => it.flatMap(_.id).sum) == ID(3))
+      assert(statement(List(ID(1), ID(2))).apply((it: Iterator[Person]) => it.map(_.id).sum) == ID(3))
       // `apply` is can be omitted
       assert(statement(List(ID(2))) { (it: Iterator[Person]) => it.flatMap(_.age).sum } == 20)
       assert(statement(Nil) { (it: Iterator[Person]) => it.flatMap(_.age).sum } == 0)

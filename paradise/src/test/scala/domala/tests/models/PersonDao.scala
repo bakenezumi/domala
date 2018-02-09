@@ -1,4 +1,4 @@
-package domala.tests
+package domala.tests.models
 
 import domala._
 import domala.jdbc.{BatchResult, Config, Result, SelectOptions}
@@ -21,12 +21,21 @@ create table person(
     version int not null,
     constraint fk_department_id foreign key(department_id) references department(id)
 );
-insert into department (id, name, version) values(1, 'ACCOUNTING', 0);
-insert into department (id, name, version) values(2, 'SALES', 0);
-insert into person (id, name, age, city, street, department_id, version) values(1, 'SMITH', 10, 'Tokyo', 'Yaesu', 2, 0);
-insert into person (id, name, age, city, street, department_id, version) values(2, 'ALLEN', 20, 'Kyoto', 'Karasuma', 1, 0);
   """)
   def create(): Unit
+
+  @Script(sql = """
+insert into department (name, version) values('ACCOUNTING', 0);
+insert into department (name, version) values('SALES', 0);
+  """)
+  def registerInitialDepartment(): Unit
+
+  @Script(sql = """
+insert into person (name, age, city, street, department_id, version) values('SMITH', 10, 'Tokyo', 'Yaesu', 2, 0);
+insert into person (name, age, city, street, department_id, version) values('ALLEN', 20, 'Kyoto', 'Karasuma', 1, 0);
+  """)
+  def registerInitialPerson(): Unit
+
 
   @Script(sql = """
 drop table person;
@@ -39,7 +48,7 @@ select *
 from person
 where id = /*id*/0
   """)
-  def selectById(id: Int): Option[Person]
+  def selectById(id: ID[Person]): Option[Person]
 
   @Select(sql = """
 select count(*)
@@ -59,7 +68,7 @@ select *
 from person
 where id = /*id*/0
   """)
-  def selectByIdNullable(id: Int): Person
+  def selectByIdNullable(id: ID[Person]): Person
 
   @Select(sql = """
 select
@@ -75,7 +84,7 @@ from
 where
     p.id = /*id*/0
   """)
-  def selectWithDepartmentById(id: Int): Option[PersonDepartment]
+  def selectWithDepartmentById(id: ID[Person]): Option[PersonDepartment]
 
   @Select(sql = """
 select
@@ -91,7 +100,7 @@ from
 where
     p.id = /*id*/0
   """)
-  def selectWithDepartmentEmbeddedById(id: Int): Option[PersonDepartmentEmbedded]
+  def selectWithDepartmentEmbeddedById(id: ID[Person]): Option[PersonDepartmentEmbedded]
 
   @Select(sql = """
 select *
@@ -111,7 +120,7 @@ from person
 where
     id = /*id*/0
   """, strategy = SelectType.STREAM)
-  def selectByIdStream(id: Int)(f: Stream[Person] => Option[Address]): Option[Address]
+  def selectByIdStream(id: ID[Person])(f: Stream[Person] => Option[Address]): Option[Address]
 
   @Select(sql = """
 select *
@@ -119,7 +128,7 @@ from person
 where
     id = /*id*/0
   """, strategy = SelectType.ITERATOR)
-  def selectByIdIterator(id: Int)(f: Iterator[Person] => Option[Address]): Option[Address]
+  def selectByIdIterator(id: ID[Person])(f: Iterator[Person] => Option[Address]): Option[Address]
 
   @Select(sql = """
 select *
@@ -134,7 +143,7 @@ from person
 where
     id = /*id*/0
   """)
-  def selectByIdMap(id: Int): Map[String, Any]
+  def selectByIdMap(id: ID[Person]): Map[String, Any]
 
   @Select(sql = """
 select *
@@ -142,7 +151,7 @@ from person
 where
     id = /*id*/0
   """)
-  def selectByIdOptionMap(id: Int): Option[Map[String, Any]]
+  def selectByIdOptionMap(id: ID[Person]): Option[Map[String, Any]]
 
   @Select(sql = """
 select *
@@ -164,7 +173,7 @@ from person
 where
     id = /*id*/0
   """)
-  def selectNameById(id: Int): Option[Name]
+  def selectNameById(id: ID[Person]): Option[Name]
 
   @Select(sql = """
 select name
@@ -172,7 +181,7 @@ from person
 where
     id = /*id*/0
   """)
-  def selectNameByIdNullable(id: Int): Name
+  def selectNameByIdNullable(id: ID[Person]): Name
 
   @Select(sql = """
 select name
@@ -195,14 +204,14 @@ order by id
   """, strategy = SelectType.ITERATOR)
   def selectNameIterator(f: Iterator[Name] => Int): Int
 
-  def selectByIDBuilder(id: Int)(implicit config: Config): String = {
+  def selectByIDBuilder(id: ID[Person])(implicit config: Config): String = {
     import org.seasar.doma.jdbc.builder.SelectBuilder
     val builder = SelectBuilder.newInstance(config)
     builder.sql("select")
     builder.sql("name")
     builder.sql("from person")
     builder.sql("where")
-    builder.sql("id =").param(classOf[Int], id)
+    builder.sql("id =").param(classOf[Int], id.value)
     builder.getScalarSingleResult(classOf[String])
   }
 

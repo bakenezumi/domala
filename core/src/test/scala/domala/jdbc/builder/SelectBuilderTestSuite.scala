@@ -3,7 +3,7 @@ package domala.jdbc.builder
 import domala._
 import domala.jdbc.dialect.H2Dialect
 import domala.jdbc.entity.EntityDesc
-import domala.jdbc.mock._
+import domala.jdbc.models._
 import domala.jdbc.tx.LocalTransactionDataSource
 import domala.jdbc.{Config, EntityDescProvider, LocalTransactionConfig, Naming}
 import org.scalatest.{BeforeAndAfter, FunSuite}

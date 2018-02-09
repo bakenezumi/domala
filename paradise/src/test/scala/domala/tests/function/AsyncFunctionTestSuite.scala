@@ -2,7 +2,7 @@ package domala.tests.function
 
 import domala._
 import domala.jdbc.{BatchResult, Config, SelectOptions}
-import domala.tests.{ID, Name}
+import domala.tests.models.{ID, Name}
 import org.scalatest.{AsyncFunSuite, BeforeAndAfter}
 
 import scala.annotation.tailrec

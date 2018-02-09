@@ -6,7 +6,6 @@ import domala.tests.layered.repository.EmpRepository
 
 import scala.reflect.ClassTag
 
-@Entity
 case class Emp(
   @Id
   @GeneratedValue(GenerationType.IDENTITY)

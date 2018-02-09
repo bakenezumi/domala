@@ -2,7 +2,7 @@ package domala.tests.function
 
 import domala._
 import domala.jdbc.{BatchResult, SelectOptions}
-import domala.tests.{Department, Name, ID}
+import domala.tests.models.{Department, ID, Name}
 import org.scalatest.{BeforeAndAfter, FunSuite}
 import org.seasar.doma.FetchType
 

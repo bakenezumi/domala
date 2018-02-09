@@ -2,7 +2,7 @@ package domala.tests.entity
 
 import domala._
 import domala.jdbc.Config
-import domala.tests.TestConfig
+import domala.tests.{TestConfig, holder}
 import org.scalatest.{BeforeAndAfter, FunSuite}
 import domala.jdbc.Result
 

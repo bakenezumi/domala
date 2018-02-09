@@ -1,5 +1,6 @@
-package domala
+package domala.tests.holder
 
+import domala.Holder
 import org.scalatest.FunSuite
 
 class HolderTestSuite extends FunSuite {
@@ -9,8 +10,7 @@ class HolderTestSuite extends FunSuite {
     assert(holders.product == IntHolder(3628800))
     assert(holders.max == IntHolder(10))
     assert(holders.min == IntHolder(1))
-
-    import Numeric.Implicits._
+    import scala.Numeric.Implicits._
     assert(IntHolder(1) + IntHolder(2) == IntHolder(3))
     assert(IntHolder(10) - IntHolder(1) == IntHolder(9))
     assert(- IntHolder(4) == IntHolder(-4))
@@ -31,8 +31,7 @@ class HolderTestSuite extends FunSuite {
     assert(holders.product == LongHolder(3628800))
     assert(holders.max == LongHolder(10))
     assert(holders.min == LongHolder(1))
-
-    import Numeric.Implicits._
+    import scala.Numeric.Implicits._
     assert(LongHolder(1) + LongHolder(2) == LongHolder(3))
     assert(LongHolder(10) - LongHolder(1) == LongHolder(9))
     assert(- LongHolder(4) == LongHolder(-4))
@@ -53,8 +52,7 @@ class HolderTestSuite extends FunSuite {
     assert(holders.product == DoubleHolder(3628800))
     assert(holders.max == DoubleHolder(10))
     assert(holders.min == DoubleHolder(1))
-
-    import Numeric.Implicits._
+    import scala.Numeric.Implicits._
     assert(DoubleHolder(1) + DoubleHolder(2) == DoubleHolder(3))
     assert(DoubleHolder(10) - DoubleHolder(1) == DoubleHolder(9))
     assert(- DoubleHolder(4) == DoubleHolder(-4))
@@ -75,8 +73,7 @@ class HolderTestSuite extends FunSuite {
     assert(holders.product == BigDecimalHolder(3628800))
     assert(holders.max == BigDecimalHolder(10))
     assert(holders.min == BigDecimalHolder(1))
-
-    import Numeric.Implicits._
+    import scala.Numeric.Implicits._
     assert(BigDecimalHolder(1) + BigDecimalHolder(2) == BigDecimalHolder(3))
     assert(BigDecimalHolder(10) - BigDecimalHolder(1) == BigDecimalHolder(9))
     assert(- BigDecimalHolder(4) == BigDecimalHolder(-4))

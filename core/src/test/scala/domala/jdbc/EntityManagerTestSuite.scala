@@ -2,7 +2,7 @@ package domala.jdbc
 
 import domala.Required
 import domala.jdbc.dialect.H2Dialect
-import domala.jdbc.mock._
+import domala.jdbc.models._
 import domala.jdbc.tx.LocalTransactionDataSource
 import org.scalatest.{BeforeAndAfter, FunSuite}
 

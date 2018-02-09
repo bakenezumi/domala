@@ -1,8 +1,5 @@
-package domala.tests
+package domala.tests.models
 
-import domala.Entity
-
-@Entity
 case class PersonDepartment(
   id: ID[Person],
   name: Name,

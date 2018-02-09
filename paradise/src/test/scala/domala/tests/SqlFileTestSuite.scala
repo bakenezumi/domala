@@ -2,6 +2,7 @@ package domala.tests
 
 import domala.Required
 import domala.jdbc.{Config, LocalTransactionConfig}
+import domala.tests.models._
 import org.scalatest._
 import org.seasar.doma.jdbc.Naming
 import org.seasar.doma.jdbc.dialect.PostgresDialect
@@ -27,14 +28,14 @@ class SqlFileTestSuite extends FunSuite with BeforeAndAfter {
   test("select by 1 basic parameter to return optional entity") {
     Required {
       assert(
-        dao.selectById(1) == Some(
-          Person(Some(ID(1)),
+        dao.selectById(ID(1)) == Some(
+          Person(ID(1),
                  Some(Name("SMITH")),
                  Some(10),
                  Address("Tokyo", "Yaesu"),
                  Some(2),
                  Some(0))))
-      assert(dao.selectById(5) == None)
+      assert(dao.selectById(ID(5)) == None)
     }
   }
 
@@ -43,14 +44,14 @@ class SqlFileTestSuite extends FunSuite with BeforeAndAfter {
       assert(
         dao.selectAll == Seq(
           Person(
-            Some(ID(1)),
+            ID(1),
             Some(Name("SMITH")),
             Some(10),
             Address("Tokyo", "Yaesu"),
             Some(2),
             Some(0)),
           Person(
-            Some(ID(2)),
+            ID(2),
             Some(Name("ALLEN")),
             Some(20),
             Address("Kyoto", "Karasuma"),
@@ -63,8 +64,8 @@ class SqlFileTestSuite extends FunSuite with BeforeAndAfter {
   test("join select to embedded entity") {
     Required {
       assert(
-        dao.selectWithDepartmentEmbeddedById(1) ==
-          Some(PersonDepartmentEmbedded(1, "SMITH", Department(ID(2), "SALES"))))
+        dao.selectWithDepartmentEmbeddedById(ID(1)) ==
+          Some(PersonDepartmentEmbedded(ID(1), Name("SMITH"), Department(ID(2), Name("SALES")))))
     }
   }
 
@@ -80,7 +81,7 @@ class SqlFileTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       assert(dao.inSelect(List(1, 3, 5)) == Seq(
         Person(
-          Some(ID(1)),
+          ID(1),
           Some(Name("SMITH")),
           Some(10),
           Address("Tokyo", "Yaesu"),
@@ -99,9 +100,9 @@ class SqlFileTestSuite extends FunSuite with BeforeAndAfter {
   test("literal") {
     Required {
       assert(
-        dao.literalSelect(1) == Some(
+        dao.literalSelect(ID(1)) == Some(
           Person(
-            Some(ID(1)),
+            ID(1),
             Some(Name("SMITH")),
             Some(10),
             Address("Tokyo", "Yaesu"),
@@ -115,14 +116,14 @@ class SqlFileTestSuite extends FunSuite with BeforeAndAfter {
       assert(
         dao.embeddedSelect("order by id desc") == Seq(
           Person(
-            Some(ID(2)),
+            ID(2),
             Some(Name("ALLEN")),
             Some(20),
             Address("Kyoto", "Karasuma"),
             Some(1),
             Some(0)),
           Person(
-            Some(ID(1)),
+            ID(1),
             Some(Name("SMITH")),
             Some(10),
             Address("Tokyo", "Yaesu"),
@@ -137,7 +138,7 @@ class SqlFileTestSuite extends FunSuite with BeforeAndAfter {
       assert(
         dao.ifSelect(Some(2)) == Seq(
           Person(
-            Some(ID(2)),
+            ID(2),
             Some(Name("ALLEN")),
             Some(20),
             Address("Kyoto", "Karasuma"),
@@ -147,14 +148,14 @@ class SqlFileTestSuite extends FunSuite with BeforeAndAfter {
       assert(
         dao.ifSelect(None) == Seq(
           Person(
-            Some(ID(1)),
+            ID(1),
             Some(Name("SMITH")),
             Some(10),
             Address("Tokyo", "Yaesu"),
             Some(2),
             Some(0)),
           Person(
-            Some(ID(2)),
+            ID(2),
             Some(Name("ALLEN")),
             Some(20),
             Address("Kyoto", "Karasuma"),
@@ -168,7 +169,7 @@ class SqlFileTestSuite extends FunSuite with BeforeAndAfter {
     Required{
       assert(
         dao.elseSelect(Some(2), Some(2)) == Seq(
-          Person(Some(ID(2)),
+          Person(ID(2),
             Some(Name("ALLEN")),
             Some(20),
             Address("Kyoto", "Karasuma"),
@@ -177,7 +178,7 @@ class SqlFileTestSuite extends FunSuite with BeforeAndAfter {
         ))
       assert(
         dao.elseSelect(None, Some(2)) == Seq(
-          Person(Some(ID(1)),
+          Person(ID(1),
             Some(Name("SMITH")),
             Some(10),
             Address("Tokyo", "Yaesu"),
@@ -192,7 +193,7 @@ class SqlFileTestSuite extends FunSuite with BeforeAndAfter {
   test("for expression") {
     Required {
       assert(dao.forSelect(List("BB", "AL")) == Seq(
-        Person(Some(ID(2)),
+        Person(ID(2),
           Some(Name("ALLEN")),
           Some(20),
           Address("Kyoto", "Karasuma"),
@@ -214,14 +215,14 @@ class SqlFileTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       dao.insertSql(
         Person(
-          Some(ID(3)),
+          ID(3),
           Some(Name("aaa")),
           Some(5),
           Address("bbb", "ccc"),
           Some(1),
           Some(1)),
         Person(
-          Some(ID(3)),
+          ID(3),
           Some(Name("ddd")),
           Some(10),
           Address("eee", "fff"),
@@ -230,8 +231,8 @@ class SqlFileTestSuite extends FunSuite with BeforeAndAfter {
         3
       )
       assert(
-        dao.selectById(3) == Some(Person(
-          Some(ID(3)),
+        dao.selectById(ID(3)) == Some(Person(
+          ID(3),
           Some(Name("aaa")),
           Some(5),
           Address("eee", "fff"),
@@ -244,14 +245,14 @@ class SqlFileTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       dao.updateSql(
         Person(
-          Some(ID(1)),
+          ID(1),
           Some(Name("aaa")),
           Some(5),
           Address("bbb", "ccc"),
           Some(1),
           Some(1)),
         Person(
-          Some(ID(3)),
+          ID(3),
           Some(Name("ddd")),
           Some(10),
           Address("eee", "fff"),
@@ -260,8 +261,8 @@ class SqlFileTestSuite extends FunSuite with BeforeAndAfter {
         0
       )
       assert(
-        dao.selectById(1) == Some(Person(
-          Some(ID(1)),
+        dao.selectById(ID(1)) == Some(Person(
+          ID(1),
           Some(Name("aaa")),
           Some(5),
           Address("eee", "fff"),
@@ -274,7 +275,7 @@ class SqlFileTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       dao.deleteSql(
         Person(
-          Some(ID(1)),
+          ID(1),
           Some(Name("aaa")),
           Some(5),
           Address("bbb", "ccc"),
@@ -282,7 +283,7 @@ class SqlFileTestSuite extends FunSuite with BeforeAndAfter {
           Some(1)),
         0
       )
-      assert(dao.selectById(1).isEmpty)
+      assert(dao.selectById(ID(1)).isEmpty)
     }
   }
 
@@ -290,21 +291,21 @@ class SqlFileTestSuite extends FunSuite with BeforeAndAfter {
     Required {
       dao.batchInsertSql(Seq(
         Person(
-          Some(ID(3)),
+          ID(3),
           Some(Name("aaa")),
           Some(5),
           Address("bbb", "ccc"),
           Some(1),
           Some(1)),
         Person(
-          Some(ID(4)),
+          ID(4),
           Some(Name("ddd")),
           Some(10),
           Address("eee", "fff"),
           Some(1),
           Some(1)),
         Person(
-          Some(ID(5)),
+          ID(5),
           Some(Name("ggg")),
           Some(15),
           Address("hhh", "iii"),
@@ -313,24 +314,24 @@ class SqlFileTestSuite extends FunSuite with BeforeAndAfter {
       ))
       assert(dao.selectCount == 5)
       assert(
-        dao.selectById(3) == Some(Person(
-          Some(ID(3)),
+        dao.selectById(ID(3)) == Some(Person(
+          ID(3),
           Some(Name("aaa")),
           Some(5),
           Address("bbb", "ccc"),
           Some(2),
           Some(1))))
       assert(
-        dao.selectById(4) == Some(Person(
-          Some(ID(4)),
+        dao.selectById(ID(4)) == Some(Person(
+          ID(4),
           Some(Name("ddd")),
           Some(10),
           Address("eee", "fff"),
           Some(2),
           Some(1))))
       assert(
-        dao.selectById(5) == Some(Person(
-          Some(ID(5)),
+        dao.selectById(ID(5)) == Some(Person(
+          ID(5),
           Some(Name("ggg")),
           Some(15),
           Address("hhh", "iii"),
@@ -346,14 +347,14 @@ class SqlFileTestSuite extends FunSuite with BeforeAndAfter {
       assert(
         dao.selectAll == Seq(
           Person(
-            Some(ID(1)),
+            ID(1),
             Some(Name("SMITH")),
             Some(20),
             Address("Tokyo", "Yaesu"),
             Some(2),
             Some(1)),
           Person(
-            Some(ID(2)),
+            ID(2),
             Some(Name("ALLEN")),
             Some(30),
             Address("Kyoto", "Karasuma"),
@@ -383,14 +384,14 @@ class SqlFileTestSuite extends FunSuite with BeforeAndAfter {
       assert(
         postgresDao.selectAll == Seq(
           Person(
-            Some(ID(2)),
+            ID(2),
             Some(Name("ALLEN")),
             Some(20),
             Address("Kyoto", "Karasuma"),
             Some(1),
             Some(0)),
           Person(
-            Some(ID(1)),
+            ID(1),
             Some(Name("SMITH")),
             Some(10),
             Address("Tokyo", "Yaesu"),

@@ -1,11 +1,13 @@
-package domala.jdbc.mock
+package domala.tests.models
 
 import domala._
 
+@Entity
 case class Person(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  id: Option[ID[Person]] = None,
+  id: ID[Person] = ID.notAssigned,
+  @Column(updatable = false)
   name: Option[Name],
   age: Option[Int],
   address: Address,
