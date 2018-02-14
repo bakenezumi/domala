@@ -41,7 +41,7 @@ object DaoGenerator {
     val internalClass = q"""
       class Internal(___config: domala.jdbc.Config, dataSource: javax.sql.DataSource) extends org.seasar.doma.internal.jdbc.dao.AbstractDao(___config, dataSource)
       with ${Ctor.Ref.Name(trt.name.syntax)} {
-        def this(config: domala.jdbc.Config, connection: java.sql.Connection) = this(config, org.seasar.doma.internal.jdbc.dao.DomalaAbstractDaoHelper.toDataSource(connection))
+        def this(config: domala.jdbc.Config, connection: java.sql.Connection) = this(config, domala.internal.jdbc.dao.AbstractDaoHelper.toDataSource(connection))
         import scala.collection.JavaConverters._
         implicit val __sqlNodeRepository: domala.jdbc.SqlNodeRepository = ___config.getSqlNodeRepository
         ..$defStats

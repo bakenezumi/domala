@@ -1,14 +1,12 @@
-package org.seasar.doma.jdbc.builder
+package domala.jdbc.builder
 
 import domala.jdbc.query.SqlUpdateQuery
+import domala.jdbc.{Config, SqlLogType}
 import org.seasar.doma.DomaNullPointerException
-import org.seasar.doma.jdbc._
 import org.seasar.doma.jdbc.command.UpdateCommand
+import org.seasar.doma.jdbc.{Sql, SqlParameter}
 
-// Domaのパッケージプライベートクラスを利用しているためここに配置
-// org.seasar.doma.jdbc.builder.UpdateBuilderを元にしており、
-// 独自拡張したSqlUpdateQueryを利用するように修正
-class DomalaUpdateBuilder(
+class UpdateBuilder(
   val config: Config,
   val helper: BuildingHelper = new BuildingHelper(),
   query: SqlUpdateQuery = new SqlUpdateQuery(),
@@ -18,36 +16,36 @@ class DomalaUpdateBuilder(
   query.setCallerClassName(getClass.getName)
   query.setSqlLogType(SqlLogType.FORMATTED)
 
-  def sql(sql: String): DomalaUpdateBuilder = {
+  def sql(sql: String): UpdateBuilder = {
     if (sql == null) throw new DomaNullPointerException("sql")
     helper.appendSqlWithLineSeparator(sql)
     new SubsequentUpdateBuilder(config, helper, query, paramIndex)
   }
 
-  def removeLast(): DomalaUpdateBuilder = {
+  def removeLast(): UpdateBuilder = {
     helper.removeLast()
     new SubsequentUpdateBuilder(config, helper, query, paramIndex)
   }
 
-  def param[P](paramClass: Class[P], param: P): DomalaUpdateBuilder = {
+  def param[P](paramClass: Class[P], param: P): UpdateBuilder = {
     if (paramClass == null) throw new DomaNullPointerException("paramClass")
     appendParam(paramClass, param, literal = false)
   }
 
-  def params[E](elementClass: Class[E], params: Iterable[E]): DomalaUpdateBuilder = {
+  def params[E](elementClass: Class[E], params: Iterable[E]): UpdateBuilder = {
     if (elementClass == null) throw new DomaNullPointerException("elementClass")
     if (params == null) throw new DomaNullPointerException("params")
     appendParams(elementClass, params, false)
   }
 
-  def literal[P](paramClass: Class[P], param: P): DomalaUpdateBuilder = {
+  def literal[P](paramClass: Class[P], param: P): UpdateBuilder = {
     if (paramClass == null) throw new DomaNullPointerException("paramClass")
     appendParam(paramClass, param, literal = true)
   }
 
   private def appendParam[P](paramClass: Class[P],
                              param: P,
-                             literal: Boolean): DomalaUpdateBuilder = {
+                             literal: Boolean): UpdateBuilder = {
     helper.appendParam(new Param(paramClass, param, paramIndex, literal))
     paramIndex.increment()
     new SubsequentUpdateBuilder(config, helper, query, paramIndex)
@@ -78,7 +76,7 @@ class DomalaUpdateBuilder(
 
   private def prepare(): Unit = {
     query.clearParameters()
-    helper.getParams.forEach { p =>
+    helper.getParams.foreach{ p =>
       query.addParameter(p.name, p.paramClass, p.param)
     }
     query.setSqlNode(helper.getSqlNode)
@@ -117,17 +115,17 @@ private class SubsequentUpdateBuilder(
   builder: BuildingHelper,
   query: SqlUpdateQuery,
   parameterIndex: ParamIndex)
-    extends DomalaUpdateBuilder(config, builder, query, parameterIndex) {
-  override def sql(sql: String): DomalaUpdateBuilder = {
+    extends UpdateBuilder(config, builder, query, parameterIndex) {
+  override def sql(sql: String): UpdateBuilder = {
     if (sql == null) throw new DomaNullPointerException("sql")
     helper.appendSql(sql)
     this
   }
 }
 
-object DomalaUpdateBuilder {
-  def newInstance(config: Config): DomalaUpdateBuilder = {
+object UpdateBuilder {
+  def newInstance(config: Config): UpdateBuilder = {
     if (config == null) throw new DomaNullPointerException("config")
-    new DomalaUpdateBuilder(config)
+    new UpdateBuilder(config)
   }
 }

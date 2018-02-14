@@ -1,17 +1,17 @@
-package org.seasar.doma.jdbc.builder
+package domala.jdbc.builder
 
 import java.util.function.{Function, Supplier}
 import java.util.stream
 
 import domala.internal.jdbc.scalar.Scalars
 import domala.internal.{OptionConverters, WrapIterator}
-import domala.jdbc.{Config, SelectOptions}
 import domala.jdbc.entity.EntityDesc
 import domala.jdbc.query.SqlSelectQuery
+import domala.jdbc.{Config, SelectOptions, SqlLogType}
 import org.seasar.doma.internal.jdbc.command._
 import org.seasar.doma.internal.jdbc.scalar.{Scalar, ScalarException}
 import org.seasar.doma.jdbc.command.{ResultSetHandler, SelectCommand}
-import org.seasar.doma.jdbc.{ClassHelper, Sql, SqlLogType}
+import org.seasar.doma.jdbc.{ClassHelper, Sql}
 import org.seasar.doma.message.Message
 import org.seasar.doma.{DomaIllegalArgumentException, DomaNullPointerException, FetchType, MapKeyNamingType}
 
@@ -19,12 +19,7 @@ import scala.collection.JavaConverters._
 import scala.language.experimental.macros
 import scala.reflect._
 
-// Domaのパッケージプライベートクラスを利用しているためここに配置
-// org.seasar.doma.jdbc.builder.SelectBuilderを元にしており、
-// 下記修正をしている
-// - 独自拡張したSqlSelectQueryを利用する
-// - getXXにてOption, Seq, IteratorなどScalaの標準コレクションを返す
-class DomalaSelectBuilder(
+class SelectBuilder(
     val config: Config,
     val helper: BuildingHelper = new BuildingHelper(),
     query: SqlSelectQuery = new SqlSelectQuery,
@@ -36,34 +31,34 @@ class DomalaSelectBuilder(
   query.setFetchType(FetchType.LAZY)
   query.setSqlLogType(SqlLogType.FORMATTED)
 
-  def sql(sql: String): DomalaSelectBuilder = {
+  def sql(sql: String): SelectBuilder = {
     if (sql == null) throw new DomaNullPointerException("sql")
     helper.appendSqlWithLineSeparator(sql)
     new SubsequentSelectBuilder(config, helper, query, paramIndex)
   }
 
-  def removeLast(): DomalaSelectBuilder = {
+  def removeLast(): SelectBuilder = {
     helper.removeLast()
     new SubsequentSelectBuilder(config, helper, query, paramIndex)
   }
 
-  def param[P](paramClass: Class[P], param: P): DomalaSelectBuilder = {
+  def param[P](paramClass: Class[P], param: P): SelectBuilder = {
     if (paramClass == null) throw new DomaNullPointerException("paramClass")
     appendParam(paramClass, param, false)
   }
 
-  def params[E](elementClass: Class[E], params: Iterable[E]): DomalaSelectBuilder = {
+  def params[E](elementClass: Class[E], params: Iterable[E]): SelectBuilder = {
     if (elementClass == null) throw new DomaNullPointerException("elementClass")
     if (params == null) throw new DomaNullPointerException("params")
     appendParams(elementClass, params, false)
   }
 
-  def literal[P](paramClass: Class[P], param: P): DomalaSelectBuilder = {
+  def literal[P](paramClass: Class[P], param: P): SelectBuilder = {
     if (paramClass == null) throw new DomaNullPointerException("paramClass")
     appendParam(paramClass, param, true)
   }
 
-  def literals[E](elementClass: Class[E], params: Seq[E]): DomalaSelectBuilder = {
+  def literals[E](elementClass: Class[E], params: Seq[E]): SelectBuilder = {
     if (elementClass == null) throw new DomaNullPointerException("elementClass")
     if (params == null) throw new DomaNullPointerException("params")
     appendParams(elementClass, params, true)
@@ -256,7 +251,7 @@ class DomalaSelectBuilder(
 
   private def prepare(): Unit = {
     query.clearParameters()
-    helper.getParams.forEach{ p =>
+    helper.getParams.foreach{ p =>
       query.addParameter(p.name, p.paramClass, p.param)
     }
     query.setSqlNode(helper.getSqlNode)
@@ -331,18 +326,18 @@ private class SubsequentSelectBuilder (
   builder: BuildingHelper,
   query: SqlSelectQuery,
   paramIndex: ParamIndex)
-  extends DomalaSelectBuilder(config, builder, query, paramIndex) {
+  extends SelectBuilder(config, builder, query, paramIndex) {
 
-  override def sql(fragment: String): DomalaSelectBuilder = {
+  override def sql(fragment: String): SelectBuilder = {
     helper.appendSql(fragment)
     this
   }
 }
 
-object DomalaSelectBuilder {
-  def newInstance(config: Config): DomalaSelectBuilder = {
+object SelectBuilder {
+  def newInstance(config: Config): SelectBuilder = {
     if (config == null) throw new DomaNullPointerException("config")
-    new DomalaSelectBuilder(config)
+    new SelectBuilder(config)
   }
 
 }

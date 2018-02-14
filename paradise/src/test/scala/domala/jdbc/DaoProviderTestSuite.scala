@@ -6,7 +6,7 @@ import domala.Required
 import domala.tests.H2TestConfigTemplate
 import domala.tests.models.PersonDao
 import org.scalatest.FunSuite
-import org.seasar.doma.internal.jdbc.dao.DomalaAbstractDaoHelper
+import domala.internal.jdbc.dao.AbstractDaoHelper
 
 class DaoProviderTestSuite extends FunSuite {
   implicit val config: Config = DaoProviderTestConfig1
@@ -48,7 +48,7 @@ class DaoProviderTestSuite extends FunSuite {
 
   test("data source parameter") {
     val connection = DriverManager.getConnection("jdbc:h2:mem:dao-provider-ds;DB_CLOSE_DELAY=-1", "sa", "")
-    val dataSource = DomalaAbstractDaoHelper.toDataSource(connection)
+    val dataSource = AbstractDaoHelper.toDataSource(connection)
     val dao = DaoProvider.get[PersonDao](dataSource)
     assert(dao.isInstanceOf[PersonDao])
     dao.create()
@@ -57,7 +57,7 @@ class DaoProviderTestSuite extends FunSuite {
   // compile error
 //  test("not Dao") {
 //    val connection = DriverManager.getConnection("jdbc:h2:mem:dao-provider-ds;DB_CLOSE_DELAY=-1", "sa", "")
-//    val dataSource = DomalaAbstractDaoHelper.toDataSource(connection)
+//    val dataSource = AbstractDaoHelper.toDataSource(connection)
 //    DaoProvider.get[Person](dataSource, config)
 //  }
 
