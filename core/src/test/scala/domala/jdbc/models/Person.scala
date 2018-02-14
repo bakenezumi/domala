@@ -5,11 +5,11 @@ import domala._
 case class Person(
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  id: Option[ID[Person]] = None,
+  id: ID[Person] = ID.notAssigned,
   name: Option[Name],
   age: Option[Int],
   address: Address,
   departmentId: Option[Int],
   @Version
-  version: Option[Int] = Option(-1)
+  version: Int = -1
 )

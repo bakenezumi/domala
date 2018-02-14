@@ -15,8 +15,8 @@ class SelectBuilderTestSuite extends FunSuite with BeforeAndAfter {
 
   val initialPersons =
     Seq(
-      Person(Some(ID(1)),Some(Name("SMITH")),Some(10),Address("Tokyo","Yaesu"),Some(2),Some(0)),
-      Person(Some(ID(2)),Some(Name("ALLEN")),Some(20),Address("Kyoto","Karasuma"),Some(1),Some(0)))
+      Person(ID(1),Some(Name("SMITH")),Some(10),Address("Tokyo","Yaesu"),Some(2),0),
+      Person(ID(2),Some(Name("ALLEN")),Some(20),Address("Kyoto","Karasuma"),Some(1),0))
 
   before {
     Required {

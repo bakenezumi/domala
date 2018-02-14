@@ -7,7 +7,7 @@ import domala.internal.macros.reflect.EntityManagerMacros
 
 import scala.language.experimental.macros
 
-/** Assemble and execute SQL automatically from a entity type
+/** Generate and execute SQL automatically from a entity type
   *
   * {{{
   * implicit val config: Config = ...
@@ -19,21 +19,21 @@ import scala.language.experimental.macros
   *
   */
 object EntityManager {
-  /** Assemble and execute a insert SQL automatically from a entity type.
+  /** Generate and execute a insert SQL automatically from a entity type.
     *
     * @tparam ENTITY a entity type
     * @param entity a entity
     * @param config a DB connection configuration
     */
   def insert[ENTITY](entity: ENTITY)(implicit config: Config): Result[ENTITY] = macro EntityManagerMacros.insert[ENTITY]
-  /** Assemble and execute a update SQL automatically from a entity type. A entity type requires @ID annotation.
+  /** Generate and execute a update SQL automatically from a entity type. A entity type requires @ID annotation.
     *
     * @tparam ENTITY a entity type
     * @param entity a entity
     * @param config a DB connection configuration
     */
   def update[ENTITY](entity: ENTITY)(implicit config: Config): Result[ENTITY] = macro EntityManagerMacros.update[ENTITY]
-  /** Assemble and execute a delete SQL automatically from a entity type. A entity type requires @ID annotation.
+  /** Generate and execute a delete SQL automatically from a entity type. A entity type requires @ID annotation.
     *
     * @tparam ENTITY a entity type
     * @param entity a entity
@@ -41,21 +41,21 @@ object EntityManager {
     */
   def delete[ENTITY](entity: ENTITY)(implicit config: Config): Result[ENTITY] = macro EntityManagerMacros.delete[ENTITY]
 
-  /** Assemble and execute a batch insert SQL automatically from a entity type.
+  /** Generate and execute a batch insert SQL automatically from a entity type.
     *
     * @tparam ENTITY a entity type
     * @param entities iterable entities
     * @param config a DB connection configuration
     */
   def batchInsert[ENTITY](entities: Iterable[ENTITY])(implicit config: Config): BatchResult[ENTITY] = macro EntityManagerMacros.batchInsert[ENTITY]
-  /** Assemble and execute a batch update SQL automatically from a entity type. A entity type requires @ID annotation.
+  /** Generate and execute a batch update SQL automatically from a entity type. A entity type requires @ID annotation.
     *
     * @tparam ENTITY a entity type
     * @param entities iterable entities
     * @param config a DB connection configuration
     */
   def batchUpdate[ENTITY](entities: Iterable[ENTITY])(implicit config: Config): BatchResult[ENTITY] = macro EntityManagerMacros.batchUpdate[ENTITY]
-  /** Assemble and execute a batch delete SQL automatically from a entity type. A entity type requires @ID annotation.
+  /** Generate and execute a batch delete SQL automatically from a entity type. A entity type requires @ID annotation.
     *
     * @tparam ENTITY a entity type
     * @param entities iterable entities

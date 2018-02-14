@@ -3,19 +3,22 @@ package domala.jdbc.models
 
 trait PersonDao {
   def create(): Unit
+
   def drop(): Unit
+
   def findAll: List[Person]
+
   def findById(id: ID[Person]): Option[Person]
 }
 
 
 import domala.jdbc.Config
+
 object PersonDao {
   def impl(implicit config: Config): PersonDao = new PersonDaoImpl
 }
 
 import domala._
-import domala.jdbc.Config
 
 class PersonDaoImpl(implicit config: Config) extends PersonDao {
   def create(): Unit = script"""
@@ -53,4 +56,5 @@ class PersonDaoImpl(implicit config: Config) extends PersonDao {
   def findByIds[R](ids: Iterable[ID[Person]], mapper: Iterator[Person] => R): R = select"select /*%expand*/* from person where id in ($ids)".apply(mapper)
 
   def findById(id: ID[Person]): Option[Person] = findByIds(Seq(id), _.toStream.headOption)
+
 }

@@ -1,11 +1,14 @@
 package domala.jdbc.interpolation
 
+import domala.async.jdbc.AsyncConfig
 import domala.internal.macros.reflect.util.{MacroEntityDescGenerator, MacroTypeConverter, MacroUtil}
+import domala.jdbc.Config
 import domala.jdbc.`type`.Types
 import domala.jdbc.builder.SelectBuilder
 import domala.message.Message
 import org.seasar.doma.{DomaException, MapKeyNamingType}
 
+import scala.concurrent.Future
 import scala.language.experimental.macros
 
 /** The object used for executing a SELECT SQL statement and returning the results it produces.
@@ -55,6 +58,8 @@ class SelectStatement private (val builder: SelectBuilder) {
   def getList[T]: List[T] = macro SelectStatementMacro.getList[T]
 
   def apply[TARGET, RESULT](mapper: Iterator[TARGET] => RESULT): RESULT = macro SelectStatementMacro.apply[TARGET, RESULT]
+
+  def async[TARGET, RESULT](mapper: Iterator[TARGET] => RESULT)(implicit config: AsyncConfig): Future[RESULT] = macro SelectStatementMacro.async[TARGET, RESULT]
 
 }
 
@@ -143,9 +148,17 @@ object SelectStatementMacro {
         case t if t.isHolder || t.isBasic =>
           q"$self.builder.iteratorScalar[$resultTpe, $targetTpe]($mapper)"
         case Types.Map =>
-          q"$self.builder.iteratorMap($mapper, org.seasar.doma.MapKeyNamingType.NONE)"
+          q"$self.builder.iteratorMap($mapper, domala.MapKeyNamingType.NONE)"
         case _ => throw new DomaException(Message.DOMALA4008, targetTpe, "SelectStatement", "apply", MacroUtil.getPropertyErrorMessage(c)(targetTpe))
       }
+    }
+  }
+
+  // TODO: Driver level non-blocking
+  def async[TARGET: c.WeakTypeTag, RESULT: c.WeakTypeTag](c: blackbox.Context)(mapper: c.Expr[Iterator[TARGET] => RESULT])(config: c.Expr[AsyncConfig]): c.Expr[Future[RESULT]] = {
+    import c.universe._
+    reify {
+      config.splice.future(apply(c)(mapper).splice)
     }
   }
 
