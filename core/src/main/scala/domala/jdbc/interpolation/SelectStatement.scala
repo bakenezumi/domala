@@ -1,14 +1,12 @@
 package domala.jdbc.interpolation
 
-import domala.async.jdbc.AsyncConfig
+import domala.async.jdbc.{AsyncAction, AsyncConfig}
 import domala.internal.macros.reflect.util.{MacroEntityDescGenerator, MacroTypeConverter, MacroUtil}
-import domala.jdbc.Config
 import domala.jdbc.`type`.Types
 import domala.jdbc.builder.SelectBuilder
 import domala.message.Message
 import org.seasar.doma.{DomaException, MapKeyNamingType}
 
-import scala.concurrent.Future
 import scala.language.experimental.macros
 
 /** The object used for executing a SELECT SQL statement and returning the results it produces.
@@ -59,7 +57,7 @@ class SelectStatement private (val builder: SelectBuilder) {
 
   def apply[TARGET, RESULT](mapper: Iterator[TARGET] => RESULT): RESULT = macro SelectStatementMacro.apply[TARGET, RESULT]
 
-  def async[TARGET, RESULT](mapper: Iterator[TARGET] => RESULT)(implicit config: AsyncConfig): Future[RESULT] = macro SelectStatementMacro.async[TARGET, RESULT]
+  def async[TARGET, RESULT](mapper: Iterator[TARGET] => RESULT)(implicit config: AsyncConfig): AsyncAction[RESULT] = macro SelectStatementMacro.async[TARGET, RESULT]
 
 }
 
@@ -155,10 +153,10 @@ object SelectStatementMacro {
   }
 
   // TODO: Driver level non-blocking
-  def async[TARGET: c.WeakTypeTag, RESULT: c.WeakTypeTag](c: blackbox.Context)(mapper: c.Expr[Iterator[TARGET] => RESULT])(config: c.Expr[AsyncConfig]): c.Expr[Future[RESULT]] = {
+  def async[TARGET: c.WeakTypeTag, RESULT: c.WeakTypeTag](c: blackbox.Context)(mapper: c.Expr[Iterator[TARGET] => RESULT])(config: c.Expr[AsyncConfig]): c.Expr[AsyncAction[RESULT]] = {
     import c.universe._
     reify {
-      config.splice.future(apply(c)(mapper).splice)
+      AsyncAction(apply(c)(mapper).splice)(config.splice)
     }
   }
 

@@ -12,7 +12,7 @@ import org.seasar.doma.jdbc.tx.{LocalTransactionDataSource, LocalTransactionMana
   * @param dataSource the data source
   * @param dialect the SQL dialect
   * @param naming the naming convention controller. defaults to
-  *  [[org.seasar.doma.jdbc.Naming Naming#NONE]]
+  *  [[domala.jdbc.Naming Naming#NONE]]
   */
 abstract class LocalTransactionConfig(
   dataSource: DataSource,
@@ -24,6 +24,7 @@ abstract class LocalTransactionConfig(
     case ds: LocalTransactionDataSource => ds
     case _ => new LocalTransactionDataSource(dataSource)
   }
+
   private val transactionManager = new LocalTransactionManager(ds.getLocalTransaction(getJdbcLogger))
 
   override def getDataSource: DataSource = ds

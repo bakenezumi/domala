@@ -12,7 +12,7 @@ import scala.language.experimental.macros
   * {{{
   * implicit val config: AsyncConfig = ...
   * val employee: Employee = ...
-  * Required.async {
+  * Async {
   *   AsyncEntityManager.insert(employee)
   * }
   * }}}
@@ -26,7 +26,7 @@ object AsyncEntityManager {
     * @param entity a entity
     * @param config a DB connection configuration
     */
-  def insert[ENTITY](entity: ENTITY)(implicit config: AsyncConfig): FutureResult[ENTITY] = macro AsyncEntityManagerMacros.insert[ENTITY]
+  def insert[ENTITY](entity: ENTITY)(implicit config: AsyncConfig): AsyncResult[ENTITY] = macro AsyncEntityManagerMacros.insert[ENTITY]
 
   /** Generate and execute a update SQL automatically from a entity type. A entity type requires @ID annotation.
     *
@@ -34,7 +34,7 @@ object AsyncEntityManager {
     * @param entity a entity
     * @param config a DB connection configuration
     */
-  def update[ENTITY](entity: ENTITY)(implicit config: AsyncConfig): FutureResult[ENTITY] = macro AsyncEntityManagerMacros.update[ENTITY]
+  def update[ENTITY](entity: ENTITY)(implicit config: AsyncConfig): AsyncResult[ENTITY] = macro AsyncEntityManagerMacros.update[ENTITY]
 
   /** Generate and execute a delete SQL automatically from a entity type. A entity type requires @ID annotation.
     *
@@ -42,7 +42,7 @@ object AsyncEntityManager {
     * @param entity a entity
     * @param config a DB connection configuration
     */
-  def delete[ENTITY](entity: ENTITY)(implicit config: AsyncConfig): FutureResult[ENTITY] = macro AsyncEntityManagerMacros.delete[ENTITY]
+  def delete[ENTITY](entity: ENTITY)(implicit config: AsyncConfig): AsyncResult[ENTITY] = macro AsyncEntityManagerMacros.delete[ENTITY]
 
   /** Generate and execute a batch insert SQL automatically from a entity type.
     *
@@ -50,7 +50,7 @@ object AsyncEntityManager {
     * @param entities iterable entities
     * @param config a DB connection configuration
     */
-  def batchInsert[ENTITY](entities: Iterable[ENTITY])(implicit config: AsyncConfig): FutureBatchResult[ENTITY] = macro AsyncEntityManagerMacros.batchInsert[ENTITY]
+  def batchInsert[ENTITY](entities: Iterable[ENTITY])(implicit config: AsyncConfig): AsyncBatchResult[ENTITY] = macro AsyncEntityManagerMacros.batchInsert[ENTITY]
 
   /** Generate and execute a batch update SQL automatically from a entity type. A entity type requires @ID annotation.
     *
@@ -58,7 +58,7 @@ object AsyncEntityManager {
     * @param entities iterable entities
     * @param config a DB connection configuration
     */
-  def batchUpdate[ENTITY](entities: Iterable[ENTITY])(implicit config: AsyncConfig): FutureBatchResult[ENTITY] = macro AsyncEntityManagerMacros.batchUpdate[ENTITY]
+  def batchUpdate[ENTITY](entities: Iterable[ENTITY])(implicit config: AsyncConfig): AsyncBatchResult[ENTITY] = macro AsyncEntityManagerMacros.batchUpdate[ENTITY]
 
   /** Generate and execute a batch delete SQL automatically from a entity type. A entity type requires @ID annotation.
     *
@@ -66,7 +66,7 @@ object AsyncEntityManager {
     * @param entities iterable entities
     * @param config a DB connection configuration
     */
-  def batchDelete[ENTITY](entities: Iterable[ENTITY])(implicit config: AsyncConfig): FutureBatchResult[ENTITY] = macro AsyncEntityManagerMacros.batchDelete[ENTITY]
+  def batchDelete[ENTITY](entities: Iterable[ENTITY])(implicit config: AsyncConfig): AsyncBatchResult[ENTITY] = macro AsyncEntityManagerMacros.batchDelete[ENTITY]
 }
 
 object AsyncEntityManagerMethods {
@@ -80,11 +80,11 @@ object AsyncEntityManagerMethods {
 
 // Dummy trait for logging
 trait AsyncEntityManager {
-  def insert[ENTITY](entity: ENTITY)(implicit config: AsyncConfig): FutureResult[ENTITY]
-  def update[ENTITY](entity: ENTITY)(implicit config: AsyncConfig): FutureResult[ENTITY]
-  def delete[ENTITY](entity: ENTITY)(implicit config: AsyncConfig): FutureResult[ENTITY]
+  def insert[ENTITY](entity: ENTITY)(implicit config: AsyncConfig): AsyncResult[ENTITY]
+  def update[ENTITY](entity: ENTITY)(implicit config: AsyncConfig): AsyncResult[ENTITY]
+  def delete[ENTITY](entity: ENTITY)(implicit config: AsyncConfig): AsyncResult[ENTITY]
 
-  def batchInsert[ENTITY](entities: Iterable[ENTITY])(implicit config: AsyncConfig): FutureBatchResult[ENTITY]
-  def batchUpdate[ENTITY](entities: Iterable[ENTITY])(implicit config: AsyncConfig): FutureBatchResult[ENTITY]
-  def batchDelete[ENTITY](entities: Iterable[ENTITY])(implicit config: AsyncConfig): FutureBatchResult[ENTITY]
+  def batchInsert[ENTITY](entities: Iterable[ENTITY])(implicit config: AsyncConfig): AsyncBatchResult[ENTITY]
+  def batchUpdate[ENTITY](entities: Iterable[ENTITY])(implicit config: AsyncConfig): AsyncBatchResult[ENTITY]
+  def batchDelete[ENTITY](entities: Iterable[ENTITY])(implicit config: AsyncConfig): AsyncBatchResult[ENTITY]
 }
