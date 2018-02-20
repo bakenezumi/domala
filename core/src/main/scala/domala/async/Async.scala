@@ -7,7 +7,7 @@ import scala.concurrent.Future
 object Async {
   /** Execute DB access asynchronously and returns the future of result.
     *
-    * All AsyncAction is executed in independent transaction.
+    * All AsyncAction is executed in independent session.
     *
     * Use [[domala.async.Async#transactionally transactionally]] if want to maintain atomicity.
     *
@@ -59,8 +59,8 @@ object Async {
     */
   def transactionally[RESULT](thunk: => AsyncAction[RESULT])(implicit config: AsyncConfig): Future[RESULT] =
     Future(
-      config.atomicityHolder.withValue(true) {
-        config.transaction {
+      config.transactionallyHolder.withValue(true) {
+        config.atomicOperation {
           thunk.run
         }
       })(config.executionContext).flatten

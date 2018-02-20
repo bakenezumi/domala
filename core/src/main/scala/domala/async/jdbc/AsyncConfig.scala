@@ -10,16 +10,23 @@ import scala.util.DynamicVariable
   * The implementation must be thread safe.
   *
   */
-trait AsyncConfig extends Config with AsyncOperation
+trait AsyncConfig extends Config {
 
-trait AsyncOperation {
-
+  /** ExecutionContext used when accessing DB */
   val executionContext: ExecutionContext
 
-  private[async] val atomicityHolder: DynamicVariable[Boolean] = new DynamicVariable[Boolean](false)
+  /** A operation performed for each Future
+    *
+    * For transaction control, logging etc
+    *
+    * When [[domala.async.Async#apply]] is used, a Future is created for each Async Action,
+    * and when [[domala.async.Async#transactionally]] is used, it is grouped into one Future
+    *
+    **/
+  def atomicOperation[R](thunk: => R): R
 
-  def atomicity: Boolean = atomicityHolder.value
+  private[async] val transactionallyHolder: DynamicVariable[Boolean] = new DynamicVariable[Boolean](false)
 
-  def transaction[R](thunk: => R): R
+  def isTransactionally: Boolean = transactionallyHolder.value
 
 }

@@ -1,13 +1,16 @@
 package domala.async
 
+import javax.sql.DataSource
+
 import domala.Required
 import domala.async.jdbc.{AsyncConfig, AsyncLocalTransactionConfig}
 import domala.async.models.AsyncPersonDao
-import domala.jdbc.dialect.H2Dialect
+import domala.jdbc.dialect.{Dialect, H2Dialect}
 import domala.jdbc.models.{Address, ID, Name, Person}
-import domala.jdbc.tx.LocalTransactionDataSource
 import domala.jdbc.{Naming, Result}
 import org.scalatest.{AsyncFunSuite, BeforeAndAfter}
+import org.seasar.doma.jdbc.tx.LocalTransactionDataSource
+import org.seasar.doma.jdbc.{SimpleDataSource, SqlExecutionException}
 
 import scala.concurrent.ExecutionContextExecutor
 import scala.util.{Failure, Success}
@@ -107,8 +110,8 @@ class AsyncTestSuite extends AsyncFunSuite with BeforeAndAfter {
     val newEntity = Person(ID.notAssigned, Some(Name("foo")), Some(30), Address("baz", "bar"), None, 0)
     Async {
       for {
-        Result(_, result) <- dao.add(newEntity)
-        _ <- dao.add(result.copy(id = ID.notAssigned, name = Some(Name("long " * 10)))) // Too Long Error
+        Result(_, result) <- dao.add(newEntity) // => commit
+        _ <- dao.add(result.copy(id = ID.notAssigned, name = Some(Name("long " * 10)))) // Too Long Error  => rollback
         selected <- dao.findAll(_.toList)
       } yield {
         selected
@@ -130,8 +133,8 @@ class AsyncTestSuite extends AsyncFunSuite with BeforeAndAfter {
     val newEntity = Person(ID.notAssigned, Some(Name("foo")), Some(30), Address("baz", "bar"), None, 0)
     Async.transactionally {
       for {
-        Result(_, result) <- dao.add(newEntity)
-        _ <- dao.add(result.copy(id = ID.notAssigned, name = Some(Name("long " * 10)))) // Too Long Error
+        Result(_, result) <- dao.add(newEntity) // => rollback
+        _ <- dao.add(result.copy(id = ID.notAssigned, name = Some(Name("long " * 10)))) // Too Long Error => rollback
         selected <- dao.findAll(_.toList)
       } yield {
         selected
@@ -149,15 +152,31 @@ class AsyncTestSuite extends AsyncFunSuite with BeforeAndAfter {
     }
   }
 
+
+  test("recover") {
+    val newEntity = Person(ID.notAssigned, Some(Name("foo")), Some(30), Address("baz", "bar"), None, 0)
+    Async {
+      for {
+        Result(_, result) <- dao.add(newEntity)
+        _ <- dao.add(result.copy(id = ID.notAssigned, name = Some(Name("long " * 10)))) recover {
+          case e: SqlExecutionException => dao.add(result.copy(id = ID.notAssigned, name = Some(Name(e.getClass.getSimpleName))))
+        }
+        selected <- dao.findAll(_.toList)
+      } yield {
+        assert(selected == initialPersons ++ Seq(result, result.copy(id = ID(5), name = Some(Name(classOf[SqlExecutionException].getSimpleName)))))
+      }
+    }
+  }
+
   test("filter success") {
-    Async{
+    Async {
       for(result <- dao.findAll(_.toList) if result.nonEmpty)
         yield assert(result == initialPersons)
     }
   }
 
   test("filter failure") {
-    Async{
+    Async {
       for(result <- dao.findAll(_.toList) if result.isEmpty)
         yield assert(result == initialPersons)
     }.transformWith {
@@ -168,7 +187,7 @@ class AsyncTestSuite extends AsyncFunSuite with BeforeAndAfter {
   }
 
   test("parallel action") {
-    Async{
+    Async {
       val action1 = dao.findAll(_.toList)
       val action2 = dao.findAll(_.toList)
       for {
@@ -179,13 +198,44 @@ class AsyncTestSuite extends AsyncFunSuite with BeforeAndAfter {
   }
 
   test("parallel future") {
-    val future1 = Async{ dao.findAll(_.toList) }
+    val future1 = Async { dao.findAll(_.toList) }
     val future2 = Async.transactionally { dao.findAll(_.toList) }
 
     for {
       selected1 <- future1
       selected2 <- future2
     } yield assert(selected1 == selected2)
+  }
+
+  test("parallel transactional action") {
+    Async.transactionally {
+      val action1 = dao.findAll(_.toList)
+      val action2 = dao.findAll(_.toList)
+      for {
+        selected1 <- action1
+        selected2 <- action2
+      } yield {
+        assert(selected1 == initialPersons)
+        assert(selected2 == initialPersons)
+      }
+    }
+  }
+
+  val readOnlyConfig: AsyncConfig = AsyncTestReadOnlyConfig
+  val readOnlyDao: AsyncPersonDao = AsyncPersonDao.readOnlyImpl(readOnlyConfig)
+
+  test("parallel read only action") {
+    Async {
+      val action1 = readOnlyDao.findAll(_.toList)
+      val action2 = readOnlyDao.findAll(_.toList)
+      for {
+        selected1 <- action1
+        selected2 <- action2
+      } yield {
+        assert(selected1 == initialPersons)
+        assert(selected2 == initialPersons)
+      }
+    }
   }
 
 }
@@ -200,5 +250,22 @@ object AsyncTestConfig extends AsyncLocalTransactionConfig(
   Class.forName("org.h2.Driver")
 
   override val executionContext: ExecutionContextExecutor = scala.concurrent.ExecutionContext.global
+
+}
+
+object AsyncTestReadOnlyConfig extends AsyncConfig {
+
+  Class.forName("org.h2.Driver")
+
+  override val executionContext: ExecutionContextExecutor = scala.concurrent.ExecutionContext.global
+
+  override def atomicOperation[R](thunk: => R): R = thunk
+
+  override def getDataSource: DataSource = new SimpleDataSource() {
+    setUrl("jdbc:h2:mem:async-test;DB_CLOSE_DELAY=-1")
+    setUser("sa")
+  }
+  override def getDialect: Dialect = new H2Dialect
+  override def getNaming: Naming = Naming.SNAKE_LOWER_CASE
 
 }

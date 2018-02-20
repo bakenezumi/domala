@@ -24,13 +24,13 @@ class PersonDaoImpl(implicit config: Config) extends PersonDao {
   def create(): Unit = script"""
     create table department(
         id int not null identity primary key,
-        name varchar(20),
+        name varchar(25),
         version int not null
     );
 
     create table person(
         id int not null identity primary key,
-        name varchar(20),
+        name varchar(25),
         age int,
         city varchar(20) not null,
         street varchar(20) not null,

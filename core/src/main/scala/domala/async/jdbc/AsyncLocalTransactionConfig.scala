@@ -21,6 +21,6 @@ abstract class AsyncLocalTransactionConfig(
   dialect: Dialect,
   naming: Naming = Naming.NONE) extends LocalTransactionConfig(dataSource, dialect, naming) with AsyncConfig {
 
-  override def transaction[T](thunk: => T): T = getTransactionManager.requiresNew(() => thunk)
+  override def atomicOperation[T](thunk: => T): T = getTransactionManager.requiresNew(() => thunk)
 
 }

@@ -17,7 +17,6 @@ sealed trait AsyncAction[+R] {
     * resulting action also fails. */
   def map[R2](f: R => R2): AsyncAction[R2] = flatMap(r => ResultAction(f(r))(config))
 
-
   /** Use the result produced by the successful execution of this action to compute and then
     * run the next action in sequence. The resulting action fails if either this action, the
     * computation, or the computed action fails. */
@@ -31,25 +30,34 @@ sealed trait AsyncAction[+R] {
   /** Filter the result of this action with the given predicate. If the predicate matches, the
     * original result is returned, otherwise the resulting action fails with a
     * NoSuchElementException. */
-  final def filter(p: R => Boolean): AsyncAction[R] =
+  def filter(p: R => Boolean): AsyncAction[R] =
     withFilter(p)
 
   def withFilter(f: R => Boolean): AsyncAction[R] = flatMap(v => if(f(v)) ResultAction(v)(config) else throw new NoSuchElementException("Action.withFilter failed"))
+
+  def recover[R2 >: R](pf: PartialFunction[Throwable, AsyncAction[R2]]): AsyncAction[R2] = RecoverAction(this, pf)
+
 }
 
 object AsyncAction {
   def apply[R](thunk: => R)(implicit config: AsyncConfig): AsyncAction[R] = {
-    if (config.atomicity)
+    if (config.isTransactionally)
       new LazyAction[R](thunk)(config)
     else
       new FutureAction[R](thunk)(config)
   }
+
+  def unit(implicit config: AsyncConfig) = new UnitAction(config)
+}
+
+class UnitAction(val config: AsyncConfig) extends AsyncAction[Unit] {
+  override private[domala] def run: Future[Unit] = Future.unit
 }
 
 private class FutureAction[+R] private[jdbc] (thunk: => R)(val config: AsyncConfig) extends AsyncAction[R] {
   private[this] val future: Future[R] = {
     Future {
-      config.transaction(thunk)
+      config.atomicOperation(thunk)
     }(config.executionContext)
   }
   private[domala] def run: Future[R] = future
@@ -71,7 +79,7 @@ case class FlatMapAction[+R2, R] private[jdbc] (base: AsyncAction[R], f: R => As
   private[domala] def run: Future[R2] = base.run.flatMap {
     result => f(result).run.transform {
       case success: Success[R] => success
-      case Failure(e) => throw e
+      case Failure(t) => throw t
     }
   }
 }
@@ -84,8 +92,21 @@ case class AndThenAction[+R2, R] private[jdbc] (base: AsyncAction[R], pf: Partia
       result =>
         pf(result).run.transform {
           case Success(_) => result
-          case Failure(e) => throw e
+          case Failure(t) => throw t
         }
     }
   }
 }
+
+case class RecoverAction[+R2 >: R, R] private[jdbc] (base: AsyncAction[R], pf: PartialFunction[Throwable, AsyncAction[R2]]) extends AsyncAction[R2] {
+  val config: AsyncConfig = base.config
+  implicit val executionContext: ExecutionContext = config.executionContext
+  private[domala] def run: Future[R2] = {
+    val future = base.run
+    future.transformWith {
+      case Success(_) => future
+      case Failure(t) => pf.apply(t).run
+    }
+  }
+}
+
