@@ -152,7 +152,7 @@ class AsyncEntityManagerTestSuite extends AsyncFunSuite with BeforeAndAfter {
   }
 
   test("delete transactionally") {
-    Async {
+    Async.transactionally {
       for {
         Some(target) <- dao.findById(ID(2), _.toStream.headOption)
         Result(cnt, deleted) <- AsyncEntityManager.delete(target)

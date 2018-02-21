@@ -1,6 +1,7 @@
 package domala.jdbc.interpolation
 
-import domala.async.jdbc.{AsyncAction, AsyncConfig}
+import domala.async.AsyncAction
+import domala.async.jdbc.AsyncConfig
 import domala.internal.macros.reflect.util.{MacroEntityDescGenerator, MacroTypeConverter, MacroUtil}
 import domala.jdbc.`type`.Types
 import domala.jdbc.builder.SelectBuilder

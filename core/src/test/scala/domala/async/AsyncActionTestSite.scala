@@ -1,18 +1,14 @@
-package domala.async.jdbc
+package domala.async
 
-import javax.sql.DataSource
-
-import domala.async.Async
 import org.scalatest.AsyncFunSuite
-import org.seasar.doma.jdbc.dialect.Dialect
 
 import scala.concurrent.ExecutionContext
 
 class AsyncActionTestSite extends AsyncFunSuite {
-  implicit val config: AsyncConfig = AsyncActionTestConfig
+  implicit val context: AsyncContext = AsyncActionTestContext
 
   test("return x >>= f == f x") {
-    Async.transactionally {
+    Async {
       val f = (x: Int) => AsyncAction(x * 2)
       val x = 3
       val bound = AsyncAction(x) flatMap f
@@ -111,17 +107,20 @@ class AsyncActionTestSite extends AsyncFunSuite {
 
 }
 
-object AsyncActionTestConfig extends AsyncConfig {
+object AsyncActionTestContext extends AsyncContext {
   override val executionContext: ExecutionContext = scala.concurrent.ExecutionContext.global
 
   override def atomicOperation[R](thunk: => R): R = {
-    println(s"${Thread.currentThread.getName} start")
-    val ret = thunk
-    println(s"${Thread.currentThread.getName} end => $ret")
-    ret
+    try {
+      println(s"${Thread.currentThread.getName} start : $asyncStatus")
+      val ret = thunk
+      println(s"${Thread.currentThread.getName}   ret => $ret")
+      ret
+    } catch {
+      case e: Throwable =>
+        println(s"${Thread.currentThread.getName}   exception => $e")
+        throw e
+    } finally println(s"${Thread.currentThread.getName} end")
   }
 
-  override def getDataSource: DataSource = throw new NotImplementedError
-
-  override def getDialect: Dialect = throw new NotImplementedError
 }

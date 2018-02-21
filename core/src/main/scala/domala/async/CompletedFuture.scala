@@ -1,4 +1,4 @@
-package domala.async.jdbc
+package domala.async
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{CanAwait, ExecutionContext, Future}
@@ -24,11 +24,11 @@ object CompletedFuture {
   def apply[T](thunk: => T): CompletedFuture[T] = apply(Try(thunk))
 
   def apply[T](Tried: Try[T]): CompletedFuture[T] = Tried match {
-    case success: Success[T] => new SuccessFuture(success)
-    case failure: Failure[T] => new FailureFuture(failure)
+    case success: Success[T] => SuccessFuture(success)
+    case failure: Failure[T] => FailureFuture(failure)
   }
 
-  private class SuccessFuture[+T](val tried: Success[T]) extends CompletedFuture[T] {
+  private case class SuccessFuture[+T](tried: Success[T]) extends CompletedFuture[T] {
 
     override def result(atMost: Duration)(implicit permit: CanAwait): T = tried.value
 
@@ -36,7 +36,7 @@ object CompletedFuture {
 
   }
 
-  private class FailureFuture[+T](val tried: Failure[T]) extends CompletedFuture[T] {
+  private case class FailureFuture[+T](tried: Failure[T]) extends CompletedFuture[T] {
 
     override def result(atMost: Duration)(implicit permit: CanAwait): T = throw tried.exception
 

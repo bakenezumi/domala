@@ -1,7 +1,5 @@
 package domala.async
 
-import domala.async.jdbc.{AsyncAction, AsyncConfig}
-
 import scala.concurrent.Future
 
 object Async {
@@ -27,11 +25,13 @@ object Async {
     *
     * @tparam RESULT the result type
     * @param thunk the code for constructing AsyncAction
-    * @param config the runtime configuration
+    * @param context a context of asynchronous processing
     * @return the future of result
     */
-  def apply[RESULT](thunk: => AsyncAction[RESULT])(implicit config: AsyncConfig): Future[RESULT] =
-    thunk.run
+  def apply[RESULT](thunk: => AsyncAction[RESULT])(implicit context: AsyncContext): Future[RESULT] =
+    context.withAsyncStatus(AsyncStatus.Async) {
+      thunk.run
+    }
 
   /** Execute DB access asynchronously and returns the future of result.
     *
@@ -54,15 +54,15 @@ object Async {
     *
     * @tparam RESULT the result type
     * @param thunk the code for constructing AsyncAction
-    * @param config the runtime configuration
+    * @param context the runtime configuration
     * @return the future of result
     */
-  def transactionally[RESULT](thunk: => AsyncAction[RESULT])(implicit config: AsyncConfig): Future[RESULT] =
+  def transactionally[RESULT](thunk: => AsyncAction[RESULT])(implicit context: AsyncContext): Future[RESULT] =
     Future(
-      config.transactionallyHolder.withValue(true) {
-        config.atomicOperation {
+      context.withAsyncStatus(AsyncStatus.Transactional) {
+        context.atomicOperation {
           thunk.run
         }
-      })(config.executionContext).flatten
+      })(context.executionContext).flatten
 
 }

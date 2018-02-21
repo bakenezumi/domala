@@ -1,5 +1,6 @@
 package domala.internal.macros.reflect
 
+import domala.async.AsyncAction
 import domala.async.jdbc._
 
 import scala.reflect.macros.blackbox

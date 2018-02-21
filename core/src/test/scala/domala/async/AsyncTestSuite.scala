@@ -168,6 +168,21 @@ class AsyncTestSuite extends AsyncFunSuite with BeforeAndAfter {
     }
   }
 
+  test("recover transactionally") {
+    val newEntity = Person(ID.notAssigned, Some(Name("foo")), Some(30), Address("baz", "bar"), None, 0)
+    Async.transactionally {
+      for {
+        Result(_, result) <- dao.add(newEntity)
+        _ <- dao.add(result.copy(id = ID.notAssigned, name = Some(Name("long " * 10)))) recover {
+          case e: SqlExecutionException => dao.add(result.copy(id = ID.notAssigned, name = Some(Name(e.getClass.getSimpleName))))
+        }
+        selected <- dao.findAll(_.toList)
+      } yield {
+        assert(selected == initialPersons ++ Seq(result, result.copy(id = ID(5), name = Some(Name(classOf[SqlExecutionException].getSimpleName)))))
+      }
+    }
+  }
+
   test("filter success") {
     Async {
       for(result <- dao.findAll(_.toList) if result.nonEmpty)
@@ -235,7 +250,7 @@ class AsyncTestSuite extends AsyncFunSuite with BeforeAndAfter {
         assert(selected1 == initialPersons)
         assert(selected2 == initialPersons)
       }
-    }
+    }(readOnlyConfig)
   }
 
 }

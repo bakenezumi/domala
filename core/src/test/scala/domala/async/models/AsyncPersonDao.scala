@@ -1,6 +1,7 @@
 package domala.async.models
 
-import domala.async.jdbc.{AsyncAction, AsyncConfig, AsyncEntityManager, AsyncResult}
+import domala.async.AsyncAction
+import domala.async.jdbc.{AsyncConfig, AsyncEntityManager, AsyncResult}
 import domala.jdbc.models._
 
 trait AsyncPersonDao extends PersonDao {
