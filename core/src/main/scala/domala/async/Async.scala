@@ -29,7 +29,7 @@ object Async {
     * @return the future of result
     */
   def apply[RESULT](thunk: => AsyncAction[RESULT])(implicit context: AsyncContext): Future[RESULT] =
-    context.withAsyncStatus(AsyncStatus.Async) {
+    context.withAsyncStatus(AsyncState.Async) {
       thunk.run
     }
 
@@ -59,7 +59,7 @@ object Async {
     */
   def transactionally[RESULT](thunk: => AsyncAction[RESULT])(implicit context: AsyncContext): Future[RESULT] =
     Future(
-      context.withAsyncStatus(AsyncStatus.Transactional) {
+      context.withAsyncStatus(AsyncState.Transactional) {
         context.atomicOperation {
           thunk.run
         }

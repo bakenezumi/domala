@@ -44,10 +44,10 @@ sealed trait AsyncAction[+R] {
 
 object AsyncAction {
   def apply[R](thunk: => R)(implicit context: AsyncContext): AsyncAction[R] = {
-    context.asyncStatus match {
-      case AsyncStatus.Async =>
+    context.asyncState match {
+      case AsyncState.Async =>
         new FutureAction[R](thunk)(context)
-      case AsyncStatus.Transactional =>
+      case AsyncState.Transactional =>
         new LazyAction[R](thunk)(context)
       case _ =>
         throw new DomaException(Message.DOMALA6027)
@@ -64,7 +64,7 @@ class UnitAction(val context: AsyncContext) extends AsyncAction[Unit] {
 private class FutureAction[+R] private[async] (thunk: => R)(val context: AsyncContext) extends AsyncAction[R] {
   private[this] val future: Future[R] = {
     Future {
-      context.withAsyncStatus(AsyncStatus.Async) {
+      context.withAsyncStatus(AsyncState.Async) {
         context.atomicOperation(thunk)
       }
     }(context.executionContext)
@@ -85,9 +85,9 @@ case class ResultAction[+R] private[async] (value: R)(val context: AsyncContext)
 case class FlatMapAction[+R2, R] private[async] (base: AsyncAction[R], f: R => AsyncAction[R2]) extends AsyncAction[R2] {
   val context: AsyncContext = base.context
   implicit private[this] val executionContext: ExecutionContext = context.executionContext
-  private[this] val asyncStatus = context.asyncStatus
+  private[this] val asyncState = context.asyncState
   private[domala] def run: Future[R2] = base.run.flatMap {
-    result => context.withAsyncStatus(asyncStatus)(f(result)).run.transform {
+    result => context.withAsyncStatus(asyncState)(f(result)).run.transform {
       case success: Success[R] => success
       case Failure(t) => throw t
     }
@@ -97,11 +97,11 @@ case class FlatMapAction[+R2, R] private[async] (base: AsyncAction[R], f: R => A
 case class AndThenAction[+R2, R] private[async] (base: AsyncAction[R], pf: PartialFunction[Try[R], AsyncAction[R2]]) extends AsyncAction[R] {
   val context: AsyncContext = base.context
   implicit private[this] val executionContext: ExecutionContext = context.executionContext
-  private[this] val asyncStatus = context.asyncStatus
+  private[this] val asyncState = context.asyncState
   private[domala] def run: Future[R] = {
     base.run.transformWith {
       result =>
-        context.withAsyncStatus(asyncStatus)(pf(result)).run.transform {
+        context.withAsyncStatus(asyncState)(pf(result)).run.transform {
           case Success(_) => result
           case Failure(t) => throw t
         }
@@ -112,12 +112,12 @@ case class AndThenAction[+R2, R] private[async] (base: AsyncAction[R], pf: Parti
 case class RecoverAction[+R2 >: R, R] private[async] (base: AsyncAction[R], pf: PartialFunction[Throwable, AsyncAction[R2]]) extends AsyncAction[R2] {
   val context: AsyncContext = base.context
   implicit private[this] val executionContext: ExecutionContext = context.executionContext
-  private[this] val asyncStatus = context.asyncStatus
+  private[this] val asyncState = context.asyncState
   private[domala] def run: Future[R2] = {
     val future = base.run
     future.transformWith {
       case Success(_) => future
-      case Failure(t) => context.withAsyncStatus(asyncStatus)(pf.apply(t)).run
+      case Failure(t) => context.withAsyncStatus(asyncState)(pf.apply(t)).run
     }
   }
 }

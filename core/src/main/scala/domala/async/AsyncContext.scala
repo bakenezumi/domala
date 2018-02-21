@@ -18,18 +18,18 @@ trait AsyncContext {
     **/
   def atomicOperation[R](thunk: => R): R
 
-  private val asyncStatusHolder: DynamicVariable[AsyncStatus] = new DynamicVariable[AsyncStatus](AsyncStatus.Outside)
+  private val asyncStateHolder: DynamicVariable[AsyncState] = new DynamicVariable[AsyncState](AsyncState.Outside)
 
-  def asyncStatus: AsyncStatus = asyncStatusHolder.value
+  def asyncState: AsyncState = asyncStateHolder.value
 
-  def withAsyncStatus[R](status: AsyncStatus)(thunk: => R): R = asyncStatusHolder.withValue(status)(thunk)
+  def withAsyncStatus[R](status: AsyncState)(thunk: => R): R = asyncStateHolder.withValue(status)(thunk)
 
 }
 
-sealed trait AsyncStatus
+sealed trait AsyncState
 
-object AsyncStatus {
-  case object Outside extends AsyncStatus
-  case object Async extends AsyncStatus
-  case object Transactional extends AsyncStatus
+object AsyncState {
+  case object Outside extends AsyncState
+  case object Async extends AsyncState
+  case object Transactional extends AsyncState
 }

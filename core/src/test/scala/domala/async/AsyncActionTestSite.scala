@@ -112,7 +112,7 @@ object AsyncActionTestContext extends AsyncContext {
 
   override def atomicOperation[R](thunk: => R): R = {
     try {
-      println(s"${Thread.currentThread.getName} start : $asyncStatus")
+      println(s"${Thread.currentThread.getName} start : $asyncState")
       val ret = thunk
       println(s"${Thread.currentThread.getName}   ret => $ret")
       ret
