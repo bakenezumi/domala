@@ -3,7 +3,7 @@ package domala.async
 import javax.sql.DataSource
 
 import domala.Required
-import domala.async.jdbc.{AsyncConfig, AsyncLocalTransactionConfig}
+import domala.async.jdbc.{AsyncConfig, AsyncLocalTransactionConfig, AsyncWritable}
 import domala.async.models.AsyncPersonDao
 import domala.jdbc.dialect.{Dialect, H2Dialect}
 import domala.jdbc.models.{Address, ID, Name, Person}
@@ -16,7 +16,7 @@ import scala.concurrent.ExecutionContextExecutor
 import scala.util.{Failure, Success}
 
 class AsyncTestSuite extends AsyncFunSuite with BeforeAndAfter {
-  implicit val config: AsyncConfig = AsyncTestConfig
+  implicit val config: AsyncConfig with AsyncWritable = AsyncTestConfig
   val dao: AsyncPersonDao = AsyncPersonDao.impl
 
   val initialPersons =
@@ -260,7 +260,7 @@ object AsyncTestConfig extends AsyncLocalTransactionConfig(
     "jdbc:h2:mem:async-test;DB_CLOSE_DELAY=-1", "sa", null),
   dialect = new H2Dialect,
   naming = Naming.SNAKE_LOWER_CASE
-) {
+) with AsyncWritable {
 
   Class.forName("org.h2.Driver")
 

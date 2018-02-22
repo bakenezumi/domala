@@ -9,7 +9,7 @@ import scala.reflect.macros.blackbox
 // TODO: Driver level non-blocking
 object AsyncEntityManagerMacros {
 
-  def insert[ENTITY: c.WeakTypeTag](c: blackbox.Context)(entity: c.Expr[ENTITY])(config: c.Expr[AsyncConfig]): c.Expr[AsyncResult[ENTITY]] = {
+  def insert[ENTITY: c.WeakTypeTag](c: blackbox.Context)(entity: c.Expr[ENTITY])(config: c.Expr[AsyncConfig with AsyncWritable]): c.Expr[AsyncResult[ENTITY]] = {
     import c.universe._
     reify {
       AsyncAction {
@@ -17,7 +17,7 @@ object AsyncEntityManagerMacros {
       }(config.splice)
     }
   }
-  def update[ENTITY: c.WeakTypeTag](c: blackbox.Context)(entity: c.Expr[ENTITY])(config: c.Expr[AsyncConfig]): c.Expr[AsyncResult[ENTITY]] = {
+  def update[ENTITY: c.WeakTypeTag](c: blackbox.Context)(entity: c.Expr[ENTITY])(config: c.Expr[AsyncConfig with AsyncWritable]): c.Expr[AsyncResult[ENTITY]] = {
     import c.universe._
     reify {
       AsyncAction {
@@ -25,7 +25,7 @@ object AsyncEntityManagerMacros {
       }(config.splice)
     }
   }
-  def delete[ENTITY: c.WeakTypeTag](c: blackbox.Context)(entity: c.Expr[ENTITY])(config: c.Expr[AsyncConfig]): c.Expr[AsyncResult[ENTITY]] = {
+  def delete[ENTITY: c.WeakTypeTag](c: blackbox.Context)(entity: c.Expr[ENTITY])(config: c.Expr[AsyncConfig with AsyncWritable]): c.Expr[AsyncResult[ENTITY]] = {
     import c.universe._
     reify {
       AsyncAction {
@@ -34,7 +34,7 @@ object AsyncEntityManagerMacros {
     }
   }
 
-  def batchInsert[ENTITY: c.WeakTypeTag](c: blackbox.Context)(entities: c.Expr[Iterable[ENTITY]])(config: c.Expr[AsyncConfig]): c.Expr[AsyncBatchResult[ENTITY]] = {
+  def batchInsert[ENTITY: c.WeakTypeTag](c: blackbox.Context)(entities: c.Expr[Iterable[ENTITY]])(config: c.Expr[AsyncConfig with AsyncWritable]): c.Expr[AsyncBatchResult[ENTITY]] = {
     import c.universe._
     reify {
       AsyncAction {
@@ -42,7 +42,7 @@ object AsyncEntityManagerMacros {
       }(config.splice)
     }
   }
-  def batchUpdate[ENTITY: c.WeakTypeTag](c: blackbox.Context)(entities: c.Expr[Iterable[ENTITY]])(config: c.Expr[AsyncConfig]): c.Expr[AsyncBatchResult[ENTITY]] = {
+  def batchUpdate[ENTITY: c.WeakTypeTag](c: blackbox.Context)(entities: c.Expr[Iterable[ENTITY]])(config: c.Expr[AsyncConfig with AsyncWritable]): c.Expr[AsyncBatchResult[ENTITY]] = {
     import c.universe._
     reify {
       AsyncAction {
@@ -50,7 +50,7 @@ object AsyncEntityManagerMacros {
       }(config.splice)
     }
   }
-  def batchDelete[ENTITY: c.WeakTypeTag](c: blackbox.Context)(entities: c.Expr[Iterable[ENTITY]])(config: c.Expr[AsyncConfig]): c.Expr[AsyncBatchResult[ENTITY]] = {
+  def batchDelete[ENTITY: c.WeakTypeTag](c: blackbox.Context)(entities: c.Expr[Iterable[ENTITY]])(config: c.Expr[AsyncConfig with AsyncWritable]): c.Expr[AsyncBatchResult[ENTITY]] = {
     import c.universe._
     reify {
       AsyncAction {

@@ -1,7 +1,7 @@
 package domala.async.models
 
 import domala.async.AsyncAction
-import domala.async.jdbc.{AsyncConfig, AsyncEntityManager, AsyncResult}
+import domala.async.jdbc.{AsyncConfig, AsyncEntityManager, AsyncResult, AsyncWritable}
 import domala.jdbc.models._
 
 trait AsyncPersonDao extends PersonDao {
@@ -14,8 +14,8 @@ trait AsyncPersonDao extends PersonDao {
 }
 
 object AsyncPersonDao {
-  def impl(implicit config: AsyncConfig): AsyncPersonDao = new AsyncPersonDaoReadImpl with AsyncPersonDaoWriteImpl {
-    override implicit val _config: AsyncConfig = config
+  def impl(implicit config: AsyncConfig with AsyncWritable): AsyncPersonDao = new AsyncPersonDaoReadImpl with AsyncPersonDaoWriteImpl {
+    override implicit val _config: AsyncConfig with AsyncWritable = config
   }
   def readOnlyImpl(implicit config: AsyncConfig): AsyncPersonDao = new AsyncPersonDaoReadImpl {
     override implicit val _config: AsyncConfig = config
@@ -35,7 +35,7 @@ trait AsyncPersonDaoReadImpl extends PersonDaoImpl with AsyncPersonDao {
 }
 
 trait AsyncPersonDaoWriteImpl extends PersonDaoImpl with AsyncPersonDao {
-  implicit val _config: AsyncConfig
+  implicit val _config: AsyncConfig with AsyncWritable
 
   def add(entity: Person): AsyncResult[Person] = AsyncEntityManager.insert(entity)
 

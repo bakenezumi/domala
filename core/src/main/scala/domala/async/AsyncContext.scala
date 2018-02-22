@@ -20,9 +20,9 @@ trait AsyncContext {
 
   private val asyncStateHolder: DynamicVariable[AsyncState] = new DynamicVariable[AsyncState](AsyncState.Outside)
 
-  def asyncState: AsyncState = asyncStateHolder.value
+  private[async] def asyncState: AsyncState = asyncStateHolder.value
 
-  def withAsyncStatus[R](status: AsyncState)(thunk: => R): R = asyncStateHolder.withValue(status)(thunk)
+  private[async] def withAsyncStatus[R](status: AsyncState)(thunk: => R): R = asyncStateHolder.withValue(status)(thunk)
 
 }
 

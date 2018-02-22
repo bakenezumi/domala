@@ -36,7 +36,7 @@ sealed trait AsyncAction[+R] {
   def filter(p: R => Boolean): AsyncAction[R] =
     withFilter(p)
 
-  def withFilter(f: R => Boolean): AsyncAction[R] = flatMap(v => if(f(v)) ResultAction(v)(context) else throw new NoSuchElementException("Action.withFilter failed"))
+  def withFilter(f: R => Boolean): AsyncAction[R] = flatMap(v => if(f(v)) ResultAction(v)(context) else throw new NoSuchElementException("AsyncAction.withFilter failed"))
 
   def recover[R2 >: R](pf: PartialFunction[Throwable, AsyncAction[R2]]): AsyncAction[R2] = RecoverAction(this, pf)
 

@@ -13,7 +13,7 @@ import scala.concurrent.ExecutionContextExecutor
 
 class AsyncEntityManagerTestSuite extends AsyncFunSuite with BeforeAndAfter {
 
-  implicit val config: AsyncConfig = AsyncEntityManagerTestConfig
+  implicit val config: AsyncConfig  with AsyncWritable = AsyncEntityManagerTestConfig
   val dao: AsyncPersonDao = AsyncPersonDao.impl
 
   val initialPersons =
@@ -218,7 +218,7 @@ object AsyncEntityManagerTestConfig extends AsyncLocalTransactionConfig(
     "jdbc:h2:mem:async-entity-manager;DB_CLOSE_DELAY=-1", "sa", null),
   dialect = new H2Dialect,
   naming = Naming.SNAKE_LOWER_CASE
-) {
+) with AsyncWritable {
 
   Class.forName("org.h2.Driver")
 
