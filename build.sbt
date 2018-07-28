@@ -4,7 +4,7 @@ import sbt.Keys.publishArtifact
 lazy val _scalaVersion = "2.12.4"
 lazy val _version = "0.1.0-beta.10-SNAPSHOT"
 
-lazy val domaVersion = "2.19.1"
+lazy val domaVersion = "2.19.2"
 lazy val h2Version = "1.4.196"
 lazy val scalametaVersion = "1.8.0"
 
